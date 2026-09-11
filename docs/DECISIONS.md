@@ -48,3 +48,9 @@ Append-only. A decision names the day, the ruling, and the alternative it beat.
 - **2026-09-12 · Development method**: the orchestrator writes specs;
   Opus 5 subagents implement with an implementation note in `docs/impl/` and
   are reviewed independently in `docs/reviews/` before integration.
+- **2026-09-12 · A 2D tape lies horizontal.** Tape z maps to world up, the
+  sheet is centred 1.0 m above the floor so a visitor wades through it; 3D
+  tapes keep the 1.2 m centre. (WP2 found the spec's 1.2 m put a vertical
+  sheet half below the floor.)
+- **2026-09-12 · Dev bundles never deploy.** Generated dev bundles and
+  videos live outside `grove/public/`; `dist/` carries only real assets.

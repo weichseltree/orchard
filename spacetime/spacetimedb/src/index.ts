@@ -182,6 +182,9 @@ function online(ctx: Ctx) {
 export const init = spacetimedb.init(ctx => {
   ctx.db.room.insert({ name: 'grove', title: 'The grove', admin_only: false, open: true, capacity: 24 });
   ctx.db.room.insert({ name: 'greenhouse', title: 'The greenhouse', admin_only: true, open: true, capacity: 4 });
+  // Tree rooms the client's mansion.json knows about. Added by hand on maincloud
+  // 2026-09-12 via set_room; listed here so a --delete-data republish keeps them.
+  ctx.db.room.insert({ name: 'einstruct', title: 'The einstruct room', admin_only: false, open: true, capacity: 24 });
 });
 
 export const onDisconnect = spacetimedb.clientDisconnected(ctx => {
