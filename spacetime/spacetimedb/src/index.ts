@@ -299,6 +299,15 @@ export const upsertTree = spacetimedb.reducer(
   }
 );
 
+export const removeTree = spacetimedb.reducer(
+  { name: t.string() },
+  (ctx, { name }) => {
+    requireAdmin(ctx);
+    for (const e of [...ctx.db.exhibit.tree.filter(name)]) ctx.db.exhibit.id.delete(e.id);
+    if (ctx.db.tree.name.find(name)) ctx.db.tree.name.delete(name);
+  }
+);
+
 export const hang = spacetimedb.reducer(
   { tree: t.string(), kind: t.string(), title: t.string(), url: t.string(), thumb_url: t.string(), tape_url: t.string() },
   (ctx, { tree, kind, title, url, thumb_url, tape_url }) => {
