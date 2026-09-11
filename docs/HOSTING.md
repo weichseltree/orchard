@@ -47,11 +47,26 @@ front (hence the 302 to patreon.com). Plan:
 
 ## SpacetimeDB
 
-CLI installed at `~/.local/bin/spacetime` (2.10.0). `spacetime login` opens a
-browser; then `spacetime publish --server maincloud orchard` from `spacetime/`.
-Guests get anonymous identities; admin is an identity allowlist in the module.
-If the cloud proves unreachable from the mainland, the same module self-hosts
-on a small Singapore VPS.
+CLI installed at `~/.local/bin/spacetime` (2.10.0). Published 2026-09-11 to
+maincloud as database **`orchard`** (dashboard: https://spacetimedb.com/orchard);
+admin bootstrapped with the CLI login identity. Guests get anonymous
+identities; admin is an identity allowlist in the module. If the cloud proves
+unreachable from the mainland, the same module self-hosts on a small Singapore
+VPS.
+
+```
+cd spacetime
+spacetime login                          # once per machine
+spacetime publish orchard                # build + publish (config: spacetime.json, server maincloud)
+spacetime call orchard bootstrap_admin   # only succeeds while the allowlist is empty
+spacetime sql orchard "SELECT * FROM admin"
+```
+
+Reducer names are snake_case on the wire (`bootstrapAdmin` in TypeScript is
+`bootstrap_admin` for `spacetime call` and in generated clients).
+`spacetime.local.json` is gitignored and must name the database (`orchard`);
+the template pre-fills a generated name, which makes `call` misread its
+arguments.
 
 ## Cost lines the ledger tracks
 
