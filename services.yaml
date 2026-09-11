@@ -1,0 +1,60 @@
+# The services orchard talks to. One entry per service; secrets live OUTSIDE the
+# repo in ~/.config/orchard/secrets.env (override with $ORCHARD_SECRETS), one
+# line per variable named here. `orchard doctor` reports presence by name only.
+# `card` is the expdash /api/status card key the ledger joins on, when one exists.
+services:
+  gemini:
+    kind: llm
+    env: [GEMINI_API_KEY]
+    used_for: narration drafts, persona reviews, scouting summaries
+    quota: {unit: EUR, card: "credit:gcp_generative_ai"}
+    docs: https://ai.google.dev/
+  anthropic:
+    kind: llm
+    env: [ANTHROPIC_API_KEY]
+    used_for: storyboard checks, persona reviews
+    quota: {unit: USD}
+    docs: https://docs.anthropic.com/
+  openai:
+    kind: llm
+    env: [OPENAI_API_KEY]
+    used_for: fallback
+    quota: {unit: USD}
+  elevenlabs:
+    kind: tts
+    env: [ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID]
+    used_for: narration takes; at most 5 per line (LAWS 16)
+    quota: {unit: chars, card: elevenlabs}
+    docs: https://elevenlabs.io/docs
+  pexels:
+    kind: stock
+    env: [PEXELS_API_KEY]
+    used_for: real-world filler footage, with provenance sidecar (LAWS 9)
+    quota: {unit: req, card: pexels}
+  nasa:
+    kind: stock
+    env: [NASA_API_KEY]
+    used_for: real-world filler imagery, with provenance sidecar
+    quota: {unit: req, card: nasa}
+  cloudflare:
+    kind: hosting
+    env: [CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID]
+    used_for: DNS for weichseltree.com, Pages (site + grove), R2 (bundles)
+    quota: {unit: GB}
+    docs: https://developers.cloudflare.com/
+  cloudflare_realtime:
+    kind: realtime
+    env: [CLOUDFLARE_REALTIME_APP_ID, CLOUDFLARE_REALTIME_APP_SECRET]
+    used_for: TURN and SFU for voice in the grove
+    quota: {unit: min}
+  spacetimedb:
+    kind: state
+    env: []            # the CLI keeps its token in ~/.config/spacetime; clients use anonymous identities
+    used_for: world state, presence, review queue, rulings
+    quota: {unit: credits}
+    docs: https://spacetimedb.com/docs
+  youtube:
+    kind: publish
+    env: [YOUTUBE_CLIENT_SECRETS]
+    used_for: upload on explicit approval only (LAWS 22), metadata from the storyboard
+    quota: {unit: units/day}

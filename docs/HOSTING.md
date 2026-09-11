@@ -29,15 +29,47 @@ here**; test from a mainland vantage point before launch.
 The home box makes outbound connections only. No tunnel to expdash, gpurun or
 the node API; the node token stays the security boundary it is in `~/.claude/CLAUDE.md`.
 
+## Secrets
+
+One file outside the repo, `~/.config/orchard/secrets.env` (mode 600; override
+with `$ORCHARD_SECRETS`), one line per variable; `services.yaml` says which
+variables each service needs and `orchard doctor` reports presence by name.
+The legacy `~/.config/ptstudio/secrets.env` is still read as a fallback because
+spectre, phototroph and expdash's usage cards point at it.
+
+## Cloudflare access
+
+An API token, not the global key, stored as `CLOUDFLARE_API_TOKEN` with
+`CLOUDFLARE_ACCOUNT_ID` (dashboard: Workers & Pages overview, right column).
+Create it at dash.cloudflare.com > My Profile > API Tokens > Create Token >
+Custom token, with:
+
+| scope | permission | level |
+|---|---|---|
+| Account | Cloudflare Pages | Edit |
+| Account | Workers R2 Storage | Edit |
+| Account | Workers Scripts | Edit |
+| Account | Account Settings | Read |
+| Account | Calls | Edit |
+| Zone | Zone | Edit |
+| Zone | DNS | Edit |
+| Zone | Zone Settings | Edit |
+| User | User Details | Read |
+
+Account resources: the one account. Zone resources: all zones from the account
+(the zone does not exist until it is created). No IP filter; a TTL of a year is
+fine, the file is local. wrangler reads the token from the environment, and
+the ledger will use the same token for R2 usage.
+
 ## The domain
 
 `weichseltree.com`: Namecheap, registered 2025-01-24, expires 2027-01-24,
 Namecheap default nameservers, records pointing at Patreon's custom-domain
 front (hence the 302 to patreon.com). Plan:
 
-1. Create a Cloudflare account under your own email (none exists; Patreon's
-   Cloudflare is theirs).
-2. Add `weichseltree.com` as a zone; Cloudflare shows two nameservers.
+1. Cloudflare account exists (2026-09-11).
+2. Add `weichseltree.com` as a zone (dashboard, or `orchard` does it over the
+   API once the token is in place); Cloudflare shows two nameservers.
 3. At Namecheap: Domain > Nameservers > Custom DNS, paste the two. Propagation
    minutes to hours. The Patreon redirect ends; Patreon stays at
    patreon.com/weichseltree and becomes a link on the site.

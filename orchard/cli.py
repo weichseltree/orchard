@@ -99,6 +99,11 @@ def cmd_doctor(a):
     ]
     for name, ok in checks:
         print(("ok   " if ok else "MISS ") + name)
+    from .secrets import status, PATHS
+    print("\nsecrets file:", next((str(p) for p in PATHS if p and p.exists()), "none"))
+    for svc, kind, present, missing in status():
+        flag = "ok   " if not missing else ("part " if present else "MISS ")
+        print(f"{flag}{svc:<20} {kind:<9} " + (f"missing {', '.join(missing)}" if missing else ""))
 
 
 def cmd_serve(a):
