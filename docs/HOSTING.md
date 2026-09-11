@@ -67,15 +67,26 @@ the ledger will use the same token for R2 usage.
 Namecheap default nameservers, records pointing at Patreon's custom-domain
 front (hence the 302 to patreon.com). Plan:
 
-1. Cloudflare account exists (2026-09-11).
-2. Add `weichseltree.com` as a zone (dashboard, or `orchard` does it over the
-   API once the token is in place); Cloudflare shows two nameservers.
-3. At Namecheap: Domain > Nameservers > Custom DNS, paste the two. Propagation
-   minutes to hours. The Patreon redirect ends; Patreon stays at
-   patreon.com/weichseltree and becomes a link on the site.
-4. `wrangler login`, then `wrangler pages project create weichseltree`, custom
-   domain `weichseltree.com` + `www`.
-5. R2 bucket `weichseltree-media`, public via a custom domain `media.weichseltree.com`.
+Done 2026-09-12 over the API with the token: zone `weichseltree.com` created
+(status pending), Pages project `weichseltree` created and a holding page
+deployed from `grove/public/` (https://weichseltree.pages.dev), custom domains
+`weichseltree.com` and `www` attached, proxied CNAMEs to
+`weichseltree.pages.dev` in the zone. Cloudflare's nameservers for the zone:
+
+    clark.ns.cloudflare.com
+    susan.ns.cloudflare.com
+
+Left to do:
+
+1. **At Namecheap** (only you can): Domain List > Manage > Nameservers >
+   Custom DNS, paste the two above. Propagation minutes to hours. At that
+   moment the Patreon redirect ends and the holding page is what the domain
+   serves; Patreon stays at patreon.com/weichseltree and is linked from it.
+2. Redeploy: `wrangler pages deploy ./grove/public --project-name weichseltree
+   --branch main` with `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` in the
+   environment (`set -a; . ~/.config/orchard/secrets.env; set +a`).
+3. R2 bucket `weichseltree-media`, public via `media.weichseltree.com`, when the
+   first bundle exists (M0).
 
 ## SpacetimeDB
 
