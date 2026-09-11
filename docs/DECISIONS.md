@@ -37,3 +37,7 @@ Append-only. A decision names the day, the ruling, and the alternative it beat.
   pinned code on their own GPU. Nodes only ever connect outward.
 - **2026-09-11 · License: Apache-2.0.** Beat AGPL-3.0; a platform others
   host and fork needs the patent grant more than a share-back clause.
+- **2026-09-11 · License: AGPL-3.0, superseding Apache-2.0 the same day.**
+  Nodes that host and modify the platform must publish their changes; a
+  little vendor lock toward the shared code is wanted for a federation whose
+  nodes run each other's trusted code.

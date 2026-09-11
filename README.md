@@ -96,4 +96,4 @@ ever connects outward. [docs/HOSTING.md](docs/HOSTING.md).
 
 ## License
 
-Apache-2.0. See [LICENSE](LICENSE).
+AGPL-3.0-or-later. See [LICENSE](LICENSE). Run a node, change the platform, publish the change.
