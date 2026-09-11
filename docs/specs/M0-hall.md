@@ -84,6 +84,16 @@ Chunk file, little-endian:
 | 24 | `u8[8]` | reserved, zero |
 | 32 | frames × (`u16[3]`×n, `u8`×n, `u8`×n) | per frame: positions, species, alive |
 
+**Amendments 2026-09-12 (from WP1, measured):** `slot_stride` is the decimation
+rate only; membership is a sorted blake2b-seeded subset of the slots (seed
+`orchard/bundle/1|slots|{n_slots}|{n}`, the construction spectre's
+`subset_indices` uses), because an index stride aliases against einstruct's
+even/odd species layout and silently deleted species B. `slot_stride == 1` is
+the identity. New fields: `slot_budget` (default 4000), `slot_selection`,
+`species_counts`, `poster_sha256`. Video bundles keep per-file digests in a
+sibling `media.json` that the id does not cover, because x264 under VBV is
+not bit-reproducible; the id covers the recipe.
+
 Positions quantize `[0, L)` per axis onto `[0, 65535]`; a 2D tape has z = 0
 for every slot and `Lz` = 1. `alive` is 1 or 0; a dead slot keeps its last
 position (that is how einstruct tapes already behave). Species is the tape's
