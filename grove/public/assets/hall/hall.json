@@ -1,0 +1,236 @@
+{
+  "schema": "orchard/hall/1",
+  "asset": "hall",
+  "generated_by": "grove/tools/bake_hall.py",
+  "script_sha256": "d83ed9d63a1bdaece323ea4b2a749edffd95c9b177b9a148105a230415c9056d",
+  "blender": "4.2.1 LTS",
+  "git": {
+    "commit": "4c373c30552b67675ce976096d7c2ffe4a841373",
+    "dirty": true
+  },
+  "generated_at_utc": "2026-09-11T23:54:42Z",
+  "bake": {
+    "engine": "cycles",
+    "type": "DIFFUSE",
+    "passes": [
+      "direct",
+      "indirect"
+    ],
+    "colour_pass": false,
+    "samples": 1024,
+    "adaptive_threshold": 0.009999999776482582,
+    "max_bounces": 8,
+    "diffuse_bounces": 4,
+    "clamp_indirect": 10.0,
+    "resolution": 2048,
+    "margin_px": 8,
+    "uv_layer": "uv2",
+    "device": "CPU",
+    "threads": 16,
+    "denoise": "OpenImageDenoise via the compositor Denoise node",
+    "seconds_bake": 1265.17,
+    "seconds_denoise": 4.52,
+    "seconds_wall_clock": 1275.16,
+    "seconds_preview": 3.92
+  },
+  "lightmap": {
+    "file": "lightmap.png",
+    "ktx2": null,
+    "ktx2_note": "toktx not on PATH -- shipping lightmap.png only",
+    "encoding": "sRGB transfer, 8 bit RGB PNG",
+    "colour_space_hint": "THREE.SRGBColorSpace",
+    "scale": 3.410822,
+    "scale_meaning": "irradiance/pi = srgb_decode(texel) * scale; start with three.js lightMapIntensity = scale",
+    "uv": "TEXCOORD_1 (blender uv2)",
+    "coverage": 0.6008,
+    "clipped_fraction": 2.9e-05,
+    "noise_metric": 0.048063
+  },
+  "geometry": {
+    "units": "metres",
+    "blender_axes": "Z up, origin at the centre of the floor, +Y towards the doorway",
+    "gltf_axes": "Y up; (x,y,z)_blender -> (x, z, -y)_gltf",
+    "interior": {
+      "width_x": 14.0,
+      "depth_y": 20.0,
+      "height_z": 7.0
+    },
+    "extent_blender": {
+      "x": [
+        -7.0,
+        7.0
+      ],
+      "y": [
+        -10.0,
+        10.0
+      ],
+      "z": [
+        0.0,
+        7.0
+      ]
+    },
+    "doorway": {
+      "wall": "+Y (blender) / -Z (gltf)",
+      "width": 2.4,
+      "height": 3.2,
+      "sill_z": 0.0,
+      "reveal_depth": 0.45,
+      "centre_blender": [
+        0.0,
+        10.0,
+        1.6
+      ],
+      "floor_centre_blender": [
+        0.0,
+        10.0,
+        0.0
+      ],
+      "floor_centre_gltf": [
+        0.0,
+        0.0,
+        -10.0
+      ],
+      "through_direction_blender": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "through_direction_gltf": [
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "marker_node": "door_einstruct"
+    },
+    "spawn": {
+      "floor_blender": [
+        0.0,
+        -8.0,
+        0.0
+      ],
+      "eye_blender": [
+        0.0,
+        -8.0,
+        1.6
+      ],
+      "eye_gltf": [
+        0.0,
+        1.6,
+        8.0
+      ],
+      "facing_blender": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "facing_gltf": [
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "eye_height": 1.6,
+      "marker_node": "spawn",
+      "note": "facing_gltf is three.js' default camera forward, so a fresh camera at eye_gltf with identity rotation already looks at the doorway"
+    },
+    "poster_panel": {
+      "wall": "+X (blender) / +X (gltf)",
+      "material": "hall_poster_panel",
+      "width": 6.0,
+      "height": 3.4,
+      "recess_depth": 0.04,
+      "centre_blender": [
+        7.04,
+        0.0,
+        3.0999999999999996
+      ],
+      "centre_gltf": [
+        7.04,
+        3.0999999999999996,
+        0.0
+      ],
+      "normal_blender": [
+        -1.0,
+        0.0,
+        0.0
+      ],
+      "marker_node": "poster_wall"
+    },
+    "windows": {
+      "wall": "-X (blender)",
+      "count": 6,
+      "width": 1.6,
+      "sill_z": 1.6,
+      "head_z": 5.6,
+      "reveal_depth": 0.35,
+      "centres_y": [
+        -8.3333,
+        -5.0,
+        -1.6667,
+        1.6667,
+        5.0,
+        8.3333
+      ],
+      "glazed": false,
+      "note": "open apertures: the sun and sky reach the room through them, and the client sees its own environment through them"
+    },
+    "ceiling": {
+      "type": "coffered",
+      "beam_soffit_z": 7.0,
+      "coffer_depth": 0.35,
+      "beam_width": 0.5,
+      "cells": [
+        4,
+        6
+      ],
+      "cell_size": [
+        2.875,
+        2.75
+      ]
+    },
+    "trim": {
+      "wainscot_height": 1.1,
+      "wainscot_proud": 0.06,
+      "cornice_z": [
+        6.55,
+        6.85
+      ],
+      "cornice_proud": 0.12
+    },
+    "materials": [
+      "hall_floor",
+      "hall_wall",
+      "hall_ceiling",
+      "hall_trim",
+      "hall_poster_panel"
+    ],
+    "surface_area_m2": 1133.0,
+    "texels_per_m2": 3701.8
+  },
+  "lighting": {
+    "sun_direction_blender": [
+      0.7796,
+      0.2999,
+      -0.5498
+    ],
+    "sun_strength": 3.6,
+    "sun_angle_deg": 1.6,
+    "world": "Nishita sky",
+    "world_strength": 0.85,
+    "exported": false,
+    "note": "lights are baked, not exported; the glb carries no KHR_lights_punctual"
+  },
+  "files": {
+    "hall.glb": {
+      "bytes": 51108,
+      "sha256": "6e1ae168b7f55f0ab6a03850a2073d1093d42ec594c5bb0c57c7e256b67b0f83"
+    },
+    "lightmap.png": {
+      "bytes": 2324189,
+      "sha256": "27d992cefb82d6447c85ec26d29dea237da90c3bae1ad5564ea735ab7a36c9e8"
+    },
+    "preview.png": {
+      "bytes": 784609,
+      "sha256": "069ef6c95031bb1b5c78eefd343e8079da8f96ed19893c5a6e7f6658bdf003ff"
+    }
+  }
+}
