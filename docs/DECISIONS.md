@@ -41,3 +41,10 @@ Append-only. A decision names the day, the ruling, and the alternative it beat.
   Nodes that host and modify the platform must publish their changes; a
   little vendor lock toward the shared code is wanted for a federation whose
   nodes run each other's trusted code.
+- **2026-09-12 · M0 specified** in `docs/specs/M0-hall.md`: one hall, one
+  einstruct room, one HLS video wall, the ab_d2 tape as a walk-in point cloud,
+  presence over the live database. Tape bundles are content-addressed chunked
+  directories served by R2, format `orchard/bundle/1`.
+- **2026-09-12 · Development method**: the orchestrator writes specs;
+  Opus 5 subagents implement with an implementation note in `docs/impl/` and
+  are reviewed independently in `docs/reviews/` before integration.
