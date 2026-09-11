@@ -1,0 +1,64 @@
+name: HNL
+path: /home/manuel/weichseltree/HNL
+remote: git@github.com-weichseltree:weichseltree/HNL.git
+question: '**Project Goal:** Build a highly efficient, multi-scale particle simulation framework inspired
+  by [Particle Lenia](https://arxiv.org/abs/2301.01466). The system uses **Geometric Deep Learning** to
+  learn the emergent dynamics of particle clusters at one scale and condense them into efficient "macro-particles"
+  at a higher scale. This allows for massive simulations where "physics" is learned via reno'
+status: active
+stage: scouted
+gpu: jax
+phenomena: []
+artefacts:
+- kind: clip
+  path: outputs/trained_trajectory.gif
+  title: trained_trajectory
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: outputs/training_curves.png
+  title: training_curves
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: clip
+  path: outputs/trajectory.gif
+  title: trajectory
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: outputs/final.png
+  title: final
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: outputs/initial.png
+  title: initial
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+producers:
+  tape: ''
+  render: ''
+  figure: ''
+  lane: cpu
+  env: {}
+theses: []
+budget:
+  gpu_h: 0.0
+  cpu_h: 0.0
+  tts_chars: 0
+  llm_usd: 0.0
+  disk_gb: 0.0
+  prio_cap: 10
+kill: ''
+potential: 0
+notes: 'last commit 2026-08-18 | media on disk: {''clip'': 2, ''still'': 3, ''tape'': 0}'

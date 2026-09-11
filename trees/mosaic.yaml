@@ -1,0 +1,30 @@
+name: mosaic
+path: /home/manuel/weichseltree/mosaic
+remote: git@github.com-weichseltree:weichseltree/mosaic.git
+question: Mosaic builds a batched, GPU-resident, seed-reproducible 2D Ising simulator whose correctness
+  is established against exact results, together with a run-provenance layer, as the calibrated instrument
+  for measuring closure-defect scaling on statistical systems. The project's north star is the research
+  plan in [`docs/research-plan.md`](docs/research-plan.md); the implementation plan for this Ising ph
+status: active
+stage: scouted
+gpu: torch
+phenomena: []
+artefacts: []
+producers:
+  tape: ''
+  render: ''
+  figure: ''
+  lane: cpu
+  env: {}
+theses: []
+budget:
+  gpu_h: 0.0
+  cpu_h: 0.0
+  tts_chars: 0
+  llm_usd: 0.0
+  disk_gb: 0.0
+  prio_cap: 10
+kill: ''
+potential: 0
+notes: 'last commit 2026-08-18 | media on disk: {''clip'': 0, ''still'': 0, ''tape'': 0} | ledger: 0.0
+  gpu-h, 118.0 cpu-h, 0.0 h on video, 32 jobs, 8 failed'

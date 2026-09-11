@@ -1,0 +1,112 @@
+name: agivity
+path: /home/manuel/weichseltree/agivity
+remote: git@github.com-weichseltree:weichseltree/agivity.git
+question: 'One research program, four experiment lines (July 14–16, 2026), with Line 4 (the ARC agent)
+  then carried into a live-agent experiment series E1–E9 (July 19–23, 2026) — see §6 and `docs/roadmap_e8.md`
+  / `docs/roadmap_e9.md`. The question behind everything here:'
+status: dormant
+stage: scouted
+gpu: torch
+phenomena: []
+artefacts:
+- kind: still
+  path: results/keldysh/plots/keldysh_solver_diagnostics.png
+  title: keldysh_solver_diagnostics
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: results/keldysh/plots/keldysh_online_diagnostics.png
+  title: keldysh_online_diagnostics
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: results/keldysh/plots/keldysh_diagnostics.png
+  title: keldysh_diagnostics
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: results/hmm_ihwm/plots/oc_resiliency_results.png
+  title: oc_resiliency_results
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: results/hmm_ihwm/plots/resiliency_experiment_results.png
+  title: resiliency_experiment_results
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: results/hmm_ihwm/plots/hierarchical_commitment_horizon.png
+  title: hierarchical_commitment_horizon
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: results/hmm_ihwm/plots/calibration_plots_n2.png
+  title: calibration_plots_n2
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: results/hmm_ihwm/plots/calibration_plots_smc.png
+  title: calibration_plots_smc
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: results/hmm_ihwm/plots/calibration_plots_exact.png
+  title: calibration_plots_exact
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: results/arc_agent/e13_ratemap_curve.png
+  title: e13_ratemap_curve
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: clip
+  path: results/keldysh/keldysh_solver_replay.gif
+  title: keldysh_solver_replay
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: revision_cascade/fig5_audit_class_map.png
+  title: fig5_audit_class_map
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+producers:
+  tape: ''
+  render: ''
+  figure: ''
+  lane: cpu
+  env: {}
+theses: []
+budget:
+  gpu_h: 0.0
+  cpu_h: 0.0
+  tts_chars: 0
+  llm_usd: 0.0
+  disk_gb: 0.0
+  prio_cap: 10
+kill: ''
+potential: 0
+notes: 'last commit 2026-08-18 | media on disk: {''clip'': 1, ''still'': 15, ''tape'': 0}'

@@ -1,0 +1,113 @@
+name: phototroph
+path: /home/manuel/weichseltree/phototroph
+remote: https://github.com/weichseltree/phototroph.git
+question: '*A phototroph is an organism that feeds on light. Nothing in this engine is one. The point
+  is to find out whether matter, given only exact local physics and a spectral gradient, will become one
+  on its own.*'
+status: active
+stage: scouted
+gpu: none
+phenomena: []
+artefacts:
+- kind: clip
+  path: studio/library/films/e05/e05-animatic.mp4
+  title: e05-animatic
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: clip
+  path: studio/library/films/e05/animatic/video.mp4
+  title: video
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: clip
+  path: studio/library/films/e05/animatic/017_15.mp4
+  title: '017_15'
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: clip
+  path: studio/library/films/e05/animatic/016_14.mp4
+  title: '016_14'
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: clip
+  path: studio/library/films/e05/animatic/015_13.mp4
+  title: '015_13'
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: studio/library/films/e05/animatic/015_13.png
+  title: '015_13'
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: clip
+  path: studio/library/films/e05/animatic/014_12.mp4
+  title: '014_12'
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: studio/library/films/e05/animatic/014_12.png
+  title: '014_12'
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: clip
+  path: studio/library/films/e05/animatic/013_11.mp4
+  title: '013_11'
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: studio/library/films/e05/animatic/013_11.png
+  title: '013_11'
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: clip
+  path: studio/library/films/e05/animatic/012_10.mp4
+  title: '012_10'
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: clip
+  path: studio/library/films/e05/animatic/011_9.mp4
+  title: 011_9
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+producers:
+  tape: ''
+  render: ''
+  figure: ''
+  lane: cpu
+  env: {}
+theses: []
+budget:
+  gpu_h: 0.0
+  cpu_h: 0.0
+  tts_chars: 0
+  llm_usd: 0.0
+  disk_gb: 0.0
+  prio_cap: 10
+kill: ''
+potential: 0
+notes: 'last commit 2026-09-11 | media on disk: {''clip'': 128, ''still'': 142, ''tape'': 0} | ledger:
+  0.6 gpu-h, 62.0 cpu-h, 8.5 h on video, 643 jobs, 177 failed'

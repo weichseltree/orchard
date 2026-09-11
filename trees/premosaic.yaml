@@ -1,0 +1,112 @@
+name: premosaic
+path: /home/manuel/weichseltree/premosaic
+remote: https://github.com/weichseltree/premosaic.git
+question: 'This is the architecture documentation set for the engine you described: a **data-driven, adaptive,
+  recursive domain-decomposition engine** in which'
+status: active
+stage: scouted
+gpu: jax
+phenomena: []
+artefacts:
+- kind: still
+  path: runs/curvature_model/film/learned.png
+  title: learned
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: runs/curvature_model/film/engine.png
+  title: engine
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: runs/curvature_model/film/micro.png
+  title: micro
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: runs/regime/film_c16/learned.png
+  title: learned
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: runs/regime/film_c16/engine.png
+  title: engine
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: runs/regime/film_c16/micro.png
+  title: micro
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: recording/out/lb_kn.png
+  title: lb_kn
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: recording/out/lb_tiles.png
+  title: lb_tiles
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: recording/out/front.png
+  title: front
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: recording/out/pi.png
+  title: pi
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: recording/out/spectrum.png
+  title: spectrum
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: recording/out/tiles.png
+  title: tiles
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+producers:
+  tape: ''
+  render: ''
+  figure: ''
+  lane: cpu
+  env: {}
+theses: []
+budget:
+  gpu_h: 0.0
+  cpu_h: 0.0
+  tts_chars: 0
+  llm_usd: 0.0
+  disk_gb: 0.0
+  prio_cap: 10
+kill: ''
+potential: 0
+notes: 'last commit 2026-08-18 | media on disk: {''clip'': 0, ''still'': 13, ''tape'': 0} | ledger: 0.1
+  gpu-h, 0.2 cpu-h, 0.0 h on video, 35 jobs, 6 failed'

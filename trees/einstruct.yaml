@@ -1,0 +1,71 @@
+name: einstruct
+path: /home/manuel/weichseltree/einstruct
+remote: https://github.com/weichseltree/einstruct.git
+question: Throw away the axes. Describe a cloud of points only by the distances between them. Does that buy you anything a coordinate method cannot?
+status: active
+stage: planted
+gpu: torch
+potential: 8
+kill: If no phenomenon in this tree can be shown as a moving picture a viewer follows without the word "registered", the series takes only the segregation episode.
+phenomena:
+  - id: ab_segregation
+    title: Two colours that vanish on contact sort themselves into regions
+    hook: 200,000 particles. Half one colour, half the other. When two of different colours meet, both vanish. That is the whole rule. By the end, regions. Nobody drew them.
+    evidence: results/film/renders/ab_d2-ep05/preview.png
+    hero: true
+  - id: row_invariance
+    title: A row does not know which way is up
+    hook: Rotate the cloud, mirror it, renumber it. The bars do not move. Zoom it, and every bar grows.
+    evidence: results/film/anims/row
+  - id: dimension_as_arrival
+    title: A dimension is how fast neighbours arrive
+    hook: Double the houses and the walk grows by 2 on a street, by root 2 in a town, by cube root 2 in a tower.
+    evidence: results/film/anims/walk
+  - id: droplet_closure
+    title: The relational state tears
+    hook: Carry only distances between pairs. Newton's law still works, until it does not, and the tear is visible.
+    evidence: results/film/renders/lj_droplet/preview.png
+    hero: true
+artefacts:
+  - kind: clip
+    path: results/film/renders/ab_d2-ep05/clip.mp4
+    title: ab_d2 segregation, 40 s, 10 tau/s
+    produced_by: python -m film.render ab_d2 --tau-per-s 10 --seconds 40
+  - kind: tape
+    path: video/tape/ab_d2/header.json
+    title: ab_d2 tape, 801 frames, 200000 -> 2634 particles
+    produced_by: exprun python -m film.scenes ab-d2
+  - kind: master
+    path: results/film/episodes/ep05_chemistry/ep05_chemistry.mp4
+    title: ep05 chemistry animatic, 4:30, voiced (Callum), ~100 s silent
+    produced_by: python -m film.assemble film/episodes/ep05_chemistry/STORYBOARD.md
+producers:
+  tape: exprun python -m film.scenes {scene}
+  render: exprun python -m film.render {scene} --tau-per-s {tau_per_s} --seconds {seconds}
+  lane: cpu
+  env:
+    SPECTRE_ROOT: /home/manuel/weichseltree/spectre
+theses:
+  - id: rows-read-chemistry
+    question: Can a rule that only says "meet and vanish" produce order nobody put in, and can you predict how fast it slows from distances alone?
+    number: the decay exponent, -d/4, predicted from rows before it was measured
+    picture: the two-colour field sorting itself into regions while the counter leaves the textbook line
+    phenomena: [ab_segregation]
+    stage: animatic
+    episode: Rows read chemistry
+    blocked_by: narration still says "card", "registered", "P1"; ~100 s of silence; flat scatter with no lighting or camera; no music, titles or thumbnail
+  - id: throw-away-the-axes
+    question: What can you know about a shape if you are never allowed to see where anything is?
+    number: the slab whose dimension turns over at the predicted 0.889
+    picture: one point, its sorted neighbour distances as bars, the cloud spinning while the bars stand still
+    phenomena: [row_invariance, dimension_as_arrival]
+    stage: thesis
+    episode: Throw away the axes, then count neighbours
+budget:
+  gpu_h: 0
+  cpu_h: 20
+  tts_chars: 15000
+  llm_usd: 5
+  disk_gb: 10
+  prio_cap: 10
+notes: Film pipeline film/ (tape -> matplotlib renderer -> card -> assemble) imports spectre's tape writer and ElevenLabs vo.py by absolute path. Series plan docs/SERIES.md (13 -> 6 episodes). Voice Callum was chosen by a seeded random draw and is under review.

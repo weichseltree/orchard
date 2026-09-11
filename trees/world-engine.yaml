@@ -1,0 +1,112 @@
+name: world-engine
+path: /home/manuel/weichseltree/world-engine
+remote: git@github.com-weichseltree:weichseltree/world-engine.git
+question: Experiments in representing a world as a single neural field rather than as stored geometry
+  — efficient novel rendering, and a Minecraft-like world held in network weights instead of block memory.
+  Small networks, used for compression and optimisation, not for rendering.
+status: active
+stage: scouted
+gpu: torch
+phenomena: []
+artefacts:
+- kind: still
+  path: experiments/sphere-space/results/scenetex6/frames/sk_024.png
+  title: sk_024
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: experiments/sphere-space/results/scenetex6/frames/sk_013.png
+  title: sk_013
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: experiments/sphere-space/results/scenetex6/frames/sk_019.png
+  title: sk_019
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: experiments/sphere-space/results/scenetex6/frames/sk_010.png
+  title: sk_010
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: experiments/sphere-space/results/scenetex6/frames/sk_014.png
+  title: sk_014
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: experiments/sphere-space/results/scenetex6/frames/sk_021.png
+  title: sk_021
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: experiments/sphere-space/results/scenetex6/frames/sk_020.png
+  title: sk_020
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: experiments/sphere-space/results/scenetex6/frames/sk_012.png
+  title: sk_012
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: experiments/sphere-space/results/scenetex6/frames/sk_015.png
+  title: sk_015
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: experiments/sphere-space/results/scenetex6/frames/sk_017.png
+  title: sk_017
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: experiments/sphere-space/results/scenetex6/frames/sk_008.png
+  title: sk_008
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: experiments/sphere-space/results/scenetex6/frames/sk_023.png
+  title: sk_023
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+producers:
+  tape: ''
+  render: ''
+  figure: ''
+  lane: cpu
+  env: {}
+theses: []
+budget:
+  gpu_h: 0.0
+  cpu_h: 0.0
+  tts_chars: 0
+  llm_usd: 0.0
+  disk_gb: 0.0
+  prio_cap: 10
+kill: ''
+potential: 0
+notes: 'last commit 2026-08-11 | media on disk: {''clip'': 0, ''still'': 115, ''tape'': 0}'

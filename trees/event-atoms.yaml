@@ -1,0 +1,113 @@
+name: event-atoms
+path: /home/manuel/weichseltree/event-atoms
+remote: git@github.com-weichseltree:weichseltree/event-atoms.git
+question: 'Research code for world models on **ARC-AGI-3** and on a set of synthetic grid/physics benches.
+  The question the programme keeps circling: what representation of a transition actually transfers to
+  an unseen level, and what makes a learned model plannable rather than merely accurate.'
+status: active
+stage: scouted
+gpu: torch
+phenomena: []
+artefacts:
+- kind: still
+  path: results/A_line/a1_attribution.png
+  title: a1_attribution
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: results/A_line/a0_dial.png
+  title: a0_dial
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: clip
+  path: analysis/trace_video/out/m13-full.mp4
+  title: m13-full
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: clip
+  path: analysis/trace_video/out/m13-5-verdict.mp4
+  title: m13-5-verdict
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: clip
+  path: analysis/trace_video/out/m13-4-failure.mp4
+  title: m13-4-failure
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: clip
+  path: analysis/trace_video/out/m13-3-render.mp4
+  title: m13-3-render
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: clip
+  path: analysis/trace_video/out/m13-2-parse.mp4
+  title: m13-2-parse
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: clip
+  path: analysis/trace_video/out/m13-1-input.mp4
+  title: m13-1-input
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: references/papers/assets/2605.07278/fig_wall_tworoom_trajectory_overlays_enhanced.png
+  title: fig_wall_tworoom_trajectory_overlays_enhanced
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: references/papers/assets/2605.07278/fig_cube_rcaux_success_temporal_samples.png
+  title: fig_cube_rcaux_success_temporal_samples
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: references/papers/assets/2605.07278/fig_pusht_rcaux_success_temporal_samples.png
+  title: fig_pusht_rcaux_success_temporal_samples
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+- kind: still
+  path: references/papers/assets/2605.07278/fig_reacher_rcaux_success_temporal_samples.png
+  title: fig_reacher_rcaux_success_temporal_samples
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+producers:
+  tape: ''
+  render: ''
+  figure: ''
+  lane: cpu
+  env: {}
+theses: []
+budget:
+  gpu_h: 0.0
+  cpu_h: 0.0
+  tts_chars: 0
+  llm_usd: 0.0
+  disk_gb: 0.0
+  prio_cap: 10
+kill: ''
+potential: 0
+notes: 'last commit 2026-09-06 | media on disk: {''clip'': 6, ''still'': 297, ''tape'': 0} | ledger: 160.4
+  gpu-h, 52.2 cpu-h, 0.0 h on video, 264 jobs, 76 failed'

@@ -1,0 +1,48 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>orchard</title>
+<style>
+  :root { --bg:#0e1310; --panel:#161d18; --ink:#d9e2da; --dim:#8a978c; --leaf:#7fc97f; --warn:#e6b450; --bad:#e46c6c; }
+  body { margin:0; padding:20px 24px; background:var(--bg); color:var(--ink); font:14px/1.4 system-ui, sans-serif; }
+  h1 { font-weight:600; font-size:20px; margin:0 0 4px; } h1 span { color:var(--dim); font-weight:400; }
+  h2 { font-size:13px; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); margin:24px 0 8px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:16px; }
+  .panel { background:var(--panel); border-radius:8px; padding:12px 14px; overflow-x:auto; }
+  table { border-collapse:collapse; width:100%; } th, td { text-align:left; padding:3px 8px 3px 0; white-space:nowrap; }
+  th { color:var(--dim); font-weight:500; } td.num { text-align:right; font-variant-numeric:tabular-nums; }
+  .bar { height:6px; background:#243026; border-radius:3px; overflow:hidden; } .bar i { display:block; height:100%; background:var(--leaf); }
+  .bar i.warn { background:var(--warn); } .bar i.bad { background:var(--bad); }
+  .stage { color:var(--leaf); } .muted { color:var(--dim); }
+</style>
+<h1>orchard <span>· the fund and the studio · weichseltree</span></h1>
+<div class="muted" id="meta">loading…</div>
+<h2>Portfolio</h2><div class="panel"><table id="trees"></table></div>
+<div class="grid">
+  <div><h2>Capital, last 30 days</h2><div class="panel"><table id="spend"></table></div></div>
+  <div><h2>Quota and credit</h2><div class="panel" id="cards"></div></div>
+  <div><h2>GPU queue wait by tier</h2><div class="panel"><table id="wait"></table></div></div>
+  <div><h2>Running now</h2><div class="panel"><table id="running"></table></div></div>
+</div>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const row = (cells, cls=[]) => '<tr>' + cells.map((c,i)=>`<td class="${cls[i]||''}">${c}</td>`).join('') + '</tr>';
+const head = h => '<tr>' + h.map(x=>`<th>${x}</th>`).join('') + '</tr>';
+async function main(){
+  const [trees, led] = await Promise.all([fetch('/api/portfolio').then(r=>r.json()), fetch('/api/ledger').then(r=>r.json())]);
+  const recent = Object.fromEntries(led.spend_recent.map(s=>[s.repo,s]));
+  $('#meta').textContent = `${led.n_jobs} ledger records · expdash ${led.expdash_reachable?'reachable':'NOT reachable'} · video share ${(100*led.video_share.video_h/Math.max(1,led.video_share.total_h)).toFixed(0)}% of ${led.video_share.total_h.toFixed(0)} lane-hours`;
+  trees.sort((a,b)=>(b.potential-a.potential)||a.name.localeCompare(b.name));
+  $('#trees').innerHTML = head(['tree','status','stage','pot','theses','gpu h 30d','video h 30d','budget gpu h','question']) +
+    trees.map(t=>{const s=recent[t.name]; const st=(t.theses.map(x=>x.stage).concat([t.stage])).sort((a,b)=>STAGES.indexOf(b)-STAGES.indexOf(a))[0];
+      return row([esc(t.name),esc(t.status),`<span class="stage">${esc(st)}</span>`,t.potential||'',t.theses.length,(s?s.gpu_h:0).toFixed(1),(s?s.video_h:0).toFixed(1),t.budget.gpu_h||'<span class="muted">ask</span>',esc(t.question.slice(0,90))],['','','','num','num','num','num','num']);}).join('');
+  $('#spend').innerHTML = head(['repo','gpu h','cpu h','exprun h','video h','jobs','failed','waited h']) +
+    led.spend_recent.slice(0,14).map(s=>row([esc(s.repo),s.gpu_h.toFixed(1),s.cpu_h.toFixed(1),s.none_h.toFixed(1),s.video_h.toFixed(1),s.n,s.n_failed,s.wait_h.toFixed(0)],['','num','num','num','num','num','num','num'])).join('');
+  $('#cards').innerHTML = led.cards.filter(c=>c.kind!=='disk').map(c=>{const p=Math.min(100,c.percent||0); const cls=p>90?'bad':p>70?'warn':'';
+    return `<div style="margin:6px 0 10px"><div style="display:flex;justify-content:space-between"><span>${esc(c.label)}</span><span class="muted">${Number(c.used||0).toLocaleString()} / ${Number(c.limit||0).toLocaleString()} ${esc(c.unit||'')}</span></div><div class="bar"><i class="${cls}" style="width:${p}%"></i></div><div class="muted" style="font-size:12px">${esc(c.note||'')}</div></div>`;}).join('') || '<span class="muted">expdash not reachable</span>';
+  $('#wait').innerHTML = head(['tier','n','median min','p90 h','max h']) + Object.entries(led.queue_wait).sort().map(([t,v])=>row([t,v.n,v.median_min.toFixed(0),v.p90_h.toFixed(1),v.max_h.toFixed(1)],['','num','num','num','num'])).join('');
+  $('#running').innerHTML = head(['name','repo','box','lane','status','prio']) + (led.running.map(j=>row([esc(j.name),esc(j.repo),esc(j.box),j.lane,j.status,j.prio??''])).join('') || row(['<span class="muted">nothing on the lanes</span>']));
+}
+const STAGES=['scouted','planted','thesis','styleframe','animatic','greenlit','rendering','mastered','published','exhibited'];
+main().catch(e=>{$('#meta').textContent='error: '+e;});
+</script>

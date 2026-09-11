@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+results/
+!results/.gitkeep
+node_modules/
+dist/
+.wrangler/
+*.log
+.env
+secrets.env
+
+# operator-private notes (audits of private repos, transcripts)
+notes/
+spacetime/spacetime.local.json

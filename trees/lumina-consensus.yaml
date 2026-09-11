@@ -1,0 +1,26 @@
+name: lumina-consensus
+path: /home/manuel/weichseltree/lumina-consensus
+remote: git@github.com-weichseltree:weichseltree/lumina-consensus.git
+question: '**Dormant.** Last commit **2026-03-27**; a working prototype, not a product.'
+status: dormant
+stage: scouted
+gpu: none
+phenomena: []
+artefacts: []
+producers:
+  tape: ''
+  render: ''
+  figure: ''
+  lane: cpu
+  env: {}
+theses: []
+budget:
+  gpu_h: 0.0
+  cpu_h: 0.0
+  tts_chars: 0
+  llm_usd: 0.0
+  disk_gb: 0.0
+  prio_cap: 10
+kill: ''
+potential: 0
+notes: 'last commit 2026-08-18 | media on disk: {''clip'': 0, ''still'': 0, ''tape'': 0}'
