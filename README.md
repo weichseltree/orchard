@@ -93,3 +93,7 @@ and apply unchanged to every render the studio launches.
 SpacetimeDB for world state, Cloudflare for site, media and voice, no Google
 endpoints in the client so mainland China is not locked out. The home box only
 ever connects outward. [docs/HOSTING.md](docs/HOSTING.md).
+
+## License
+
+Apache-2.0. See [LICENSE](LICENSE).

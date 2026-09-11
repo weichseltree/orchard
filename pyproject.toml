@@ -3,6 +3,7 @@ name = "orchard"
 version = "0.1.0"
 description = "A fund and a studio for the weichseltree research repos: capital in, episodes out."
 requires-python = ">=3.12"
+license = "Apache-2.0"
 dependencies = [
     "pyyaml>=6",
     "pydantic>=2",

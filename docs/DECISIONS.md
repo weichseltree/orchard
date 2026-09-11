@@ -35,5 +35,5 @@ Append-only. A decision names the day, the ruling, and the alternative it beat.
 - **2026-09-11 · Federation and funding in kind**: forks run nodes, link by
   signed `node.json`, mirror bundles by hash, and fund trees by running their
   pinned code on their own GPU. Nodes only ever connect outward.
-- **2026-09-11 · License: open.** Which one is an open decision (Apache-2.0
-  recommended for a platform others host; AGPL-3.0 if forks must share back).
+- **2026-09-11 · License: Apache-2.0.** Beat AGPL-3.0; a platform others
+  host and fork needs the patent grant more than a share-back clause.
