@@ -217,8 +217,14 @@ reviewed. What each asks next:
     the gate and voice (Cloudflare Realtime at launch, LiveKit Cloud at
     scale, Whisper on Workers AI for commands, `claude-opus-5` behind a
     Worker for voice-to-action), the host in the browser, launch,
-    membership and the vote (Stripe, Kleinunternehmer), speech. Legal:
-    Impressum, Datenschutzerklärung, 14+ for the grove and 16+ for voice.
+    membership and the vote (Stripe), speech. Legal: Impressum,
+    Datenschutzerklärung, 14+ for the grove and 16+ for voice. **Correction
+    owed:** the spec assumed an Austrian sole trader, but the operator is
+    Weichseltree OÜ, Tallinn (another session's impressum page under
+    `grove/public/impressum/` says so); the Stripe, VAT, Impressum and
+    invoicing paragraphs must be redone for an Estonian OÜ selling to EU
+    consumers (OSS VAT, Estonian e-invoicing, the ECG duties still apply to
+    the Austrian audience).
 30. **brand/**: the package exists (tokens, voice, names); the hero still,
     the 20 s clip, the favicon and the sound cues are listed as missing and
     are made once, from the grove, after the palace's first look ruling.
