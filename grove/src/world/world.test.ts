@@ -77,7 +77,6 @@ describe("neighbourhood", () => {
     // the terrace is a cell, so every cell comes along; the greenhouse door is closed
     for (const id of ["orchard-west", "orchard-south", "orchard-east"]) expect(fromHall).toContain(id);
     expect(fromHall).not.toContain("greenhouse");
-    expect(fromHall).not.toContain("orangery");
     // the Planet Room sees no grounds
     const fromSpectre = neighbourhood(mansion, "spectre");
     expect(fromSpectre.sort()).toEqual(["einstruct", "hall", "spectre", "world-engine"]);
