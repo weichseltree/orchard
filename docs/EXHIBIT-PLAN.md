@@ -60,11 +60,45 @@ One block per tree, filled from the tree's answer. Empty until it answers.
 - room:
 
 ### phototroph
-- shows this week (first word): phototroph-04 (2026-09-12): at most two 1 Sep simulation clips (the-gradient, phototroph-cinematic) and their preview stills, pending whether they predate the physics fixes; the ~120 studio library clips are assembly tests, not footage.
-- mechanism of the mansion:
-- thesis:
-- needs:
-- room:
+Answered 2026-09-12 by phototroph-04; manifest at phototroph 524db21, zero
+artefacts, one thesis, resolves on the board and the harvest bundles nothing.
+- shows this week: nothing that should hang. The two simulation clips from
+  1 Sep predate four physics fixes (Q66, Q76, Q77, Q80), one ran at a flux
+  that does not bind, and both carry counter panels and per-species hue
+  (LAWS 7, 12). The 119 animatic clips are assembly tests, the stock clips
+  are fillers. The only stills on corrected physics are eight flat 854x480
+  previews of the dimer-split bake: material for a styleframe ruling, not
+  artefacts.
+- mechanism of the mansion: not tapes (2D, matter only, light-starved) but
+  spectral light. ptstudio's Mitsuba 3 spectral path (dispersive glass,
+  measured solar spectrum, rainbow phase function, beam emitters, light
+  tracing) is what would split sunlight into spectra on the palace floors.
+  It renders camera frames today; lightmap and probe baking would be new
+  work, uncosted.
+- thesis: h1-pigment. Shine one colour on a soup of atoms long enough: do
+  the clumps that form start catching that colour? Number: lit-minus-dark
+  pigment index over 8 seeds per arm against a threshold fixed before
+  launch. Picture: the same box lit and dark side by side; the null is
+  also the picture. Stage thesis, blocked by the Q77/Q42 rate decision.
+- needs: 20 CPU-h, 0 GPU, 2 GB, prio cap 5. In kind: Legion runs half of
+  H1's seeds from a pinned commit on the cpu lane; the members are
+  independent single-thread jobs. Tape export is a ~60-line CPU converter
+  from PTVF into spectre's writer, matter only (bonds and photons have no
+  slot in video/tape/1); dimer-split is motion-grade now and independent
+  of the rate decision; recorded flux members resume bit-exactly from
+  checkpoints, so a motion window costs minutes of CPU.
+- room: the 2D world as a floor about 7 by 4 m with a gallery above, light
+  entering by a clerestory along one long wall and leaving by the open
+  walls. Grey particles, hue only where one is excited. Today that is a
+  dim grey gas where clumps form and dissolve, which is the truthful
+  picture; after H1, two floors, lit and dark.
+- as the studio's donor: take storyboard, assembly, budget with measured
+  render coefficients, narrate with measured takes, the PTVF lift with its
+  detonated-frame guard, stock provenance, and check_runs.py (re-runs a
+  bake's command and requires bit-identical output). Leave the React
+  editor and server; keep Mitsuba as a plugin behind tapes. Lesson: check
+  a board's picture against a bake before narration.
+- pruned? Not yet. No episode until H1 reads; the kill says so.
 
 ### someotherlife
 - shows this week (first word): someotherlife-c6 (2026-09-12): nothing on disk as splat, still, clip or tape; Spike C has not run, so no captured room and no measured 6DoF budget. What exists is a playable WebXR room of draft proxies with a desktop fallback, 21 SVG glyphs and synthesized voice lines. Asked for the splat bundle spec it would design, the lift-ready client modules, and Spike C in budget terms.
@@ -77,6 +111,18 @@ One block per tree, filled from the tree's answer. Empty until it answers.
 
 Collected here as the answers come in; each is one `orchard exhibit hang
 <dir> --approve` or a verdict in the flat dashboard.
+
+- **phototroph, the rate decision (Q77/Q42).** Owner picks the collisional
+  rate with the derivation Q77 asks for, informed by H1's scan; then
+  goldens rebaselined, the Bose-Einstein gate green over 8 seeds, the dt
+  pair re-run, the witness tolerance pinned. Owner time, a separate
+  reviewing session, CPU hours. Nothing in phototroph moves before it.
+- **phototroph, one tape for the room.** Fund the ~60-line PTVF converter
+  and a motion-grade dimer-split window (minutes of CPU on exprun,
+  prio 5), so the tree has one honest thing to hang: the dim grey gas.
+  Recommended yes; it is independent of the rate decision.
+- **phototroph, the dimer-split previews.** Eight 854x480 stills as a
+  styleframe candidate on the review queue, or wait for the tape.
 
 ## Second wave
 
