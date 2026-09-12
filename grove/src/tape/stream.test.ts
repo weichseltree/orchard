@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import type { TapeVariant } from "./bundle";
 import { syntheticTape } from "./devtape";
@@ -12,7 +13,7 @@ const SLOTS = 16;
 const CHUNK_FRAMES = 4;
 const CHUNKS = 6;
 
-function build(): { variant: TapeVariant; files: Map<string, Uint8Array>; fetches: string[] } {
+function build(digests = false): { variant: TapeVariant; files: Map<string, Uint8Array>; fetches: string[] } {
   const tape = syntheticTape({
     slots: SLOTS,
     frames: CHUNK_FRAMES * CHUNKS,
@@ -29,7 +30,8 @@ function build(): { variant: TapeVariant; files: Map<string, Uint8Array>; fetche
     const bytes = encodeChunk({ n: SLOTS, frame0, t0: frame0 * 0.5, dt: 0.5, frames });
     const file = `vr-high/c${String(index).padStart(4, "0")}.bin`;
     files.set(file, bytes);
-    chunks.push({ file, frame0, frames: CHUNK_FRAMES, sha256: "" });
+    const sha256 = digests ? createHash("sha256").update(bytes).digest("hex") : "";
+    chunks.push({ file, frame0, frames: CHUNK_FRAMES, sha256 });
   }
   return {
     variant: {
@@ -47,8 +49,15 @@ function build(): { variant: TapeVariant; files: Map<string, Uint8Array>; fetche
   };
 }
 
-function streamOf(): { stream: TapeStream; fetches: string[] } {
-  const { variant, files, fetches } = build();
+function streamOf(
+  options: { digests?: boolean; corrupt?: string; transportVerifies?: boolean; errors?: string[] } = {},
+): { stream: TapeStream; fetches: string[] } {
+  const { variant, files, fetches } = build(options.digests);
+  if (options.corrupt) {
+    const bytes = files.get(options.corrupt)!.slice();
+    bytes[bytes.length - 1]! ^= 0xff;
+    files.set(options.corrupt, bytes);
+  }
   const fetchImpl = (async (input: string | URL | Request) => {
     const url = String(input);
     fetches.push(url);
@@ -62,7 +71,16 @@ function streamOf(): { stream: TapeStream; fetches: string[] } {
     } as unknown as Response;
   }) as unknown as typeof fetch;
   return {
-    stream: new TapeStream({ baseUrl: "https://media.test/x/", variant, maxResident: 3, fetchImpl }),
+    stream: new TapeStream({
+      baseUrl: "https://media.test/x/",
+      variant,
+      maxResident: 3,
+      fetchImpl,
+      ...(options.transportVerifies !== undefined
+        ? { transportVerifies: () => options.transportVerifies! }
+        : {}),
+      ...(options.errors ? { onError: (e: Error) => options.errors!.push(e.message) } : {}),
+    }),
     fetches,
   };
 }
@@ -135,5 +153,60 @@ describe("TapeStream", () => {
     expect(stream.frame(0)).toBeNull();
     expect(errors[0]).toMatch(/503/);
     expect(stream.stats.failed).toBeGreaterThan(0);
+  });
+
+  it("waits before asking again for a chunk that failed, instead of every frame", async () => {
+    const { variant } = build();
+    let calls = 0;
+    const stream = new TapeStream({
+      baseUrl: "https://media.test/x/",
+      variant,
+      fetchImpl: (async () => {
+        calls++;
+        throw new TypeError("Failed to fetch");
+      }) as unknown as typeof fetch,
+      onError: () => undefined,
+    });
+    stream.frame(0);
+    await settle();
+    for (let i = 0; i < 10; i++) {
+      stream.frame(0);
+      await settle();
+    }
+    expect(calls).toBe(1);
+  });
+
+  // Hashing is a Web Crypto promise, a few macrotasks in node.
+  const landed = async () => {
+    for (let i = 0; i < 5; i++) await settle();
+  };
+
+  it("decodes a chunk whose sha256 matches bundle.json", async () => {
+    const errors: string[] = [];
+    const { stream } = streamOf({ digests: true, errors });
+    stream.frame(0);
+    await landed();
+    expect(stream.frame(0)).not.toBeNull();
+    expect(errors).toEqual([]);
+  });
+
+  it("refuses a chunk whose bytes are not the ones bundle.json names", async () => {
+    const errors: string[] = [];
+    const { stream } = streamOf({ digests: true, corrupt: "vr-high/c0000.bin", errors });
+    stream.frame(0);
+    await landed();
+    expect(stream.frame(0)).toBeNull();
+    expect(errors[0]).toMatch(/c0000\.bin: sha256 does not match/);
+    expect(stream.stats.failed).toBe(1);
+  });
+
+  it("leaves the check to a service worker that already made it", async () => {
+    const errors: string[] = [];
+    const { stream } = streamOf({ digests: true, corrupt: "vr-high/c0000.bin", transportVerifies: true, errors });
+    stream.frame(0);
+    await landed();
+    // The worker would have refused these bytes; the stream does not hash twice.
+    expect(errors).toEqual([]);
+    expect(stream.stats.fetched).toBe(1);
   });
 });

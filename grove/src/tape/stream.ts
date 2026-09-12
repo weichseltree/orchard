@@ -1,3 +1,5 @@
+import { canHash, isSha256, sha256Hex } from "../sw/digest";
+import { pageIsControlled } from "../sw/register";
 import type { ChunkRef, TapeVariant } from "./bundle";
 import { TapeChunk, type TapeFrame } from "./decode";
 
@@ -19,6 +21,12 @@ export interface TapeStreamOptions {
   maxResident?: number;
   fetchImpl?: typeof fetch;
   onError?: (error: Error) => void;
+  /**
+   * True when something between here and R2 already checked each chunk's
+   * sha256: the service worker does, for a page it controls. Otherwise the
+   * stream hashes the chunk itself (a chunk is ~0.5 MB; cheap).
+   */
+  transportVerifies?: () => boolean;
 }
 
 interface Resident {
@@ -34,8 +42,15 @@ export class TapeStream {
   readonly #baseUrl: string;
   readonly #fetch: typeof fetch;
   readonly #onError: ((error: Error) => void) | undefined;
+  readonly #transportVerifies: () => boolean;
   readonly #resident = new Map<number, Resident>();
   readonly #inflight = new Map<number, AbortController>();
+  /**
+   * A chunk that failed is not asked for again before `at` (performance.now()),
+   * the wait doubling from 1 s to 30 s. Without it a chunk that can never
+   * load (a digest refused, a 404) is fetched again on every frame.
+   */
+  readonly #retry = new Map<number, { at: number; delay: number }>();
   #tick = 0;
   #lastFrame = -1;
   #disposed = false;
@@ -49,6 +64,7 @@ export class TapeStream {
     this.#baseUrl = options.baseUrl.endsWith("/") ? options.baseUrl : `${options.baseUrl}/`;
     this.#fetch = options.fetchImpl ?? globalThis.fetch.bind(globalThis);
     this.#onError = options.onError;
+    this.#transportVerifies = options.transportVerifies ?? pageIsControlled;
   }
 
   /** Index into `variant.chunks` for a tape-wide frame, or -1. */
@@ -86,6 +102,8 @@ export class TapeStream {
   request(index: number): void {
     if (this.#disposed) return;
     if (this.#resident.has(index) || this.#inflight.has(index)) return;
+    const retry = this.#retry.get(index);
+    if (retry && performance.now() < retry.at) return;
     const ref = this.variant.chunks[index];
     if (!ref) return;
     const controller = new AbortController();
@@ -129,9 +147,15 @@ export class TapeStream {
         signal: controller.signal,
         // Chunks are content-addressed; the browser may keep them forever.
         cache: "force-cache",
+      }).catch((error: unknown) => {
+        // A network error (and the service worker's refusal of a bad digest
+        // is one) says only "Failed to fetch"; say which chunk.
+        throw new Error(`chunk ${ref.file}: ${error instanceof Error ? error.message : String(error)}`);
       });
       if (!response.ok) throw new Error(`chunk ${ref.file}: HTTP ${response.status}`);
       const buffer = await response.arrayBuffer();
+      if (this.#disposed) return;
+      await this.#verify(ref, buffer);
       if (this.#disposed) return;
       const chunk = TapeChunk.decode(buffer);
       if (chunk.frame0 !== ref.frame0) {
@@ -140,14 +164,30 @@ export class TapeStream {
         );
       }
       this.#resident.set(index, { chunk, used: ++this.#tick });
+      this.#retry.delete(index);
       this.#fetched++;
       this.#evict();
     } catch (error) {
       if (controller.signal.aborted) return;
       this.#failed++;
+      const delay = Math.min(30_000, (this.#retry.get(index)?.delay ?? 500) * 2);
+      this.#retry.set(index, { at: performance.now() + delay, delay });
       this.#onError?.(error instanceof Error ? error : new Error(String(error)));
     } finally {
       this.#inflight.delete(index);
+    }
+  }
+
+  /**
+   * Refuses a chunk whose bytes are not the ones bundle.json names. Skipped
+   * when the service worker already checked (hashing twice buys nothing), when
+   * the bundle names no digest, and outside a secure context, which has no
+   * crypto.subtle (a LAN IP in `vite dev`).
+   */
+  async #verify(ref: ChunkRef, buffer: ArrayBuffer): Promise<void> {
+    if (!isSha256(ref.sha256) || !canHash() || this.#transportVerifies()) return;
+    if ((await sha256Hex(buffer)) !== ref.sha256.toLowerCase()) {
+      throw new Error(`chunk ${ref.file}: sha256 does not match bundle.json; not shown`);
     }
   }
 
