@@ -1,4 +1,5 @@
 import {
+  AgXToneMapping,
   Color,
   Group,
   PerspectiveCamera,
@@ -48,6 +49,13 @@ export function createView(
   });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, device.maxPixelRatio));
   renderer.setSize(window.innerWidth, window.innerHeight, false);
+  // Baked radiance is linear and often above 1 in sunlit rooms; without a
+  // tone curve the palace's cream walls clip to white (the charcoal hall only
+  // clipped in its sun pools). AgX is what the bakes' previews are judged
+  // with in Blender, so the client agrees with them. Exhibits (stills, video
+  // walls, tapes) opt out with toneMapped = false and keep their own values.
+  renderer.toneMapping = AgXToneMapping;
+  renderer.toneMappingExposure = 1.0;
   renderer.xr.enabled = true;
   renderer.xr.setReferenceSpaceType("local-floor");
   // Quest 3 has the fill rate; a sharp periphery is worth more than the frames
