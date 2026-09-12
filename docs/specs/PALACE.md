@@ -652,11 +652,18 @@ entire scene"), so the six questions of section 8 were answered by
 delegation (DECISIONS 2026-09-12) and `grove/tools/palace/palace.py` built
 the plan above in one evening. Where the build departs from the spec:
 
-- **Walls stand 10 cm outside their bounds** (`WALL_HALF`): two rooms
+- **Walls stand 10 cm inside their bounds** (`WALL_HALF`): two rooms
   sharing a plane had coplanar faces that shadowed each other black in the
-  bake, so each room's faces sit 20 cm apart and every doorway carries a
-  10 cm reveal on each side; the body clamp keeps the visitor inside the
-  bounds. Window reveals run 40 cm to meet the facade at x = -7.5.
+  bake, so each room's faces sit 20 cm apart (a wall that thick) and every
+  doorway carries a 10 cm reveal on each side, meeting at the bounds plane.
+  The first build stood them 10 cm *outside*, which put each neighbour's
+  side walls, floor strip, wainscot and cornice 20 cm into the next room
+  along every shared plane (Manuel saw the room behind sticking through the
+  wall, 2026-09-13); every room's geometry now lies within its own bounds
+  and `palace.py --check` verifies it before lane time is spent. Garden
+  front window reveals run from the face at x = -6.9 to the facade's outer
+  plane at -7.5; the facade's door thresholds are a 2 cm step; pilasters
+  keep clear of every still and video wall in the plan.
 - **The materials are the museum's, not the gallery palette**: cream
   stucco, a red-brown marble wainscot, grey-white marble dressings a step
   below the wall so the order reads, gilt capitals, crests and the
