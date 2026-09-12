@@ -119,6 +119,10 @@ Ordered. Items with a name in brackets wait on that person.
     extra channels, and the index's per-frame t instead of one mean dt
     (drift up to a tau inside a chunk). The poster labels time in "tau"
     whatever the header's `units` says; phototroph's unit is t0.
+19a. **bundle.json's `source.tree_commit`** still records the harvest HEAD
+    (spectre, on the trio): the manifest keeps the tree's commit since the
+    bug-2 fix, the bundle document does not; carry the artefact's commit
+    into the bundle when the manifest has one.
 19. **`<stem>.json` render sidecars** (spectre bug 4): carry beside the
     stock `<file>.json` sidecar, under a different key; the measured numbers
     live there.
