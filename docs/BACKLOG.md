@@ -2,14 +2,6 @@
 
 Ordered. Items with a name in brackets wait on that person.
 
-## Waiting on a deploy
-
-0. **[Manuel] `cd grove && pnpm deploy`**: the sky outside the windows and the
-   client that resolves hangings from the exhibit table are built, tested and
-   committed but not live. The harness refused the deploy command from the
-   agent session (production deploy); run it, or allow `pnpm deploy` for the
-   agent.
-
 ## Blocking the M0 definition of done
 
 1. **[Manuel] Enable R2** in the Cloudflare dashboard (R2 Object Storage,
@@ -36,9 +28,10 @@ Ordered. Items with a name in brackets wait on that person.
 4. ~~Hall windows read as black rectangles with a bright rim~~ — fixed
    2026-09-12 in the client: a gradient sky dome outside the mansion with the
    sun where the bake put it (`grove/src/world/sky.ts`, `sky` in
-   `mansion.json`; DECISIONS). **[Manuel] Deploy it**: `cd grove && pnpm
-   deploy` (LAWS 22, publishing needs approval). The dome's colours are a
-   first guess and belong to item 6.
+   `mansion.json`; DECISIONS). Deployed 2026-09-12 with the exhibit-table
+   client (`cd grove && pnpm run deploy`; `pnpm deploy` without `run` is
+   pnpm's own workspace command and fails). The dome's colours are a first
+   guess and belong to item 6.
 5. Lightmap ships as a 2.2 MB PNG; produce KTX2 (UASTC) when `toktx` is
    installed (it is not on this box; KTX-Software ships a `.deb`), and a
    1024² tier for phones.
