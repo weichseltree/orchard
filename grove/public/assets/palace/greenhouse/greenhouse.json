@@ -1,0 +1,164 @@
+{
+  "schema": "orchard/room/1",
+  "asset": "greenhouse",
+  "generated_by": "grove/tools/palace/palace.py",
+  "script_sha256": "dfbb02eb772225842f73d7e08f2a352923145be95baad8604988c160da150501",
+  "blender": "4.2.1 LTS",
+  "git": {
+    "commit": "f5c189e18ddb52f0f5c59d47b83a587aa6a3bc39",
+    "dirty": true
+  },
+  "generated_at_utc": "2026-09-12T23:00:29Z",
+  "look": "white, gold and marble (Naturhistorisches Museum), ruled 2026-09-12",
+  "bake": {
+    "engine": "cycles",
+    "type": "DIFFUSE",
+    "passes": [
+      "direct",
+      "indirect"
+    ],
+    "colour_pass": false,
+    "samples": 512,
+    "resolution": 1024,
+    "margin_px": 8,
+    "uv_layer": "uv2",
+    "device": "CPU",
+    "threads": 16,
+    "denoise": "OpenImageDenoise via the compositor Denoise node",
+    "seconds_bake": 237.55,
+    "seconds_denoise": 0.98,
+    "noise_metric": 0.009268,
+    "skipped": false,
+    "seconds_preview": 10.05,
+    "seconds_wall_clock": 252.81
+  },
+  "lightmap": {
+    "file": "lightmap.png",
+    "ktx2": "lightmap.ktx2",
+    "ktx2_phone": "lightmap-1024.ktx2",
+    "scale": 0.053192,
+    "three_light_map_intensity": 0.167108,
+    "coverage": 0.7205,
+    "clipped_fraction": 0.000552,
+    "binding": "texture.colorSpace = SRGBColorSpace, flipY = false, channel = 1, material.lightMapIntensity = three_light_map_intensity"
+  },
+  "geometry": {
+    "units": "metres",
+    "type": "greenhouse",
+    "bounds_gltf": {
+      "min": [
+        7,
+        0,
+        2
+      ],
+      "max": [
+        15,
+        5,
+        10
+      ]
+    },
+    "height": 5.0,
+    "faces": 180,
+    "surface_area_m2": 329.0,
+    "doorways": [
+      {
+        "to": "hall",
+        "axis": "x",
+        "at": 7,
+        "center": 6,
+        "width": 1.6,
+        "height": 3.0,
+        "closed": true,
+        "admin": true
+      }
+    ],
+    "windows": [
+      {
+        "wall": "+x",
+        "bays": 2,
+        "width": 2.0,
+        "sill": 1.0,
+        "head": 4.2
+      },
+      {
+        "wall": "-y",
+        "bays": 2,
+        "width": 2.0,
+        "sill": 1.0,
+        "head": 4.2
+      }
+    ],
+    "posters": [],
+    "style": {
+      "h": 5.0,
+      "wainscot": 0.0,
+      "cornice": [
+        4.7,
+        4.85
+      ],
+      "coffer": 2.6,
+      "floor": "floor_stone",
+      "wall": "wall_limewash"
+    },
+    "floor": "floor_stone",
+    "wall": "wall_limewash",
+    "materials": [
+      "greenhouse_floor",
+      "greenhouse_wall",
+      "greenhouse_ceiling",
+      "greenhouse_trim",
+      "greenhouse_wainscot",
+      "greenhouse_pilaster",
+      "greenhouse_gilt",
+      "greenhouse_panel",
+      "greenhouse_leaf"
+    ]
+  },
+  "lighting": {
+    "sun_direction_blender": [
+      0.7796,
+      0.2999,
+      -0.5498
+    ],
+    "sun_strength": 3.6,
+    "world": "Nishita sky",
+    "world_strength": 0.85,
+    "occluders": [
+      "einstruct",
+      "gallery",
+      "greenhouse",
+      "hall",
+      "orangery",
+      "orchard-east",
+      "orchard-south",
+      "orchard-west",
+      "parterre",
+      "phototroph",
+      "spectre",
+      "terrace",
+      "world-engine"
+    ]
+  },
+  "files": {
+    "greenhouse.glb": {
+      "bytes": 199504,
+      "sha256": "85550dfa0d234922c29f135173ce80f24fbe779458cbd37dd83bb05d0e930595"
+    },
+    "lightmap.png": {
+      "bytes": 996881,
+      "sha256": "7da68dbb5e42aa2aea8afe9842cefb809205885c18d240cf0cb6139b798da3f6"
+    },
+    "lightmap.ktx2": {
+      "bytes": 738010,
+      "sha256": "a82251ede4b3de2af72d5f5b0ceb1544bdf9a1978ad0f32648935d99868fb73c"
+    },
+    "lightmap-1024.ktx2": {
+      "bytes": 738010,
+      "sha256": "a82251ede4b3de2af72d5f5b0ceb1544bdf9a1978ad0f32648935d99868fb73c"
+    },
+    "preview.png": {
+      "bytes": 706131,
+      "sha256": "d1c9e8612116ab1ef75ecb128384d1f63681e0fd8bc468d323f666dad7953350"
+    }
+  }
+}
