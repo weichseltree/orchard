@@ -535,6 +535,70 @@ configuration of §3.4.
 > the config that won and the diff against the default, as the JSON of
 > §3.4, so it can be shipped as the new default without the LLM.
 
+### 4.6 arcedit's critique of §4.5, adopted (2026-09-12)
+
+The arcedit session read §4.5 and reshaped it; the reshaped design below
+replaces §4.5 where they disagree.
+
+- **The decision unit is a session, so the observation is a session
+  summary**, not a 100 ms tick vector. About 40 floats: time to first
+  success per verb (7), failures per gesture (12), hint exposure seconds
+  per verb (7), platform one-hot (4), frame p95, mastery state at start
+  (7). The tick stream stays in the recorder as data; it is not the RL
+  interface.
+- **No free rebindings.** 96 gesture-to-verb rebindings are mostly
+  catastrophic (a verb bound to nothing) and never safely explorable;
+  replace them with 3 to 5 binding presets per platform. The action space
+  is then 27 threshold moves, the presets, 6 hint toggles and no-op.
+- **The synthetic behaviour model must not contain the answer.** A
+  resampler in which "looser thresholds succeed more" makes "loosen
+  everything" optimal by construction, and a learner that beats the
+  loosen-on-failure baseline on such data has learned the model's
+  assumption, not visitors. The generator carries K latent visitor types
+  (fast, slow, hands-averse, controller-only) with explicit parameters and
+  a seed, so every number names its generator version.
+- **Score the degenerate configs before any learner exists**: all hints
+  off, every threshold at maximum, bindings to none, against the default.
+  A reward that pays for hiding verbs (fewer failures) is the shape of a
+  painter that never submits.
+- **Validate per verb, per platform, at p50 and p90** on held-out
+  sessions; the pooled median is dominated by look and go, which no
+  config changes. One falsification test no resampler passes by
+  construction: a real A/B of one threshold on about 20 sessions, checking
+  the sign of the model's predicted delta.
+- **Budget reality.** A config policy learned by RL would need on the
+  order of a million sessions; real recordings will be tens to hundreds.
+  RL over configs is therefore a synthetic-data method whose transfer is
+  the model's fidelity. On real data the right learner is a bandit or
+  cross-entropy method over the nine thresholds, which needs hundreds of
+  sessions. A generic PPO loop over the summary vector is about 150 lines
+  and belongs in grove/sim; arcedit's own measurement scripts do not
+  transfer.
+- **Two levels.** The outer level configures the grove (few parameters,
+  feasible on real data). The inner level is a visitor that learns the
+  seven verbs from the hints: observation is what the visitor sees
+  (pointed kind, visible hint objects, last sounds), actions are the
+  gesture primitives, reward the four tasks, and its time-to-first-mechanic
+  under a config is the ground truth the outer level needs. The inner
+  level is the object that transfers to arcedit's interactive-games goal
+  and stays with that session.
+
+Plan, in arcedit's milestone style, all CPU under `exprun`:
+
+| stage | what | gate |
+|---|---|---|
+| S0 | Parquet schemas for sessions and summaries; `gestureconfig.json` to and from a config vector; generator v0 with K=4 seeded visitor types | schema round-trip; determinism by seed; under the default config the median visitor reproduces §1.4's targets within 20% |
+| S1 | Reward landscape, no learner: 256 random configs; the three degenerate configs against the default; time to competence by verb | reward std of zero or a degenerate config at or above the default means the reward is fixed before S2 |
+| S2 | The model ceiling: cross-entropy over the 9 thresholds and the presets, 5 seeds; baselines scored against it | loosen-on-failure within 10% of the ceiling: no RL, ship threshold tuning by bandit and stop |
+| S3 | Trustworthiness before any real recording is used: rank correlation of 20 configs between generator v0 and a perturbed v1 at or above 0.8; per-verb p50 and p90 within 20% on the first 50 real sessions, held out; the sign test on 2 of 3 thresholds tried in production | real recordings enter training only after the sign test |
+| S4 | Only if S2 shows a gap above 10%: PPO over the summary vector, 3 seeds | beats loosen-on-failure by 10% on held-out synthetic and does not lose to the bandit, else RL is dropped here |
+| S5 | The visitor agent, the inner level; registered separately | a learned visitor reaches all seven verbs from hints alone |
+
+Priority: arcedit's own gate (C0 learned from reward) comes first and is
+mid-experiment; S0 to S2 are independent of its GPU work and can go to
+another session with this plan; S5 stays with arcedit. Estimated build for
+S0 to S2: two to three days of CPU work.
+
 ## 5. The desktop UI
 
 One panel, opened by the gear at top right or Escape, with four tabs; the

@@ -180,3 +180,12 @@ Append-only. A decision names the day, the ruling, and the alternative it beat.
   with the publisher; `bootstrap_admin` (first caller wins on an empty list)
   is gone, because a `--delete-data` republish would have opened it to any
   visitor.
+- **2026-09-12 · The interaction harness is a bandit first, RL only if it
+  shows headroom.** arcedit's critique of INTERACTION.md §4.5, adopted as
+  §4.6: session summaries as the observation, binding presets instead of
+  free rebindings, degenerate configs scored before any learner, per-verb
+  validation at p50 and p90, a synthetic generator with seeded visitor
+  types that does not contain the answer, and a two-level design in which
+  the learnable, transfer-relevant object is a visitor that learns the
+  verbs from hints. Stages S0 to S2 may run in any session; the visitor
+  agent stays with arcedit, behind its own gate.
