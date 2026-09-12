@@ -65,14 +65,14 @@ const hud = new Hud(hudRoot, {
   onEnterVr: () => void enterVr(),
   onTogglePlay: () => commands.togglePlay(),
   onScrub: (fraction) => {
-    for (const tape of world?.tapes ?? []) tape.scrubToFraction(fraction);
+    for (const tape of world?.tapes ?? []) tape?.scrubToFraction(fraction);
     scrubbingUntil = performance.now() + 400;
   },
   onScrubEnd: () => {
     scrubbingUntil = 0;
   },
   onSpeed: (speed) => {
-    for (const tape of world?.tapes ?? []) tape.setSpeed(speed);
+    for (const tape of world?.tapes ?? []) tape?.setSpeed(speed);
     hud.setSpeed(speed);
   },
   onUnmute: () => void toggleAudio(),
@@ -126,17 +126,17 @@ const commands: Commands = {
     const tape = world?.tape;
     if (!tape) return;
     const playing = tape.togglePlay();
-    for (const other of world?.tapes.slice(1) ?? []) other.setPlaying(playing);
+    for (const other of world?.tapes.slice(1) ?? []) other?.setPlaying(playing);
     hud.setPlaying(playing);
   },
   nudgeFrames: (delta) => {
-    for (const tape of world?.tapes ?? []) tape.nudgeFrames(delta);
+    for (const tape of world?.tapes ?? []) tape?.nudgeFrames(delta);
   },
   cycleSpeed: () => {
     const tape = world?.tape;
     if (!tape) return;
     const speed = tape.cycleSpeed();
-    for (const other of world?.tapes.slice(1) ?? []) other.setSpeed(speed);
+    for (const other of world?.tapes.slice(1) ?? []) other?.setSpeed(speed);
     hud.setSpeed(speed);
     notice(`${speed}x`);
   },
@@ -325,6 +325,9 @@ view.start((dt) => {
   const tape = nearestTape();
   if (tape) {
     for (const each of world?.tapes ?? []) {
+      // A slot still loading is null; one throw here would skip presence and
+      // the HUD below for every frame until it lands.
+      if (!each) continue;
       if (input.scrub !== 0) each.scrubBySeconds(input.scrub * dt * 4);
       each.update(dt);
     }

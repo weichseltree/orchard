@@ -37,8 +37,12 @@ export interface BuildWorldOptions {
 
 export interface BuiltWorld {
   group: Group;
-  /** Every tape volume, in hanging order; the HUD's transport drives them all in step. */
-  tapes: TapeExhibit[];
+  /**
+   * Every tape volume, in hanging order; the HUD's transport drives them all in
+   * step. A slot is null while its tape is still loading (and until every
+   * hanging has settled), so every loop over this skips nulls.
+   */
+  tapes: Array<TapeExhibit | null>;
   /** The first tape, for the HUD's readouts. */
   readonly tape: TapeExhibit | null;
   videos: VideoWall[];
@@ -186,7 +190,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
       }
       // Each list fills as its items land; the arrays are shared by reference
       // so the HUD sees a tape the moment it is in.
-      world.tapes = tapesByOrder as TapeExhibit[];
+      world.tapes = tapesByOrder;
       world.videos = videosByOrder as VideoWall[];
       world.stills = stillsByOrder as StillPanel[];
       await Promise.all(pending);
@@ -196,7 +200,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
     },
     dispose() {
       sky?.dispose();
-      for (const tape of world.tapes) tape.dispose();
+      for (const tape of world.tapes) tape?.dispose();
       for (const video of world.videos) video.dispose();
       for (const still of world.stills) still.dispose();
     },
