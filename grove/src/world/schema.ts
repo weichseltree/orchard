@@ -76,6 +76,8 @@ export const TapeHangingSchema = z.looseObject({
   longSideMeters: z.number().positive().default(6),
   /** Force a bundle variant (e.g. "phone" for a tape seen only from afar); empty picks by device tier. */
   variant: z.string().default(""),
+  /** Colours by species index, CSS; a tape whose species mean something names them (LAWS 12). */
+  palette: z.array(z.string()).default([]),
   /** Point size in pixels at 1 m; a tape of a few particles wants a larger one. */
   pointSize: z.number().positive().default(14),
   pedestal: z

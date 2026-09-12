@@ -914,7 +914,11 @@
             0,
             0
           ],
-          "longSideMeters": 3.6
+          "longSideMeters": 3.6,
+          "palette": [
+            "#5e4b3e",
+            "#ebe6de"
+          ]
         },
         {
           "id": "spectre-chi6",
@@ -938,7 +942,11 @@
             0,
             0
           ],
-          "longSideMeters": 3.6
+          "longSideMeters": 3.6,
+          "palette": [
+            "#5e4b3e",
+            "#ebe6de"
+          ]
         },
         {
           "id": "spectre-chi12",
@@ -962,7 +970,11 @@
             0,
             0
           ],
-          "longSideMeters": 3.6
+          "longSideMeters": 3.6,
+          "palette": [
+            "#5e4b3e",
+            "#ebe6de"
+          ]
         },
         {
           "id": "spectre-wall",
@@ -1210,7 +1222,11 @@
           ],
           "longSideMeters": 14,
           "pointSize": 600,
-          "variant": "phone"
+          "variant": "phone",
+          "palette": [
+            "#5e4b3e",
+            "#ebe6de"
+          ]
         }
       ]
     },

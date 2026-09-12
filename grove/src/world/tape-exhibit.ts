@@ -177,6 +177,7 @@ export class TapeExhibit {
       speciesCount: Math.max(1, bundle.species_names.length),
       pixelRatio: options.pixelRatio,
       pointSize: options.hanging.pointSize,
+      palette: options.hanging.palette,
     });
     const tl = timeline(picked.variant.frames, picked.variant.dt_tau, picked.variant.t0_tau);
     stream.request(0);

@@ -1,5 +1,4 @@
 import {
-  AdditiveBlending,
   Box3,
   BufferAttribute,
   BufferGeometry,
@@ -55,15 +54,25 @@ uniform float uOpacity;
 varying vec3 vColor;
 varying float vAlive;
 
+// Sphere impostors (spectre's design at film-final): each point is a lit ball,
+// so a heavy core reads as a body with a front and a back, not a flat disc.
+// A warm key from behind-left gives the limb, a dim cool fill the shadow side.
+const vec3 KEY_DIR = vec3(-0.45, 0.35, -0.82);
+const vec3 KEY = vec3(1.0, 0.84, 0.64);
+const vec3 FILL_DIR = vec3(0.35, 0.55, 0.76);
+const vec3 FILL = vec3(0.22, 0.26, 0.42);
+
 void main() {
   // A dead slot keeps its last position; it must not be drawn there.
   if (vAlive < 0.5) discard;
-  vec2 d = gl_PointCoord - vec2(0.5);
+  vec2 d = (gl_PointCoord - vec2(0.5)) * 2.0;
   float r2 = dot(d, d);
-  if (r2 > 0.25) discard;
-  // Soft edge: no hard clipping boundary anywhere in the picture (LAWS 11).
-  float a = smoothstep(0.25, 0.015, r2);
-  gl_FragColor = vec4(vColor, a * uOpacity);
+  if (r2 > 1.0) discard;
+  vec3 n = vec3(d.x, -d.y, sqrt(1.0 - r2));
+  float key = max(dot(n, normalize(KEY_DIR)), 0.0);
+  float fill = max(dot(n, normalize(FILL_DIR)), 0.0);
+  vec3 lit = vColor * (KEY * key * 1.4 + FILL * fill + vec3(0.06));
+  gl_FragColor = vec4(lit, uOpacity);
 }
 `;
 
@@ -89,6 +98,12 @@ export interface TapeVolumeOptions {
   pixelRatio: number;
   /** Screen pixels a particle covers at one metre. */
   pointSize?: number;
+  /**
+   * Colours by species index, CSS strings. A tape whose species mean
+   * something (spectre's heavy and light) names them from the hanging;
+   * absent, the greys-plus-green default.
+   */
+  palette?: readonly string[];
 }
 
 export class TapeVolume {
@@ -131,8 +146,10 @@ export class TapeVolume {
     this.#geometry.boundingSphere = null;
 
     const palette: Color[] = [];
+    const given = options.palette ?? [];
     for (let i = 0; i < MAX_SPECIES; i++) {
-      palette.push(new Color(DEFAULT_PALETTE[i % DEFAULT_PALETTE.length] as string));
+      const css = given[i] ?? DEFAULT_PALETTE[i % DEFAULT_PALETTE.length]!;
+      palette.push(new Color(css));
     }
 
     this.#material = new ShaderMaterial({
@@ -145,9 +162,11 @@ export class TapeVolume {
         uPalette: { value: palette },
         uOpacity: { value: 0.95 },
       },
-      transparent: true,
-      depthWrite: false,
-      blending: options.speciesCount > 1 ? NormalBlending : AdditiveBlending,
+      // Opaque lit balls with depth: a far point can no longer paint over a
+      // near one, whatever its slot index.
+      transparent: false,
+      depthWrite: true,
+      blending: NormalBlending,
     });
 
     this.points = new Points(this.#geometry, this.#material);
