@@ -65,7 +65,7 @@ def log(msg):
 # --------------------------------------------------------------------------
 # part -> (linear albedo, roughness, texture name or None, tile metres, metallic)
 LOOK = {
-    "floor_marble":  ((0.62, 0.60, 0.56), 0.18, "floor_pattern", 4.0, 0.0),
+    "floor_marble":  ((0.62, 0.60, 0.56), 0.18, "floor_pattern", 6.0, 0.0),
     "floor_parquet": ((0.30, 0.20, 0.12), 0.45, "parquet", 2.4, 0.0),
     "floor_stone":   ((0.42, 0.41, 0.38), 0.70, "stone", 2.0, 0.0),
     "floor_dark":    ((0.045, 0.045, 0.05), 0.25, None, 1.0, 0.0),
@@ -74,8 +74,8 @@ LOOK = {
     "wall_dark":     ((0.02, 0.02, 0.025), 0.95, None, 1.0, 0.0),
     "ceiling":       ((0.74, 0.72, 0.68), 0.92, None, 1.0, 0.0),
     "ceiling_dark":  ((0.015, 0.015, 0.02), 0.95, None, 1.0, 0.0),
-    "marble_white":  ((0.60, 0.59, 0.57), 0.30, "marble_white", 2.0, 0.0),
-    "marble_red":    ((0.30, 0.14, 0.11), 0.28, "marble_red", 2.0, 0.0),
+    "marble_white":  ((0.60, 0.59, 0.57), 0.30, "marble_white", 1.5, 0.0),
+    "marble_red":    ((0.30, 0.14, 0.11), 0.28, "marble_red", 1.5, 0.0),
     "gilt":          ((0.85, 0.65, 0.30), 0.35, None, 1.0, 1.0),
     "panel":         ((0.78, 0.77, 0.74), 0.92, None, 1.0, 0.0),
     "door_leaf":     ((0.18, 0.11, 0.07), 0.55, "parquet", 1.2, 0.0),
@@ -136,14 +136,18 @@ def _fbm(px, rng, octaves=6, base=4):
     return out / tot
 
 
-def marble(px, rng, base, vein, vein_width=0.05, warp=0.9, veins=5.0):
-    n = _fbm(px, rng)
-    w = _fbm(px, rng, octaves=4, base=2)
+def marble(px, rng, base, vein, vein_width=0.03, warp=2.2, veins=7.0, strength=0.55):
+    """Real marble: a few thin, strongly warped veins over a soft mottle, not
+    stripes. `strength` scales how far a vein departs from the base."""
+    n = _fbm(px, rng, octaves=7, base=3)
+    w = _fbm(px, rng, octaves=5, base=2)
     xs = np.linspace(0, 1, px, endpoint=False)
-    phase = xs[:, None] * veins * 2 * math.pi + warp * 12.0 * (n - 0.5) + 3.0 * (w - 0.5)
+    phase = xs[:, None] * veins * 2 * math.pi + warp * 12.0 * (n - 0.5) + 9.0 * (w - 0.5)
     v = np.abs(np.sin(phase))
-    v = np.exp(-((1 - v) / vein_width) ** 2)           # thin bright lines where sin ~ 1
-    mottle = 0.86 + 0.28 * (n - 0.5)
+    v = np.exp(-((1 - v) / vein_width) ** 2) * strength
+    fine = _fbm(px, rng, octaves=4, base=24)
+    v = v * (0.6 + 0.8 * fine)                          # veins fade in and out along their length
+    mottle = 0.92 + 0.16 * (n - 0.5)
     rgb = np.array(base, dtype=np.float32)[None, None, :] * mottle[..., None]
     rgb = rgb * (1 - v[..., None]) + np.array(vein, dtype=np.float32)[None, None, :] * v[..., None]
     return np.clip(rgb, 0, 1)
@@ -152,14 +156,15 @@ def marble(px, rng, base, vein, vein_width=0.05, warp=0.9, veins=5.0):
 def floor_pattern(px, rng):
     """Light marble field, a dark-grey diagonal grid of inlay bands, dark
     border squares at the crossings: the museum's floor, simplified."""
-    light = marble(px, rng, (0.66, 0.64, 0.60), (0.50, 0.49, 0.47), veins=3.0)
-    dark = marble(px, rng, (0.10, 0.10, 0.11), (0.22, 0.22, 0.23), veins=4.0)
+    light = marble(px, rng, (0.66, 0.64, 0.60), (0.46, 0.45, 0.44), veins=5.0, strength=0.4)
+    dark = marble(px, rng, (0.10, 0.10, 0.11), (0.24, 0.24, 0.25), veins=6.0, strength=0.5)
     xs = np.linspace(0, 1, px, endpoint=False)
     u, v = xs[:, None], xs[None, :]
-    band = 0.028
-    d1 = np.abs(((u + v) % 0.5) - 0.25) < band
-    d2 = np.abs(((u - v) % 0.5) - 0.25) < band
-    sq = (np.abs((u % 0.5) - 0.25) < 0.06) & (np.abs((v % 0.5) - 0.25) < 0.06)
+    # a 6 m tile: 1.5 m diagonal lattice of 7 cm bands with a 24 cm square at each crossing
+    band = 0.006
+    d1 = np.abs(((u + v) % 0.25) - 0.125) < band
+    d2 = np.abs(((u - v) % 0.25) - 0.125) < band
+    sq = (np.abs((u % 0.25) - 0.125) < 0.02) & (np.abs((v % 0.25) - 0.125) < 0.02)
     m = (d1 | d2 | sq)[..., None]
     return np.where(m, dark, light)
 
@@ -193,8 +198,8 @@ def make_textures(out_dir, px=1024):
     os.makedirs(out_dir, exist_ok=True)
     rng = np.random.default_rng(7)
     gens = {
-        "marble_white": lambda: marble(px, rng, (0.62, 0.61, 0.59), (0.36, 0.36, 0.38), veins=4.0),
-        "marble_red": lambda: marble(px, rng, (0.30, 0.13, 0.10), (0.62, 0.52, 0.46), vein_width=0.04, veins=6.0),
+        "marble_white": lambda: marble(px, rng, (0.63, 0.62, 0.60), (0.40, 0.40, 0.42), veins=6.0, strength=0.5),
+        "marble_red": lambda: marble(px, rng, (0.30, 0.13, 0.10), (0.58, 0.48, 0.42), vein_width=0.025, veins=8.0, strength=0.45),
         "floor_pattern": lambda: floor_pattern(px, rng),
         "parquet": lambda: parquet(px, rng),
         "stone": lambda: stone(px, rng),
@@ -452,7 +457,7 @@ def build_room(plan):
     b.quad((plan.x0, plan.y0, 0.0), (W, 0, 0), (0, D, 0), P_FLOOR, want=(0, 0, 1))
 
     holes_by_wall = {w: [] for w in ("+x", "+y", "-x", "-y")}
-    reveals = []          # (wall, hole, depth, sides, mat)
+    reveals = []          # (wall, hole, depth, sides, mat, kind)
     surrounds = []
     leaves = []
     markers = []
@@ -467,19 +472,19 @@ def build_room(plan):
         else:
             holes_by_wall[wall].append(hole)
             if plan.id < d["to"]:
-                reveals.append((wall, hole, DOOR_DEPTH, "lrt", P_TRIM))
+                reveals.append((wall, hole, DOOR_DEPTH, "lrt", P_TRIM, "door"))
         surrounds.append((wall, hole))
         markers.append(("door", d, wall, hole))
     for wall, hole, depth in plan.window_holes():
         holes_by_wall[wall].append(hole)
-        reveals.append((wall, hole, depth, "lrtb", P_TRIM))
+        reveals.append((wall, hole, depth, "lrtb", P_TRIM, "window"))
         markers.append(("window", None, wall, hole))
     for k, p in enumerate(plan.posters):
         wall = p["wall"]
         u = plan.u_of(wall, y=-p["center"]) if wall in ("+x", "-x") else plan.u_of(wall, x=p["center"])
         hole = (u - p["width"] / 2, u + p["width"] / 2, p["z0"], p["z0"] + p["height"])
         holes_by_wall[wall].append(hole)
-        reveals.append((wall, hole, PANEL_DEPTH, "lrtb", P_TRIM))
+        reveals.append((wall, hole, PANEL_DEPTH, "lrtb", P_TRIM, "poster"))
         markers.append(("poster", k, wall, hole))
     for nch in plan.niches:
         wall = nch["wall"]
@@ -487,14 +492,14 @@ def build_room(plan):
             u = plan.u_of(wall, y=-c) if wall in ("+x", "-x") else plan.u_of(wall, x=c)
             hole = (u - nch["width"] / 2, u + nch["width"] / 2, 0.0, nch["height"])
             holes_by_wall[wall].append(hole)
-            reveals.append((wall, hole, nch["depth"], "lrt", P_TRIM))
+            reveals.append((wall, hole, nch["depth"], "lrt", P_TRIM, "niche"))
             markers.append(("niche", nch, wall, hole))
 
     for wall in ("+x", "+y", "-x", "-y"):
         build_wall(b, plan, wall, holes_by_wall[wall])
     build_corner_caps(b, plan)
 
-    for wall, hole, depth, sides, mat in reveals:
+    for wall, hole, depth, sides, mat, kind in reveals:
         A, B = plan.walls()[wall]
         o = Vector((A[0], A[1], 0.0))
         u = Vector((B[0] - A[0], B[1] - A[1], 0.0))
@@ -504,10 +509,14 @@ def build_room(plan):
         n = Vector(plan.interior_normal(wall))
         uh = u.normalized()
         back = o + uh * u0 + Z * z0 - n * depth
-        if sides == "lrt":                                        # a doorway: threshold strip
+        if kind == "door":                                        # a doorway: threshold strip, open beyond
             b.quad(o + uh * u0, uh * (u1 - u0), -n * depth, P_TRIM, want=Z)
-        else:                                                     # a recess: its back face
-            b.quad(back, uh * (u1 - u0), Z * (z1 - z0), P_PANEL if depth <= PANEL_DEPTH + EPS else P_WALL, want=n)
+        elif kind == "niche":                                     # a niche: floor and back
+            b.quad(o + uh * u0, uh * (u1 - u0), -n * depth, P_FLOOR, want=Z)
+            b.quad(back, uh * (u1 - u0), Z * (z1 - z0), P_WALL, want=n)
+        elif kind == "poster":                                    # a shallow recess: the panel face
+            b.quad(back, uh * (u1 - u0), Z * (z1 - z0), P_PANEL, want=n)
+        # a window stays an open aperture: the sun and sky come in through it
     for wall, hole in leaves:
         A, B = plan.walls()[wall]
         o = Vector((A[0], A[1], 0.0))

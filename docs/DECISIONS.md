@@ -209,3 +209,17 @@ Append-only. A decision names the day, the ruling, and the alternative it beat.
   other rooms freeze and show posters. Scrubbing still moves every tape so
   shared clocks stay aligned. The first state of DEVICE-TIERS.md's
   lifecycle; the rest follows its migration list.
+- **2026-09-12 · The palace look: white, gold and marble.** Manuel's
+  ruling, in the spirit of the Naturhistorisches Museum Wien, with the
+  choices delegated ("choose yourself instead of waiting for me. Build the
+  entire scene"). Chosen: cream stucco walls, a red-brown marble wainscot,
+  pale veined-marble dressings, pilasters and reveals with gilt capitals,
+  crests and a gilt cornice bead, a light marble floor with a dark diagonal
+  inlay lattice in the hall and gallery, dark oak parquet in the state
+  rooms, stone flags in the orangery and greenhouse, white coffered
+  ceilings; the Planet Room stays near-black. This supersedes the gallery
+  palette for the interiors; the six open questions of PALACE.md are
+  answered by the same delegation: grey-white limewash outside, fruit
+  season, the moon shown, French doors yes, the orangery limewashed,
+  closed doors for unearned rooms. Every texture is generated in the
+  generator (value-noise marble), nothing lifted.
