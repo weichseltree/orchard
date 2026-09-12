@@ -380,11 +380,15 @@ Collected here as the answers come in; each is one `orchard exhibit hang
 
 **Accepted 2026-09-12 (every recommendation):** world-engine's three stills
 and phototroph's tape are hung (exhibits 3 to 6); einstruct's stirred twin
-and `row` hang once the client that gives them a second sheet and wall is
-published; spectre's trio and clip hang after its harvest; Spike C and the
+and `row` are hung (exhibits 7 and 8) and the client with the second sheet,
+the second wall and the two new rooms is published (Pages deployment
+ab99380f, 2026-09-12 18:28; the live script names every new hanging and
+the same build renders the hall locally; a headless screenshot of the
+live site shows only the sky for the previous deployment too, so a real
+browser walk is still owed, BACKLOG 3); spectre's trio and clip hang
+after its harvest; Spike C and the
 dimer-split conversion are funded (the conversion ran, 136 KB). Left to
-Manuel's own hands: publishing the client (`cd grove && pnpm run deploy`),
-creating spectre's private remote (the scan is clean), the rate decision,
+Manuel's own hands: creating spectre's private remote (the scan is clean), the rate decision,
 the styleframe verdicts, the world-engine doorway session, and the two
 housekeeping commits.
 

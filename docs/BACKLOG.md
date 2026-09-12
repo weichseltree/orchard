@@ -22,6 +22,11 @@ Ordered. Items with a name in brackets wait on that person.
 3. **[Manuel] Hardware pass**: Quest 3 browser (XR entry, controllers,
    teleport, scrub, 72 Hz) and an iPhone (native HLS, touch stick). Everything
    past `requestSession` is untested on hardware (docs/impl/WP2-grove.md).
+   Since 2026-09-12 also: walk einstruct's two sheets and two walls, and the
+   world-engine and phototroph box rooms off its east and west walls, in a
+   real browser; the headless shell shows the live site as sky only (every
+   deployment, so a tooling artifact), and on this box the WSL resolver
+   does not resolve media.weichseltree.com although public DNS does.
 
 ## Known visual issues from the first deploy
 
