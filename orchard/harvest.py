@@ -38,7 +38,8 @@ And since 2026-09-13:
   its bundle's `source.tree_commit` says, so the two no longer disagree.
 
 The manifest written is the one that was read: `<repo>/orchard.yaml` when the
-tree carries one, else the fund's copy in `trees/`.
+tree carries one, else the fund's copy in `trees/`; the fund copy follows a
+canonical write (`portfolio.save`).
 """
 from __future__ import annotations
 
@@ -47,15 +48,11 @@ import json
 import time
 from pathlib import Path
 
-from . import RESULTS, TREES
-from .manifest import Artefact, Tree, dump
+from . import RESULTS
+from .manifest import Artefact, Tree
+from .portfolio import manifest_path, save  # noqa: F401  (manifest_path: callers import it from here)
 
 BUNDLED_KINDS = ("tape", "clip", "master", "still", "figure")
-
-
-def manifest_path(tree: Tree) -> Path:
-    canonical = tree.root / "orchard.yaml"
-    return canonical if canonical.exists() else TREES / f"{tree.name}.yaml"
 
 
 def resolve_source(tree: Tree, art: Artefact) -> Path | None:
@@ -174,7 +171,6 @@ def harvest(name: str, *, only=None, out_root=None, dry_run: bool = False,
     from .bundle import tracked_changes
     from .portfolio import get
     tree = get(name)
-    path = manifest_path(tree)
     out_root = Path(out_root) if out_root else RESULTS / "bundles"
     rows, changed = [], False
     dirty: list[str] | None = None          # asked once, when first needed
@@ -234,7 +230,7 @@ def harvest(name: str, *, only=None, out_root=None, dry_run: bool = False,
                     "seconds": round(time.perf_counter() - t0, 1)})
         rows.append(row)
     if changed and not dry_run:
-        dump(tree, path)
+        path = save(tree)
         if verbose:
             print(f"wrote {path}", flush=True)
     return rows

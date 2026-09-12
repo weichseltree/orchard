@@ -34,6 +34,10 @@ def cmd_scout(a):
     for p in paths:
         t = draft(p, jobs)
         out = TREES / f"{t.name}.yaml"
+        if (p / "orchard.yaml").exists():
+            # planted: the fund copy mirrors the repo's, and a draft must not replace it
+            print(f"skip {t.name}: planted, trees/{t.name}.yaml mirrors {p / 'orchard.yaml'}")
+            continue
         if out.exists() and not a.force:
             print(f"skip {t.name}: {out.relative_to(TREES.parent)} exists (use --force)")
             continue
@@ -48,9 +52,19 @@ def cmd_plant(a):
     if dst.exists() and not a.force:
         sys.exit(f"{dst} exists; use --force to overwrite")
     t.stage = max(t.stage, Stage.planted, key=list(Stage).index)
+    from .portfolio import mirror
     dump(t, dst)
-    dump(t, TREES / f"{a.name}.yaml")
+    mirror(t)                 # from now on the fund copy is generated from dst
     print(f"planted {t.name} -> {dst}")
+
+
+def cmd_trees_refresh(a):
+    from .portfolio import refresh
+    rows = refresh(a.name or None)
+    _table([[r["tree"], r["status"], r["canonical"]] for r in rows], ["tree", "status", "canonical"])
+    changed = [r["tree"] for r in rows if r["status"] == "changed"]
+    print(f"\n{len(changed)} fund cop{'y' if len(changed) == 1 else 'ies'} regenerated"
+          + (f": {', '.join(changed)}" if changed else ""))
 
 
 def cmd_board(a):
@@ -237,6 +251,10 @@ def main(argv=None):
     s = sub.add_parser("scout", help="draft tree manifests from repos"); s.add_argument("repo", nargs="*"); s.add_argument("--force", action="store_true"); s.set_defaults(fn=cmd_scout)
     s = sub.add_parser("plant", help="register: write orchard.yaml into the repo"); s.add_argument("name"); s.add_argument("--force", action="store_true"); s.set_defaults(fn=cmd_plant)
     s = sub.add_parser("board", help="the portfolio"); s.set_defaults(fn=cmd_board)
+    s = sub.add_parser("trees", help="the fund's copies of the tree manifests")
+    tsub = s.add_subparsers(dest="what", required=True)
+    t = tsub.add_parser("refresh", help="regenerate trees/<name>.yaml from each repo's orchard.yaml")
+    t.add_argument("name", nargs="*"); t.set_defaults(fn=cmd_trees_refresh)
     s = sub.add_parser("ledger", help="capital spent and left"); s.add_argument("--days", type=int, default=30); s.add_argument("--json", action="store_true"); s.set_defaults(fn=cmd_ledger)
     s = sub.add_parser("bundle", help="write a content-addressed bundle")
     bsub = s.add_subparsers(dest="what", required=True)

@@ -177,10 +177,9 @@ def apply_rulings(trees, items: list[dict], rulings: list[dict]) -> list[dict]:
 
 
 def sync_rulings() -> list[dict]:
-    """Pull rulings into the manifests; writes each changed tree's manifest."""
-    from .harvest import manifest_path
-    from .manifest import dump
-    from .portfolio import load_all
+    """Pull rulings into the manifests; writes each changed tree's manifest
+    (the repo's, with the fund copy following it)."""
+    from .portfolio import load_all, save
     trees = load_all()
     items = sql("select * from review_item")
     rulings = sql("select * from ruling")
@@ -188,7 +187,7 @@ def sync_rulings() -> list[dict]:
     touched = {c["tree"] for c in changes if c["status"] in ("advanced", "blocked_by written")}
     for t in trees:
         if t.name in touched:
-            dump(t, manifest_path(t))
+            save(t)
     return changes
 
 

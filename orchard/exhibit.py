@@ -19,7 +19,7 @@ import subprocess
 from pathlib import Path
 
 from .bundle import verify_id
-from .manifest import Artefact, Tree, dump
+from .manifest import Artefact, Tree
 from .push import PUBLIC_HOST, verify_local
 from .sync import DB, SPACETIME_DIR, _cli, call
 
@@ -103,10 +103,9 @@ def hang(bundle_dir, *, approve: bool = False, push: bool = True,
     call("hang", tree, kind, title, urls["url"], urls["thumb_url"], urls["tape_url"])
     rep["hung"] = True
     if found and approve and not art.approved:
-        from .harvest import manifest_path
+        from .portfolio import save
         art.approved = True
-        dump(found[0], manifest_path(found[0]))
-        rep["approved_in"] = str(manifest_path(found[0]))
+        rep["approved_in"] = str(save(found[0]))
     if verbose:
         print(f"hung {doc['id']} on {tree} as {kind}: {urls['url']}", flush=True)
     return rep

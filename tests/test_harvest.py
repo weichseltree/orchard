@@ -31,7 +31,6 @@ def grove(tmp_path, monkeypatch):
         ]}))
     import orchard.portfolio as P
     monkeypatch.setattr(P, "TREES", trees)
-    monkeypatch.setattr(H, "TREES", trees)
     return repo, trees, tmp_path / "bundles"
 
 
@@ -80,6 +79,20 @@ def test_the_repo_manifest_wins_when_it_exists(grove):
     (repo / "orchard.yaml").write_text((trees / "fake.yaml").read_text())
     tree = load(trees / "fake.yaml")
     assert H.manifest_path(tree) == repo / "orchard.yaml"
+
+
+@ffmpeg_missing
+def test_a_harvest_writes_the_repo_manifest_and_the_fund_copy_follows(grove):
+    """The fund copies of einstruct, spectre, phototroph and world-engine had drifted:
+    harvest wrote only the copy it read."""
+    import orchard.portfolio as P
+    repo, trees, out = grove
+    (repo / "orchard.yaml").write_text((trees / "fake.yaml").read_text())
+    (trees / "fake.yaml").write_text((trees / "fake.yaml").read_text() + "notes: drifted\n")
+    H.harvest("fake", out_root=out, only=["still"], verbose=False)
+    assert load(repo / "orchard.yaml").artefacts[1].bundle
+    assert (trees / "fake.yaml").read_bytes() == P.mirror_bytes(repo / "orchard.yaml")
+    assert load(trees / "fake.yaml").notes == ""
 
 
 # --------------------------------------------- what the trees found 2026-09-12
