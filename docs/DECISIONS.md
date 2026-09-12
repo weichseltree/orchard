@@ -54,3 +54,10 @@ Append-only. A decision names the day, the ruling, and the alternative it beat.
   sheet half below the floor.)
 - **2026-09-12 · Dev bundles never deploy.** Generated dev bundles and
   videos live outside `grove/public/`; `dist/` carries only real assets.
+- **2026-09-12 · M0 deployed to www.weichseltree.com/grove** with the baked
+  hall, the einstruct room, presence over the live database, and CSP headers.
+  Media waits on R2 being enabled; the apex waits on Patreon releasing its
+  custom hostname. Both are one click each on Manuel's side.
+- **2026-09-12 · Production CSP allows only self, media.weichseltree.com and
+  maincloud.spacetimedb.com** (https and wss); microphone stays denied until
+  voice lands in M1.

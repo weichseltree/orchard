@@ -76,12 +76,23 @@ deployed from `grove/public/` (https://weichseltree.pages.dev), custom domains
     clark.ns.cloudflare.com
     susan.ns.cloudflare.com
 
+Nameservers switched 2026-09-12; the zone is active and
+`https://www.weichseltree.com` serves the grove.
+
+**The apex is still Patreon's for now.** `weichseltree.com` remains registered
+as Patreon's *custom hostname* on Cloudflare for SaaS, and on Cloudflare's
+edge a SaaS custom hostname takes precedence over the zone owner's own
+record. So the bare domain still 302s to Patreon while `www` works, and the
+Pages custom domain for the apex shows `deactivated` / certificate error.
+Fix: remove the custom domain in Patreon's creator settings (only Manuel
+can); Cloudflare also retires a SaaS hostname whose DNS no longer points at
+the SaaS zone, but that takes days. Afterwards re-validate with
+`PATCH /accounts/{acct}/pages/projects/weichseltree/domains/weichseltree.com`
+(already done once, 2026-09-12; it stays `initializing` until the release).
+
 Left to do:
 
-1. **At Namecheap** (only you can): Domain List > Manage > Nameservers >
-   Custom DNS, paste the two above. Propagation minutes to hours. At that
-   moment the Patreon redirect ends and the holding page is what the domain
-   serves; Patreon stays at patreon.com/weichseltree and is linked from it.
+1. **In Patreon** (only you can): remove the custom domain `weichseltree.com`.
 2. Redeploy: `wrangler pages deploy ./grove/public --project-name weichseltree
    --branch main` with `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` in the
    environment (`set -a; . ~/.config/orchard/secrets.env; set +a`).
