@@ -4,6 +4,8 @@ import type { Plugin } from "vite";
 import { defineConfig } from "vitest/config";
 import sirv from "sirv";
 import { fingerprintAssets } from "./build/fingerprint";
+import { groveServiceWorker } from "./build/service-worker";
+import { groveVersion } from "./build/version";
 
 const root = fileURLToPath(new URL(".", import.meta.url));
 const threeVersion = (
@@ -54,10 +56,17 @@ export default defineConfig(({ command }) => ({
   plugins: [
     localContent(),
     // Room assets ship under content-hashed names, and only the ones the scene
-    // names (no bake previews, provenance json or retired WP3 hall).
+    // names (no bake previews, provenance json or retired WP3 hall). Before the
+    // service worker, whose build manifest hashes the finished dist/.
     fingerprintAssets({
       scene: fileURLToPath(new URL("src/world/mansion.json", import.meta.url)),
       publicDir: fileURLToPath(new URL("public", import.meta.url)),
+    }),
+    // version.json and VITE_COMMIT; dist/sw.js, last, over the finished dist/.
+    groveVersion(),
+    groveServiceWorker({
+      entry: "src/sw/sw.ts",
+      mediaBase: process.env.VITE_MEDIA_BASE ?? "https://media.weichseltree.com",
     }),
   ],
   define: {

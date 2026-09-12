@@ -38,6 +38,18 @@ gives each visitor a token after Cloudflare's human check; see
 [docs/SECURITY.md](../docs/SECURITY.md). One screen plays at a time (the
 decoder budget is enforced in `src/media/videowall.ts`).
 
+A build ships a service worker (`src/sw/`, built to `dist/sw.js` by
+`build/service-worker.ts`; never in `pnpm dev`). It keeps bundles from R2
+per device tier (1 GB headset, 300 MB phone, 2 GB desktop, never past half the
+origin's quota) after checking each file against the sha256 its bundle
+states, keeps the build's own files, and answers a page from its last copy
+when the network is slow or gone, so the hall opens offline. `dist/version.json`
+carries the build's commit; an open grove that sees a newer one offers a
+reload, and never inside a headset session. To switch the worker off:
+`?nosw` for one visit; for everyone, `GROVE_SW=off pnpm run deploy`, whose
+`sw.js` deletes the caches and unregisters itself and whose `version.json`
+tells open pages to do the same. Deploy normally again to turn it back on.
+
 `scripts/module-check.ts` holds several visitors against a local SpacetimeDB
 and checks every rule of the module (visibility, floods, kicks, bans, the
 per-network cap, the gate); its header says how to start the local server

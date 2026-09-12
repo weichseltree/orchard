@@ -424,7 +424,17 @@ export class Hud {
     element.textContent = text;
     this.#notices.append(element);
     if (!sticky) window.setTimeout(() => element.remove(), 9000);
-    while (this.#notices.childElementCount > 4) this.#notices.firstElementChild?.remove();
+    // Offers stay put; only plain notices make room for newer ones.
+    const plain = this.#notices.querySelectorAll(".notice:not(.offer)");
+    for (let i = 0; i < plain.length - 4; i++) plain[i]?.remove();
+  }
+
+  /** A notice with one action, up until the action is taken. The element tells whether it still is. */
+  offer(text: string, label: string, onAction: () => void): HTMLElement {
+    const element = div("notice panel offer");
+    element.append(`${text} `, button(label, "btn small", onAction));
+    this.#notices.append(element);
+    return element;
   }
 }
 

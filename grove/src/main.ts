@@ -14,6 +14,7 @@ import { EYE_HEIGHT, createView } from "./render/view";
 import { Hud } from "./ui/hud";
 import { PerfMeter } from "./ui/perf";
 import { Provenance } from "./ui/provenance";
+import { startGroveUpdates } from "./ui/update";
 import { WorldNotices } from "./ui/worldnotice";
 import { frameAt } from "./tape/time";
 import mansionDocument from "./world/mansion.json";
@@ -456,3 +457,6 @@ Object.defineProperty(window, "grove", {
 window.addEventListener("pagehide", () => presence.dispose());
 
 boot();
+// The service worker (cache, offline hall, media integrity) and the reload
+// offer after a deploy; both off in `vite dev`.
+startGroveUpdates({ tier: device.tier, hud, xr: view.renderer.xr });

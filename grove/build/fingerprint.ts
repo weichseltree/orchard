@@ -102,27 +102,31 @@ export function fingerprintAssets(options: { scene: string; publicDir: string })
       for (const { rel, hashed } of entries) map[`/${rel}`] = `/${hashed}`;
       return `export default ${JSON.stringify(map)};`;
     },
-    async closeBundle() {
-      if (config.command !== "build") return;
-      const outDir = config.build.outDir;
-      // Vite copied public/ verbatim; take back every directory that came
-      // from public/assets/ (Vite's own output under dist/assets/ is flat).
-      const fromPublic = join(options.publicDir, "assets");
-      if (existsSync(fromPublic)) {
-        for (const entry of await readdir(fromPublic, { withFileTypes: true })) {
-          await rm(join(outDir, "assets", entry.name), { recursive: true, force: true });
+    closeBundle: {
+      // Finished before the service worker's post hook hashes dist/.
+      sequential: true,
+      async handler() {
+        if (config.command !== "build") return;
+        const outDir = config.build.outDir;
+        // Vite copied public/ verbatim; take back every directory that came
+        // from public/assets/ (Vite's own output under dist/assets/ is flat).
+        const fromPublic = join(options.publicDir, "assets");
+        if (existsSync(fromPublic)) {
+          for (const entry of await readdir(fromPublic, { withFileTypes: true })) {
+            await rm(join(outDir, "assets", entry.name), { recursive: true, force: true });
+          }
         }
-      }
-      let bytes = 0;
-      for (const { rel, hashed } of entries) {
-        const to = join(outDir, hashed);
-        await mkdir(dirname(to), { recursive: true });
-        await copyFile(join(options.publicDir, rel), to);
-        bytes += readFileSync(to).length;
-      }
-      config.logger.info(
-        `fingerprint: ${entries.length} room asset(s), ${(bytes / 1e6).toFixed(1)} MB, under hashed names`,
-      );
+        let bytes = 0;
+        for (const { rel, hashed } of entries) {
+          const to = join(outDir, hashed);
+          await mkdir(dirname(to), { recursive: true });
+          await copyFile(join(options.publicDir, rel), to);
+          bytes += readFileSync(to).length;
+        }
+        config.logger.info(
+          `fingerprint: ${entries.length} room asset(s), ${(bytes / 1e6).toFixed(1)} MB, under hashed names`,
+        );
+      },
     },
   };
 }
