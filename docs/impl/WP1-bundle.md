@@ -104,6 +104,12 @@ are `test_the_sampler_does_not_alias_against_a_species_layout`,
 
 ### 2. A video bundle's id must not cover the encoder's output. CHANGED.
 
+> **Reversed 2026-09-13** ([bundle-hygiene.md](bundle-hygiene.md)). Every
+> bundle's id now covers every file it ships (`bundle.json:files`), because
+> one id standing for two sets of bytes is worse than a new address per
+> differing re-encode, and `orchard bundle gc` removes the superseded ones.
+> `media.json` is still read in bundles that already have one.
+
 x264's VBV rate control reads the state of frames in flight on other threads,
 so it is **not bit-reproducible**. Measured: the same
 `orchard bundle video .../clip.mp4` on this box, twice, produced 22.08 MB and

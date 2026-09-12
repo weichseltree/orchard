@@ -119,10 +119,12 @@ Ordered. Items with a name in brackets wait on that person.
     extra channels, and the index's per-frame t instead of one mean dt
     (drift up to a tau inside a chunk). The poster labels time in "tau"
     whatever the header's `units` says; phototroph's unit is t0.
-19a. **bundle.json's `source.tree_commit`** still records the harvest HEAD
-    (spectre, on the trio): the manifest keeps the tree's commit since the
-    bug-2 fix, the bundle document does not; carry the artefact's commit
-    into the bundle when the manifest has one.
+19a. ~~**bundle.json's `source.tree_commit`** still records the harvest HEAD~~
+    Done 2026-09-13 (docs/impl/bundle-hygiene.md). Harvest passes the
+    artefact's commit into the bundle. A commit the tree wrote survives,
+    and a source git tracks gets the commit that last touched it. A
+    gitignored result still gets HEAD, now never `-dirty`, because harvest
+    refuses a dirty tree without `--allow-dirty`.
 19. **`<stem>.json` render sidecars** (spectre bug 4): carry beside the
     stock `<file>.json` sidecar, under a different key; the measured numbers
     live there.
