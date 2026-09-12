@@ -189,3 +189,23 @@ Append-only. A decision names the day, the ruling, and the alternative it beat.
   the learnable, transfer-relevant object is a visitor that learns the
   verbs from hints. Stages S0 to S2 may run in any session; the visitor
   agent stays with arcedit, behind its own gate.
+- **2026-09-12 · The palace round's five specs are the direction for the
+  next months**, written by subagents from Manuel's evening brief and
+  reviewed: PALACE.md (one level, Euclidean, an enfilade with the hall at
+  the centre, a gallery east, an orangery of portals west, orchard grounds
+  of about 450 cherry trees, the moon as chi12; stills first), PALACE-
+  ASSETS.md (CC0 only, verified per item; Belvedere statues found), DEVICE-
+  TIERS.md (eight tiers, a five-state exhibit lifecycle, `visibility.json`
+  gating what plays, loads and is heard), INTERACTION.md (seven verbs, hints
+  as furniture, voice as a structured LLM call behind a Worker, an opt-in
+  recorder, a PWA first and a Play Store wrapper later, never Flutter), and
+  COMMUNITY-AND-INFRA.md with brand/ (the repo as the front door, Sponsors
+  and DCO, Cloudflare Realtime for voice at launch and LiveKit Cloud at
+  scale, SpacetimeDB as state and signalling only, Whisper on Workers AI,
+  Austrian legal basics). Beat building any of it first: each spec ends in
+  rulings Manuel makes before lane time is spent.
+- **2026-09-12 · Only the visitor's room plays.** Tapes advance and the one
+  video decoder is handed over only inside the room the visitor stands in;
+  other rooms freeze and show posters. Scrubbing still moves every tape so
+  shared clocks stay aligned. The first state of DEVICE-TIERS.md's
+  lifecycle; the rest follows its migration list.

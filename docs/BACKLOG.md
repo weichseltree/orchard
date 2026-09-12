@@ -175,3 +175,50 @@ Ordered. Items with a name in brackets wait on that person.
     Moving the Cloudflare account is also the moment for the token split
     (item 26); moving SpacetimeDB means a new publisher identity, so add it
     with `add_admin` before the old login goes.
+
+## The palace round (2026-09-12, evening)
+
+Manuel's ask: per-exhibit playback with pre-baked sound and a visibility
+map; the walls' z-fighting; a full palace design with models, scenes, bakes
+and device optimisation; a rethought UI with gestures, 3D hints, sound,
+voice through an LLM, a session recorder for arcedit, a desktop UI and a
+phone-first client; a brand package; the community and the infrastructure
+from the repo inward, including multiplayer voice. Done the same evening:
+the z-fighting (no outward wall faces), tapes and walls play only in the
+visitor's room, the Quest's still tier; five specs written by subagents and
+reviewed. What each asks next:
+
+25. **PALACE.md P0, the contact sheet.** Twelve stills (15 to 25 min CPU)
+    for the look ruling, after Manuel answers its six questions (facade
+    colour, season, the moon by day, the hall's French doors, the
+    orangery's light, closed doors for unearned rooms). Then P1 hall plus
+    einstruct rebake, P2 grounds, P3 the rest; about 5 CPU hours, half
+    eligible for Legion. Needs `grove/tools/palace/` grown from
+    `bake_hall.py` first.
+26. **PALACE-ASSETS.md:** `grove/tools/lift.py` (download, hash, licence
+    from the provider API, sidecar); the Belvedere statues and Vienna
+    fountains (CC0, noe-3d.at) as the first lifts; the Karlskirche impulse
+    response; no baroque kitbash exists, so cornices and windows are
+    modelled by the generator.
+27. **DEVICE-TIERS.md migration, twelve steps:** the perf panel with
+    per-exhibit state and bytes first (so the hardware pass fills the
+    table), then budgets, frame rate and foveation, `TapeStream.release()`
+    for frozen tapes (34 MB resident today), the pure state machine,
+    `visibility.json`, rooms by adjacency, the bundler's chunk size scaling
+    with slots, sound, splats, pages. Done from it already: the Quest takes
+    the 1600 px still tier.
+28. **INTERACTION.md, steps 1 to 4 first (a day):** the seven verbs and
+    "act on what you point at", the Escape and pointer-lock fix, hints as
+    furniture, then the recorder before voice so voice is measurable;
+    `microphone=()` in `_headers` becomes `microphone=(self)` when voice
+    lands; the arcedit harness per §4.6 (S0 to S2 can run in any session).
+29. **COMMUNITY-AND-INFRA.md, six steps, about 90 hours:** the front door
+    (README with a hero still and a 20 s clip, Discussions, Sponsors, DCO),
+    the gate and voice (Cloudflare Realtime at launch, LiveKit Cloud at
+    scale, Whisper on Workers AI for commands, `claude-opus-5` behind a
+    Worker for voice-to-action), the host in the browser, launch,
+    membership and the vote (Stripe, Kleinunternehmer), speech. Legal:
+    Impressum, Datenschutzerklärung, 14+ for the grove and 16+ for voice.
+30. **brand/**: the package exists (tokens, voice, names); the hero still,
+    the 20 s clip, the favicon and the sound cues are listed as missing and
+    are made once, from the grove, after the palace's first look ruling.
