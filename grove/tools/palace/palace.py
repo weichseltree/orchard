@@ -80,7 +80,18 @@ LOOK = {
     "gilt":          ((0.85, 0.65, 0.30), 0.35, None, 1.0, 1.0),
     "panel":         ((0.78, 0.77, 0.74), 0.92, None, 1.0, 0.0),
     "door_leaf":     ((0.18, 0.11, 0.07), 0.55, "parquet", 1.2, 0.0),
+    # the grounds
+    "gravel":        ((0.34, 0.32, 0.29), 0.95, "gravel", 3.0, 0.0),
+    "grass":         ((0.11, 0.17, 0.06), 0.95, "grass", 5.0, 0.0),
+    "hedge":         ((0.06, 0.10, 0.05), 0.95, None, 1.0, 0.0),
+    "water":         ((0.03, 0.06, 0.08), 0.05, None, 1.0, 0.0),
+    "facade":        ((0.56, 0.54, 0.50), 0.90, None, 1.0, 0.0),
+    "slate":         ((0.05, 0.05, 0.06), 0.80, None, 1.0, 0.0),
+    "trunk":         ((0.13, 0.09, 0.06), 0.90, None, 1.0, 0.0),
+    "leaf":          ((1.0, 1.0, 1.0), 0.90, "leaf", 1.0, 0.0),
 }
+CELL_PARTS = ["ground", "hedge", "water", "facade", "slate", "stone", "trunk", "leaf"]
+C_GROUND, C_HEDGE, C_WATER, C_FACADE, C_SLATE, C_STONE, C_TRUNK, C_LEAF = range(8)
 
 PARTS = ["floor", "wall", "ceiling", "trim", "wainscot", "pilaster", "gilt", "panel", "leaf"]
 P_FLOOR, P_WALL, P_CEIL, P_TRIM, P_WAINSCOT, P_PILASTER, P_GILT, P_PANEL, P_LEAF = range(9)
@@ -94,6 +105,7 @@ TYPE_DEFAULTS = {
     "gallery":    dict(h=7.0, wainscot=1.10, cornice=(6.55, 6.85), coffer=3.6, floor="floor_marble", wall="wall_stucco"),
     "orangery":   dict(h=7.0, wainscot=0.0,  cornice=(6.55, 6.85), coffer=3.6, floor="floor_stone", wall="wall_limewash"),
     "greenhouse": dict(h=5.0, wainscot=0.0,  cornice=(4.70, 4.85), coffer=2.6, floor="floor_stone", wall="wall_limewash"),
+    "cell":       dict(h=8.0, wainscot=0.0,  cornice=(7.0, 7.2),   coffer=8.0, floor="grass", wall="facade"),
 }
 
 WAINSCOT_P, CORNICE_P = 0.06, 0.12
@@ -102,7 +114,8 @@ WAINSCOT_P, CORNICE_P = 0.06, 0.12
 # shadow each other black in the bake and z-fight in the client. The body
 # clamp keeps the visitor inside the bounds, 10 cm short of the wall.
 WALL_HALF = 0.10
-DOOR_DEPTH, WIN_DEPTH = WALL_HALF, 0.35
+DOOR_DEPTH, WIN_DEPTH = WALL_HALF, 0.40
+FACADE_X = -7.5            # the garden front's outer face (blender x); interior faces are at -7.1
 PANEL_DEPTH = 0.04
 PIL_W, PIL_P = 0.50, 0.12
 CAP_W, CAP_H, CAP_P = 0.72, 0.32, 0.20
@@ -198,6 +211,46 @@ def stone(px, rng):
     return np.clip(np.stack([tone * 1.02, tone, tone * 0.94], axis=-1), 0, 1)
 
 
+def gravel(px, rng):
+    n = _fbm(px, rng, octaves=6, base=16)
+    tone = 0.55 + 0.5 * (n - 0.5)
+    return np.clip(np.stack([tone * 1.0, tone * 0.95, tone * 0.88], axis=-1), 0, 1)
+
+
+def grass(px, rng):
+    n = _fbm(px, rng, octaves=6, base=12)
+    m = _fbm(px, rng, octaves=3, base=2)
+    g = 0.75 + 0.5 * (n - 0.5) + 0.3 * (m - 0.5)
+    return np.clip(np.stack([g * 0.55, g * 1.0, g * 0.30], axis=-1), 0, 1)
+
+
+def leaf_card(px, rng):
+    """A cherry crown on a card: clustered leaf blobs with alpha, dark red
+    fruit dots. RGBA, alpha is what the card's alpha test cuts."""
+    xs = np.linspace(-1, 1, px)
+    u, v = xs[:, None], xs[None, :]
+    alpha = np.zeros((px, px), dtype=np.float32)
+    rgb = np.zeros((px, px, 3), dtype=np.float32)
+    for _ in range(140):
+        cx, cy = rng.normal(0, 0.42), rng.normal(0.05, 0.40)
+        r = rng.uniform(0.10, 0.22)
+        d = ((u - cx) ** 2 + (v - cy) ** 2) / (r * r)
+        blob = np.exp(-d * 2.2)
+        tone = rng.uniform(0.6, 1.1)
+        col = np.array([0.10 * tone, 0.22 * tone, 0.06 * tone], dtype=np.float32)
+        w = blob[..., None]
+        rgb = rgb * (1 - w * 0.9) + col[None, None, :] * (w * 0.9)
+        alpha = np.maximum(alpha, blob)
+    n = _fbm(px, rng, octaves=5, base=10)
+    alpha = np.clip(alpha * (0.7 + 0.8 * n), 0, 1)
+    for _ in range(60):
+        cx, cy = rng.normal(0, 0.45), rng.normal(0.0, 0.42)
+        d = ((u - cx) ** 2 + (v - cy) ** 2)
+        dot = d < 0.0009
+        rgb[dot] = (0.45, 0.04, 0.05)
+    return np.concatenate([np.clip(rgb, 0, 1), (alpha > 0.35).astype(np.float32)[..., None]], axis=-1)
+
+
 def make_textures(out_dir, px=1024):
     """PNGs on disk, then Blender images. Deterministic (seed 7) so a rebake
     ships the same bytes."""
@@ -209,6 +262,8 @@ def make_textures(out_dir, px=1024):
         "floor_pattern": lambda: floor_pattern(px, rng),
         "parquet": lambda: parquet(px, rng),
         "stone": lambda: stone(px, rng),
+        "gravel": lambda: gravel(px, rng),
+        "grass": lambda: grass(px, rng),
     }
     images = {}
     for name, gen in gens.items():
@@ -220,7 +275,7 @@ def make_textures(out_dir, px=1024):
             a[..., :3] = hb.srgb_encode(rgb)
             img = bpy.data.images.new(name, px, px, alpha=False)
             img.colorspace_settings.name = "sRGB"
-            img.pixels.foreach_set(a.reshape(-1))
+            img.pixels.foreach_set(np.ascontiguousarray(a, dtype=np.float32).reshape(-1))
             img.filepath_raw = path
             img.file_format = "JPEG"
             bpy.context.scene.render.image_settings.quality = 90
@@ -229,6 +284,20 @@ def make_textures(out_dir, px=1024):
         img = bpy.data.images.load(path)
         img.colorspace_settings.name = "sRGB"
         images[name] = img
+    leaf = os.path.join(out_dir, "leaf.png")
+    if not os.path.exists(leaf):
+        rgba = leaf_card(512, np.random.default_rng(3))
+        rgba[..., :3] = hb.srgb_encode(rgba[..., :3])
+        img = bpy.data.images.new("leaf", 512, 512, alpha=True)
+        img.colorspace_settings.name = "sRGB"
+        img.pixels.foreach_set(np.ascontiguousarray(rgba, dtype=np.float32).reshape(-1))
+        img.filepath_raw = leaf
+        img.file_format = "PNG"
+        img.save()
+        bpy.data.images.remove(img)
+    img = bpy.data.images.load(leaf)
+    img.colorspace_settings.name = "sRGB"
+    images["leaf"] = img
     return images
 
 
@@ -659,6 +728,304 @@ def add_room_markers(scene, plan, markers):
     return out
 
 
+
+# --------------------------------------------------------------------------
+# the grounds: cells
+# --------------------------------------------------------------------------
+def box(b, x0, x1, y0, y1, z0, z1, mat, top=True, bottom=False):
+    """An axis-aligned box, outward faces only."""
+    b.quad((x0, y0, z0), (0, y1 - y0, 0), (0, 0, z1 - z0), mat, want=(-1, 0, 0))
+    b.quad((x1, y0, z0), (0, y1 - y0, 0), (0, 0, z1 - z0), mat, want=(1, 0, 0))
+    b.quad((x0, y0, z0), (x1 - x0, 0, 0), (0, 0, z1 - z0), mat, want=(0, -1, 0))
+    b.quad((x0, y1, z0), (x1 - x0, 0, 0), (0, 0, z1 - z0), mat, want=(0, 1, 0))
+    if top:
+        b.quad((x0, y0, z1), (x1 - x0, 0, 0), (0, y1 - y0, 0), mat, want=(0, 0, 1))
+    if bottom:
+        b.quad((x0, y0, z0), (x1 - x0, 0, 0), (0, y1 - y0, 0), mat, want=(0, 0, -1))
+
+
+def garden_front(mansion):
+    """The rooms on the garden front (interior x from -7) with the holes their
+    -x walls carry, in blender y, for the facade."""
+    out = []
+    for room in mansion["rooms"]:
+        pal = room.get("palace") or {}
+        if pal.get("type") == "cell" or abs(room["bounds"]["min"][0] + 7) > 1e-6:
+            continue
+        plan = RoomPlan(room, mansion)
+        holes = []
+        for wall, hole, depth in plan.window_holes():
+            if wall != "-x":
+                continue
+            u0, u1, z0, z1 = hole
+            A, B = plan.walls()["-x"]
+            holes.append((A[1] - u1, A[1] - u0, z0, z1, "window"))       # u runs -y from A
+        for d in plan.doorways:
+            if d["axis"] == "x" and abs(d["at"] + 7) < 1e-6:
+                cy = -d["center"]
+                holes.append((cy - d["width"] / 2, cy + d["width"] / 2, 0.0, float(d["height"]), "door"))
+        out.append((plan, holes))
+    return out
+
+
+def build_facade(b, mansion):
+    """The garden front seen from outside: one wall at FACADE_X with every
+    window and door of the rooms behind it, a parapet, end returns and a
+    flat slate roof over the whole plan."""
+    fronts = garden_front(mansion)
+    y_lo = min(p.y0 for p, _ in fronts)
+    y_hi = max(p.y1 for p, _ in fronts)
+    top = 8.2
+    holes = []
+    for plan, hs in fronts:
+        for y0, y1, z0, z1, kind in hs:
+            holes.append((y0 - y_lo, y1 - y_lo, z0, z1, kind))
+    # the wall, facing -x, u runs +y from y_lo
+    b.rect_holes((FACADE_X, y_lo, 0.0), (0, y_hi - y_lo, 0), (0, 0, top),
+                 [(h[0], h[2], h[1], h[3]) for h in holes], C_FACADE, want=(-1, 0, 0))
+    # door reveals through the facade's thickness, back to the bounds plane
+    depth = -7.0 - FACADE_X
+    for y0, y1, z0, z1, kind in holes:
+        if kind != "door":
+            continue
+        b.quad((FACADE_X, y0, z0), (0, 0, z1 - z0), (depth, 0, 0), C_STONE, want=(0, 1, 0))
+        b.quad((FACADE_X, y1, z0), (0, 0, z1 - z0), (depth, 0, 0), C_STONE, want=(0, -1, 0))
+        b.quad((FACADE_X, y0, z1), (0, y1 - y0, 0), (depth, 0, 0), C_STONE, want=(0, 0, -1))
+        b.quad((FACADE_X, y0, 0.0), (0, y1 - y0, 0), (depth, 0, 0), C_STONE, want=(0, 0, 1))
+    # a string course and a parapet band in stone
+    b.quad((FACADE_X - 0.12, y_lo, 1.1), (0, y_hi - y_lo, 0), (0.12, 0, 0), C_STONE, want=(0, 0, 1))
+    b.quad((FACADE_X - 0.12, y_lo, 0.0), (0, y_hi - y_lo, 0), (0, 0, 1.1), C_STONE, want=(-1, 0, 0))
+    b.quad((FACADE_X - 0.15, y_lo, top - 0.8), (0, y_hi - y_lo, 0), (0, 0, 0.8), C_STONE, want=(-1, 0, 0))
+    b.quad((FACADE_X - 0.15, y_lo, top - 0.8), (0, y_hi - y_lo, 0), (0.15, 0, 0), C_STONE, want=(0, 0, -1))
+    b.quad((FACADE_X - 0.15, y_lo, top), (0, y_hi - y_lo, 0), (21.1 - FACADE_X + 0.15, 0, 0), C_SLATE, want=(0, 0, 1))
+    # end returns and the court side, plain
+    b.quad((FACADE_X, y_hi, 0.0), (21.1 - FACADE_X, 0, 0), (0, 0, top), C_FACADE, want=(0, 1, 0))
+    b.quad((FACADE_X, y_lo, 0.0), (21.1 - FACADE_X, 0, 0), (0, 0, top), C_FACADE, want=(0, -1, 0))
+    b.quad((21.1, y_lo, 0.0), (0, y_hi - y_lo, 0), (0, 0, top), C_FACADE, want=(1, 0, 0))
+
+
+def build_balustrade(b, plan, spec):
+    x = float(spec["x"])
+    openings = [(-float(z1), -float(z0)) for z0, z1 in spec.get("openings", [])]   # gltf z -> blender y
+    segs, cursor = [], plan.y0
+    for o0, o1 in sorted(openings):
+        if o0 > cursor:
+            segs.append((cursor, o0))
+        cursor = o1
+    if cursor < plan.y1:
+        segs.append((cursor, plan.y1))
+    for y0, y1 in segs:
+        box(b, x - 0.15, x + 0.15, y0, y1, 0.0, 0.25, C_STONE)                 # plinth
+        box(b, x - 0.20, x + 0.20, y0, y1, 0.95, 1.10, C_STONE)                # coping
+        n = max(1, int((y1 - y0) / 0.45))
+        step = (y1 - y0) / n
+        for i in range(n):
+            yc = y0 + step * (i + 0.5)
+            box(b, x - 0.07, x + 0.07, yc - 0.07, yc + 0.07, 0.25, 0.95, C_STONE)
+    for o0, o1 in openings:                                                    # piers either side
+        for yp in (o0 - 0.35, o1):
+            box(b, x - 0.3, x + 0.3, yp, yp + 0.35, 0.0, 1.25, C_STONE)
+
+
+def build_parterre(b, plan):
+    """Four quarters of gravel edged with box hedge, an axial cross of paths,
+    a round basin at the centre of the axis."""
+    x0, x1, y0, y1 = plan.x0, plan.x1, plan.y0, plan.y1
+    cx, cy = -35.0, 0.0
+    path = 3.0
+    rim_r, water_r = 5.4, 5.0
+    for (qx0, qx1) in ((x0 + 2.0, cx - path), (cx + path, x1 - 2.0)):
+        for (qy0, qy1) in ((y0 + 2.0, cy - path), (cy + path, y1 - 2.0)):
+            h = 0.6
+            for (a0, a1, b0, b1) in ((qx0, qx0 + 0.6, qy0, qy1), (qx1 - 0.6, qx1, qy0, qy1),
+                                     (qx0, qx1, qy0, qy0 + 0.6), (qx0, qx1, qy1 - 0.6, qy1)):
+                box(b, a0, a1, b0, b1, 0.0, h, C_HEDGE)
+    n = 24
+    for i in range(n):
+        a0, a1 = 2 * math.pi * i / n, 2 * math.pi * (i + 1) / n
+        p0 = (cx + rim_r * math.cos(a0), cy + rim_r * math.sin(a0))
+        p1 = (cx + rim_r * math.cos(a1), cy + rim_r * math.sin(a1))
+        q0 = (cx + (rim_r - 0.4) * math.cos(a0), cy + (rim_r - 0.4) * math.sin(a0))
+        q1 = (cx + (rim_r - 0.4) * math.cos(a1), cy + (rim_r - 0.4) * math.sin(a1))
+        b.quad((p0[0], p0[1], 0.0), (p1[0] - p0[0], p1[1] - p0[1], 0), (0, 0, 0.45), C_STONE,
+               want=(math.cos((a0 + a1) / 2), math.sin((a0 + a1) / 2), 0))
+        b.quad((q0[0], q0[1], 0.0), (q1[0] - q0[0], q1[1] - q0[1], 0), (0, 0, 0.45), C_STONE,
+               want=(-math.cos((a0 + a1) / 2), -math.sin((a0 + a1) / 2), 0))
+        b.quad((q0[0], q0[1], 0.45), (q1[0] - q0[0], q1[1] - q0[1], 0), (p0[0] - q0[0], p0[1] - q0[1], 0), C_STONE, want=Z)
+        b.quad((cx, cy, 0.30), (q0[0] - cx, q0[1] - cy, 0), (q1[0] - cx, q1[1] - cy, 0), C_WATER, want=Z)
+
+
+def tree_positions(plan, seed, pitch=7.0, margin=6.0, jitter=1.2):
+    rng = np.random.default_rng(seed)
+    xs = np.arange(plan.x0 + margin, plan.x1 - margin, pitch)
+    ys = np.arange(plan.y0 + margin, plan.y1 - margin, pitch)
+    out = []
+    for x in xs:
+        for y in ys:
+            out.append((float(x + rng.uniform(-jitter, jitter)), float(y + rng.uniform(-jitter, jitter)),
+                        float(rng.uniform(0.85, 1.15)), float(rng.uniform(0, math.pi))))
+    return out
+
+
+def build_trees(positions):
+    """Card trees: an 8-sided trunk and three crossed crown cards plus one
+    flat card, each 4.6 m square, alpha-cut. Vertex colour carries a simple
+    sun term so the cards read lit without any runtime light."""
+    b = hb.Build()
+    sun = -Vector(hb.SUN_DIR).normalized()
+    shade = []
+    def card(cx, cy, s, ang, zc, horizontal=False):
+        if horizontal:
+            o = Vector((cx - s / 2, cy - s / 2, zc))
+            b.quad(o, (s, 0, 0), (0, s, 0), C_LEAF, want=(0, 0, 1))
+            shade.extend([0.95] * 4)
+            return
+        dx, dy = math.cos(ang) * s / 2, math.sin(ang) * s / 2
+        o = Vector((cx - dx, cy - dy, zc - s / 2))
+        b.quad(o, (2 * dx, 2 * dy, 0), (0, 0, s), C_LEAF)
+        n = Vector((-math.sin(ang), math.cos(ang), 0))
+        lit = 0.55 + 0.45 * abs(n.dot(sun))
+        shade.extend([lit] * 4)
+    for x, y, scale, yaw in positions:
+        h_trunk, r = 2.2 * scale, 0.14 * scale
+        n = 8
+        for i in range(n):
+            a0, a1 = yaw + 2 * math.pi * i / n, yaw + 2 * math.pi * (i + 1) / n
+            p0 = (x + r * math.cos(a0), y + r * math.sin(a0))
+            p1 = (x + r * math.cos(a1), y + r * math.sin(a1))
+            b.quad((p0[0], p0[1], 0.0), (p1[0] - p0[0], p1[1] - p0[1], 0), (0, 0, h_trunk + 0.6), C_TRUNK,
+                   want=(math.cos((a0 + a1) / 2), math.sin((a0 + a1) / 2), 0))
+            shade.extend([0.7] * 4)
+        s = 4.6 * scale
+        zc = h_trunk + s * 0.42
+        for k in range(3):
+            card(x, y, s, yaw + k * math.pi / 3, zc)
+        card(x, y, s * 0.9, 0, zc, horizontal=True)
+    return b, shade
+
+
+class CellPlan(RoomPlan):
+    def __init__(self, room, mansion):
+        super().__init__(room, mansion)
+        self.ground = (room.get("palace") or {}).get("ground", "grass")
+        self.spec = room.get("palace") or {}
+        # cells have no walls: the bounds are the ground's edge
+        self.x0, self.x1 = float(room["bounds"]["min"][0]), float(room["bounds"]["max"][0])
+        self.y0, self.y1 = -float(room["bounds"]["max"][2]), -float(room["bounds"]["min"][2])
+
+
+def build_cell(plan, mansion):
+    b = hb.Build()
+    W, D = plan.x1 - plan.x0, plan.y1 - plan.y0
+    # the ground as a grid of 10 m quads so the lightmap packer gives it area
+    nx, ny = max(1, int(W / 10)), max(1, int(D / 10))
+    for i in range(nx):
+        for j in range(ny):
+            b.quad((plan.x0 + W * i / nx, plan.y0 + D * j / ny, 0.0), (W / nx, 0, 0), (0, D / ny, 0), C_GROUND, want=Z)
+    if plan.spec.get("balustrade"):
+        build_balustrade(b, plan, plan.spec["balustrade"])
+    if plan.spec.get("facade"):
+        build_facade(b, mansion)
+    if plan.ground == "parterre":
+        build_parterre(b, plan)
+    trees = None
+    if plan.spec.get("trees"):
+        trees = build_trees(tree_positions(plan, int(plan.spec.get("seed", 1))))
+    return b, trees
+
+
+def cell_look(plan, part):
+    return {C_GROUND: {"gravel": "gravel", "grass": "grass", "parterre": "gravel"}[plan.ground],
+            C_HEDGE: "hedge", C_WATER: "water", C_FACADE: "facade", C_SLATE: "slate",
+            C_STONE: "marble_white", C_TRUNK: "trunk", C_LEAF: "leaf"}[part]
+
+
+def make_cell_materials(plan, bake_img, uv2_name, textures):
+    mats = []
+    for idx, part in enumerate(CELL_PARTS):
+        look = cell_look(plan, idx)
+        base, rough, tex, tile, metal = LOOK[look]
+        mat = bpy.data.materials.new("%s_%s" % (plan.id, part))
+        mat.use_nodes = True
+        mat.use_backface_culling = idx != C_LEAF
+        nt = mat.node_tree
+        bsdf = nt.nodes["Principled BSDF"]
+        bsdf.inputs["Base Color"].default_value = (*base, 1.0)
+        bsdf.inputs["Roughness"].default_value = rough
+        if tex and tex in textures:
+            ti = nt.nodes.new("ShaderNodeTexImage")
+            ti.image = textures[tex]
+            uvn = nt.nodes.new("ShaderNodeUVMap")
+            uvn.uv_map = "UVMap"
+            if idx == C_LEAF:
+                nt.links.new(uvn.outputs["UV"], ti.inputs["Vector"])
+                # alpha-cut leaves for the bake: dappled shade on the grass
+                mix = nt.nodes.new("ShaderNodeMixShader")
+                tr = nt.nodes.new("ShaderNodeBsdfTransparent")
+                out = nt.nodes["Material Output"]
+                nt.links.new(ti.outputs["Alpha"], mix.inputs["Fac"])
+                nt.links.new(tr.outputs["BSDF"], mix.inputs[1])
+                nt.links.new(bsdf.outputs["BSDF"], mix.inputs[2])
+                nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])
+                mat.blend_method = "CLIP"
+                try:
+                    mat.alpha_threshold = 0.5
+                except Exception:
+                    pass
+            else:
+                mp = nt.nodes.new("ShaderNodeMapping")
+                mp.inputs["Scale"].default_value = (1.0 / tile, 1.0 / tile, 1.0)
+                nt.links.new(uvn.outputs["UV"], mp.inputs["Vector"])
+                nt.links.new(mp.outputs["Vector"], ti.inputs["Vector"])
+            nt.links.new(ti.outputs["Color"], bsdf.inputs["Base Color"])
+        tgt = nt.nodes.new("ShaderNodeTexImage")
+        tgt.name = tgt.label = "lightmap_bake_target"
+        tgt.image = bake_img
+        uvl = nt.nodes.new("ShaderNodeUVMap")
+        uvl.uv_map = uv2_name
+        nt.links.new(uvl.outputs["UV"], tgt.inputs["Vector"])
+        for n in nt.nodes:
+            n.select = False
+        tgt.select = True
+        nt.nodes.active = tgt
+        mats.append(mat)
+    return mats
+
+
+def unlit_trees_for_export(tree_ob, textures):
+    """Before export the trees become unlit: colour = leaf texture x vertex
+    shade, alpha-clipped. The exporter writes KHR_materials_unlit for an
+    emission-only tree, and three.js makes it a MeshBasicMaterial, which the
+    client never binds a lightmap to."""
+    for mat in tree_ob.data.materials:
+        nt = mat.node_tree
+        is_leaf = mat.name.endswith("_leaf")
+        nt.nodes.clear()
+        out = nt.nodes.new("ShaderNodeOutputMaterial")
+        emi = nt.nodes.new("ShaderNodeEmission")
+        vc = nt.nodes.new("ShaderNodeVertexColor")
+        vc.layer_name = "shade"
+        mul = nt.nodes.new("ShaderNodeMixRGB")
+        mul.blend_type = "MULTIPLY"
+        mul.inputs["Fac"].default_value = 1.0
+        if is_leaf:
+            ti = nt.nodes.new("ShaderNodeTexImage")
+            ti.image = textures["leaf"]
+            nt.links.new(ti.outputs["Color"], mul.inputs["Color1"])
+            mix = nt.nodes.new("ShaderNodeMixShader")
+            tr = nt.nodes.new("ShaderNodeBsdfTransparent")
+            nt.links.new(ti.outputs["Alpha"], mix.inputs["Fac"])
+            nt.links.new(tr.outputs["BSDF"], mix.inputs[1])
+            nt.links.new(emi.outputs["Emission"], mix.inputs[2])
+            nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])
+            mat.blend_method = "CLIP"
+        else:
+            mul.inputs["Color1"].default_value = (*LOOK["trunk"][0], 1.0)
+            nt.links.new(emi.outputs["Emission"], out.inputs["Surface"])
+        nt.links.new(vc.outputs["Color"], mul.inputs["Color2"])
+        nt.links.new(mul.outputs["Color"], emi.inputs["Color"])
+        mat.use_backface_culling = False
+
 # --------------------------------------------------------------------------
 # scene assembly
 # --------------------------------------------------------------------------
@@ -669,11 +1036,48 @@ def build_scene(mansion, textures, bake_res, margin, target_id):
     scene = bpy.context.scene
     objects, plans, target = {}, {}, None
     dummy = bpy.data.images.new("dummy_lm", 64, 64, alpha=True, float_buffer=True)
+    trees_of = {}
     for room in mansion["rooms"]:
         if not room.get("palace"):
             continue
-        plan = RoomPlan(room, mansion)
-        b, markers = build_room(plan)
+        is_cell = room["palace"].get("type") == "cell"
+        if is_cell:
+            plan = CellPlan(room, mansion)
+            b, trees = build_cell(plan, mansion)
+            markers = []
+            if trees is not None:
+                tb, shade = trees
+                tob = hb.to_object(tb, plan.id + "-trees")
+                col = tob.data.color_attributes.new("shade", "FLOAT_COLOR", "POINT")
+                # to_object welds vertices; the shade is per pre-weld quad corner, so
+                # take the nearest by position (all corners of one card share a shade)
+                import bmesh as _bm
+                pre = np.array([tuple(v) for v in tb.verts])
+                post = np.array([tuple(v.co) for v in tob.data.vertices])
+                from mathutils.kdtree import KDTree
+                kd = KDTree(len(pre))
+                for i, v in enumerate(pre):
+                    kd.insert(Vector(v), i)
+                kd.balance()
+                vals = np.ones((len(post), 4), dtype=np.float32)
+                for i, v in enumerate(post):
+                    _, idx, _ = kd.find(Vector(v))
+                    vals[i, :3] = shade[idx]
+                col.data.foreach_set("color", vals.reshape(-1))
+                me = tob.data
+                while me.uv_layers:
+                    me.uv_layers.remove(me.uv_layers[0])
+                me.uv_layers.new(name="UVMap")
+                # leaf cards: unit square UVs; trunk: anything
+                uv = me.uv_layers["UVMap"].data
+                for poly in me.polygons:
+                    if poly.material_index == C_LEAF:
+                        for k, li in enumerate(poly.loop_indices):
+                            uv[li].uv = [(0, 0), (1, 0), (1, 1), (0, 1)][k % 4]
+                trees_of[plan.id] = tob
+        else:
+            plan = RoomPlan(room, mansion)
+            b, markers = build_room(plan)
         ob = hb.to_object(b, plan.id)
         if plan.id == target_id:
             img = bpy.data.images.new("lightmap_%s" % plan.id, bake_res, bake_res, alpha=True, float_buffer=True)
@@ -683,7 +1087,19 @@ def build_scene(mansion, textures, bake_res, margin, target_id):
         else:
             img = dummy
             uv0, uv2 = hb.make_uvs(ob, 256, 2)
-        mats = make_room_materials(plan, img, uv2, textures)
+        if is_cell:
+            mats = make_cell_materials(plan, img, uv2, textures)
+            tob = trees_of.get(plan.id)
+            if tob is not None:
+                for part in ("trunk", "leaf"):
+                    tob.data.materials.append(mats[CELL_PARTS.index(part)].copy())
+                for i, m in enumerate(tob.data.materials):
+                    m.name = "%s_%s" % (plan.id, ("trunk", "leaf")[i])
+                # the tree object's material slots are trunk (0) and leaf (1)
+                for poly in tob.data.polygons:
+                    poly.material_index = 0 if poly.material_index == C_TRUNK else 1
+        else:
+            mats = make_room_materials(plan, img, uv2, textures)
         for m in mats:
             ob.data.materials.append(m)
         ob["orchard_role"] = plan.id
@@ -691,7 +1107,7 @@ def build_scene(mansion, textures, bake_res, margin, target_id):
         objects[plan.id] = (ob, mats)
         plans[plan.id] = plan
         ob.select_set(False)
-    return objects, plans, target
+    return objects, plans, target, trees_of
 
 
 def render_still(scene, cam_pos, facing, out_path, samples, lens=22.0):
@@ -732,7 +1148,7 @@ def preview_from_lightmap(scene, plan, ob, mats, png_path, scale, out_path, samp
         for n in nt.nodes:
             if n.type == "TEX_IMAGE" and n.name != "lightmap_bake_target":
                 base_tex = n
-        look = look_for(plan, idx)
+        look = cell_look(plan, idx) if isinstance(plan, CellPlan) else look_for(plan, idx)
         base = LOOK[look][0]
         nodes_keep = [n for n in nt.nodes if n in (base_tex,)]
         for n in list(nt.nodes):
@@ -787,6 +1203,8 @@ def parse_args(argv):
     p.add_argument("--list", action="store_true")
     p.add_argument("--stills", action="store_true")
     p.add_argument("--still-rooms", default="hall,einstruct,spectre,gallery,orangery")
+    p.add_argument("--still-yaw", type=float, default=None, help="override the spawn yaw for every still")
+    p.add_argument("--still-suffix", default="")
     p.add_argument("--samples", type=int, default=512)
     p.add_argument("--res", type=int, default=2048)
     p.add_argument("--margin", type=int, default=8)
@@ -829,7 +1247,7 @@ def main():
     hb.configure_cycles(scene, bake_args)
 
     if args.stills:
-        objects, plans, _ = build_scene(mansion, textures, 256, 2, None)
+        objects, plans, _, _ = build_scene(mansion, textures, 256, 2, None)
         img_dir = os.path.join(REPO, "docs", "img")
         os.makedirs(img_dir, exist_ok=True)
         for rid in args.still_rooms.split(","):
@@ -837,8 +1255,8 @@ def main():
             if plan is None:
                 continue
             sp = plan.spawn
-            yaw = math.radians(float(sp.get("yawDeg", 0)))
-            out = os.path.join(img_dir, "palace-still-%s.png" % rid)
+            yaw = math.radians(float(sp.get("yawDeg", 0)) if args.still_yaw is None else args.still_yaw)
+            out = os.path.join(img_dir, "palace-still-%s%s.png" % (rid, args.still_suffix))
             t = render_still(scene, (sp["position"][0], -sp["position"][2], EYE_H),
                              (-math.sin(yaw), math.cos(yaw), 0.0), out, args.samples)
             log("still %s %.0f s -> %s" % (rid, t, out))
@@ -847,7 +1265,7 @@ def main():
 
     if not args.room:
         raise SystemExit("--room <id>, --stills or --list")
-    objects, plans, target = build_scene(mansion, textures, args.res, args.margin, args.room)
+    objects, plans, target, trees_of = build_scene(mansion, textures, args.res, args.margin, args.room)
     if target is None:
         raise SystemExit("no palace block for room %r" % args.room)
     plan, ob, bake_img, uv2, markers = target
@@ -883,7 +1301,11 @@ def main():
     marker_objs = add_room_markers(scene, plan, markers)
     glb = os.path.join(out_dir, "%s.glb" % plan.id)
     bpy.ops.object.select_all(action="DESELECT")
-    hb.export_glb(glb, [ob] + marker_objs)
+    extra = []
+    if plan.id in trees_of:
+        unlit_trees_for_export(trees_of[plan.id], textures)
+        extra = [trees_of[plan.id]]
+    hb.export_glb(glb, [ob] + extra + marker_objs)
     record = {
         "schema": "orchard/room/1",
         "asset": plan.id,
@@ -914,9 +1336,7 @@ def main():
             "height": plan.h, "faces": len(ob.data.polygons), "surface_area_m2": round(area, 1),
             "doorways": plan.doorways, "windows": plan.windows, "posters": plan.posters,
             "style": plan.style, "floor": plan.floor_look, "wall": plan.wall_look,
-            "materials": ["%s_%s" % (plan.id, p) for p in PARTS],
-            "albedo_linear": {p: list(LOOK[look_for(plan, i)][0]) for i, p in enumerate(PARTS)},
-            "textures": {p: LOOK[look_for(plan, i)][2] for i, p in enumerate(PARTS)},
+            "materials": ["%s_%s" % (plan.id, p) for p in (CELL_PARTS if isinstance(plan, CellPlan) else PARTS)],
         },
         "lighting": {"sun_direction_blender": [round(c, 4) for c in Vector(hb.SUN_DIR).normalized()],
                      "sun_strength": hb.SUN_STRENGTH, "world": "Nishita sky", "world_strength": hb.SKY_STRENGTH,
