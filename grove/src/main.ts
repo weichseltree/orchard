@@ -17,7 +17,7 @@ import { WorldNotices } from "./ui/worldnotice";
 import { frameAt } from "./tape/time";
 import mansionDocument from "./world/mansion.json";
 import { parseMansion, roomById } from "./world/schema";
-import { buildWorld, exhibitRoom, type BuiltWorld } from "./world/world";
+import { buildWorld, exhibitRoom, neighbourhood, type BuiltWorld } from "./world/world";
 import type { VideoWall } from "./media/videowall";
 import type { TapeExhibit } from "./world/tape-exhibit";
 
@@ -205,6 +205,7 @@ function boot(): void {
 
   const built = buildWorld({
     mansion,
+    startRoom: body.room,
     renderer: view.renderer,
     device,
     provenance,
@@ -380,6 +381,7 @@ view.start((dt) => {
   }
 
   if (body.crossedInto) {
+    void world?.ensureRooms(neighbourhood(mansion, body.crossedInto));
     bodyPlaced = true;
     presence.join(presenceRoomFor(body.crossedInto));
     notice(roomById(mansion, body.crossedInto)?.title ?? body.crossedInto);

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { MEDIA_BASE } from "../config";
-import { BundleRefSchema } from "./schema";
+import { BundleRefSchema, parseMansion } from "./schema";
+import mansionDocument from "./mansion.json";
 import { Quaternion, Vector3 } from "three";
 import { bundleUrl, placeStill } from "./world";
 import type { ExhibitRow } from "./exhibits";
@@ -62,5 +63,23 @@ describe("placeStill", () => {
     expect(place.position).toEqual(new Vector3(6.98, 3.1, 0));
     expect(place.quaternion).toBeInstanceOf(Quaternion);
     expect(place.maxHeight).toBe(3.4);
+  });
+});
+
+describe("neighbourhood", () => {
+  it("is the room, two open doorways out, and every cell once one cell is in", async () => {
+    const { neighbourhood } = await import("./world");
+    const mansion = parseMansion(mansionDocument);
+    const fromHall = neighbourhood(mansion, "hall");
+    for (const id of ["hall", "einstruct", "phototroph", "terrace", "world-engine", "spectre", "gallery", "parterre"]) {
+      expect(fromHall).toContain(id);
+    }
+    // the terrace is a cell, so every cell comes along; the greenhouse door is closed
+    for (const id of ["orchard-west", "orchard-south", "orchard-east"]) expect(fromHall).toContain(id);
+    expect(fromHall).not.toContain("greenhouse");
+    expect(fromHall).not.toContain("orangery");
+    // the Planet Room sees no grounds
+    const fromSpectre = neighbourhood(mansion, "spectre");
+    expect(fromSpectre.sort()).toEqual(["einstruct", "hall", "spectre", "world-engine"]);
   });
 });

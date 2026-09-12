@@ -33,6 +33,8 @@ export interface BuildWorldOptions {
    * hangings, never the rooms.
    */
   exhibits?: () => Promise<ExhibitRow[]>;
+  /** The room the visitor starts in; `mansion.start` when absent. */
+  startRoom?: string;
 }
 
 export interface BuiltWorld {
@@ -49,9 +51,44 @@ export interface BuiltWorld {
   /** The first video wall, for the audio toggle. */
   readonly video: VideoWall | null;
   stills: StillPanel[];
-  /** Streams the mansion in. Resolves when everything that can load has. */
+  /** Streams the start room's neighbourhood in. Resolves when everything that can load has. */
   load(): Promise<void>;
+  /** Loads more rooms (a doorway crossing widens the neighbourhood); rooms already loaded are skipped. */
+  ensureRooms(ids: readonly string[]): Promise<void>;
   dispose(): void;
+}
+
+/**
+ * The rooms worth having loaded when the visitor stands in `roomId`: the
+ * room, every room within `depth` open doorways of it, and, as soon as one
+ * of those is a cell of the grounds, every cell, because the grounds are one
+ * view seen through the windows and across the parterre. A palace of
+ * thirteen rooms and their lightmaps is not resident at once; it grows as
+ * you walk (DEVICE-TIERS.md, "rooms by adjacency").
+ */
+export function neighbourhood(mansion: Mansion, roomId: string, depth = 2): string[] {
+  const dist = new Map<string, number>([[roomId, 0]]);
+  const queue = [roomId];
+  while (queue.length) {
+    const id = queue.shift()!;
+    const d = dist.get(id)!;
+    if (d >= depth) continue;
+    const room = mansion.rooms.find((r) => r.id === id);
+    for (const door of room?.doorways ?? []) {
+      if (door.closed || dist.has(door.to)) continue;
+      if (!mansion.rooms.some((r) => r.id === door.to)) continue;
+      dist.set(door.to, d + 1);
+      queue.push(door.to);
+    }
+  }
+  const out = [...dist.keys()];
+  const isCell = (id: string) => mansion.rooms.find((r) => r.id === id)?.fallback.kind === "ground";
+  if (out.some(isCell)) {
+    for (const room of mansion.rooms) {
+      if (room.fallback.kind === "ground" && !dist.has(room.id)) out.push(room.id);
+    }
+  }
+  return out;
 }
 
 /** The room each exhibit hangs in; the client plays what is in the visitor's room. */
@@ -91,6 +128,115 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
   if (sky) group.add(sky.mesh);
 
   const shells = new Map<string, RoomShell>();
+  const requested = new Set<string>();
+  let exhibitsPromise: Promise<ExhibitRow[]> | null = null;
+  const exhibitsOnce = () =>
+    (exhibitsPromise ??= options.exhibits ? options.exhibits() : Promise.resolve([]));
+
+  async function loadShell(room: Room): Promise<void> {
+    const shell = await buildRoom({ room, renderer, tier: device.tier, onNotice });
+    shells.set(room.id, shell);
+    group.add(shell.group);
+    applyMarkers(room, shell);
+    // A baked room knows where its sun was; the dome follows the asset.
+    const assetSun = sunFromAsset(shell.provenance);
+    if (sky && assetSun) sky.setSun(assetSun);
+    provenance.register({
+      id: `room:${room.id}`,
+      title: room.title || room.id,
+      bounds: roomBox(room),
+      rank: 1,
+      read: () => shell.provenance,
+    });
+    options.onRoomReady?.(room, shell);
+  }
+
+  function loadHangings(room: Room, exhibits: ExhibitRow[]): Promise<void>[] {
+    const pending: Promise<void>[] = [];
+    for (const hanging of room.hangings) {
+      const base = bundleUrl(hanging.bundle, exhibits);
+      if (base === null) {
+        const ref = hanging.bundle.exhibit;
+        onNotice(`${hanging.id}: nothing is hung on ${ref?.tree} as ${ref?.kind} yet`);
+        continue;
+      }
+      if (hanging.kind === "tape") {
+        pending.push(
+          TapeExhibit.load({
+            hanging,
+            baseUrl: base,
+            tier: device.tier,
+            pixelRatio: Math.min(window.devicePixelRatio, device.maxPixelRatio),
+            onNotice,
+          })
+            .then((tape) => {
+              world.tapes.push(tape);
+              roomOf.set(tape, room.id);
+              group.add(tape.group);
+              provenance.register({
+                id: `tape:${hanging.id}`,
+                title: hanging.title || tape.bundle.title,
+                bounds: tape.bounds,
+                read: () => tape.provenance(),
+              });
+            })
+            .catch((error: unknown) => onNotice(`tape ${hanging.id}: ${message(error)}`)),
+        );
+      } else if (hanging.kind === "still") {
+        pending.push(
+          buildStill(
+            hanging,
+            base,
+            device.tier,
+            shells.get(room.id)?.markers.posters.get(hanging.marker) ?? null,
+            provenance,
+            onNotice,
+          )
+            .then((still) => {
+              world.stills.push(still);
+              roomOf.set(still, room.id);
+              group.add(still.mesh);
+            })
+            .catch((error: unknown) => onNotice(`still ${hanging.id}: ${message(error)}`)),
+        );
+      } else {
+        pending.push(
+          buildVideo(hanging.id, hanging.title, base, hanging, provenance, onNotice)
+            .then((video) => {
+              if (!video) return;
+              world.videos.push(video);
+              roomOf.set(video, room.id);
+              group.add(video.mesh);
+            })
+            .catch((error: unknown) => onNotice(`video ${hanging.id}: ${message(error)}`)),
+        );
+      }
+    }
+    return pending;
+  }
+
+  /**
+   * Loads the rooms named that are not loaded yet: shells one after another
+   * (cheap, and each appears as it lands), then every hanging of those rooms
+   * at once. Idempotent; a room is never loaded twice.
+   */
+  async function ensureRooms(ids: readonly string[]): Promise<void> {
+    const rooms: Room[] = [];
+    for (const id of ids) {
+      if (requested.has(id)) continue;
+      const room = mansion.rooms.find((r) => r.id === id);
+      if (!room) continue;
+      requested.add(id);
+      rooms.push(room);
+    }
+    for (const room of rooms) await loadShell(room);
+    const wantsExhibits = rooms.some((room) =>
+      room.hangings.some((hanging) => hanging.bundle.exhibit !== undefined),
+    );
+    const exhibits = wantsExhibits ? await exhibitsOnce() : [];
+    await Promise.all(rooms.flatMap((room) => loadHangings(room, exhibits)));
+  }
+
   const world: BuiltWorld = {
     group,
     tapes: [],
@@ -102,111 +248,8 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
       return this.videos.find((v) => v !== null) ?? null;
     },
     stills: [],
-    load: async () => {
-      for (const room of mansion.rooms) {
-        const shell = await buildRoom({ room, renderer, tier: device.tier, onNotice });
-        shells.set(room.id, shell);
-        group.add(shell.group);
-        applyMarkers(room, shell);
-        // A baked room knows where its sun was; the dome follows the asset.
-        const assetSun = sunFromAsset(shell.provenance);
-        if (sky && assetSun) sky.setSun(assetSun);
-        provenance.register({
-          id: `room:${room.id}`,
-          title: room.title || room.id,
-          bounds: roomBox(room),
-          rank: 1,
-          read: () => shell.provenance,
-        });
-        options.onRoomReady?.(room, shell);
-      }
-
-      const wantsExhibits = mansion.rooms.some((room) =>
-        room.hangings.some((hanging) => hanging.bundle.exhibit !== undefined),
-      );
-      const exhibits = wantsExhibits && options.exhibits ? await options.exhibits() : [];
-
-      // Every hanging loads at once: a visitor in the third room must not
-      // wait behind the first room's tapes and videos. Lists keep hanging
-      // order so "the first tape" means the first in mansion.json.
-      const tapesByOrder: Array<TapeExhibit | null> = [];
-      const videosByOrder: Array<VideoWall | null> = [];
-      const stillsByOrder: Array<StillPanel | null> = [];
-      const pending: Promise<void>[] = [];
-      for (const room of mansion.rooms) {
-        for (const hanging of room.hangings) {
-          const base = bundleUrl(hanging.bundle, exhibits);
-          if (base === null) {
-            const ref = hanging.bundle.exhibit;
-            onNotice(`${hanging.id}: nothing is hung on ${ref?.tree} as ${ref?.kind} yet`);
-            continue;
-          }
-          if (hanging.kind === "tape") {
-            const slot = tapesByOrder.push(null) - 1;
-            pending.push(
-              TapeExhibit.load({
-                hanging,
-                baseUrl: base,
-                tier: device.tier,
-                pixelRatio: Math.min(window.devicePixelRatio, device.maxPixelRatio),
-                onNotice,
-              })
-                .then((tape) => {
-                  tapesByOrder[slot] = tape;
-                  roomOf.set(tape, room.id);
-                  group.add(tape.group);
-                  provenance.register({
-                    id: `tape:${hanging.id}`,
-                    title: hanging.title || tape.bundle.title,
-                    bounds: tape.bounds,
-                    read: () => tape.provenance(),
-                  });
-                })
-                .catch((error: unknown) => onNotice(`tape ${hanging.id}: ${message(error)}`)),
-            );
-          } else if (hanging.kind === "still") {
-            const slot = stillsByOrder.push(null) - 1;
-            pending.push(
-              buildStill(
-                hanging,
-                base,
-                device.tier,
-                shells.get(room.id)?.markers.posters.get(hanging.marker) ?? null,
-                provenance,
-                onNotice,
-              )
-                .then((still) => {
-                  stillsByOrder[slot] = still;
-                  roomOf.set(still, room.id);
-                  group.add(still.mesh);
-                })
-                .catch((error: unknown) => onNotice(`still ${hanging.id}: ${message(error)}`)),
-            );
-          } else {
-            const slot = videosByOrder.push(null) - 1;
-            pending.push(
-              buildVideo(hanging.id, hanging.title, base, hanging, provenance, onNotice)
-                .then((video) => {
-                  if (!video) return;
-                  videosByOrder[slot] = video;
-                  roomOf.set(video, room.id);
-                  group.add(video.mesh);
-                })
-                .catch((error: unknown) => onNotice(`video ${hanging.id}: ${message(error)}`)),
-            );
-          }
-        }
-      }
-      // Each list fills as its items land; the arrays are shared by reference
-      // so the HUD sees a tape the moment it is in.
-      world.tapes = tapesByOrder;
-      world.videos = videosByOrder as VideoWall[];
-      world.stills = stillsByOrder as StillPanel[];
-      await Promise.all(pending);
-      world.tapes = tapesByOrder.filter((t): t is TapeExhibit => t !== null);
-      world.videos = videosByOrder.filter((v): v is VideoWall => v !== null);
-      world.stills = stillsByOrder.filter((s): s is StillPanel => s !== null);
-    },
+    load: () => ensureRooms(neighbourhood(mansion, options.startRoom ?? mansion.start)),
+    ensureRooms: (ids) => ensureRooms(ids),
     dispose() {
       sky?.dispose();
       for (const tape of world.tapes) tape?.dispose();
