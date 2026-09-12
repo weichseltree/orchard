@@ -799,6 +799,14 @@ def build_facade(b, mansion):
         b.quad((FACADE_X, y1, z0), (0, 0, z1 - z0), (depth, 0, 0), C_STONE, want=(0, -1, 0))
         b.quad((FACADE_X, y0, z1), (0, y1 - y0, 0), (depth, 0, 0), C_STONE, want=(0, 0, -1))
         b.quad((FACADE_X, y0, 0.0), (0, y1 - y0, 0), (depth, 0, 0), C_STONE, want=(0, 0, 1))
+    # stone surrounds round every opening, standing proud of the limewash
+    for y0, y1, z0, z1, kind in holes:
+        fw, fp = 0.28, 0.10
+        box(b, FACADE_X - fp, FACADE_X, y0 - fw, y0, max(z0 - 0.02, 0.0), z1 + fw, C_STONE, top=True)
+        box(b, FACADE_X - fp, FACADE_X, y1, y1 + fw, max(z0 - 0.02, 0.0), z1 + fw, C_STONE, top=True)
+        box(b, FACADE_X - fp, FACADE_X, y0 - fw, y1 + fw, z1, z1 + fw, C_STONE, top=True)
+        if kind == "window":
+            box(b, FACADE_X - 0.16, FACADE_X, y0 - fw, y1 + fw, z0 - 0.12, z0, C_STONE, top=True)  # sill
     # a string course and a parapet band in stone
     b.quad((FACADE_X - 0.12, y_lo, 1.1), (0, y_hi - y_lo, 0), (0.12, 0, 0), C_STONE, want=(0, 0, 1))
     b.quad((FACADE_X - 0.12, y_lo, 0.0), (0, y_hi - y_lo, 0), (0, 0, 1.1), C_STONE, want=(-1, 0, 0))

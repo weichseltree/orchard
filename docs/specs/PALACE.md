@@ -644,6 +644,44 @@ naming `bundle: {"id": ...}` the way a hanging does. P1 ships from
 `public/` as the hall does; the bundle kind lands with P3, when there are
 ten rooms to move.
 
+## 9. As built (2026-09-13)
+
+Manuel ruled the look on the evening of 2026-09-12 ("white and gold and
+marble, like the Naturhistorisches Museum; choose yourself; build the
+entire scene"), so the six questions of section 8 were answered by
+delegation (DECISIONS 2026-09-12) and `grove/tools/palace/palace.py` built
+the plan above in one evening. Where the build departs from the spec:
+
+- **Walls stand 10 cm outside their bounds** (`WALL_HALF`): two rooms
+  sharing a plane had coplanar faces that shadowed each other black in the
+  bake, so each room's faces sit 20 cm apart and every doorway carries a
+  10 cm reveal on each side; the body clamp keeps the visitor inside the
+  bounds. Window reveals run 40 cm to meet the facade at x = -7.5.
+- **The materials are the museum's, not the gallery palette**: cream
+  stucco, a red-brown marble wainscot, grey-white marble dressings a step
+  below the wall so the order reads, gilt capitals, crests and the
+  cornice bead, an inlaid marble floor in the hall and gallery, parquet in
+  the state rooms, stone in the orangery and greenhouse, near-black in the
+  Planet Room. Every texture is value-noise marble generated in the script
+  and embedded as a JPEG.
+- **Trees are card trees, not Sapling**: no tree add-on ships with this
+  Blender. Three crossed 4.6 m cards with a generated crown texture and
+  small dark cherries, an eight-sided trunk, a per-vertex sun term, exported
+  unlit and alpha-masked (the exporter writes emission as black PBR, so the
+  glb's materials are patched after export). About 370 trees on a 7 m grid
+  with jitter, merged per cell: one draw call per cell.
+- **The facade is one wall with a flat slate roof**, stone surrounds, a
+  string course and a parapet band; no hipped roof, no rustication.
+- **Cells bake at 4096² (terrace, parterre) and 2048² (orchards)** with
+  the whole palace as occluder; the hall and rooms at 2048² and 512
+  samples, the gallery and orangery at 4096² and 256.
+- **The client loads rooms by neighbourhood** (two open doorways, and every
+  cell as soon as one is in), grows on each crossing, and does not unload
+  yet; closed doors, ground cells, a tape `variant` override for the moon
+  and a 400 m sky dome landed with it.
+- Not built yet from sections 4.3 and 6: probes, the reflection cubemap,
+  the impulse responses, `visibility.json`, the far ring, the `page` kind.
+
 ## 8. Open questions for Manuel
 
 1. **The facade**: Schönbrunner Gelb, or a grey-white limewash like the
