@@ -74,7 +74,8 @@ LOOK = {
     "wall_dark":     ((0.02, 0.02, 0.025), 0.95, None, 1.0, 0.0),
     "ceiling":       ((0.74, 0.72, 0.68), 0.92, None, 1.0, 0.0),
     "ceiling_dark":  ((0.015, 0.015, 0.02), 0.95, None, 1.0, 0.0),
-    "marble_white":  ((0.60, 0.59, 0.57), 0.30, "marble_white", 1.5, 0.0),
+    # a grey-white stone a step below the cream wall, so pilasters and surrounds read in relief
+    "marble_white":  ((0.46, 0.46, 0.45), 0.30, "marble_white", 1.5, 0.0),
     "marble_red":    ((0.30, 0.14, 0.11), 0.28, "marble_red", 1.5, 0.0),
     "gilt":          ((0.85, 0.65, 0.30), 0.35, None, 1.0, 1.0),
     "panel":         ((0.78, 0.77, 0.74), 0.92, None, 1.0, 0.0),
@@ -96,7 +97,12 @@ TYPE_DEFAULTS = {
 }
 
 WAINSCOT_P, CORNICE_P = 0.06, 0.12
-DOOR_DEPTH, WIN_DEPTH = 0.45, 0.35
+# Each room's wall faces stand WALL_HALF outside its bounds, so two rooms
+# sharing a plane have their faces 2 * WALL_HALF apart: coplanar faces
+# shadow each other black in the bake and z-fight in the client. The body
+# clamp keeps the visitor inside the bounds, 10 cm short of the wall.
+WALL_HALF = 0.10
+DOOR_DEPTH, WIN_DEPTH = WALL_HALF, 0.35
 PANEL_DEPTH = 0.04
 PIL_W, PIL_P = 0.50, 0.12
 CAP_W, CAP_H, CAP_P = 0.72, 0.32, 0.20
@@ -198,7 +204,7 @@ def make_textures(out_dir, px=1024):
     os.makedirs(out_dir, exist_ok=True)
     rng = np.random.default_rng(7)
     gens = {
-        "marble_white": lambda: marble(px, rng, (0.63, 0.62, 0.60), (0.40, 0.40, 0.42), veins=6.0, strength=0.5),
+        "marble_white": lambda: marble(px, rng, (0.50, 0.50, 0.49), (0.30, 0.30, 0.33), veins=6.0, strength=0.55),
         "marble_red": lambda: marble(px, rng, (0.30, 0.13, 0.10), (0.58, 0.48, 0.42), vein_width=0.025, veins=8.0, strength=0.45),
         "floor_pattern": lambda: floor_pattern(px, rng),
         "parquet": lambda: parquet(px, rng),
@@ -246,8 +252,8 @@ class RoomPlan:
         d.update({k: v for k, v in p.items() if k in d})
         self.style = d
         (gx0, gy0, gz0), (gx1, gy1, gz1) = room["bounds"]["min"], room["bounds"]["max"]
-        self.x0, self.x1 = float(gx0), float(gx1)
-        self.y0, self.y1 = -float(gz1), -float(gz0)          # blender y = -gltf z
+        self.x0, self.x1 = float(gx0) - WALL_HALF, float(gx1) + WALL_HALF
+        self.y0, self.y1 = -float(gz1) - WALL_HALF, -float(gz0) + WALL_HALF   # blender y = -gltf z
         self.h = float(gy1 - gy0) if not p.get("h") else float(p["h"])
         self.h = d["h"] if abs(self.h - d["h"]) > 1e-6 and not p.get("h") else self.h
         self.windows = p.get("windows", [])            # [{wall, bays|centers, width, sill, head, reveal}]
@@ -272,9 +278,9 @@ class RoomPlan:
 
     def wall_of_door(self, d):
         if d["axis"] == "x":
-            return "-x" if abs(d["at"] - self.x0) < 1e-6 else "+x"
+            return "-x" if abs(d["at"] - (self.x0 + WALL_HALF)) < 1e-6 else "+x"
         by = -d["at"]
-        return "-y" if abs(by - self.y0) < 1e-6 else "+y"
+        return "-y" if abs(by - (self.y0 + WALL_HALF)) < 1e-6 else "+y"
 
     def u_of(self, wall, x=None, y=None):
         """Distance along the wall from its A corner, for a point given by the
@@ -471,8 +477,7 @@ def build_room(plan):
             leaves.append((wall, hole))
         else:
             holes_by_wall[wall].append(hole)
-            if plan.id < d["to"]:
-                reveals.append((wall, hole, DOOR_DEPTH, "lrt", P_TRIM, "door"))
+            reveals.append((wall, hole, DOOR_DEPTH, "lrt", P_TRIM, "door"))
         surrounds.append((wall, hole))
         markers.append(("door", d, wall, hole))
     for wall, hole, depth in plan.window_holes():
@@ -639,7 +644,7 @@ def add_room_markers(scene, plan, markers):
         uc = (u0 + u1) / 2
         if kind == "door":
             d = ref
-            out.append(empty("door_%s" % d["to"], tuple(a + uh * uc), n,
+            out.append(empty("door_%s" % d["to"], tuple(a + uh * uc + Vector(n) * WALL_HALF), n,
                              {"role": "doorway", "width_m": float(d["width"]), "height_m": float(d["height"]),
                               "to": d["to"], **({"closed": True} if d.get("closed") else {})}))
         elif kind == "poster":
