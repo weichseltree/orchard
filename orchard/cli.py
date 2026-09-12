@@ -1,5 +1,5 @@
-"""orchard <verb>. Verbs are the orchard's: scout, plant, board, bundle, push, r2,
-ledger, doctor, serve."""
+"""orchard <verb>. Verbs are the orchard's: scout, plant, board, bundle, harvest,
+push, exhibit, r2, ledger, doctor, serve."""
 from __future__ import annotations
 
 import argparse
@@ -126,6 +126,49 @@ def cmd_bundle_video(a):
     print(out)
 
 
+def cmd_bundle_still(a):
+    from .bundle import bundle_still
+    out = bundle_still(a.image, tree=a.tree, title=a.title, out_root=a.out)
+    print(out)
+
+
+def cmd_bundle_verify(a):
+    from .bundle import verify_bundle
+    rep = verify_bundle(a.bundle_dir)
+    print(json.dumps(rep, indent=1))
+    sys.exit(0 if rep["ok"] else 1)
+
+
+def cmd_harvest(a):
+    from .harvest import harvest
+    rows = harvest(a.tree, only=a.only or None, out_root=a.out, dry_run=a.dry_run,
+                   force=a.force)
+    _table([[r["kind"], r["status"], r.get("bundle") or "-", r["path"]] for r in rows],
+           ["kind", "status", "bundle", "path"])
+
+
+def cmd_exhibit_hang(a):
+    from .exhibit import hang
+    try:
+        rep = hang(a.bundle_dir, approve=a.approve, push=a.push, dry_run=a.dry_run,
+                   host=a.host, tree=a.tree, kind=a.kind, title=a.title)
+    except PermissionError as exc:
+        print(exc, file=sys.stderr)
+        sys.exit(3)
+    print(json.dumps(rep, indent=1, default=str))
+
+
+def cmd_exhibit_list(a):
+    from .exhibit import listing
+    print(listing())
+
+
+def cmd_exhibit_take_down(a):
+    from .exhibit import take_down
+    take_down(a.id)
+    print(f"took down exhibit {a.id}")
+
+
 def cmd_push(a):
     from .push import R2NotEnabled, cors_preflight, push, wait_public
     try:
@@ -185,6 +228,35 @@ def main(argv=None):
     b.add_argument("--title", required=True)
     b.add_argument("--out", default=str(RESULTS / "bundles"))
     b.set_defaults(fn=cmd_bundle_video)
+    b = bsub.add_parser("still", help="an image as AVIF + JPEG at three widths")
+    b.add_argument("image"); b.add_argument("--tree", required=True)
+    b.add_argument("--title", required=True)
+    b.add_argument("--out", default=str(RESULTS / "bundles"))
+    b.set_defaults(fn=cmd_bundle_still)
+    b = bsub.add_parser("verify", help="id and every digest, no token needed")
+    b.add_argument("bundle_dir"); b.set_defaults(fn=cmd_bundle_verify)
+
+    s = sub.add_parser("harvest", help="bundle a tree's artefacts and record the ids")
+    s.add_argument("tree")
+    s.add_argument("--only", action="append", choices=["tape", "clip", "master", "still", "figure"])
+    s.add_argument("--out", default=str(RESULTS / "bundles"))
+    s.add_argument("--dry-run", action="store_true")
+    s.add_argument("--force", action="store_true", help="re-bundle even when current")
+    s.set_defaults(fn=cmd_harvest)
+
+    s = sub.add_parser("exhibit", help="what hangs in the grove")
+    esub = s.add_subparsers(dest="what", required=True)
+    e = esub.add_parser("hang", help="push a bundle and name it to the database")
+    e.add_argument("bundle_dir")
+    e.add_argument("--approve", action="store_true", help="record the ruling in the manifest")
+    e.add_argument("--no-push", dest="push", action="store_false")
+    e.add_argument("--dry-run", action="store_true")
+    e.add_argument("--host", default=PUBLIC_HOST)
+    e.add_argument("--tree"); e.add_argument("--kind"); e.add_argument("--title")
+    e.set_defaults(fn=cmd_exhibit_hang)
+    e = esub.add_parser("list", help="the exhibit table"); e.set_defaults(fn=cmd_exhibit_list)
+    e = esub.add_parser("take-down", help="remove an exhibit by id")
+    e.add_argument("id", type=int); e.set_defaults(fn=cmd_exhibit_take_down)
 
     s = sub.add_parser("push", help="upload a bundle to R2")
     s.add_argument("bundle_dir")

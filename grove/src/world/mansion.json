@@ -43,7 +43,7 @@
           "id": "einstruct-tape",
           "kind": "tape",
           "title": "A+B annihilation, 2D, seed 0",
-          "bundle": { "id": "84b67b5a0d22eeab", "path": "/dev-bundle/" },
+          "bundle": { "exhibit": { "tree": "einstruct", "kind": "tape" }, "id": "2dd0038799b2db15", "path": "/dev-bundle/" },
           "position": [0, 1.0, -15.4],
           "rotationDeg": [-90, 0, 0],
           "longSideMeters": 6,
@@ -53,7 +53,7 @@
           "id": "einstruct-wall",
           "kind": "video",
           "title": "ab_d2 segregation, 40 s",
-          "bundle": { "id": "2dc8ca525724aefd", "path": "/dev-video/" },
+          "bundle": { "exhibit": { "tree": "einstruct", "kind": "video" }, "id": "216b720501856b14", "path": "/dev-video/" },
           "position": [0, 2.35, -19.9],
           "rotationDeg": [0, 0, 0],
           "widthMeters": 6

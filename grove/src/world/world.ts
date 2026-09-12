@@ -4,6 +4,7 @@ import type { DeviceProfile } from "../device";
 import { VideoWall } from "../media/videowall";
 import { VideoBundleSchema } from "../tape/bundle";
 import type { Provenance } from "../ui/provenance";
+import { bundleBaseOf, pickExhibit, type ExhibitRow } from "./exhibits";
 import { buildRoom, type RoomShell } from "./rooms";
 import { buildSky, sunFromAsset, type SkyDome } from "./sky";
 import { TapeExhibit } from "./tape-exhibit";
@@ -24,6 +25,12 @@ export interface BuildWorldOptions {
    * itself. The caller uses it to put the body on the asset's own spawn.
    */
   onRoomReady?: (room: Room, shell: RoomShell) => void;
+  /**
+   * The live exhibit table, when a hanging asks for one. Awaited once, after
+   * the rooms are up; a resolver that never answers holds up only the
+   * hangings, never the rooms.
+   */
+  exhibits?: () => Promise<ExhibitRow[]>;
 }
 
 export interface BuiltWorld {
@@ -35,10 +42,19 @@ export interface BuiltWorld {
   dispose(): void;
 }
 
-/** Where a bundle's directory lives: a content hash on the media host, or a dev path. */
-export function bundleUrl(ref: BundleRef): string {
+/**
+ * Where a bundle's directory lives: what the exhibit table hangs on the tree,
+ * else a content hash on the media host, else a dev path. Null when the ref
+ * names only an exhibit and nothing is hung there yet.
+ */
+export function bundleUrl(ref: BundleRef, exhibits: Iterable<ExhibitRow> = []): string | null {
+  if (ref.exhibit) {
+    const row = pickExhibit(exhibits, ref.exhibit.tree, ref.exhibit.kind);
+    if (row) return bundleBaseOf(row);
+  }
   if (ref.id) return `${MEDIA_BASE}/${ref.id}/`;
-  return ref.path.endsWith("/") ? ref.path : `${ref.path}/`;
+  if (ref.path) return ref.path.endsWith("/") ? ref.path : `${ref.path}/`;
+  return null;
 }
 
 /**
@@ -78,9 +94,19 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
         options.onRoomReady?.(room, shell);
       }
 
+      const wantsExhibits = mansion.rooms.some((room) =>
+        room.hangings.some((hanging) => hanging.bundle.exhibit !== undefined),
+      );
+      const exhibits = wantsExhibits && options.exhibits ? await options.exhibits() : [];
+
       for (const room of mansion.rooms) {
         for (const hanging of room.hangings) {
-          const base = bundleUrl(hanging.bundle);
+          const base = bundleUrl(hanging.bundle, exhibits);
+          if (base === null) {
+            const ref = hanging.bundle.exhibit;
+            onNotice(`${hanging.id}: nothing is hung on ${ref?.tree} as ${ref?.kind} yet`);
+            continue;
+          }
           if (hanging.kind === "tape") {
             if (world.tape) {
               onNotice(`${hanging.id}: only one tape volume in M0`);

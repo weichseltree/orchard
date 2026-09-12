@@ -143,6 +143,7 @@ if (device.touch) {
 watchXrSupport((supported) => hud.setXrAvailable(supported));
 
 let world: BuiltWorld | null = null;
+const EXHIBIT_WAIT_MS = 8000;
 const headWorld = new Vector3();
 
 function boot(): void {
@@ -156,6 +157,9 @@ function boot(): void {
     device,
     provenance,
     onNotice: (text) => notice(text),
+    // The hangings wait this long for the live exhibit table, then take the
+    // pinned ids: a slow link costs seconds, a dead one costs nothing.
+    exhibits: () => presence.whenExhibits(EXHIBIT_WAIT_MS),
     onRoomReady: (room) => {
       // The asset's spawn marker is the authority; if the visitor has not
       // moved yet, put them where the bake says the room starts.

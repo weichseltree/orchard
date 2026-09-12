@@ -51,6 +51,7 @@ class Artefact(BaseModel):
     commit: str = ""               # tree commit it was made at
     sha256: str = ""               # of the file, when pinned
     approved: bool = False         # your ruling; only approved artefacts reach the grove
+    bundle: str = ""               # id of the bundle `orchard harvest` wrote from it
 
 
 class Phenomenon(BaseModel):

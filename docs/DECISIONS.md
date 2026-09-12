@@ -71,3 +71,18 @@ Append-only. A decision names the day, the ruling, and the alternative it beat.
   the pools on the floor) and an HDR environment (a download on the phone
   tier for six apertures). The dome's colours are a placeholder until the
   hall gets its material and colour pass.
+- **2026-09-12 · M2: the manifest is the join.** `orchard harvest` bundles
+  each artefact a tree declares and writes the bundle id, the source digest
+  and the commit back into the artefact; the bundle id moves with the tree's
+  commit, as WP1 ruled, and the manifest follows it. Beat a separate registry
+  of bundles (a second list to drift) and hand-copying ids into the client.
+- **2026-09-12 · A hanging may name an exhibit, not a bundle.**
+  `{"exhibit": {"tree": "einstruct", "kind": "tape"}}` takes the latest row
+  of the live `exhibit` table; the pinned `id` beside it plays while
+  single-player. `orchard exhibit hang` is therefore the whole publish step
+  for a new result, and it refuses an artefact that is not `approved`
+  (LAWS 22), recording the ruling in the manifest when `--approve` gives it.
+- **2026-09-12 · Stills are AVIF with a JPEG at every width** (full ≤ 4096,
+  phone 1600, thumb 640, the thumb JPEG only), recipe in the id and digests in
+  `media.json` like video, because libaom is not promised bit-stable.
+  spectre's stock sidecar (`<file>.json`) rides into `source.provenance`.

@@ -9,6 +9,7 @@ import {
   TOKEN_KEY,
 } from "../config";
 import { DbConnection } from "../module_bindings";
+import type { ExhibitRow } from "../world/exhibits";
 
 // Presence over SpacetimeDB. Four rules shape this file:
 //
@@ -92,6 +93,7 @@ export interface PresenceConnection {
     visitor: TableEvents<VisitorRow>;
     pose: TableEvents<PoseRow>;
     room: { iter(): Iterable<{ name: string }> };
+    exhibit: { iter(): Iterable<ExhibitRow> };
   };
   reducers: {
     join(params: { name: string; room: string }): Promise<void>;
@@ -152,6 +154,9 @@ export class Presence {
   #connection: PresenceConnection | null = null;
   #identityHex = "";
   #subscription: { unsubscribe(): void } | null = null;
+  #exhibitSubscription: { unsubscribe(): void } | null = null;
+  #exhibitsApplied = false;
+  #exhibitWaiters: Array<() => void> = [];
   #dirty = false;
   #wantRoom: string | null = null;
   #joining = false;
@@ -288,6 +293,34 @@ export class Presence {
     return true;
   }
 
+  /** What hangs where, as the server has it now; empty while single-player. */
+  exhibits(): ExhibitRow[] {
+    const connection = this.#connection;
+    if (!connection || this.status !== "online") return [];
+    return [...connection.db.exhibit.iter()];
+  }
+
+  /**
+   * Resolves with the exhibit table once its subscription has applied, or
+   * with whatever is there when `timeoutMs` runs out: the world must not wait
+   * on a network that may never answer, and a pinned bundle id is the
+   * single-player answer.
+   */
+  whenExhibits(timeoutMs: number): Promise<ExhibitRow[]> {
+    if (this.#exhibitsApplied) return Promise.resolve(this.exhibits());
+    return new Promise((resolve) => {
+      let done = false;
+      const finish = (): void => {
+        if (done) return;
+        done = true;
+        this.#clearTimer(timer);
+        resolve(this.exhibits());
+      };
+      const timer = this.#setTimer(finish, timeoutMs);
+      this.#exhibitWaiters.push(finish);
+    });
+  }
+
   /** The rooms the server knows about, for the doorway check and the HUD. */
   knownRooms(): string[] {
     const connection = this.#connection;
@@ -302,6 +335,8 @@ export class Presence {
     const connection = this.#connection;
     this.#subscription?.unsubscribe();
     this.#subscription = null;
+    this.#exhibitSubscription?.unsubscribe();
+    this.#exhibitSubscription = null;
     if (connection && this.status === "online") {
       connection.reducers.leave({}).catch(() => undefined);
       connection.disconnect();
@@ -337,6 +372,7 @@ export class Presence {
             }
             this.#setStatus("online");
             this.#watchTables(connection);
+            this.#subscribeExhibits(connection);
             this.#resetPose();
             this.#pump();
           },
@@ -354,6 +390,8 @@ export class Presence {
   #dropped(detail: string): void {
     this.#connection = null;
     this.#subscription = null;
+    this.#exhibitSubscription = null;
+    this.#exhibitsApplied = false;
     this.joinedRoom = null;
     this.#joining = false;
     if (this.peers.size > 0) {
@@ -443,6 +481,25 @@ export class Presence {
     connection.db.pose.onInsert(touch);
     connection.db.pose.onUpdate?.(touch);
     connection.db.pose.onDelete(touch);
+  }
+
+  #subscribeExhibits(connection: PresenceConnection): void {
+    this.#exhibitSubscription?.unsubscribe();
+    this.#exhibitsApplied = false;
+    const applied = (): void => {
+      this.#exhibitsApplied = true;
+      const waiters = this.#exhibitWaiters;
+      this.#exhibitWaiters = [];
+      for (const wake of waiters) wake();
+    };
+    this.#exhibitSubscription = connection
+      .subscriptionBuilder()
+      .onApplied(applied)
+      .onError(() => {
+        this.#callbacks.onNotice?.("presence: the exhibit subscription failed");
+        applied(); // whoever waits gets the empty table rather than the timeout
+      })
+      .subscribe(["SELECT * FROM exhibit"]);
   }
 
   #subscribe(connection: PresenceConnection, room: string): void {

@@ -1,61 +1,84 @@
 name: spectre
 path: /home/manuel/weichseltree/spectre
-remote: ""
-question: Can a fine particle world be distilled into coarser dynamics that take a longer stable timestep, and still measure like matter?
+remote: ''
+question: Can a fine particle world be distilled into coarser dynamics that take a longer stable timestep,
+  and still measure like matter?
 status: active
 stage: planted
 gpu: mitsuba
-potential: 9
-kill: If the EP3 planet cannot be shown as a lit, moving, narrated 3 minutes by the second round, spectre supplies renderers to the studio and stops making episodes itself.
 phenomena:
-  - id: planet_from_scratch
-    title: Heavy things go to the middle and nobody told them to
-    hook: There is no rule in this simulation that says heavy things go to the middle. There are two forces and a clock, and this is what came out.
-    evidence: results/m03_first_film/assembly-v6/ep03-assembly.mp4
-    hero: true
-  - id: surface_tension
-    title: A world that measures like matter
-    hook: That surface has a strength, the same property that lets insects stand on ponds. Our world measures 0.40. The published value is 0.42.
-    evidence: deliverables/first-film.mp4
-    hero: true
-  - id: same_seed_one_number
-    title: Same seed, same forces, one number different
-    hook: The only difference between these three worlds is that one number.
-    evidence: lanes/m03_first_film/episodes/ep03/shots.py
+- id: planet_from_scratch
+  title: Heavy things go to the middle and nobody told them to
+  hook: There is no rule in this simulation that says heavy things go to the middle. There are two forces
+    and a clock, and this is what came out.
+  evidence: results/m03_first_film/assembly-v6/ep03-assembly.mp4
+  hero: true
+- id: surface_tension
+  title: A world that measures like matter
+  hook: That surface has a strength, the same property that lets insects stand on ponds. Our world measures
+    0.40. The published value is 0.42.
+  evidence: deliverables/first-film.mp4
+  hero: true
+- id: same_seed_one_number
+  title: Same seed, same forces, one number different
+  hook: The only difference between these three worlds is that one number.
+  evidence: lanes/m03_first_film/episodes/ep03/shots.py
+  hero: false
 artefacts:
-  - kind: master
-    path: deliverables/first-film.mp4
-    title: EP02 S5 excerpt, 42.8 s, 1080p60 HEVC, no audio stream
-    produced_by: python spectre.py run m03 gpu_render --compute gpu --name production-v2
-  - kind: clip
-    path: results/m03_first_film/assembly-v6/ep03-assembly.mp4
-    title: EP03 review assembly v6, 640x360, 8:25, with VO
-    produced_by: python -m lanes.m03_first_film.assemble
+- kind: master
+  path: deliverables/first-film.mp4
+  title: EP02 S5 excerpt, 42.8 s, 1080p60 HEVC, no audio stream
+  produced_by: python spectre.py run m03 gpu_render --compute gpu --name production-v2
+  commit: b0c50e0
+  sha256: 87c2b279cf2d0fc82f5d2f86c3cf344f00bb47949780802f7b087799607044a7
+  approved: false
+  bundle: 0462efca96af7297
+- kind: clip
+  path: results/m03_first_film/assembly-v6/ep03-assembly.mp4
+  title: EP03 review assembly v6, 640x360, 8:25, with VO
+  produced_by: python -m lanes.m03_first_film.assemble
+  commit: b0c50e0
+  sha256: c55e8831c81b9b4087a830212410093dfce4cbcac0f9186fc7e183d3e2784b69
+  approved: false
+  bundle: 2527c24bbbde0982
 producers:
   tape: python spectre.py run m03 dense_window --phase sim --tag {tag}
   render: EXP_LANE=cpu python -m core.film.mts.sequence {shot}
+  figure: ''
   lane: cpu
+  env: {}
 theses:
-  - id: planet-from-scratch
-    question: If you drop two kinds of particles with two forces and a clock, why does a planet with a heavy core appear, and how would you know it is not staged?
-    number: chi twelve, 97 percent heavy in the middle fifth of the ball against 38 outside
-    picture: three worlds from one seed differing in one number, the heavy core forming in only one
-    phenomena: [planet_from_scratch, same_seed_one_number]
-    stage: animatic
-    episode: Planet from scratch
-    blocked_by: v6 judged barely watchable; 6 of 18 shots the same grey disc; captions read as debug overlay; redesign to style B astrophotography requested 2026-09-11
-  - id: measures-like-matter
-    question: Can a toy world be held to a number from a real lab and pass?
-    number: surface tension 0.40 against the published 0.42, error bars overlapping
-    picture: the droplet's surface with the measurement drawn on it
-    phenomena: [surface_tension]
-    stage: styleframe
-    episode: This world measures like matter
+- id: planet-from-scratch
+  question: If you drop two kinds of particles with two forces and a clock, why does a planet with a heavy
+    core appear, and how would you know it is not staged?
+  number: chi twelve, 97 percent heavy in the middle fifth of the ball against 38 outside
+  picture: three worlds from one seed differing in one number, the heavy core forming in only one
+  phenomena:
+  - planet_from_scratch
+  - same_seed_one_number
+  stage: animatic
+  episode: Planet from scratch
+  blocked_by: v6 judged barely watchable; 6 of 18 shots the same grey disc; captions read as debug overlay;
+    redesign to style B astrophotography requested 2026-09-11
+- id: measures-like-matter
+  question: Can a toy world be held to a number from a real lab and pass?
+  number: surface tension 0.40 against the published 0.42, error bars overlapping
+  picture: the droplet's surface with the measurement drawn on it
+  phenomena:
+  - surface_tension
+  stage: styleframe
+  episode: This world measures like matter
+  blocked_by: ''
 budget:
-  gpu_h: 0
-  cpu_h: 20
+  gpu_h: 0.0
+  cpu_h: 20.0
   tts_chars: 15000
-  llm_usd: 5
-  disk_gb: 20
+  llm_usd: 5.0
+  disk_gb: 20.0
   prio_cap: 10
-notes: core/film is the de facto shared studio (Mitsuba 3, vo.py, pacing.py, markdown storyboards, encode.py). ~190 film-* probe logs against one silent 43 s deliverable. GPU path-traced frame 43 s, CPU 262 s. 56 GB on disk; no git remote configured for this checkout.
+kill: If the EP3 planet cannot be shown as a lit, moving, narrated 3 minutes by the second round, spectre
+  supplies renderers to the studio and stops making episodes itself.
+potential: 9
+notes: core/film is the de facto shared studio (Mitsuba 3, vo.py, pacing.py, markdown storyboards, encode.py).
+  ~190 film-* probe logs against one silent 43 s deliverable. GPU path-traced frame 43 s, CPU 262 s. 56
+  GB on disk; no git remote configured for this checkout.

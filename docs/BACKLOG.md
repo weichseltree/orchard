@@ -2,14 +2,28 @@
 
 Ordered. Items with a name in brackets wait on that person.
 
+## Waiting on a deploy
+
+0. **[Manuel] `cd grove && pnpm deploy`**: the sky outside the windows and the
+   client that resolves hangings from the exhibit table are built, tested and
+   committed but not live. The harness refused the deploy command from the
+   agent session (production deploy); run it, or allow `pnpm deploy` for the
+   agent.
+
 ## Blocking the M0 definition of done
 
 1. **[Manuel] Enable R2** in the Cloudflare dashboard (R2 Object Storage,
-   Purchase R2; free tier). Then: `uv run orchard r2 ensure` and
-   `uv run orchard push results/bundles/84b67b5a0d22eeab` and
-   `uv run orchard push results/bundles/2dc8ca525724aefd`; verify
-   `https://media.weichseltree.com/84b67b5a0d22eeab/bundle.json`; re-run the
+   Purchase R2; free tier). Then: `uv run orchard r2 ensure`, and hang the
+   two M0 exhibits, which pushes them first:
+   `uv run orchard exhibit hang results/bundles/2dd0038799b2db15 --approve`
+   (the ab_d2 tape) and
+   `uv run orchard exhibit hang results/bundles/216b720501856b14 --approve`
+   (the 40 s clip). Verify
+   `https://media.weichseltree.com/2dd0038799b2db15/bundle.json`; re-run the
    production smoke test and confirm the tape sheet and the video wall load.
+   The other harvested bundles (the einstruct master, the spectre master and
+   assembly, the styleframe) wait on their own rulings; `orchard exhibit
+   hang` will not take an unapproved one.
 2. **[Manuel] Release the custom domain in Patreon** so the apex
    `weichseltree.com` stops being Patreon's SaaS hostname; then re-validate the
    Pages domain (docs/HOSTING.md). `www.weichseltree.com` already serves the grove.
@@ -43,8 +57,10 @@ Ordered. Items with a name in brackets wait on that person.
 
 ## Platform
 
-10. `orchard bundle` for stills and splats; `orchard exhibit` calling `hang`;
-    provenance sidecars carried through from spectre's stock format.
+10. ~~`orchard bundle` for stills; `orchard exhibit` calling `hang`;
+    provenance sidecars~~ — done 2026-09-12 (docs/impl/M2-harvest-exhibit.md).
+    Left: splats, and the exhibit row's `kind: still` has no hanging in the
+    grove yet (the poster wall is the place).
 11. The spacetimedb SDK's `Function()` codegen forces `unsafe-eval` in the
     CSP; open an upstream issue asking for a non-JIT path.
 12. Second node on Legion and the first portal (M3).

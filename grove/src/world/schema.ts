@@ -33,11 +33,25 @@ export const DoorwaySchema = z.looseObject({
   height: z.number().positive(),
 });
 
-/** Which bundle a hanging shows: a content hash on the media host, or a dev path. */
+/**
+ * Which bundle a hanging shows. `exhibit` names a tree and what kind of thing
+ * hangs on it, and takes the latest row of the live `exhibit` table; `id` is a
+ * content hash on the media host, the fallback while single-player; `path` a
+ * dev directory. Precedence: exhibit, id, path.
+ */
+export const ExhibitRefSchema = z.looseObject({
+  tree: z.string().min(1),
+  kind: z.enum(["tape", "video"]),
+});
+
 export const BundleRefSchema = z
-  .looseObject({ id: z.string().default(""), path: z.string().default("") })
-  .refine((b) => b.id.length > 0 || b.path.length > 0, {
-    message: "a bundle ref needs an id or a path",
+  .looseObject({
+    id: z.string().default(""),
+    path: z.string().default(""),
+    exhibit: ExhibitRefSchema.optional(),
+  })
+  .refine((b) => b.id.length > 0 || b.path.length > 0 || b.exhibit !== undefined, {
+    message: "a bundle ref needs an id, a path or an exhibit",
   });
 
 const HangingCommon = {
@@ -147,6 +161,7 @@ export type Bounds = z.infer<typeof BoundsSchema>;
 export type Spawn = z.infer<typeof SpawnSchema>;
 export type Doorway = z.infer<typeof DoorwaySchema>;
 export type BundleRef = z.infer<typeof BundleRefSchema>;
+export type ExhibitRef = z.infer<typeof ExhibitRefSchema>;
 export type TapeHanging = z.infer<typeof TapeHangingSchema>;
 export type VideoHanging = z.infer<typeof VideoHangingSchema>;
 export type Hanging = z.infer<typeof HangingSchema>;

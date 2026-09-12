@@ -101,13 +101,14 @@ describe("MansionSchema", () => {
   });
 });
 
-describe("the einstruct hangings point at WP1's bundles", () => {
-  it("names the content hashes, not the dev fixtures", () => {
+describe("the einstruct hangings point at harvested bundles", () => {
+  it("names the content hashes `orchard harvest einstruct` wrote, not the dev fixtures", () => {
     const room = roomById(parseMansion(mansionDocument), "einstruct")!;
     const tape = room.hangings.find((h) => h.kind === "tape")!;
     const video = room.hangings.find((h) => h.kind === "video")!;
-    expect(tape.bundle.id).toBe("84b67b5a0d22eeab");
-    expect(video.bundle.id).toBe("2dc8ca525724aefd");
+    // trees/einstruct.yaml, artefacts[*].bundle, 2026-09-12.
+    expect(tape.bundle.id).toBe("2dd0038799b2db15");
+    expect(video.bundle.id).toBe("216b720501856b14");
   });
 });
 
@@ -115,7 +116,25 @@ describe("BundleRefSchema", () => {
   it("takes a content hash or a dev path, but not neither", () => {
     expect(BundleRefSchema.parse({ id: "9d2330991b40106e" }).id).toBe("9d2330991b40106e");
     expect(BundleRefSchema.parse({ path: "/dev-bundle/" }).path).toBe("/dev-bundle/");
-    expect(() => BundleRefSchema.parse({})).toThrow(/id or a path/);
+    expect(() => BundleRefSchema.parse({})).toThrow(/id, a path or an exhibit/);
     expect(() => BundleRefSchema.parse({ id: "", path: "" })).toThrow();
+  });
+
+  it("takes an exhibit ref, a tree and a kind the hanging can show", () => {
+    const ref = BundleRefSchema.parse({ exhibit: { tree: "einstruct", kind: "tape" } });
+    expect(ref.exhibit).toEqual({ tree: "einstruct", kind: "tape" });
+    expect(ref.id).toBe("");
+    expect(() => BundleRefSchema.parse({ exhibit: { tree: "einstruct", kind: "still" } })).toThrow();
+    expect(() => BundleRefSchema.parse({ exhibit: { tree: "", kind: "tape" } })).toThrow();
+  });
+
+  it("every hanging in mansion.json names an exhibit and keeps a pinned id", () => {
+    for (const room of parseMansion(mansionDocument).rooms) {
+      for (const hanging of room.hangings) {
+        expect(hanging.bundle.exhibit?.tree).toBe("einstruct");
+        expect(hanging.bundle.exhibit?.kind).toBe(hanging.kind);
+        expect(hanging.bundle.id).toMatch(/^[0-9a-f]{16}$/);
+      }
+    }
   });
 });

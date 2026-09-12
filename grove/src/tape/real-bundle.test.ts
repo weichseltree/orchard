@@ -11,7 +11,7 @@ import { advance, frameAt, timeline } from "./time";
 // run against WP1's real output — `results/bundles/` is gitignored, so they
 // skip loudly rather than fail on a checkout that has not built the bundles.
 
-const BUNDLE_ID = "84b67b5a0d22eeab";
+const BUNDLE_ID = "2dd0038799b2db15";
 const dir = fileURLToPath(new URL(`../../../results/bundles/${BUNDLE_ID}/`, import.meta.url));
 const present = existsSync(`${dir}bundle.json`);
 const when = present ? describe : describe.skip;

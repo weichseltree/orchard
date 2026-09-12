@@ -81,7 +81,24 @@ uv run orchard plant <name>      # write orchard.yaml into the repo: registratio
 uv run orchard board             # the portfolio, with 30-day spend per tree
 uv run orchard ledger [--json]   # capital spent and left, from ~/.exp_status and expdash
 uv run orchard serve             # flat dashboard on http://127.0.0.1:8787
+uv run orchard harvest <name>    # bundle every artefact the tree declares, record the ids
+uv run orchard bundle verify <dir>          # id and every digest, no token needed
+uv run orchard push <dir>                   # upload a bundle to R2
+uv run orchard exhibit hang <dir> --approve # push, then hang it in the grove (a ruling)
+uv run orchard exhibit list | take-down <id>
 ```
+
+## Integrating a repo's results
+
+A repo's manifest lists its artefacts (`tape`, `clip`, `master`, `still`,
+`figure`). `orchard harvest <tree>` bundles each one that exists, hashes the
+source, and writes `bundle`, `sha256` and `commit` back into the artefact, so
+a second harvest is a no-op until the source changes. `orchard exhibit hang`
+verifies the bundle, pushes it to R2 and names it to the live database's
+`exhibit` table; it refuses unless the artefact is `approved` or `--approve`
+records that ruling. In the grove a hanging that names a tree and a kind
+shows whatever hangs there now, so a new harvest reaches visitors without a
+client deploy; the pinned id is what plays when the database is unreachable.
 
 The ledger reads `~/.exp_status/**/*.json`, `.api_usage.jsonl` and
 `http://localhost:8686/api/status`. It never writes. Lane rules, priorities and

@@ -1,3 +1,4 @@
+import type { ExhibitRow } from "../world/exhibits";
 import { describe, expect, it, vi } from "vitest";
 import {
   Presence,
@@ -14,6 +15,7 @@ import {
 
 function stubConnection(options: {
   rooms?: string[];
+  exhibits?: ExhibitRow[];
   refuse?: (room: string) => string | null;
 }): PresenceConnection & { joins: string[]; moves: number; queries: string[][] } {
   const joins: string[] = [];
@@ -35,6 +37,7 @@ function stubConnection(options: {
       visitor: table(),
       pose: table(),
       room: { iter: () => (options.rooms ?? ["grove", "einstruct"]).map((name) => ({ name })) },
+      exhibit: { iter: () => options.exhibits ?? [] },
     },
     reducers: {
       join: async ({ room }: { room: string }) => {
@@ -161,11 +164,63 @@ describe("join refusal", () => {
     presence.connect("einstruct");
     handlers.onConnect(connection, "abc", "token");
     await settle(20);
-    expect(connection.queries[0]).toEqual([
+    // The exhibit table is subscribed once, on connect, before any room.
+    expect(connection.queries[0]).toEqual(["SELECT * FROM exhibit"]);
+    expect(connection.queries[1]).toEqual([
       "SELECT * FROM visitor WHERE room = 'einstruct'",
       "SELECT * FROM pose WHERE room = 'einstruct'",
       "SELECT * FROM room",
     ]);
+  });
+});
+
+describe("exhibits", () => {
+  const row: ExhibitRow = {
+    id: 1n,
+    tree: "einstruct",
+    kind: "tape",
+    title: "t",
+    url: "https://media.weichseltree.com/aaaaaaaaaaaaaaaa/bundle.json",
+    thumbUrl: "",
+    tapeUrl: "https://media.weichseltree.com/aaaaaaaaaaaaaaaa/bundle.json",
+  };
+
+  it("hands the world the table once its subscription applied", async () => {
+    const connection = stubConnection({ exhibits: [row] });
+    let handlers!: TransportHandlers;
+    const presence = new Presence({}, { transport: (h) => (handlers = h), storage: memoryStorage() });
+    presence.connect("grove");
+    const waiting = presence.whenExhibits(60_000);
+    handlers.onConnect(connection, "abc", "token");
+    expect(await waiting).toEqual([row]);
+    // Asked again later: immediate, from the client cache.
+    expect(await presence.whenExhibits(1)).toEqual([row]);
+    expect(presence.exhibits()).toEqual([row]);
+  });
+
+  it("gives up on the timeout with an empty table while single-player", async () => {
+    const timers: Array<{ fn: () => void; ms: number }> = [];
+    const presence = new Presence(
+      {},
+      {
+        transport: () => {
+          throw new Error("no network");
+        },
+        setTimer: (fn, ms) => {
+          timers.push({ fn, ms });
+          return timers.length as unknown as ReturnType<typeof setTimeout>;
+        },
+        clearTimer: () => undefined,
+        storage: memoryStorage(),
+      },
+    );
+    presence.connect("grove");
+    const waiting = presence.whenExhibits(8000);
+    const timeout = timers.find((t) => t.ms === 8000);
+    expect(timeout).toBeDefined();
+    timeout!.fn();
+    expect(await waiting).toEqual([]);
+    expect(presence.exhibits()).toEqual([]);
   });
 });
 

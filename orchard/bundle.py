@@ -876,6 +876,7 @@ def bundle_video(mp4, tree: str, title: str, out_root=None, *,
                           "sha256": sha256_file(f)})
 
         file_rel = _rel_to_tree(mp4, tree)
+        prov = provenance_sidecar(mp4)
         doc = {
             "schema": SCHEMA,
             "kind": "video",
@@ -890,6 +891,7 @@ def bundle_video(mp4, tree: str, title: str, out_root=None, *,
                 "bytes": mp4.stat().st_size,
                 "codec": v.get("codec_name"),
                 "tree_commit": _git_describe(_tree_root(tree) or mp4.parent),
+                **({"provenance": prov} if prov else {}),
             },
             "duration_s": duration,
             "width": src_w,
@@ -902,8 +904,7 @@ def bundle_video(mp4, tree: str, title: str, out_root=None, *,
             "skipped_rungs": skipped,
             "poster": "poster.jpg",
             "poster_at_s": poster_at,
-            "ffmpeg": subprocess.run(["ffmpeg", "-version"], capture_output=True,
-                                     text=True).stdout.splitlines()[0],
+            "ffmpeg": _ffmpeg_banner(),
         }
         # media.json is written before the move but AFTER the id is known,
         # and is deliberately not named by bundle.json: see the note above.
@@ -931,3 +932,145 @@ def bundle_video(mp4, tree: str, title: str, out_root=None, *,
         for s in skipped:
             print(f"  skipped {s['name']}: {s['reason']}", flush=True)
     return dest
+
+
+# ------------------------------------------------------------------- stills
+
+
+def provenance_sidecar(path) -> dict | None:
+    """spectre's stock sidecar, carried through: `<file>.json` beside the asset.
+
+    `core.film.stock` writes one next to every lifted or generated asset,
+    naming provider, id, query or prompt, license, author, sha256 and bytes
+    (LAWS 9: stock only with provenance and disclosure). When one is there it
+    goes into `source.provenance` verbatim; its `retrieved_unix` is a fact
+    about the source, not about this run, so the id stays put.
+    """
+    p = Path(path)
+    side = p.with_name(p.name + ".json")
+    if not side.is_file():
+        return None
+    try:
+        meta = json.loads(side.read_text())
+    except json.JSONDecodeError:
+        return {"sidecar": side.name, "error": "sidecar is not JSON"}
+    if not isinstance(meta, dict):
+        return None
+    return {"sidecar": side.name, **meta}
+
+
+#: (tier, longest width in px, also encode AVIF). AVIF with a JPEG fallback is
+#: the spec's still format (PLATFORM.md); the thumb is JPEG only, it is what
+#: the exhibit table's `thumb_url` points at and every browser must show it.
+STILL_TIERS = [("full", 4096, True), ("phone", 1600, True), ("thumb", 640, False)]
+AVIF_CRF = 28
+AVIF_ENCODER = "libaom-av1"
+
+
+def _ffmpeg_banner() -> str:
+    out = subprocess.run(["ffmpeg", "-version"], capture_output=True, text=True)
+    return (out.stdout.splitlines() or ["ffmpeg"])[0].strip()
+
+
+def _has_avif() -> bool:
+    out = subprocess.run(["ffmpeg", "-hide_banner", "-encoders"],
+                         capture_output=True, text=True)
+    return AVIF_ENCODER in out.stdout
+
+
+def bundle_still(image, tree: str, title: str, out_root=None, *,
+                 verbose: bool = True) -> Path:
+    """Write `<out_root>/<id>/` holding a still at three widths. Returns the directory.
+
+    Like a video bundle the id covers the RECIPE and `media.json` the bytes:
+    libaom is not promised to be bit-stable across versions or thread counts,
+    and a still that re-encodes to a new address would orphan its exhibit.
+    """
+    image = Path(image).resolve()
+    out_root = Path(out_root) if out_root else RESULTS / "bundles"
+    t_start = time.perf_counter()
+    probe = _ffprobe(image)
+    v = next((s for s in probe["streams"] if s["codec_type"] == "video"), None)
+    if v is None:
+        raise ValueError(f"{image} is not an image ffprobe can read")
+    src_w, src_h = int(v["width"]), int(v["height"])
+    avif = _has_avif()
+
+    staging = Path(tempfile.mkdtemp(prefix=".bundle-", dir=str(_ensure(out_root))))
+    try:
+        tiers = []
+        for name, max_w, want_avif in STILL_TIERS:
+            w = max(2, min(src_w, max_w) // 2 * 2)
+            vf = f"scale={w}:-2"
+            jpg = staging / f"{name}.jpg"
+            subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(image),
+                            "-vf", vf, "-frames:v", "1", "-q:v", "3", str(jpg)],
+                           check=True)
+            j = next(s for s in _ffprobe(jpg)["streams"] if s["codec_type"] == "video")
+            tier = {"name": name, "width": int(j["width"]), "height": int(j["height"]),
+                    "jpg": jpg.name}
+            if want_avif and avif:
+                out = staging / f"{name}.avif"
+                subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(image),
+                                "-vf", vf, "-frames:v", "1",
+                                "-c:v", AVIF_ENCODER, "-still-picture", "1",
+                                "-crf", str(AVIF_CRF), "-b:v", "0", "-cpu-used", "6",
+                                "-pix_fmt", "yuv420p", "-f", "avif", str(out)],
+                               check=True)
+                tier["avif"] = out.name
+            tiers.append(tier)
+            if verbose:
+                print(f"  {name:6s} {tier['width']}x{tier['height']}"
+                      f"{'  +avif' if 'avif' in tier else ''}", flush=True)
+
+        media = [{"file": f.name, "bytes": f.stat().st_size, "sha256": sha256_file(f)}
+                 for f in sorted(staging.iterdir()) if f.is_file()]
+        file_rel = _rel_to_tree(image, tree)
+        prov = provenance_sidecar(image)
+        doc = {
+            "schema": SCHEMA,
+            "kind": "still",
+            "id": "",
+            "tree": tree,
+            "title": title,
+            "produced_by": (f"uv run orchard bundle still {file_rel} --tree {tree} "
+                            f"--title {json.dumps(title)}"),
+            "source": {
+                "file": file_rel,
+                "file_sha256": sha256_file(image),
+                "bytes": image.stat().st_size,
+                "codec": v.get("codec_name"),
+                "tree_commit": _git_describe(_tree_root(tree) or image.parent),
+                **({"provenance": prov} if prov else {}),
+            },
+            "width": src_w,
+            "height": src_h,
+            "tiers": tiers,
+            "avif": avif,
+            "avif_crf": AVIF_CRF if avif else None,
+            "encoder": _ffmpeg_banner(),
+            "poster": "thumb.jpg",
+            "media": "media.json",
+        }
+        (staging / "media.json").write_text(
+            json.dumps({"schema": "orchard/media/1", "files": media}, indent=1) + "\n")
+        dest = _finalize(doc, staging, out_root)
+    except BaseException:
+        shutil.rmtree(staging, ignore_errors=True)
+        raise
+    if verbose:
+        print(f"bundle {dest.name}  still {src_w}x{src_h}  "
+              f"{'avif+jpg' if avif else 'jpg only (no libaom)'}  "
+              f"total {time.perf_counter() - t_start:.1f}s", flush=True)
+    return dest
+
+
+def verify_bundle(bundle_dir) -> dict:
+    """The check `push` runs, for anyone without a token: id and every digest."""
+    from .push import verify_local
+    ok, on_disk, recomputed = verify_id(bundle_dir)
+    rep = verify_local(bundle_dir)
+    rep.update({"id": on_disk, "id_ok": ok and Path(bundle_dir).name == on_disk,
+                "id_recomputed": recomputed})
+    rep["ok"] = bool(rep["id_ok"] and not rep["mismatched"] and not rep["missing"])
+    return rep
