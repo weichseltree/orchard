@@ -22,7 +22,6 @@ from __future__ import annotations
 
 import json
 import os
-import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -39,9 +38,10 @@ CLI_CONFIG = os.environ.get("ORCHARD_SPACETIME_CONFIG", "")
 
 
 def _cli() -> str:
-    exe = shutil.which("spacetime") or str(Path.home() / ".local/bin/spacetime")
-    if not Path(exe).exists():
-        sys.exit("spacetime CLI not found")
+    from .toolchain import resolve                              # noqa: PLC0415
+    exe = resolve("spacetime")
+    if exe is None:
+        sys.exit("spacetime CLI not found (orchard doctor)")
     return exe
 
 

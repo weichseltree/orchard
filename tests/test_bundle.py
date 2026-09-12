@@ -603,6 +603,7 @@ def test_a_video_id_follows_the_bytes_of_a_re_encode(tmp_path):
     assert (a.name == b.name) == (da["files"] == db["files"])
     assert bundle.verify_bundle(a)["ok"] and bundle.verify_bundle(b)["ok"]
     assert da["source"]["file_sha256"] and da["ffmpeg"].startswith("ffmpeg")
+    assert da["tools"] == {"ffmpeg": da["ffmpeg"]}, "the encoder that made the bytes"
     assert not list(out.glob(".bundle-*")), "a no-op finalize leaves no staging"
 
 

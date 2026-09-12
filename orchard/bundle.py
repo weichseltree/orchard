@@ -905,6 +905,7 @@ def bundle_video(mp4, tree: str, title: str, out_root=None, *,
             "poster": "poster.jpg",
             "poster_at_s": poster_at,
             "ffmpeg": _ffmpeg_banner(),
+            "tools": _tools("ffmpeg"),
             "files": files,
         }
         dest = _finalize(doc, staging, out_root)
@@ -961,8 +962,16 @@ AVIF_ENCODER = "libaom-av1"
 
 
 def _ffmpeg_banner() -> str:
-    out = subprocess.run(["ffmpeg", "-version"], capture_output=True, text=True)
-    return (out.stdout.splitlines() or ["ffmpeg"])[0].strip()
+    from .toolchain import record                               # noqa: PLC0415
+    return record("ffmpeg")["ffmpeg"]
+
+
+def _tools(*names: str) -> dict[str, str]:
+    """`bundle.json:tools`, the banner of every external tool that made the bytes
+    (orchard/toolchain.py). The expected versions live there; `orchard doctor`
+    compares."""
+    from .toolchain import record                               # noqa: PLC0415
+    return record(*names)
 
 
 def _has_avif() -> bool:
@@ -1042,6 +1051,7 @@ def bundle_still(image, tree: str, title: str, out_root=None, *,
             "avif": avif,
             "avif_crf": AVIF_CRF if avif else None,
             "encoder": _ffmpeg_banner(),
+            "tools": _tools("ffmpeg"),
             "poster": "thumb.jpg",
             "files": files,
         }

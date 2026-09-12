@@ -70,7 +70,18 @@ PUBLIC_HOST = "media.weichseltree.com"
 ZONE_NAME = "weichseltree.com"
 INDEX_KEY = ".orchard-index.json"
 API_HOST = "api.cloudflare.com"
-WRANGLER = str(Path.home() / ".local/share/pnpm/wrangler")
+
+
+def wrangler() -> str:
+    """The wrangler binary orchard/toolchain.py resolves: the grove's pinned
+    `node_modules/.bin/wrangler` first, the global pnpm one after it."""
+    from .toolchain import resolve                              # noqa: PLC0415
+    path = resolve("wrangler")
+    if path is None:
+        raise FileNotFoundError("wrangler not found; `cd grove && pnpm install` "
+                                "or `pnpm add -g wrangler` (see orchard doctor)")
+    return path
+
 
 #: The browser refuses to play HLS, and three.js refuses to decode a chunk, if
 #: these are wrong; R2 defaults everything it does not know to
@@ -570,7 +581,7 @@ def _wrangler_put(key: str, path: Path, ctype: str, bucket=BUCKET,
     env = dict(os.environ)
     env["CLOUDFLARE_API_TOKEN"] = require("CLOUDFLARE_API_TOKEN")
     env["CLOUDFLARE_ACCOUNT_ID"] = require("CLOUDFLARE_ACCOUNT_ID")
-    cmd = [WRANGLER, "r2", "object", "put", f"{bucket}/{key}",
+    cmd = [wrangler(), "r2", "object", "put", f"{bucket}/{key}",
            "--file", str(path), "--content-type", ctype, "--remote"]
     if cache_control:
         cmd += ["--cache-control", cache_control]
@@ -846,7 +857,7 @@ def wrangler_spawn_cost(n=10) -> float:
     """
     t0 = time.perf_counter()
     for _ in range(n):
-        subprocess.run([WRANGLER, "--version"], capture_output=True)
+        subprocess.run([wrangler(), "--version"], capture_output=True)
     return (time.perf_counter() - t0) / n
 
 

@@ -97,19 +97,19 @@ def cmd_ledger(a):
 
 
 def cmd_doctor(a):
-    import shutil
     from .ledger import expdash_status
+    from .toolchain import report
     checks = [
         ("expdash /api/status", expdash_status() is not None),
         ("~/.exp_status", (Path.home() / ".exp_status").is_dir()),
-        ("spacetime CLI", shutil.which("spacetime") is not None),
-        ("wrangler CLI", shutil.which("wrangler") is not None),
-        ("ffmpeg", shutil.which("ffmpeg") is not None),
-        ("blender", (Path.home() / "tools/blender/blender").exists()),
         ("trees/", TREES.is_dir() and any(TREES.glob("*.yaml"))),
     ]
     for name, ok in checks:
         print(("ok   " if ok else "MISS ") + name)
+    # every tool orchard shells out to, against the version orchard/toolchain.py expects
+    print()
+    _table([[p.name, p.status, p.version or "-", p.expected, p.path or "-"] for p in report()],
+           ["tool", "status", "found", "expected", "path"])
     from .secrets import status, PATHS
     print("\nsecrets file:", next((str(p) for p in PATHS if p and p.exists()), "none"))
     for svc, kind, present, missing in status():
