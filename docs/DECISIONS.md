@@ -153,3 +153,11 @@ Append-only. A decision names the day, the ruling, and the alternative it beat.
   resolver does not resolve the media host: the check now runs the full
   Chromium over the DevTools protocol with the host mapped to Cloudflare's
   edge (scratchpad shot.mjs, to be moved into grove/tools).
+- **2026-09-12 · The spectre room: three balls, one clock.** chi0, chi6 and
+  chi12 hang as 3D tapes at 3.6 m, centres 1.5 m up, 5 m apart, in a
+  near-black box off einstruct's back wall, with the silent 42.8 s excerpt
+  on the far wall; the HUD's one transport scrubs all three in step, which
+  the tapes' identical per-frame clocks allow. The cut plane, the slot
+  budget and the style-B palette (backlog 16, 17, 20) are what the room
+  still needs to read as the "one number" picture; it opens plain rather
+  than not at all.

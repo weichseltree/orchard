@@ -13,7 +13,7 @@ describe("mansion.json", () => {
   it("parses", () => {
     const mansion = parseMansion(mansionDocument);
     expect(mansion.schema).toBe("orchard/mansion/1");
-    expect(mansion.rooms.map((room) => room.id)).toEqual(["hall", "einstruct", "world-engine", "phototroph"]);
+    expect(mansion.rooms.map((room) => room.id)).toEqual(["hall", "einstruct", "world-engine", "phototroph", "spectre"]);
     expect(mansion.start).toBe("hall");
   });
 
@@ -53,7 +53,7 @@ describe("mansion.json", () => {
     const tapes = room!.hangings.filter((h) => h.kind === "tape");
     expect(tapes.map((h) => h.bundle.exhibit?.bundle)).toEqual(["2dd0038799b2db15", "903d0c5a939b0ba1"]);
     expect(tapes.map((h) => h.position[0])).toEqual([-3.7, 3.7]);
-    for (const d of room!.doorways) expect(["hall", "world-engine", "phototroph"]).toContain(d.to);
+    for (const d of room!.doorways) expect(["hall", "world-engine", "phototroph", "spectre"]).toContain(d.to);
     const tape = tapes[0];
     expect(tape).toMatchObject({ longSideMeters: 6 });
     // Ruling 2026-09-12: a 2D tape lies flat, waist height on a 1.6 m eye.

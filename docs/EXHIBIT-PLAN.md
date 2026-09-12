@@ -94,10 +94,16 @@ asked to restore them, which the fixed harvester now preserves.
 ### spectre
 Answered 2026-09-12 by spectre-fe; manifest at spectre 585ac72, 4 phenomena,
 7 artefacts, 1 thesis at styleframe (down from the draft's animatic, on
-purpose). Not harvested: 19.9 GB of source, and the harvester's tape digest
-had to be fixed first (done, see below). After chi6 completes, one harvest
-reads about 30 GB on one core in 10 to 20 minutes and writes about 63 MB per
-tape.
+purpose). Harvested 2026-09-12 19:4x after chi6 completed (spectre 17aa1ee): the
+trio chi0 `a8ec9bed055fd471`, chi6 `8794241278d990fa`, chi12
+`64546061a0b52660` (61 MB on disk each; vr-high 3,975 slots x 1,129 frames,
+35.9 MB), and three stills, B_astro `c03859520ba134ae`, plate S13
+`d4d724c30c31f38e`, plate S5 `22883e6f89040d8d`; all six verify. The
+frame-0 species vector is byte-identical across the three tapes, as the
+aligned-slots test promises. Found on the way: bundle.json's tree_commit
+still records the harvest HEAD (the manifest keeps the tree's commit); the
+chi12 poster is an orange/blue projection with A/B species and a title that
+runs off the edges (backlog 17).
 - shows this week: the planet trio. adiabat-chi0 and adiabat-chi12 (1,129
   frames, 508,744 particles, 9.76 GB each), adiabat-chi6 finishing its last
   chunk (row added once `exp wait` confirms). Identical (step, t) per frame
@@ -385,8 +391,9 @@ the second wall and the two new rooms is published (Pages deployment
 ab99380f, 2026-09-12 18:28; the live script names every new hanging and
 the same build renders the hall locally; a headless screenshot of the
 live site shows only the sky for the previous deployment too, so a real
-browser walk is still owed, BACKLOG 3); spectre's trio and clip hang
-after its harvest; Spike C and the
+browser walk is still owed, BACKLOG 3); spectre's trio and its silent clip are hung (exhibits 9 to 12) in a
+spectre room off einstruct's back wall, three balls at walking scale with
+one transport, published 2026-09-12 evening; Spike C and the
 dimer-split conversion are funded (the conversion ran, 136 KB). Left to
 Manuel's own hands: creating spectre's private remote (the scan is clean), the rate decision,
 the styleframe verdicts, the world-engine doorway session, and the two

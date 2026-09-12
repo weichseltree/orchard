@@ -18,6 +18,7 @@ import mansionDocument from "./world/mansion.json";
 import { parseMansion, roomById } from "./world/schema";
 import { buildWorld, type BuiltWorld } from "./world/world";
 import type { VideoWall } from "./media/videowall";
+import type { TapeExhibit } from "./world/tape-exhibit";
 
 // The grove. Boot order matters: the canvas renders within a frame of the
 // module loading, the world streams in behind it room by room, and the network
@@ -242,6 +243,32 @@ function handOverVideo(force = false): void {
   });
 }
 
+// The HUD's readout (frame, tau) follows the tape nearest the visitor; the
+// transport still drives every tape in step.
+let nearestTapeCached: TapeExhibit | null = null;
+let nextTapeCheck = 0;
+function nearestTape(): TapeExhibit | null {
+  const now = performance.now();
+  if (now < nextTapeCheck && nearestTapeCached) return nearestTapeCached;
+  nextTapeCheck = now + 400;
+  let best = Infinity;
+  nearestTapeCached = null;
+  for (const tape of world?.tapes ?? []) {
+    if (!tape) continue;
+    // The exhibit's group sits at the origin; its bounds carry the metres.
+    const cx = (tape.bounds.min.x + tape.bounds.max.x) / 2;
+    const cz = (tape.bounds.min.z + tape.bounds.max.z) / 2;
+    const dx = cx - body.x;
+    const dz = cz - body.z;
+    const d = dx * dx + dz * dz;
+    if (d < best) {
+      best = d;
+      nearestTapeCached = tape;
+    }
+  }
+  return nearestTapeCached;
+}
+
 async function toggleAudio(): Promise<void> {
   const video = activeWall;
   if (!video || video.mode === "poster") return;
@@ -281,7 +308,7 @@ view.start((dt) => {
     view.camera.position.set(0, EYE_HEIGHT, 0);
   }
 
-  const tape = world?.tape;
+  const tape = nearestTape();
   if (tape) {
     for (const each of world?.tapes ?? []) {
       if (input.scrub !== 0) each.scrubBySeconds(input.scrub * dt * 4);

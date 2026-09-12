@@ -145,6 +145,14 @@
           "center": -15,
           "width": 2.4,
           "height": 3.2
+        },
+        {
+          "to": "spectre",
+          "axis": "z",
+          "at": -20,
+          "center": 5,
+          "width": 2.4,
+          "height": 3.2
         }
       ],
       "hangings": [
@@ -467,6 +475,145 @@
             ]
           },
           "pointSize": 40
+        }
+      ]
+    },
+    {
+      "id": "spectre",
+      "title": "spectre",
+      "presence": "spectre",
+      "glb": "",
+      "lightmap": [],
+      "fallback": {
+        "kind": "box",
+        "color": "#15171a"
+      },
+      "bounds": {
+        "min": [
+          -7.5,
+          0,
+          -32
+        ],
+        "max": [
+          7.5,
+          5,
+          -20
+        ]
+      },
+      "spawn": {
+        "position": [
+          5,
+          0,
+          -21.2
+        ],
+        "yawDeg": 0
+      },
+      "doorways": [
+        {
+          "to": "einstruct",
+          "axis": "z",
+          "at": -20,
+          "center": 5,
+          "width": 2.4,
+          "height": 3.2
+        }
+      ],
+      "hangings": [
+        {
+          "id": "spectre-chi0",
+          "kind": "tape",
+          "title": "Planet from scratch, chi 0: the same seed, no chemistry",
+          "bundle": {
+            "exhibit": {
+              "tree": "spectre",
+              "kind": "tape",
+              "bundle": "a8ec9bed055fd471"
+            },
+            "id": "a8ec9bed055fd471"
+          },
+          "position": [
+            -5,
+            1.5,
+            -27
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "longSideMeters": 3.6
+        },
+        {
+          "id": "spectre-chi6",
+          "kind": "tape",
+          "title": "Planet from scratch, chi 6",
+          "bundle": {
+            "exhibit": {
+              "tree": "spectre",
+              "kind": "tape",
+              "bundle": "8794241278d990fa"
+            },
+            "id": "8794241278d990fa"
+          },
+          "position": [
+            0,
+            1.5,
+            -27
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "longSideMeters": 3.6
+        },
+        {
+          "id": "spectre-chi12",
+          "kind": "tape",
+          "title": "Planet from scratch, chi 12: heavy things find the middle",
+          "bundle": {
+            "exhibit": {
+              "tree": "spectre",
+              "kind": "tape",
+              "bundle": "64546061a0b52660"
+            },
+            "id": "64546061a0b52660"
+          },
+          "position": [
+            5,
+            1.5,
+            -27
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "longSideMeters": 3.6
+        },
+        {
+          "id": "spectre-wall",
+          "kind": "video",
+          "title": "EP02 S4 excerpt, 42.8 s, silent",
+          "bundle": {
+            "exhibit": {
+              "tree": "spectre",
+              "kind": "video",
+              "bundle": "0462efca96af7297"
+            },
+            "id": "0462efca96af7297"
+          },
+          "position": [
+            0,
+            2.35,
+            -31.74
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "widthMeters": 6
         }
       ]
     }
