@@ -32,11 +32,13 @@ coordinates over SendMessage.
 One block per tree, filled from the tree's answer. Empty until it answers.
 
 ### einstruct
-Answered 2026-09-12 by einstruct-33; manifest at einstruct a77bd40, 6
-phenomena, 25 artefacts, 1 thesis; every row resolves in a dry run, the four
-live ab_d2 rows unchanged. The 21 new rows were not harvested at first
-(4.3 GB of source, two 2.1 GB tapes); the orchard asked for the full
-harvest, expected output 0.3 to 0.4 GB.
+Answered 2026-09-12 by einstruct-33; manifest at einstruct 1056f1f, 6
+phenomena, 25 artefacts, 1 thesis, all 25 bundled (21 new, 192 MB from 4.3
+GB, the four live ab_d2 rows unchanged), nothing new approved. The harvest
+ran before the commit fix landed, so the producing commits it had recorded
+were overwritten with the harvest-time describe; they survive in each tape
+header's `git` and each render manifest's `einstruct_git`, and the tree was
+asked to restore them, which the fixed harvester now preserves.
 - shows this week: five more tapes, all video/tape/1 through spectre's
   writer. ab_d2_stir (801 frames over 400 tau, 200,000 to 292 particles,
   2.1 GB): the control, colours shuffled every 20 steps, regions never
@@ -376,11 +378,14 @@ measurement (its ADR 0006 keeps unmeasured numbers out of its own docs).
 Collected here as the answers come in; each is one `orchard exhibit hang
 <dir> --approve` or a verdict in the flat dashboard.
 
-- **einstruct, hang the stirred twin.** ab_d2_stir beside the ab_d2 tape
-  already in the room, the segregation-versus-stirred pair that is the new
-  thesis picture. One `orchard exhibit hang` with `--approve` once the
-  harvest lands. Recommended yes. The `row` animation as a clip likewise;
-  walk, slab and bag after their caption fix.
+- **einstruct, hang the stirred twin.** ab_d2_stir `903d0c5a939b0ba1`
+  beside the ab_d2 tape already in the room, the segregation-versus-stirred
+  pair that is the new thesis picture; harvested 2026-09-12 (einstruct
+  1056f1f, 21 bundles, 192 MB from 4.3 GB, verified here). One
+  `orchard exhibit hang results/bundles/903d0c5a939b0ba1 --approve`.
+  Recommended yes. The `row` animation `f0b3eba5f655c2a9` as a clip
+  likewise; walk, slab and bag need a re-render for their captions (the
+  text is drawn into every frame), so not this round.
 - **einstruct, the thesis number changes.** "Predicted from rows" was
   wrong; the segregation ratio (8.8x against 1.0 stirred) replaces the
   decay exponent. Rule that the animatic is re-cut to the takes on the new
