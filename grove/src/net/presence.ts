@@ -414,11 +414,12 @@ export class Presence {
 
   /**
    * Resolves with the exhibit table once its subscription has applied, or
-   * with whatever is there when `timeoutMs` runs out: the world must not wait
-   * on a network that may never answer, and a pinned bundle id is the
-   * single-player answer.
+   * with null when `timeoutMs` runs out first: the world must not wait on a
+   * network that may never answer, and a pinned bundle id is the
+   * single-player answer. An empty array is the database saying nothing
+   * hangs, which a pinned id must not override (a take-down).
    */
-  whenExhibits(timeoutMs: number): Promise<ExhibitRow[]> {
+  whenExhibits(timeoutMs: number): Promise<ExhibitRow[] | null> {
     if (this.#exhibitsApplied) return Promise.resolve(this.exhibits());
     return new Promise((resolve) => {
       let done = false;
@@ -426,7 +427,7 @@ export class Presence {
         if (done) return;
         done = true;
         this.#clearTimer(timer);
-        resolve(this.exhibits());
+        resolve(this.#exhibitsApplied ? this.exhibits() : null);
       };
       const timer = this.#setTimer(finish, timeoutMs);
       this.#exhibitWaiters.push(finish);

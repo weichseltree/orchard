@@ -28,8 +28,24 @@ describe("bundleUrl", () => {
       path: "/dev-video/",
     });
     expect(bundleUrl(ref, [hung])).toBe("https://media.weichseltree.com/ffffffffffffffff/");
-    expect(bundleUrl(ref, [])).toBe(`${MEDIA_BASE}/2dc8ca525724aefd/`);
+    // The database did not answer: the pinned id stands in.
+    expect(bundleUrl(ref, null)).toBe(`${MEDIA_BASE}/2dc8ca525724aefd/`);
+    expect(bundleUrl(ref)).toBe(`${MEDIA_BASE}/2dc8ca525724aefd/`);
     expect(bundleUrl(BundleRefSchema.parse({ path: "/dev-video" }))).toBe("/dev-video/");
+  });
+
+  it("shows nothing once the database answers that nothing hangs (a take-down)", () => {
+    const ref = BundleRefSchema.parse({
+      exhibit: { tree: "einstruct", kind: "video", bundle: "2dc8ca525724aefd" },
+      id: "2dc8ca525724aefd",
+    });
+    expect(bundleUrl(ref, [])).toBeNull();
+    expect(bundleUrl(ref, [hung])).toBeNull();
+  });
+
+  it("takes a pinned id with no exhibit ref whatever the database says", () => {
+    const ref = BundleRefSchema.parse({ id: "2dc8ca525724aefd" });
+    expect(bundleUrl(ref, [])).toBe(`${MEDIA_BASE}/2dc8ca525724aefd/`);
   });
 
   it("is null when only an exhibit is named and nothing hangs there", () => {

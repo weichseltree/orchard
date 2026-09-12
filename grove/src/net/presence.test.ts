@@ -260,7 +260,7 @@ describe("exhibits", () => {
     expect(presence.exhibits()).toEqual([row]);
   });
 
-  it("gives up on the timeout with an empty table while single-player", async () => {
+  it("gives up on the timeout with null (no answer) while single-player", async () => {
     const timers: Array<{ fn: () => void; ms: number }> = [];
     const presence = new Presence(
       {},
@@ -281,7 +281,7 @@ describe("exhibits", () => {
     const timeout = timers.find((t) => t.ms === 8000);
     expect(timeout).toBeDefined();
     timeout!.fn();
-    expect(await waiting).toEqual([]);
+    expect(await waiting).toBeNull();
     expect(presence.exhibits()).toEqual([]);
   });
 });

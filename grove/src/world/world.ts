@@ -30,9 +30,10 @@ export interface BuildWorldOptions {
   /**
    * The live exhibit table, when a hanging asks for one. Awaited once, after
    * the rooms are up; a resolver that never answers holds up only the
-   * hangings, never the rooms.
+   * hangings, never the rooms. `null` means the database did not answer,
+   * which is different from answering with nothing hung.
    */
-  exhibits?: () => Promise<ExhibitRow[]>;
+  exhibits?: () => Promise<ExhibitRow[] | null>;
   /** The room the visitor starts in; `mansion.start` when absent. */
   startRoom?: string;
 }
@@ -98,14 +99,20 @@ export function exhibitRoom(exhibit: object): string | undefined {
 }
 
 /**
- * Where a bundle's directory lives: what the exhibit table hangs on the tree,
- * else a content hash on the media host, else a dev path. Null when the ref
- * names only an exhibit and nothing is hung there yet.
+ * Where a bundle's directory lives. When the ref names an exhibit and the
+ * database answered (`exhibits` is not null), the table decides alone: what
+ * hangs there, or null when nothing does, so a take-down reaches visitors
+ * instead of falling back to the pinned id of the bundle just taken down.
+ * Only when the database did not answer does the pinned content hash on the
+ * media host stand in, else a dev path.
  */
-export function bundleUrl(ref: BundleRef, exhibits: Iterable<ExhibitRow> = []): string | null {
-  if (ref.exhibit) {
+export function bundleUrl(
+  ref: BundleRef,
+  exhibits: Iterable<ExhibitRow> | null = null,
+): string | null {
+  if (ref.exhibit && exhibits !== null) {
     const row = pickExhibit(exhibits, ref.exhibit.tree, ref.exhibit.kind, ref.exhibit.bundle);
-    if (row) return bundleBaseOf(row);
+    return row ? bundleBaseOf(row) : null;
   }
   if (ref.id) return `${MEDIA_BASE}/${ref.id}/`;
   if (ref.path) return ref.path.endsWith("/") ? ref.path : `${ref.path}/`;
@@ -129,9 +136,9 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
 
   const shells = new Map<string, RoomShell>();
   const requested = new Set<string>();
-  let exhibitsPromise: Promise<ExhibitRow[]> | null = null;
+  let exhibitsPromise: Promise<ExhibitRow[] | null> | null = null;
   const exhibitsOnce = () =>
-    (exhibitsPromise ??= options.exhibits ? options.exhibits() : Promise.resolve([]));
+    (exhibitsPromise ??= options.exhibits ? options.exhibits() : Promise.resolve(null));
 
   async function loadShell(room: Room): Promise<void> {
     const shell = await buildRoom({ room, renderer, tier: device.tier, onNotice });
@@ -151,7 +158,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
     options.onRoomReady?.(room, shell);
   }
 
-  function loadHangings(room: Room, exhibits: ExhibitRow[]): Promise<void>[] {
+  function loadHangings(room: Room, exhibits: ExhibitRow[] | null): Promise<void>[] {
     const pending: Promise<void>[] = [];
     for (const hanging of room.hangings) {
       const base = bundleUrl(hanging.bundle, exhibits);
@@ -233,7 +240,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
     const wantsExhibits = rooms.some((room) =>
       room.hangings.some((hanging) => hanging.bundle.exhibit !== undefined),
     );
-    const exhibits = wantsExhibits ? await exhibitsOnce() : [];
+    const exhibits = wantsExhibits ? await exhibitsOnce() : null;
     await Promise.all(rooms.flatMap((room) => loadHangings(room, exhibits)));
   }
 

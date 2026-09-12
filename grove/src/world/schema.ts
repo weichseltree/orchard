@@ -41,8 +41,9 @@ export const DoorwaySchema = z.looseObject({
  * `bundle` it takes the latest row FOR THAT BUNDLE instead, so a room can
  * hold two sheets of one tree (einstruct's ab_d2 beside its stirred twin)
  * and a take-down still reaches visitors. `id` is a content hash on the
- * media host, the fallback while single-player; `path` a dev directory.
- * Precedence: exhibit, id, path.
+ * media host, used only when the database did not answer (single-player);
+ * once it has answered, an exhibit ref with nothing hung shows nothing.
+ * `path` is a dev directory. Precedence: exhibit, id, path.
  */
 export const ExhibitRefSchema = z.looseObject({
   tree: z.string().min(1),
