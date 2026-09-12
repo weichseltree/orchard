@@ -77,7 +77,9 @@ LOOK = {
     # a grey-white stone a step below the cream wall, so pilasters and surrounds read in relief
     "marble_white":  ((0.46, 0.46, 0.45), 0.30, "marble_white", 1.5, 0.0),
     "marble_red":    ((0.30, 0.14, 0.11), 0.28, "marble_red", 1.5, 0.0),
-    "gilt":          ((0.85, 0.65, 0.30), 0.35, None, 1.0, 1.0),
+    # matte gold, not metal: a diffuse bake of a metal is black and the client
+    # has no environment map yet (PALACE.md 4.3, the reflection probe)
+    "gilt":          ((0.85, 0.65, 0.30), 0.35, None, 1.0, 0.0),
     "panel":         ((0.78, 0.77, 0.74), 0.92, None, 1.0, 0.0),
     "door_leaf":     ((0.18, 0.11, 0.07), 0.55, "parquet", 1.2, 0.0),
     # the grounds
