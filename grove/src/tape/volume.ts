@@ -56,10 +56,11 @@ varying float vAlive;
 
 // Sphere impostors (spectre's design at film-final): each point is a lit ball,
 // so a heavy core reads as a body with a front and a back, not a flat disc.
-// A warm key from behind-left gives the limb, a dim cool fill the shadow side.
-const vec3 KEY_DIR = vec3(-0.45, 0.35, -0.82);
+// A warm key from the viewer's upper left, a dim cool fill from the lower
+// right: a ball seen head-on is lit on its face and keeps a limb.
+const vec3 KEY_DIR = vec3(-0.45, 0.55, 0.55);
 const vec3 KEY = vec3(1.0, 0.84, 0.64);
-const vec3 FILL_DIR = vec3(0.35, 0.55, 0.76);
+const vec3 FILL_DIR = vec3(0.5, -0.3, 0.6);
 const vec3 FILL = vec3(0.22, 0.26, 0.42);
 
 void main() {
@@ -71,7 +72,7 @@ void main() {
   vec3 n = vec3(d.x, -d.y, sqrt(1.0 - r2));
   float key = max(dot(n, normalize(KEY_DIR)), 0.0);
   float fill = max(dot(n, normalize(FILL_DIR)), 0.0);
-  vec3 lit = vColor * (KEY * key * 1.4 + FILL * fill + vec3(0.06));
+  vec3 lit = vColor * (KEY * key * 1.1 + FILL * fill + vec3(0.10));
   gl_FragColor = vec4(lit, uOpacity);
 }
 `;
