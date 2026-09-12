@@ -7,14 +7,15 @@ third; this module makes them, hands them to Cloudflare Pages, and checks the
 result. The order matters and is the order of the commands:
 
     uv run orchard auth keygen --write   # AUTH_SIGNING_KEY, AUTH_NETWORK_KEY into the secrets file
-    uv run orchard auth push             # ...and TURNSTILE_SECRET, AUTH_ISSUER, into Pages
+    uv run orchard auth turnstile        # the widget; TURNSTILE_SITEKEY, TURNSTILE_SECRET likewise
+    uv run orchard auth push             # the secrets, and AUTH_ISSUER, into Pages
     (redeploy the grove so a new Function version picks them up)
     uv run orchard auth status           # the live service: keys, discovery, a token
     uv run orchard auth gate on          # only then: turn anonymous visitors away
 
-A client built without VITE_TURNSTILE_SITEKEY sends no human check, so push
-TURNSTILE_SECRET only together with a grove build that has the site key, or
-every token request is refused (the grove then stays single-player).
+A client built without the site key sends no human check, and a service with
+the secret refuses it. The grove's build takes TURNSTILE_SITEKEY from the
+environment the deploy sources, so the two go out together by construction.
 
 Values are never printed. `keygen` without --write says what it would add.
 """
@@ -31,6 +32,8 @@ import urllib.request
 from .secrets import PATHS, get, load, require
 
 PROJECT = "weichseltree"
+WIDGET = "grove token service"
+WIDGET_DOMAINS = ["weichseltree.com", "www.weichseltree.com", "weichseltree.pages.dev"]
 ISSUER = "https://www.weichseltree.com/auth"
 SITE = "https://www.weichseltree.com"
 #: What `push` sends to Pages, in this order. TURNSTILE_SECRET only if it is set.
@@ -72,6 +75,51 @@ def keygen(write: bool) -> list[str]:
         os.chmod(path, 0o600)
         load.cache_clear()
     return missing
+
+
+def _cloudflare(method: str, path: str, body: dict | None = None):
+    """One Cloudflare API call; exits with Cloudflare's own message on failure."""
+    token = get("CLOUDFLARE_ADMIN_TOKEN") or require("CLOUDFLARE_API_TOKEN")
+    req = urllib.request.Request(
+        f"https://api.cloudflare.com/client/v4{path}",
+        data=json.dumps(body).encode() if body is not None else None,
+        headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json",
+                 "User-Agent": "orchard-auth"},
+        method=method)
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            reply = json.loads(r.read())
+    except urllib.error.HTTPError as e:
+        reply = json.loads(e.read() or b"{}")
+    if not reply.get("success"):
+        why = "; ".join(str(x.get("message")) for x in reply.get("errors", [])) or "failed"
+        sys.exit(f"cloudflare {method} {path.split('?')[0]}: {why}")
+    return reply.get("result")
+
+
+def turnstile() -> str | None:
+    """Creates the widget (or, if it exists, rotates its secret: Cloudflare shows a
+    secret only once) and appends both keys to the secrets file. None if both are set."""
+    if get("TURNSTILE_SITEKEY") and get("TURNSTILE_SECRET"):
+        return None
+    account = require("CLOUDFLARE_ACCOUNT_ID")
+    widgets = _cloudflare("GET", f"/accounts/{account}/challenges/widgets?per_page=50") or []
+    mine = next((w for w in widgets if w.get("name") == WIDGET), None)
+    if mine:
+        rotated = _cloudflare("POST", f"/accounts/{account}/challenges/widgets/{mine['sitekey']}/rotate_secret",
+                              {"invalidate_immediately": True})
+        sitekey, secret = mine["sitekey"], rotated["secret"]
+    else:
+        made = _cloudflare("POST", f"/accounts/{account}/challenges/widgets",
+                           {"name": WIDGET, "domains": WIDGET_DOMAINS, "mode": "managed", "region": "world"})
+        sitekey, secret = made["sitekey"], made["secret"]
+    path = _secrets_file()
+    with open(path, "a") as f:
+        f.write(f"\n# Turnstile widget \"{WIDGET}\" (orchard auth turnstile). The site key is public.\n")
+        f.write(f"TURNSTILE_SITEKEY={sitekey}\nTURNSTILE_SECRET={secret}\n")
+    os.chmod(path, 0o600)
+    load.cache_clear()
+    return sitekey
 
 
 def push() -> list[str]:
@@ -150,6 +198,10 @@ def main(a) -> None:
             print(f"added {', '.join(made)} to {_secrets_file()}")
         else:
             print(f"would add {', '.join(made)} to {_secrets_file()}; rerun with --write")
+    elif a.what == "turnstile":
+        sitekey = turnstile()
+        print("TURNSTILE_SITEKEY and TURNSTILE_SECRET are already set" if sitekey is None
+              else f"widget ready, site key {sitekey}; both keys added to {_secrets_file()}")
     elif a.what == "push":
         print("sent to Pages:", ", ".join(push()), "(redeploy the grove to use them)")
     elif a.what == "status":

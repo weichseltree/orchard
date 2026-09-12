@@ -77,15 +77,14 @@ Turning the token service on, once (order matters):
 
 1. `uv run orchard auth keygen --write` puts `AUTH_SIGNING_KEY` and
    `AUTH_NETWORK_KEY` into the secrets file.
-2. Create the Turnstile widget (dashboard: Turnstile > Add widget, managed
-   mode, the domains weichseltree.com, www.weichseltree.com and
-   weichseltree.pages.dev), and put `TURNSTILE_SITEKEY` and
-   `TURNSTILE_SECRET` into the secrets file.
-3. `uv run orchard auth push`, then deploy the grove with the site key in its
-   build: `set -a; . ~/.config/orchard/secrets.env; set +a;
-   VITE_TURNSTILE_SITEKEY=$TURNSTILE_SITEKEY pnpm run deploy`. A client
-   without the site key sends no human check, and a service with the secret
-   refuses it, so these two go out together.
+2. `uv run orchard auth turnstile` creates the widget (managed mode, the
+   domains weichseltree.com, www.weichseltree.com and weichseltree.pages.dev)
+   and puts `TURNSTILE_SITEKEY` and `TURNSTILE_SECRET` into the secrets file.
+3. `uv run orchard auth push`, then deploy the grove as always
+   (`set -a; . ~/.config/orchard/secrets.env; set +a; pnpm run deploy`). The
+   build takes the site key from that environment, so a client with the human
+   check and a service that demands it go out together. Steps 1 to 3 write
+   secrets, so they are yours to run or to approve explicitly.
 4. `uv run orchard auth status` should say the discovery document and one key
    are served and that a token without a human check is refused (403).
 5. Open the grove, check the HUD says connected, then `orchard auth gate on`.
@@ -105,13 +104,10 @@ redeploy.
 
 ## What is still open
 
-- **Mainland China.** Turnstile loads from challenges.cloudflare.com. Nobody
-  has tried it from the mainland; if it does not load there, those visitors
-  stay single-player once the site key is in the build. Test before relying
-  on it (HOSTING.md says the same of the rest of the stack).
 - **Voice** needs the same token service to mint Cloudflare Realtime session
   tokens; the Realtime secret must never reach the browser.
-- **The Impressum.** An Austrian website needs one (ECG §5, MedienG §25). The
-  privacy page names GitHub issues as the contact; a legal address is
-  Manuel's to publish.
+- **The Impressum** is at /impressum/ (Weichseltree OÜ, registry code
+  17482992, from the Estonian Business Register on 2026-09-12). Keep it in
+  step with the register when the address, the board or the VAT status
+  change.
 - **Upstream `'unsafe-eval'`** (BACKLOG 11).

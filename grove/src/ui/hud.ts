@@ -76,7 +76,12 @@ export class Hud {
     privacy.target = "_blank";
     privacy.rel = "noopener";
     privacy.textContent = "Privacy";
-    footer.append(privacy);
+    const impressum = document.createElement("a");
+    impressum.href = "/impressum/";
+    impressum.target = "_blank";
+    impressum.rel = "noopener";
+    impressum.textContent = "Impressum";
+    footer.append(privacy, " · ", impressum);
     this.#people.append(heading, this.#peopleList, footer);
     topLeft.append(this.#people);
     root.append(topLeft);

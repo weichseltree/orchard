@@ -306,6 +306,7 @@ def main(argv=None):
     asub = s.add_subparsers(dest="what", required=True)
     r = asub.add_parser("keygen", help="make AUTH_SIGNING_KEY and AUTH_NETWORK_KEY if missing")
     r.add_argument("--write", action="store_true", help="append them to the secrets file")
+    asub.add_parser("turnstile", help="create the Turnstile widget and store its keys")
     asub.add_parser("push", help="send the token service's secrets to Cloudflare Pages")
     asub.add_parser("status", help="what the live token service answers, and the gate")
     r = asub.add_parser("gate", help="turn anonymous visitors away (on) or let them in (off)")

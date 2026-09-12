@@ -75,7 +75,13 @@ export default defineConfig(({ command }) => ({
     "import.meta.env.VITE_AUTH_URL": JSON.stringify(
       process.env.VITE_AUTH_URL ?? (command === "serve" ? "" : "/auth"),
     ),
-    "import.meta.env.VITE_TURNSTILE_SITEKEY": JSON.stringify(process.env.VITE_TURNSTILE_SITEKEY ?? ""),
+    // The site key is public. A deploy sources the secrets file (wrangler needs
+    // the token from it), so TURNSTILE_SITEKEY is there: a build can never go
+    // out without it once the token service asks for the human check, which
+    // would refuse every visitor's token.
+    "import.meta.env.VITE_TURNSTILE_SITEKEY": JSON.stringify(
+      process.env.VITE_TURNSTILE_SITEKEY ?? (command === "serve" ? "" : (process.env.TURNSTILE_SITEKEY ?? "")),
+    ),
   },
   build: {
     target: "es2022",

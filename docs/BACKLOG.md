@@ -150,20 +150,28 @@ Ordered. Items with a name in brackets wait on that person.
 
 ## Security (2026-09-12, docs/SECURITY.md)
 
-25. **[Manuel] Turn the token service on.** Needs a fresh approval to write
-    the secrets file: `orchard auth keygen --write`, the Turnstile widget
-    (its secret goes into the same file), `orchard auth push`, a grove deploy
-    with `VITE_TURNSTILE_SITEKEY`, `orchard auth status`, then
-    `orchard auth gate on`. Until then visitors stay anonymous and every rule
-    but the per-network cap holds.
+25. **[Manuel] Turn the token service on.** `orchard auth keygen --write` is
+    done (2026-09-12, the keys are in the secrets file). Left, and each writes
+    a secret, so Manuel runs or approves it: `orchard auth turnstile && orchard
+    auth push`. Then a session deploys the grove, checks `orchard auth
+    status` and a browser, and runs `orchard auth gate on` (Manuel asked for
+    the gate on 2026-09-12). Until then visitors stay anonymous and every
+    rule but the per-network cap holds.
 26. **[Manuel] Split the Cloudflare token** into deploy, R2 and admin tokens
     (HOSTING.md, "Split it"); the code already reads all three.
-27. **Turnstile from the mainland.** Try challenges.cloudflare.com from a
-    mainland vantage point before the site key goes into a build; if it does
-    not load there, those visitors go single-player.
-28. **[Manuel] An Impressum** (ECG §5, MedienG §25): name and a contact
-    address; the privacy page points at GitHub issues meanwhile.
+27. ~~Turnstile reachability check~~ dropped 2026-09-12 by Manuel's ruling.
+28. ~~**An Impressum**~~ Done 2026-09-12: /impressum/ names Weichseltree OÜ
+    (registry code 17482992, Sepapaja tn 6, Tallinn), and the privacy page
+    names it as responsible.
 29. The host in the browser (with item 8): an admin identity in the grove
     needs its own token path; the CLI token must not go into a browser.
 30. Voice (item 7) mints Cloudflare Realtime session tokens in the same
     token service, never in the client.
+31. **[Manuel] Everything under Weichseltree OÜ.** Move the services to an
+    organisation account of the company and switch their billing, and
+    Stripe's payouts, to the Wise Business account: Cloudflare (Pages, R2,
+    DNS, Turnstile), SpacetimeDB (maincloud credits), Google Cloud (Gemini),
+    Anthropic, OpenAI, ElevenLabs, GitHub (weichseltree), YouTube, Patreon.
+    Moving the Cloudflare account is also the moment for the token split
+    (item 26); moving SpacetimeDB means a new publisher identity, so add it
+    with `add_admin` before the old login goes.
