@@ -61,10 +61,14 @@ def cmd_board(a):
     rows = []
     for t in sorted(trees, key=lambda t: (-t.potential, t.name)):
         s = recent.get(t.name)
+        bundled = sum(1 for x in t.artefacts if x.bundle)
+        approved = sum(1 for x in t.artefacts if x.approved)
         rows.append([t.name, t.status, t.furthest_stage(), t.potential or "", len(t.theses), len(t.phenomena),
+                     f"{bundled}/{len(t.artefacts)}" if t.artefacts else "", approved or "",
                      f"{s.gpu_h:.1f}" if s else "0", f"{s.video_h:.1f}" if s else "0",
                      f"{t.budget.gpu_h:g}" if t.budget.gpu_h else "ask", t.question[:60]])
-    _table(rows, ["tree", "status", "stage", "pot", "theses", "phen", "gpu_h_30d", "video_h_30d", "gpu_budget", "question"])
+    # bundled: artefacts `orchard harvest` has bundled; approved: rulings, what `exhibit hang` will take
+    _table(rows, ["tree", "status", "stage", "pot", "theses", "phen", "bundled", "appr", "gpu_h_30d", "video_h_30d", "gpu_budget", "question"])
 
 
 def cmd_ledger(a):
