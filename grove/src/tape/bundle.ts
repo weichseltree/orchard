@@ -87,7 +87,9 @@ export type StillBundle = z.infer<typeof StillBundleSchema>;
 /** Which still tier a device downloads: the phone its own, everything else the full one. */
 export const STILL_TIER_PREFERENCE = {
   "vr-high": ["full", "phone", "thumb"],
-  "vr-quest": ["full", "phone", "thumb"],
+  // A 4096 px full tier is ~38 MB of texture per still on a Quest (DEVICE-TIERS.md);
+  // the 1600 px phone tier reads the same at gallery distance.
+  "vr-quest": ["phone", "full", "thumb"],
   phone: ["phone", "full", "thumb"],
   desktop: ["full", "phone", "thumb"],
 } as const satisfies Record<string, readonly string[]>;
