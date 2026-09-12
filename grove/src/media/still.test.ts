@@ -33,11 +33,13 @@ describe("StillBundleSchema", () => {
 });
 
 describe("pickStillTier", () => {
-  it("gives the phone its own tier and everyone else the full one", () => {
+  it("gives the phone and the Quest the 1600 px tier, the desktop and PC VR the full one", () => {
+    // DEVICE-TIERS.md: a 4096 px still is ~38 MB of texture on a Quest.
     const bundle = StillBundleSchema.parse(doc);
     expect(pickStillTier(bundle, "phone").name).toBe("phone");
+    expect(pickStillTier(bundle, "vr-quest").name).toBe("phone");
     expect(pickStillTier(bundle, "desktop").name).toBe("full");
-    expect(pickStillTier(bundle, "vr-quest").name).toBe("full");
+    expect(pickStillTier(bundle, "vr-high").name).toBe("full");
   });
 
   it("falls back to whatever tier exists", () => {
