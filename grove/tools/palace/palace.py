@@ -221,7 +221,7 @@ def grass(px, rng):
     n = _fbm(px, rng, octaves=6, base=12)
     m = _fbm(px, rng, octaves=3, base=2)
     g = 0.75 + 0.5 * (n - 0.5) + 0.3 * (m - 0.5)
-    return np.clip(np.stack([g * 0.55, g * 1.0, g * 0.30], axis=-1), 0, 1)
+    return np.clip(np.stack([g * 0.42, g * 0.82, g * 0.26], axis=-1), 0, 1)
 
 
 def leaf_card(px, rng):
@@ -243,11 +243,11 @@ def leaf_card(px, rng):
         alpha = np.maximum(alpha, blob)
     n = _fbm(px, rng, octaves=5, base=10)
     alpha = np.clip(alpha * (0.7 + 0.8 * n), 0, 1)
-    for _ in range(60):
+    for _ in range(90):                                   # sour cherries: small, dark red
         cx, cy = rng.normal(0, 0.45), rng.normal(0.0, 0.42)
         d = ((u - cx) ** 2 + (v - cy) ** 2)
-        dot = d < 0.0009
-        rgb[dot] = (0.45, 0.04, 0.05)
+        dot = (d < 0.00012) & (alpha > 0.35)
+        rgb[dot] = (0.40, 0.03, 0.04)
     return np.concatenate([np.clip(rgb, 0, 1), (alpha > 0.35).astype(np.float32)[..., None]], axis=-1)
 
 
@@ -732,6 +732,13 @@ def add_room_markers(scene, plan, markers):
 # --------------------------------------------------------------------------
 # the grounds: cells
 # --------------------------------------------------------------------------
+def tri(b, p0, p1, p2, mat):
+    i = len(b.verts)
+    b.verts += [Vector(p0), Vector(p1), Vector(p2)]
+    b.faces.append((i, i + 1, i + 2))
+    b.mats.append(mat)
+
+
 def box(b, x0, x1, y0, y1, z0, z1, mat, top=True, bottom=False):
     """An axis-aligned box, outward faces only."""
     b.quad((x0, y0, z0), (0, y1 - y0, 0), (0, 0, z1 - z0), mat, want=(-1, 0, 0))
@@ -852,7 +859,7 @@ def build_parterre(b, plan):
         b.quad((q0[0], q0[1], 0.0), (q1[0] - q0[0], q1[1] - q0[1], 0), (0, 0, 0.45), C_STONE,
                want=(-math.cos((a0 + a1) / 2), -math.sin((a0 + a1) / 2), 0))
         b.quad((q0[0], q0[1], 0.45), (q1[0] - q0[0], q1[1] - q0[1], 0), (p0[0] - q0[0], p0[1] - q0[1], 0), C_STONE, want=Z)
-        b.quad((cx, cy, 0.30), (q0[0] - cx, q0[1] - cy, 0), (q1[0] - cx, q1[1] - cy, 0), C_WATER, want=Z)
+        tri(b, (cx, cy, 0.30), (q0[0], q0[1], 0.30), (q1[0], q1[1], 0.30), C_WATER)
 
 
 def tree_positions(plan, seed, pitch=7.0, margin=6.0, jitter=1.2):
@@ -900,7 +907,6 @@ def build_trees(positions):
         zc = h_trunk + s * 0.42
         for k in range(3):
             card(x, y, s, yaw + k * math.pi / 3, zc)
-        card(x, y, s * 0.9, 0, zc, horizontal=True)
     return b, shade
 
 
@@ -999,19 +1005,22 @@ def unlit_trees_for_export(tree_ob, textures):
     client never binds a lightmap to."""
     for mat in tree_ob.data.materials:
         nt = mat.node_tree
-        is_leaf = mat.name.endswith("_leaf")
+        is_leaf = "_leaf" in mat.name
         nt.nodes.clear()
         out = nt.nodes.new("ShaderNodeOutputMaterial")
         emi = nt.nodes.new("ShaderNodeEmission")
         vc = nt.nodes.new("ShaderNodeVertexColor")
         vc.layer_name = "shade"
-        mul = nt.nodes.new("ShaderNodeMixRGB")
-        mul.blend_type = "MULTIPLY"
-        mul.inputs["Fac"].default_value = 1.0
+        # The exporter recognises "Emission (from an image) mixed with
+        # Transparent by that image's alpha" as KHR_materials_unlit + MASK;
+        # anything between the image and the emission breaks the match, so
+        # the per-vertex shade goes out as COLOR_0 (export_vertex_color
+        # ACTIVE) and three.js multiplies it in.
+        nt.nodes.remove(vc)
         if is_leaf:
             ti = nt.nodes.new("ShaderNodeTexImage")
             ti.image = textures["leaf"]
-            nt.links.new(ti.outputs["Color"], mul.inputs["Color1"])
+            nt.links.new(ti.outputs["Color"], emi.inputs["Color"])
             mix = nt.nodes.new("ShaderNodeMixShader")
             tr = nt.nodes.new("ShaderNodeBsdfTransparent")
             nt.links.new(ti.outputs["Alpha"], mix.inputs["Fac"])
@@ -1020,10 +1029,8 @@ def unlit_trees_for_export(tree_ob, textures):
             nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])
             mat.blend_method = "CLIP"
         else:
-            mul.inputs["Color1"].default_value = (*LOOK["trunk"][0], 1.0)
+            emi.inputs["Color"].default_value = (*LOOK["trunk"][0], 1.0)
             nt.links.new(emi.outputs["Emission"], out.inputs["Surface"])
-        nt.links.new(vc.outputs["Color"], mul.inputs["Color2"])
-        nt.links.new(mul.outputs["Color"], emi.inputs["Color"])
         mat.use_backface_culling = False
 
 # --------------------------------------------------------------------------
@@ -1110,7 +1117,7 @@ def build_scene(mansion, textures, bake_res, margin, target_id):
     return objects, plans, target, trees_of
 
 
-def render_still(scene, cam_pos, facing, out_path, samples, lens=22.0):
+def render_still(scene, cam_pos, facing, out_path, samples, lens=22.0, exposure=0.0):
     cam_data = bpy.data.cameras.new("still_cam")
     cam_data.sensor_width = 36.0
     cam_data.lens = lens
@@ -1122,6 +1129,7 @@ def render_still(scene, cam_pos, facing, out_path, samples, lens=22.0):
     scene.camera = cam
     scene.cycles.samples = samples
     scene.cycles.use_denoising = True
+    scene.view_settings.exposure = exposure
     scene.render.resolution_x, scene.render.resolution_y = 1280, 720
     scene.render.resolution_percentage = 100
     scene.render.image_settings.file_format = "PNG"
@@ -1177,6 +1185,72 @@ def preview_from_lightmap(scene, plan, ob, mats, png_path, scale, out_path, samp
     scene.cycles.max_bounces = 0
     return render_still(scene, (sp["position"][0], -sp["position"][2], EYE_H),
                         (-math.sin(yaw), math.cos(yaw), 0.0), out_path, samples)
+
+
+def export_glb(path, objects, vertex_color=False):
+    bpy.ops.object.select_all(action="DESELECT")
+    for ob in objects:
+        ob.select_set(True)
+    bpy.context.view_layer.objects.active = objects[0]
+    bpy.ops.export_scene.gltf(
+        filepath=path, export_format="GLB", use_selection=True, export_apply=True, export_yup=True,
+        export_texcoords=True, export_normals=True, export_tangents=False, export_materials="EXPORT",
+        export_image_format="AUTO", export_draco_mesh_compression_enable=False, export_extras=True,
+        export_cameras=False, export_lights=False, export_animations=False, export_skins=False,
+        export_morph=False, export_unused_images=False, export_unused_textures=False,
+        export_vertex_color="ACTIVE" if vertex_color else "MATERIAL",
+    )
+
+
+def patch_glb_json(path, fn):
+    """Rewrite the glb's JSON chunk through fn(doc); the binary chunk rides along."""
+    import struct
+    with open(path, "rb") as fh:
+        blob = fh.read()
+    magic, version, total = struct.unpack("<III", blob[:12])
+    off, chunks = 12, []
+    while off < total:
+        clen, ctype = struct.unpack("<II", blob[off:off + 8])
+        chunks.append((ctype, blob[off + 8:off + 8 + clen]))
+        off += 8 + clen
+    doc = json.loads(chunks[0][1].decode("utf-8"))
+    fn(doc)
+    js = json.dumps(doc, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    js += b" " * ((4 - len(js) % 4) % 4)
+    body = struct.pack("<II", len(js), 0x4E4F534A) + js
+    for ctype, data in chunks[1:]:
+        pad = b"\x00" * ((4 - len(data) % 4) % 4)
+        body += struct.pack("<II", len(data) + len(pad), ctype) + data + pad
+    with open(path, "wb") as fh:
+        fh.write(struct.pack("<III", magic, version, 12 + len(body)) + body)
+
+
+def unlit_tree_materials(doc):
+    """Blender 4.2's exporter writes an emission-only material as black PBR
+    with an emissive texture. The client wants the trees unlit and alpha-cut:
+    move the emissive into the base colour, add KHR_materials_unlit, MASK."""
+    used = set(doc.get("extensionsUsed", []))
+    for m in doc.get("materials", []):
+        name = m.get("name", "")
+        if "_leaf" not in name and "_trunk" not in name:
+            continue
+        pbr = m.setdefault("pbrMetallicRoughness", {})
+        if "emissiveTexture" in m:
+            pbr["baseColorTexture"] = m.pop("emissiveTexture")
+            pbr["baseColorFactor"] = [1.0, 1.0, 1.0, 1.0]
+        else:
+            ef = m.pop("emissiveFactor", [1, 1, 1])
+            pbr["baseColorFactor"] = [float(ef[0]), float(ef[1]), float(ef[2]), 1.0]
+        m.pop("emissiveFactor", None)
+        pbr["metallicFactor"] = 0.0
+        pbr["roughnessFactor"] = 1.0
+        m.setdefault("extensions", {})["KHR_materials_unlit"] = {}
+        m["doubleSided"] = True
+        if "_leaf" in name:
+            m["alphaMode"] = "MASK"
+            m["alphaCutoff"] = 0.5
+        used.add("KHR_materials_unlit")
+    doc["extensionsUsed"] = sorted(used)
 
 
 def ktx_tiers(png, out_dir):
@@ -1258,7 +1332,8 @@ def main():
             yaw = math.radians(float(sp.get("yawDeg", 0)) if args.still_yaw is None else args.still_yaw)
             out = os.path.join(img_dir, "palace-still-%s%s.png" % (rid, args.still_suffix))
             t = render_still(scene, (sp["position"][0], -sp["position"][2], EYE_H),
-                             (-math.sin(yaw), math.cos(yaw), 0.0), out, args.samples)
+                             (-math.sin(yaw), math.cos(yaw), 0.0), out, args.samples,
+                             exposure=-1.6 if isinstance(plan, CellPlan) else 0.0)
             log("still %s %.0f s -> %s" % (rid, t, out))
         log("STILLS OK")
         return
@@ -1305,7 +1380,10 @@ def main():
     if plan.id in trees_of:
         unlit_trees_for_export(trees_of[plan.id], textures)
         extra = [trees_of[plan.id]]
-    hb.export_glb(glb, [ob] + extra + marker_objs)
+        trees_of[plan.id].data.color_attributes.active_color_index = 0
+    export_glb(glb, [ob] + extra + marker_objs, vertex_color=bool(extra))
+    if extra:
+        patch_glb_json(glb, unlit_tree_materials)
     record = {
         "schema": "orchard/room/1",
         "asset": plan.id,

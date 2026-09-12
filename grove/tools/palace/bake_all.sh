@@ -11,7 +11,13 @@ if [ ${#ROOMS[@]} -eq 0 ]; then ROOMS=(hall einstruct world-engine phototroph sp
 mkdir -p logs
 for room in "${ROOMS[@]}"; do
   res=2048
-  case "$room" in gallery|orangery) res=4096; SAMPLES_R=$(( SAMPLES / 2 ));; greenhouse) res=1024; SAMPLES_R=$SAMPLES;; *) SAMPLES_R=$SAMPLES;; esac
+  case "$room" in
+    gallery|orangery) res=4096; SAMPLES_R=$(( SAMPLES / 2 ));;
+    greenhouse) res=1024; SAMPLES_R=$SAMPLES;;
+    terrace|parterre) res=4096; SAMPLES_R=$(( SAMPLES / 2 ));;
+    orchard-*) res=2048; SAMPLES_R=$(( SAMPLES / 4 ));;
+    *) SAMPLES_R=$SAMPLES;;
+  esac
   exp run "palace-$room" --prio 5 --lane cpu -- /home/manuel/tools/blender/blender --background \
     --python grove/tools/palace/palace.py -- --room "$room" --samples "$SAMPLES_R" --res "$res"
 done
