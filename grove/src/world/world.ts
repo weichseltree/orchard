@@ -85,11 +85,11 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
     group,
     tapes: [],
     get tape() {
-      return this.tapes[0] ?? null;
+      return this.tapes.find((t) => t !== null) ?? null;
     },
     videos: [],
     get video() {
-      return this.videos[0] ?? null;
+      return this.videos.find((v) => v !== null) ?? null;
     },
     stills: [],
     load: async () => {
@@ -116,6 +116,13 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
       );
       const exhibits = wantsExhibits && options.exhibits ? await options.exhibits() : [];
 
+      // Every hanging loads at once: a visitor in the third room must not
+      // wait behind the first room's tapes and videos. Lists keep hanging
+      // order so "the first tape" means the first in mansion.json.
+      const tapesByOrder: Array<TapeExhibit | null> = [];
+      const videosByOrder: Array<VideoWall | null> = [];
+      const stillsByOrder: Array<StillPanel | null> = [];
+      const pending: Promise<void>[] = [];
       for (const room of mansion.rooms) {
         for (const hanging of room.hangings) {
           const base = bundleUrl(hanging.bundle, exhibits);
@@ -125,60 +132,67 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
             continue;
           }
           if (hanging.kind === "tape") {
-            try {
-              const tape = await TapeExhibit.load({
+            const slot = tapesByOrder.push(null) - 1;
+            pending.push(
+              TapeExhibit.load({
                 hanging,
                 baseUrl: base,
                 tier: device.tier,
                 pixelRatio: Math.min(window.devicePixelRatio, device.maxPixelRatio),
                 onNotice,
-              });
-              world.tapes.push(tape);
-              group.add(tape.group);
-              provenance.register({
-                id: `tape:${hanging.id}`,
-                title: hanging.title || tape.bundle.title,
-                bounds: tape.bounds,
-                read: () => tape.provenance(),
-              });
-            } catch (error) {
-              onNotice(`tape ${hanging.id}: ${message(error)}`);
-            }
+              })
+                .then((tape) => {
+                  tapesByOrder[slot] = tape;
+                  group.add(tape.group);
+                  provenance.register({
+                    id: `tape:${hanging.id}`,
+                    title: hanging.title || tape.bundle.title,
+                    bounds: tape.bounds,
+                    read: () => tape.provenance(),
+                  });
+                })
+                .catch((error: unknown) => onNotice(`tape ${hanging.id}: ${message(error)}`)),
+            );
           } else if (hanging.kind === "still") {
-            try {
-              const still = await buildStill(
+            const slot = stillsByOrder.push(null) - 1;
+            pending.push(
+              buildStill(
                 hanging,
                 base,
                 device.tier,
                 shells.get(room.id)?.markers.posters.get(hanging.marker) ?? null,
                 provenance,
                 onNotice,
-              );
-              world.stills.push(still);
-              group.add(still.mesh);
-            } catch (error) {
-              onNotice(`still ${hanging.id}: ${message(error)}`);
-            }
+              )
+                .then((still) => {
+                  stillsByOrder[slot] = still;
+                  group.add(still.mesh);
+                })
+                .catch((error: unknown) => onNotice(`still ${hanging.id}: ${message(error)}`)),
+            );
           } else {
-            try {
-              const video = await buildVideo(
-                hanging.id,
-                hanging.title,
-                base,
-                hanging,
-                provenance,
-                onNotice,
-              );
-              if (video) {
-                world.videos.push(video);
-                group.add(video.mesh);
-              }
-            } catch (error) {
-              onNotice(`video ${hanging.id}: ${message(error)}`);
-            }
+            const slot = videosByOrder.push(null) - 1;
+            pending.push(
+              buildVideo(hanging.id, hanging.title, base, hanging, provenance, onNotice)
+                .then((video) => {
+                  if (!video) return;
+                  videosByOrder[slot] = video;
+                  group.add(video.mesh);
+                })
+                .catch((error: unknown) => onNotice(`video ${hanging.id}: ${message(error)}`)),
+            );
           }
         }
       }
+      // Each list fills as its items land; the arrays are shared by reference
+      // so the HUD sees a tape the moment it is in.
+      world.tapes = tapesByOrder as TapeExhibit[];
+      world.videos = videosByOrder as VideoWall[];
+      world.stills = stillsByOrder as StillPanel[];
+      await Promise.all(pending);
+      world.tapes = tapesByOrder.filter((t): t is TapeExhibit => t !== null);
+      world.videos = videosByOrder.filter((v): v is VideoWall => v !== null);
+      world.stills = stillsByOrder.filter((s): s is StillPanel => s !== null);
     },
     dispose() {
       sky?.dispose();

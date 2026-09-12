@@ -17,6 +17,7 @@ import { frameAt } from "./tape/time";
 import mansionDocument from "./world/mansion.json";
 import { parseMansion, roomById } from "./world/schema";
 import { buildWorld, type BuiltWorld } from "./world/world";
+import type { VideoWall } from "./media/videowall";
 
 // The grove. Boot order matters: the canvas renders within a frame of the
 // module loading, the world streams in behind it room by room, and the network
@@ -43,12 +44,16 @@ const view = createView(canvas, device, {
 });
 view.scene.add(avatars.group, worldNotices.panel);
 
-const startRoom = roomById(mansion, mansion.start);
+// `?room=<id>&yaw=<deg>` starts a visit in another room: for looking at a
+// room while it is built, and for a link straight to a tree's room.
+const query = new URLSearchParams(location.search);
+const startRoom = roomById(mansion, query.get("room") || mansion.start);
 if (!startRoom) throw new Error(`mansion.json start room "${mansion.start}" is missing`);
+const startYaw = query.has("yaw") ? Number(query.get("yaw")) : startRoom.spawn.yawDeg;
 const body = createBody(
   startRoom.spawn.position[0],
   startRoom.spawn.position[2],
-  MathUtils.degToRad(startRoom.spawn.yawDeg),
+  MathUtils.degToRad(startYaw),
   startRoom.id,
 );
 /** Until the visitor moves, the asset's own spawn marker may still move them. */
@@ -78,6 +83,8 @@ view.scene.add(provenance.panel);
 function notice(text: string, sticky = false): void {
   hud.notice(text, sticky);
   worldNotices.push(text);
+  // Mirrored to the console so a headless run can be read after the fact.
+  console.info(`[grove] ${text}`);
 }
 
 const presence = new Presence({
@@ -186,7 +193,7 @@ function boot(): void {
         hud.setPlaying(built.tape.playing);
         hud.setSpeed(built.tape.speed);
       }
-      if (built.video && built.video.mode !== "poster") hud.setUnmuteAvailable(true);
+      handOverVideo(true);
     })
     .catch((error: unknown) => notice(`The world did not finish loading: ${message(error)}`, true));
 }
@@ -204,8 +211,39 @@ async function enterVr(): Promise<void> {
   }
 }
 
+// One screen plays at a time (videowall.ts): the wall nearest the visitor
+// holds the decoder, and walking to another hands it over. Re-checked a few
+// times a second, not every frame; a hand-over restarts the stream.
+let activeWall: VideoWall | null = null;
+let nextWallCheck = 0;
+function handOverVideo(force = false): void {
+  const now = performance.now();
+  if (!force && now < nextWallCheck) return;
+  nextWallCheck = now + 400;
+  const walls = (world?.videos ?? []).filter((w): w is VideoWall => w !== null);
+  let nearest: VideoWall | null = null;
+  let best = Infinity;
+  for (const wall of walls) {
+    const dx = wall.mesh.position.x - body.x;
+    const dz = wall.mesh.position.z - body.z;
+    const d = dx * dx + dz * dz;
+    if (d < best) {
+      best = d;
+      nearest = wall;
+    }
+  }
+  if (nearest === activeWall) return;
+  activeWall?.release();
+  activeWall = nearest;
+  hud.setUnmuteAvailable(false);
+  if (!nearest) return;
+  void nearest.attach().then((playing) => {
+    if (playing && activeWall === nearest) hud.setUnmuteAvailable(true);
+  });
+}
+
 async function toggleAudio(): Promise<void> {
-  const video = world?.video;
+  const video = activeWall;
   if (!video || video.mode === "poster") return;
   if (video.muted) await video.unmute();
   else video.mute();
@@ -227,6 +265,7 @@ view.start((dt) => {
   consumeDeltas(input);
 
   view.rig.position.set(body.x, 0, body.z);
+  handOverVideo();
   if (presenting) {
     // Room-scale walking can take the head through a wall the rig never met.
     view.camera.getWorldPosition(headWorld);
