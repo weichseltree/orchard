@@ -124,6 +124,11 @@ Ordered. Items with a name in brackets wait on that person.
     (stale "unsupported" can land last in the grove's watchXrSupport), the
     distance-clamped orbit for vantage-point rooms, dwell and raycast
     pointing if exhibits get point-to-select.
-24. **Stage regression check in `orchard sync`:** spectre set its thesis
-    back to styleframe on purpose; confirm a stale approved-animatic review
-    row cannot push it up again.
+24. **A tree lowering its own stage.** spectre set its thesis back to
+    styleframe on purpose. Checked 2026-09-12: the database holds no rulings
+    yet (the timer logs 0 reviewed), so nothing can push it up today; but
+    sync only moves stages forward, so once an approved-animatic ruling
+    exists a later honest demotion by the tree would be undone every 15
+    minutes. Needs a rule: a ruling advances a stage only if it is newer
+    than the manifest's last change to that thesis, or the tree records the
+    demotion as a ruling of its own.
