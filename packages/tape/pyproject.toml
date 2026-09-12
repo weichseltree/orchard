@@ -1,0 +1,24 @@
+[project]
+name = "orchard-tape"
+# The release. Its git tag is tape-v<this>, and `__version__` in
+# src/orchard_tape/__init__.py must say the same (tests/test_version.py).
+version = "1.0.0"
+description = "video/tape/1: the particle tape every weichseltree repo writes and orchard reads."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "AGPL-3.0-or-later"
+license-files = ["LICENSE"]
+dependencies = ["numpy>=1.24"]
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/orchard_tape"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

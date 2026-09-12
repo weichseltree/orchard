@@ -1,0 +1,7 @@
+{
+  "schema": "video/tape/1",
+  "frames": 4,
+  "bytes": 1472,
+  "clamped_positions_total": 4,
+  "clamped_note": "positions outside the box were clamped into it by the uint16 mapping; nonzero means the tape does not show where those particles were"
+}

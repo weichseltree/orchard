@@ -1,0 +1,86 @@
+{
+  "schema": "video/tape/1",
+  "box": [
+    10.0,
+    12.0,
+    8.0
+  ],
+  "units": "reduced (sigma, tau)",
+  "t0_origin": "run start",
+  "t0_offset_tau": 0.0,
+  "t0_note": "run_clock_time = tape_time + t0_offset_tau. t0_origin names what tape t=0 IS on the producing run's clock; 'unspecified' means the producer did not say and the two clocks must NOT be assumed equal.",
+  "n_total": 40,
+  "run_seed": 77,
+  "mode": "subset",
+  "n_subset": 16,
+  "subset_derivation": "blake2b(schema|mode|run_seed|n_subset|n_total) -> np.random.default_rng -> sorted choice without replacement. A pure function of the header, so it is identical across restarts; see core.video.tape.subset_indices",
+  "roi": null,
+  "periodic": [
+    true,
+    true,
+    true
+  ],
+  "periodic_note": "which axes wrap. Load-bearing for BOTH the displacement bound and interpolation: a particle crossing from L-eps to eps did not travel the box, it took one short step, and treating that as motion reports the box length as a displacement and draws the particle sweeping across the frame.",
+  "quantize": "uint16",
+  "quantize_note": "uint16 maps [0, L) per axis onto [0, 65535]; the resolution is L/65535 per axis and MUST be checked against the tightest shot this tape will serve, not the widest (RENDERING.md 4)",
+  "quantize_resolution": [
+    0.00015259021896696422,
+    0.00018310826276035706,
+    0.00012207217517357137
+  ],
+  "channels": [
+    {
+      "name": "pos",
+      "dtype": "uint16",
+      "width": 3,
+      "quantized": true,
+      "range": null,
+      "interpolation": "linear"
+    },
+    {
+      "name": "vel",
+      "dtype": "float32",
+      "width": 3,
+      "quantized": false,
+      "range": null,
+      "interpolation": "linear"
+    },
+    {
+      "name": "ke",
+      "dtype": "float32",
+      "width": 1,
+      "quantized": false,
+      "range": null,
+      "interpolation": "linear"
+    },
+    {
+      "name": "coordination",
+      "dtype": "uint8",
+      "width": 1,
+      "quantized": false,
+      "range": [
+        0,
+        255
+      ],
+      "interpolation": "nearest"
+    }
+  ],
+  "channel_dtype_note": "an unquantized integer channel is the integer itself: it is written losslessly or `append` raises (no truncation, no saturation), it reads back as an integer array, and `at()` takes the nearest sample rather than lerping a count no particle held (AGENTS rule 9). `range` is DERIVED from `dtype` and written for a reader that is not this module; TapeReader ignores it and re-derives, which is what lets a tape written before these fields existed still open. If the two ever disagree, `dtype` is the authority.",
+  "git": "fd0f465-dirty",
+  "env": {
+    "python": "3.12.12",
+    "numpy": "2.5.3",
+    "torch": null,
+    "torch_cuda": null,
+    "gpu": null,
+    "CUDA_VISIBLE_DEVICES": null,
+    "EXP_NAME": "tape-golden-fixture",
+    "EXP_SWEEP": null
+  },
+  "terms_tag": null,
+  "rendered_in_block": true,
+  "rendered_in_block_note": "taping is off the clock but not free; a run that taped does not publish a comparable steps/s (AGENTS rule 11)",
+  "meta": {
+    "producer": "orchard_tape golden fixture"
+  }
+}

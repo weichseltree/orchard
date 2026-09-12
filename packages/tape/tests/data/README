@@ -1,0 +1,18 @@
+golden_fd0f465/  a 4-frame subset tape written by SPECTRE's core/video/tape.py at
+                 spectre commit fd0f465 (the file last changed in 68239c4), from
+                 the inputs `golden_inputs()` in ../test_provenance.py defines.
+                 Its header says git "fd0f465-dirty": it was written with
+                 spectre's checkout as the working directory, and that checkout
+                 had other sessions' uncommitted work in it; tape.py itself was
+                 clean at HEAD.
+
+It is the reference for "byte-identical": test_provenance.py writes the same
+inputs through orchard_tape and compares data.bin, frames.jsonl and
+trailer.json byte for byte, and header.json field for field except `git` and
+`env`, which describe the writing process and not the tape.
+
+Never regenerate it with orchard_tape — that would make the test compare the
+package with itself. It was produced by loading spectre's file by path
+(importlib.util.spec_from_file_location), registering it as `orchard_tape` in
+sys.modules, importing ../test_provenance.py and calling
+write_golden(spectre_module.TapeWriter, <this directory>/golden_fd0f465).
