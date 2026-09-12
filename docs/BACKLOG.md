@@ -150,13 +150,13 @@ Ordered. Items with a name in brackets wait on that person.
 
 ## Security (2026-09-12, docs/SECURITY.md)
 
-25. **[Manuel] Turn the token service on.** `orchard auth keygen --write` is
-    done (2026-09-12, the keys are in the secrets file). Left, and each writes
-    a secret, so Manuel runs or approves it: `orchard auth turnstile && orchard
-    auth push`. Then a session deploys the grove, checks `orchard auth
-    status` and a browser, and runs `orchard auth gate on` (Manuel asked for
-    the gate on 2026-09-12). Until then visitors stay anonymous and every
-    rule but the per-network cap holds.
+25. ~~**Turn the token service on**~~ Done 2026-09-12: keys generated,
+    Turnstile widget "grove token service" (managed, site key
+    0x4AAAAAAExzRPz5E0HakeDL, now the build's default), secrets pushed to
+    Pages, grove deployed, maincloud accepting the tokens, gate on. Automated
+    browsers get Turnstile's checkbox and cannot pass it, so a headless check
+    of the live grove renders the world but never joins presence; test
+    presence on the local stack (grove/scripts/module-check.ts).
 26. **[Manuel] Split the Cloudflare token** into deploy, R2 and admin tokens
     (HOSTING.md, "Split it"); the code already reads all three.
 27. ~~Turnstile reachability check~~ dropped 2026-09-12 by Manuel's ruling.

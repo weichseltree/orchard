@@ -97,6 +97,11 @@ Turning the token service on, once (order matters):
 Until step 3 the token service answers 503 and the grove keeps its anonymous
 identities, so the rest of the rules still hold except the per-network ones.
 
+State on 2026-09-12: all five steps done, the gate is on. Only the grove's
+tokens get in; the home box's CLI login passes as admin. Automated browsers
+are shown Turnstile's checkbox and cannot pass it, so they render the world
+but never join presence; test presence locally instead.
+
 Rotating: a new `AUTH_SIGNING_KEY` makes every visitor a new identity once
 (their old tokens cannot be renewed); a new `AUTH_NETWORK_KEY` forgets every
 network ban. Remove the old line from the secrets file, run keygen and push,
