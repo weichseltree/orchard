@@ -20,10 +20,10 @@ an exhibit in it.
 
 | repo | in the mansion |
 |---|---|
-| spectre, einstruct, phototroph | particle tapes streamed as points you can stand inside and scrub; the tape format is the interchange |
-| world-engine | SDF lenses that bend light: portals, rooms larger inside than outside, corridors that loop |
-| someotherlife | captured rooms as Gaussian splats, articulated avatars from performance tracks, the WebXR client skeleton |
-| premosaic | adaptive tessellation as level of detail: cheap model far away, exact model where you look |
+| spectre, einstruct, phototroph | particle tapes streamed as points you can stand inside and scrub; the tape format is spectre's and its clock contract lets one scrubber drive several tapes; a hand-held cut plane is how a ball's core is seen. einstruct's candidate: a point's distances at the visitor's scale as a level-of-detail signal for point clouds (untested). phototroph's: spectral light, its Mitsuba spectral path splitting sunlight on the floors |
+| world-engine | a lens at a doorway: the room beyond visibly bends open across the threshold instead of cutting. (Corrected 2026-09-12: loops and plain portals need no lens, they are graph topology plus a stencil portal and a teleport, and do not wait on this tree; a lens never changes topology. Nothing in 3D exists yet.) |
+| someotherlife | captured places as Gaussian splats, which are vantage points, not walkable rooms: the measured headbox (stand on a marked spot, lean and look) suits windows, doorways and alcoves; the orchard outside the hall's windows first. Avatars later. |
+| premosaic | struck 2026-09-12: the tree is pruned and its measurement argues against per-region model selection at runtime; grove level of detail is conventional rendering |
 | lumina-consensus | a screen-and-camera link as the simplest inter-node handshake |
 | mosaic, HNL, agivity, points | rooms; later, live instruments |
 

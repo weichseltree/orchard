@@ -90,11 +90,86 @@ harvest, expected output 0.3 to 0.4 GB.
   arrive" as architecture.
 
 ### spectre
-- shows this week (first word): spectre-fe (2026-09-12): 13 tapes in video/tape/1 (the m04 planet worlds at chi 0/6/12, m01 mixture demixing, the v00 fluid tape); the two bundled videos; style-B styleframes on disk.
-- mechanism of the mansion:
-- thesis:
-- needs:
-- room:
+Answered 2026-09-12 by spectre-fe; manifest at spectre 585ac72, 4 phenomena,
+7 artefacts, 1 thesis at styleframe (down from the draft's animatic, on
+purpose). Not harvested: 19.9 GB of source, and the harvester's tape digest
+had to be fixed first (done, see below). After chi6 completes, one harvest
+reads about 30 GB on one core in 10 to 20 minutes and writes about 63 MB per
+tape.
+- shows this week: the planet trio. adiabat-chi0 and adiabat-chi12 (1,129
+  frames, 508,744 particles, 9.76 GB each), adiabat-chi6 finishing its last
+  chunk (row added once `exp wait` confirms). Identical (step, t) per frame
+  across the three, chi6's frames an exact prefix, cadence 2.0 tau with the
+  same 12 chunk seams; t=0 is the end of relaxation, the ball still 50/50.
+  Frame index keeps them aligned, so one scrubber drives all three. The
+  bundler picks the same 3,975 slots in all three (now a tested guarantee).
+  The other ten tapes are probes: the openings show about 30 bundled points
+  of core swelling, firststeps, fine, smoke; the v00 slab (43,750 frames)
+  needs a frame window; the e10 mixture tapes have no data. Stills: the
+  locked style-B styleframe B_astro and two plates (shot 13 particle scale,
+  shot 5 the body small in space), each with a render sidecar named
+  `<stem>.json`. The two bundled rows keep their ids; two text fields were
+  corrected (EP02 S4 not S5; H.264 viewing copy, made by final_pass at
+  b8c5f00). Never hang the 8:25; the 42.8 s only as a silent wall loop, as
+  a clip not a master (LAWS 18).
+- mechanism of the mansion: the tape's clock contract (t0_origin,
+  t0_offset_tau, per-frame step and t) is what lets one scrubber drive N
+  tapes; the trio is the first exhibit that needs it. The core cannot be
+  seen from outside a ball: the way of seeing is a hand-held cut plane that
+  fades over one sigma (LAWS 11) and cuts all three at once. The per-particle
+  heat channel `ke` carries the core heating and the bundler drops it. The
+  distillation is not a mechanism yet: no coarse model exists, and the kill
+  says so.
+- thesis: planet-from-scratch. An even heavy/light mix in a self-gravitating
+  ball: does the heavy kind find the middle, and how would you know it was
+  not put there? Number: 97% heavy inside r<30 (a fifth of the particles)
+  against 38% outside at 24 dynamical times, chi 12; the whole ball 50.0% in
+  every frame. Picture: the trio sliced at one moment reading 53 / 83 / 97%
+  (the draft's "core in only one" was false; chi6 grows one too). Blocked:
+  plates for 4 of 18 shots, all from one tape frame, so the contact sheet
+  was never rendered or ruled; the script must be rewritten because the
+  world is a ball and never collapses; the verdict waits on chi6.
+- the style-B redesign: PIPELINE.md, ep03/design.py (direction B locked),
+  styleframes.py, shots.py (18 shots, 17 distinct, 11 moving, variety
+  clean), stagings.py, 9 plates. Candidly one brown disc at different
+  zooms; the redesign should use time and the trio, not only the camera.
+- the verdict tool's dress rehearsal (a727137): three instrument defects
+  (a finished chunk read as unfinished because the broken gpurun of 09-10
+  printed after BALL COMPLETE; chi0 read as "drainage winning" when it has
+  no domains; deciding numbers on a knife-edge, now flagged AT THRESHOLD),
+  no threshold changed. Through row 11 nothing converged, nothing degraded.
+- needs: 0 GPU h (plates render on CPU), 6 CPU h, 12k TTS, $5 LLM, 5 GB.
+  Nothing for a second node; shipping 30 GB of tapes costs more than
+  bundling here. The missing measurement is a second seed for the trio,
+  about 86 GPU h, not asked for this round.
+- remote: wanted, private, after a secrets scan. The history was rewritten
+  on 08-25 and reboots have torn objects; a sha on one disk is not
+  provenance, and lanepush refuses an unpushed HEAD.
+- room: true black, the style-B palette (iron-warm heavy, pale light; the
+  grove's orange and blue break LAWS 12). Three balls at walking scale with
+  one shared scrubber and the cut plane; B_astro and the two plates on the
+  wall; the 42.8 s loop. For the building: the chi12 ball hanging in the
+  sky above the orchard as a moon. Honest, since every point sits where the
+  tape put it.
+- as the studio's supplier: the studio takes, as a copy at a pinned SHA
+  after which spectre deletes its own, audio/vo.py, pacing.py, post
+  (encode, animatic, overlay, diagrams, bloom, firefly, boil, plates),
+  check/variety.py, scene/ with Rig.verify, render/plate.py, stock.py and
+  secrets.py, and the generic part of mts (render, camera, scene,
+  sampling, sequence). spectre keeps core/video/tape.py, which should become
+  a small pinned package since einstruct and orchard import it unpinned;
+  mts/matter, look, guts, tape_frame, cull, synth, teaching; and
+  lanes/m03_first_film with measure.py binding the spoken numbers
+  (LAWS 24).
+- harvester bugs it found: (1) tape digest was header-only, no mid-write
+  guard: fixed 2026-09-12; (2) commit stamped with HEAD: fixed; (3) species
+  named A/B in orange and blue when header meta has species_masses [2,1]:
+  backlog; (4) only `<file>.json` sidecars carried, the measured numbers
+  live in `<stem>.json`: backlog; (5) `ke` dropped: backlog; (6) one mean
+  dt of 1.981 lets times drift up to a tau inside a chunk: backlog; (7)
+  3,975 slots show 1 point in 128 and a slice reads sparse, wants a
+  per-artefact slot budget and frame stride (16k slots at every 4th frame,
+  about 36 MB): backlog, first.
 
 ### world-engine
 Answered 2026-09-12 by world-engine-8f; manifest at world-engine 6b8bd6c,
@@ -154,11 +229,40 @@ status dormant, three stills harvested and verified here (ok on all three,
   is what the plan proposes.
 
 ### premosaic
-- shows this week (first word): premosaic-57 (2026-09-12): 13 small stills, the best 400 px matplotlib figures of adaptive tiles over Gray-Scott stripes and a lid-driven cavity; no tape, no clip. The engine runs 1.5 to 2x slower than the plain baseline, which is the kill.
-- mechanism of the mansion:
-- thesis:
-- needs:
-- room:
+Answered 2026-09-12 by premosaic-57; manifest at premosaic 4c2d1e1, status
+archived (the schema has no "pruned"), two stills harvested and unapproved,
+no thesis, budget zero, lane none.
+- shows this week: two stills, 400 px light-theme matplotlib with axes and
+  a title, poster wall at most and never letterboxed dark (LAWS 7, 13).
+  `de02c4fd02881d3c` a lid-driven cavity: the cheapest honest description
+  per square puts the kinetic tiles in one row under the moving lid and
+  nowhere else, 16 of 256 tiles, mass conserved exactly (2fdf90d).
+  `ae70864df21aa916` one frame of Turing stripes cut into 49 tiles, 44 a
+  single wave each, spacing right to a tenth (2c60850). The plotting
+  command was never recorded; produced_by says so and gives the command
+  that regenerates the data. The other eleven PNGs are sprite sheets and
+  diagnostics.
+- the kill, with numbers: beat B1 (step only non-empty cells) on rigid
+  advection at fixed fidelity or stop. At n=256 over 400 steps at 5% of
+  occupied RMS the engine ran at 0.50x, 0.53x and 0.68x of B1, which is
+  bit-exact there; its own abstraction was 1.00x at every point that met
+  the budget, predicted in closed form before the run.
+- mechanism of the mansion: none. Strike "adaptive tessellation as level
+  of detail" from PLATFORM.md: tile-granular scheduling lost 1.5 to 2x to
+  a per-cell mask, three quarters of the flops went to deciding; "exact
+  where you look" was never tested; grove LOD is conventional rendering.
+  The one transferable lesson is negative: never pay a per-region
+  model-selection step at runtime unless it is far cheaper than what it
+  saves.
+- thesis: none. The only story is the kill, and an episode that is only a
+  mistake breaks LAWS 6.
+- needs: nothing. The open line (a propagator that can express a shift) is
+  a different engine and belongs in a new repo.
+- room: none; at most two posters on a wall of pruned trees.
+- the frozen JAX file: a pip freeze of the deleted 5 GB venv, written by
+  the 2026-09-09 disk reclaim; the only record of the environment behind
+  the Flow Lenia and advection stages. Commit as the reproduction pin:
+  Manuel's call.
 
 ### phototroph
 Answered 2026-09-12 by phototroph-04; manifest at phototroph 524db21, zero
@@ -186,8 +290,12 @@ artefacts, one thesis, resolves on the board and the harvest bundles nothing.
   independent single-thread jobs. Tape export is a ~60-line CPU converter
   from PTVF into spectre's writer, matter only (bonds and photons have no
   slot in video/tape/1); dimer-split is motion-grade now and independent
-  of the rate decision; recorded flux members resume bit-exactly from
-  checkpoints, so a motion window costs minutes of CPU.
+  of the rate decision. Corrected later the same day: dimer-split is an
+  existing dump, so its tape is a pure conversion (frames 1600 to 2400,
+  801 frames, about 0.13 MB, CPU seconds, channels species and bond_count
+  since video/tape/1 has no bond slot); producers.tape and notes hold the
+  one exprun (phototroph 0b2e2ba). Whether a flux or horizon member can
+  resume with a changed cadence is unverified.
 - room: the 2D world as a floor about 7 by 4 m with a gallery above, light
   entering by a clerestory along one long wall and leaving by the open
   walls. Grey particles, hue only where one is excited. Today that is a
@@ -202,11 +310,66 @@ artefacts, one thesis, resolves on the board and the harvest bundles nothing.
 - pruned? Not yet. No episode until H1 reads; the kill says so.
 
 ### someotherlife
-- shows this week (first word): someotherlife-c6 (2026-09-12): nothing on disk as splat, still, clip or tape; Spike C has not run, so no captured room and no measured 6DoF budget. What exists is a playable WebXR room of draft proxies with a desktop fallback, 21 SVG glyphs and synthesized voice lines. Asked for the splat bundle spec it would design, the lift-ready client modules, and Spike C in budget terms.
-- mechanism of the mansion:
-- thesis:
-- needs:
-- room:
+Answered 2026-09-12 by someotherlife-c6; manifest at someotherlife 270723a,
+0 artefacts, 0 phenomena, one thesis (the Spike C capture) with a kill
+date. The fund's stub `trees/someotherlife.yaml` was added the same day so
+the tree resolves. Every number below is a prior from public demos, not a
+measurement (its ADR 0006 keeps unmeasured numbers out of its own docs).
+- shows this week: nothing. 20 SVG glyphs and 25 voice lines sit in notes.
+- the splat bundle it would design: SPZ (Niantic, MIT; about 10x smaller
+  than PLY, the payload of the Khronos glTF splat extension work, whose
+  ratification status is to be checked), raw PLY kept as source and never
+  shipped. bundle.json mirrors its SplatAssetSchema: per tier file, splat
+  count, SH degree, bytes; bounds and frame (metres, +Y up, floor at 0);
+  stations with position, yaw and a MEASURED coverage radius; capture id,
+  consent ref, provenance; two sidecars, a small glTF occluder/floor mesh
+  (splats cannot be raycast or depth-written cheaply) and an AVIF preview.
+  Tiers pruned from one reconstruction: vr-high 1.5 to 2M splats SH 2 to 3
+  (25 to 50 MB), vr-quest 300 to 500k SH 0 to 1 (5 to 10 MB), phone 150
+  to 250k SH 0 (2 to 4 MB), preview the still; a room 40 to 70 MB, one
+  download, nothing streamed. Decoder Spark (World Labs, MIT): three.js
+  native, reads PLY/SPZ/SPLAT/KSPLAT, WebGL2 and WebXR, sorts in a WASM
+  worker, which `_headers` already allows. Watch: the grove sends COOP
+  without COEP, so no SharedArrayBuffer; pick a sort path that does not
+  need it. Quest 3: the sort is the bottleneck (10 to 20 ms for 500k on
+  CPU, run asynchronously, pops on fast turns); 72 Hz holds at 300 to
+  500k at reduced framebuffer scale. Draw order: opaque glTF with depth
+  write, then splats depth-tested without depth write back to front, then
+  transparent grove content.
+- mechanism of the mansion, correcting PLATFORM: a phone capture is not a
+  walkable room but a vantage point; parallax holds only inside the
+  measured radius. The mechanism is the measured headbox: stand on a marked
+  spot, locomotion stops, lean and look, step off and walking returns. It
+  suits windows, doorways and alcoves, and a window is a natural headbox,
+  so real captured views outside the hall's windows (the orchard) are the
+  strongest fit. Foliage in wind is a harder capture. Avatars come after
+  Spike C and are not for this round.
+- what to lift from its client (three 0.185, TypeScript strict, no eval,
+  strict-CSP clean): not XR entry (the grove's local-floor rule stays) but
+  one fix from xr/support.ts, a token so an older probe can never report
+  over a newer one, which the grove's watchXrSupport lacks; no locomotion
+  (it has none by design); desktop/orbit.ts and focus.ts, an orbit camera
+  distance-clamped to the coverage radius, for splat rooms only;
+  input/dwell.ts and input/raycast.ts (mouse ray, two controller rays, 300
+  ms dwell, nearest hit) if exhibits get point-to-select.
+- thesis: a room shot on one phone, stood in with a headset: how far can
+  you lean before the walls come apart? Number: the measured lean radius
+  in metres at the standing point on Quest 3 at 72 Hz, checked at 0.5 and
+  1.0 m. Picture: one corner from the standing point and the same corner a
+  metre to the side where it tears. Stage thesis, blocked by no shoot, no
+  toolchain, no splat render pass. Spike C may run in parallel with M1.
+- needs, Spike C in budget terms (unmeasured): gpu_h 5 (SfM matching plus
+  three reconstructions of about an hour on 8 GB; fits Legion's 7.3 GB at
+  reduced resolution, a fair in-kind job), cpu_h 4, disk 15 GB peak, prio
+  cap 10; the owner about 1 h shooting a room they own and half a day
+  measuring in the headset. Before any of it the capture tooling must be
+  committed there (nodes run pinned code), and licensed for it: gsplat
+  (Apache-2.0), not INRIA's non-commercial original. Kill: pruned as a
+  donor if Spike C misses 72 Hz at a 0.5 m lean or no room is shot by
+  2026-11-30.
+- room: a closed door until a capture exists, not a proxy box. With one, a
+  vantage point: a real cellar, one marked spot, locomotion off inside the
+  radius, a gentle fade guiding the visitor back past it.
 
 ## Rulings this plan asks of Manuel
 
@@ -228,6 +391,25 @@ Collected here as the answers come in; each is one `orchard exhibit hang
   the tree now says a lit hero shot comes only after a styleframe ruling,
   so this is the still to rule on.
 - **einstruct, artefact/.** Commit the companion page or delete it.
+- **spectre, a private remote.** After a secrets scan; the harvest stamps
+  commits that otherwise live on one disk, and in-kind jobs need a pinned
+  commit. Recommended yes, before its harvest.
+- **spectre, the 42.8 s excerpt.** Rule its kind master to clip and hang it
+  as a silent wall loop, or leave it down. Recommended: hang, as clip.
+- **spectre, the styleframe.** B_astro and the two plates as the style-B
+  candidates on the review queue; the 18-shot contact sheet has never been
+  rendered, so this is the ruling before any plate spend.
+- **spectre, the trio.** Hang chi0, chi6, chi12 in the room once chi6
+  completes and the harvest lands, with the shared scrubber and the cut
+  plane as grove work. Recommended yes; it is the exhibit of this round.
+- **spectre, the moon.** The chi12 ball above the orchard. A look ruling
+  when the grounds exist; noted for the palace.
+- **premosaic, two posters.** On a wall of pruned trees, if the hall grows
+  one; and commit the frozen JAX file as the reproduction pin.
+- **someotherlife, fund Spike C now?** One hour of your shooting, half a
+  day in the headset, about 5 GPU h on Legion in kind. Recommended yes if
+  the orchard grounds are the first capture target; it decides the splat
+  kind's real numbers.
 - **phototroph, the rate decision (Q77/Q42).** Owner picks the collisional
   rate with the derivation Q77 asks for, informed by H1's scan; then
   goldens rebaselined, the Bose-Einstein gate green over 8 seeds, the dt

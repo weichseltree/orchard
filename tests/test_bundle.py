@@ -1138,3 +1138,21 @@ def test_a_large_object_is_read_back_when_the_api_refuses_head(tmp_path):
     # And by default nothing a bundle ships reaches the HEAD path at all.
     cf = NoHead({"bid/c0000.bin": data})
     assert _verify_uploaded(cf, "bid", "c0000.bin", f, digest, "b") == "ok" and cf.heads == []
+
+
+def test_tapes_with_the_same_slot_count_and_survivors_bundle_the_same_particles():
+    """spectre's trio: three worlds, one number apart, must show the same
+    particle identities so the visitor compares like with like. The seed is
+    a function of the slot counts alone and the alive-first rule of the final
+    frame, so identical survivor sets give identical slots. A guarantee, not
+    an accident."""
+    from orchard.bundle import slot_indices
+    alive = np.ones(508_744, dtype=np.uint8)
+    a, sel_a = slot_indices(508_744, 128, alive_last=alive)
+    b, sel_b = slot_indices(508_744, 128, alive_last=alive.copy())
+    assert np.array_equal(a, b) and sel_a == sel_b
+    # A tape in which one CHOSEN particle has died keeps every other choice:
+    # the alive-first rule drops that slot and only that slot.
+    alive2 = alive.copy(); alive2[a[0]] = 0
+    c, _ = slot_indices(508_744, 128, alive_last=alive2)
+    assert a[0] not in c and np.array_equal(np.setdiff1d(a, c), np.array([a[0]]))

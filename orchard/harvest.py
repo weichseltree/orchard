@@ -11,11 +11,26 @@ bundle id, the source digest and the tree commit are written into the
 artefact. Nothing here uploads or hangs anything: `orchard exhibit` does
 that, on a ruling (LAWS 22).
 
+Two things the trees found on 2026-09-12 and this now does:
+
+- A tape's digest covers `header.json`, `frames.jsonl` and `trailer.json`
+  together (it was the header alone, so a tape bundled mid-write stayed
+  "current" forever), and a tape whose trailer disagrees with its index is
+  refused as still being written. A row carrying the old header-only digest
+  is still "current": the digest is upgraded in place, not re-bundled, so
+  the tapes already hanging keep their ids.
+- `commit` is the commit the artefact was MADE at, which for a gitignored
+  result only the tree can know. Harvest stamps HEAD only when the field is
+  empty or the source bytes changed since the last harvest; a commit the
+  tree wrote by hand survives.
+
 The manifest written is the one that was read: `<repo>/orchard.yaml` when the
 tree carries one, else the fund's copy in `trees/`.
 """
 from __future__ import annotations
 
+import hashlib
+import json
 import time
 from pathlib import Path
 
@@ -41,10 +56,63 @@ def resolve_source(tree: Tree, art: Artefact) -> Path | None:
     return p if p.exists() else None
 
 
+TAPE_DIGEST_FILES = ("header.json", "frames.jsonl", "trailer.json")
+
+
+def tape_digest(src: Path) -> str:
+    """One digest over the header, the frame index and the trailer.
+
+    `data.bin` is not read (gigabytes); the index names every frame's offset
+    and length and the trailer its total, so a frame appended, torn or
+    rewritten changes one of the three.
+    """
+    h = hashlib.sha256()
+    for name in TAPE_DIGEST_FILES:
+        f = src / name
+        h.update(name.encode() + b"\0")
+        if f.exists():
+            h.update(f.read_bytes())
+        h.update(b"\0")
+    return h.hexdigest()
+
+
+def legacy_tape_digest(src: Path) -> str:
+    """What harvest recorded for tapes before 2026-09-12: the header alone."""
+    from .bundle import sha256_file
+    return sha256_file(src / "header.json")
+
+
+def tape_incomplete(src: Path) -> str | None:
+    """Why this tape must not be bundled yet, or None when it is whole.
+
+    The writer appends to `frames.jsonl` per frame and rewrites
+    `trailer.json` per chunk, so while a run is on, the two disagree (spectre's
+    chi6 read 1,036 in the index against 1,035 in the trailer). No trailer at
+    all is a writer that never finished.
+    """
+    tp = src / "trailer.json"
+    if not tp.exists():
+        return "no trailer.json: the writer has not finished"
+    try:
+        frames = int(json.loads(tp.read_text())["frames"])
+    except (ValueError, KeyError, TypeError) as e:
+        return f"trailer.json unreadable ({type(e).__name__})"
+    ip = src / "frames.jsonl"
+    n = 0
+    if ip.exists():
+        with open(ip) as f:
+            for line in f:
+                if line.endswith("\n") and line.strip():
+                    n += 1
+    if n != frames:
+        return f"trailer says {frames} frames, index has {n}: still being written"
+    return None
+
+
 def source_digest(kind: str, src: Path) -> str:
     from .bundle import sha256_file
     if kind == "tape":
-        return sha256_file(src / "header.json")
+        return tape_digest(src)
     return sha256_file(src)
 
 
@@ -75,12 +143,24 @@ def harvest(name: str, *, only=None, out_root=None, dry_run: bool = False,
             row["status"] = "missing"
             rows.append(row)
             continue
-        digest = source_digest(art.kind, src)
-        have = out_root / art.bundle if art.bundle else None
-        if not force and art.bundle and art.sha256 == digest and have and have.is_dir():
-            row["status"] = "current"
+        if art.kind == "tape" and (why := tape_incomplete(src)):
+            row["status"] = f"refused: {why}"
             rows.append(row)
             continue
+        digest = source_digest(art.kind, src)
+        have = out_root / art.bundle if art.bundle else None
+        if not force and art.bundle and have and have.is_dir():
+            if art.sha256 == digest:
+                row["status"] = "current"
+                rows.append(row)
+                continue
+            if art.kind == "tape" and art.sha256 == legacy_tape_digest(src):
+                if not dry_run:
+                    art.sha256, changed = digest, True
+                row["status"] = "current"
+                row["note"] = "digest upgraded from header-only"
+                rows.append(row)
+                continue
         if dry_run:
             row["status"] = "would bundle"
             rows.append(row)
@@ -90,8 +170,9 @@ def harvest(name: str, *, only=None, out_root=None, dry_run: bool = False,
             print(f"harvest {name}: {art.kind} {art.path}", flush=True)
         dest = _bundler(art.kind)(src, tree=name, title=art.title or src.name,
                                   out_root=out_root, verbose=verbose)
+        if not art.commit or (art.sha256 and art.sha256 != digest):
+            art.commit = _git_describe(tree.root)
         art.bundle, art.sha256 = dest.name, digest
-        art.commit = _git_describe(tree.root)
         changed = True
         row.update({"status": "bundled", "bundle": dest.name,
                     "seconds": round(time.perf_counter() - t0, 1)})

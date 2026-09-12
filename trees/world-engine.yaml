@@ -5,7 +5,7 @@ question: Experiments in representing a world as a single neural field rather th
   — efficient novel rendering, and a Minecraft-like world held in network weights instead of block memory.
   Small networks, used for compression and optimisation, not for rendering.
 status: active
-stage: scouted
+stage: planted
 gpu: torch
 phenomena: []
 artefacts:
@@ -16,6 +16,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: still
   path: experiments/sphere-space/results/scenetex6/frames/sk_013.png
   title: sk_013
@@ -23,6 +24,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: still
   path: experiments/sphere-space/results/scenetex6/frames/sk_019.png
   title: sk_019
@@ -30,6 +32,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: still
   path: experiments/sphere-space/results/scenetex6/frames/sk_010.png
   title: sk_010
@@ -37,6 +40,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: still
   path: experiments/sphere-space/results/scenetex6/frames/sk_014.png
   title: sk_014
@@ -44,6 +48,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: still
   path: experiments/sphere-space/results/scenetex6/frames/sk_021.png
   title: sk_021
@@ -51,6 +56,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: still
   path: experiments/sphere-space/results/scenetex6/frames/sk_020.png
   title: sk_020
@@ -58,6 +64,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: still
   path: experiments/sphere-space/results/scenetex6/frames/sk_012.png
   title: sk_012
@@ -65,6 +72,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: still
   path: experiments/sphere-space/results/scenetex6/frames/sk_015.png
   title: sk_015
@@ -72,6 +80,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: still
   path: experiments/sphere-space/results/scenetex6/frames/sk_017.png
   title: sk_017
@@ -79,6 +88,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: still
   path: experiments/sphere-space/results/scenetex6/frames/sk_008.png
   title: sk_008
@@ -86,6 +96,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: still
   path: experiments/sphere-space/results/scenetex6/frames/sk_023.png
   title: sk_023
@@ -93,6 +104,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 producers:
   tape: ''
   render: ''

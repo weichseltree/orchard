@@ -85,7 +85,45 @@ Ordered. Items with a name in brackets wait on that person.
     outside the windows an actual orchard: terrain, trees, a garden the sky
     dome stands in for today. Needs a look ruling (stills first, LAWS 14)
     and a bake pipeline for exteriors; instanced trees for the Quest budget.
-14. **Talk to the trees.** `docs/BRIEF-FOR-TREES.md` is what a session in
-    each research repo reads; the answers land in `<repo>/orchard.yaml`
-    via `orchard plant` and in the theses. Start with the first slate
-    (einstruct, spectre, world-engine, premosaic).
+14. ~~**Talk to the trees.**~~ Done 2026-09-12: six trees answered
+    (einstruct, spectre, world-engine, premosaic, phototroph,
+    someotherlife); the answers and the rulings they ask are in
+    `docs/EXHIBIT-PLAN.md`, the manifests in each repo's `orchard.yaml`.
+
+## From the trees' answers (2026-09-12)
+
+15. **Harvester, fixed the same day:** a tape's digest covers header, index
+    and trailer and a tape still being written is refused; `commit` set by
+    the tree survives a harvest; one unreadable manifest no longer blocks
+    every tree (`portfolio.BROKEN`, a stderr line). The bundler's aligned
+    slot choice across tapes with the same slot count is a test.
+16. **Per-artefact slot budget and frame stride** (spectre bug 7): a
+    manifest field on the artefact, so a 508k-particle tape can ship 16k
+    slots at every 4th frame (about 36 MB) instead of 1 point in 128. First
+    of the format items; blocks the trio reading as a ball when sliced.
+17. **Species names and palette from the tape header** (spectre bug 3):
+    `meta.species_masses` names heavy and light; the client's orange and
+    blue break LAWS 12 for spectre's style B (iron-warm and pale). A
+    per-exhibit palette in the hanging, defaulting from the header.
+18. **The `ke` channel and per-frame `t`** (spectre bugs 5, 6): carry heat
+    as a channel, and the index's per-frame t instead of one mean dt (drift
+    up to a tau inside a chunk).
+19. **`<stem>.json` render sidecars** (spectre bug 4): carry beside the
+    stock `<file>.json` sidecar, under a different key; the measured numbers
+    live there.
+20. **One scrubber for N tapes, and a cut plane** (spectre): the clock
+    contract already aligns the trio by frame index; the room needs a
+    shared scrub and a hand-held cut plane fading over one sigma (LAWS 11).
+21. **A `page` artefact kind** (world-engine): one self-contained HTML
+    file, CSP-clean, opened flat from a plaque; bent-light.html first.
+22. **A `splat` kind** (someotherlife): SPZ tiers, stations with a measured
+    coverage radius, an occluder mesh and a preview still; Spark as the
+    decoder; no SharedArrayBuffer path (the grove sends COOP without COEP).
+    Needs Spike C's numbers first.
+23. **Lift from someotherlife's client:** the XR-support probe token
+    (stale "unsupported" can land last in the grove's watchXrSupport), the
+    distance-clamped orbit for vantage-point rooms, dwell and raycast
+    pointing if exhibits get point-to-select.
+24. **Stage regression check in `orchard sync`:** spectre set its thesis
+    back to styleframe on purpose; confirm a stale approved-animatic review
+    row cannot push it up again.

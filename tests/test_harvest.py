@@ -80,3 +80,77 @@ def test_the_repo_manifest_wins_when_it_exists(grove):
     (repo / "orchard.yaml").write_text((trees / "fake.yaml").read_text())
     tree = load(trees / "fake.yaml")
     assert H.manifest_path(tree) == repo / "orchard.yaml"
+
+
+# --------------------------------------------- what the trees found 2026-09-12
+
+
+def test_a_commit_the_tree_wrote_survives_a_harvest_of_unchanged_bytes(grove):
+    """premosaic: two July stills were stamped with today's HEAD."""
+    repo, trees, out = grove
+    doc = yaml.safe_load((trees / "fake.yaml").read_text())
+    doc["artefacts"][1]["commit"] = "2fdf90d"
+    (trees / "fake.yaml").write_text(yaml.safe_dump(doc))
+    H.harvest("fake", out_root=out, only=["still"], verbose=False)
+    still = next(a for a in load(trees / "fake.yaml").artefacts if a.kind == "still")
+    assert still.commit == "2fdf90d" and still.bundle
+    # Changed bytes since the last harvest: the old commit is stale, HEAD is the best guess.
+    make_png(repo / "results/still.png", 300, 200)
+    H.harvest("fake", out_root=out, only=["still"], verbose=False)
+    still = next(a for a in load(trees / "fake.yaml").artefacts if a.kind == "still")
+    assert still.commit != "2fdf90d"
+
+
+def test_a_tape_still_being_written_is_refused(grove):
+    """spectre: chi6 read 1,036 frames in the index against 1,035 in the trailer."""
+    repo, trees, out = grove
+    tape = repo / "results/tapes/ab"
+    trailer = json.loads((tape / "trailer.json").read_text())
+    trailer["frames"] -= 1
+    (tape / "trailer.json").write_text(json.dumps(trailer))
+    rows = H.harvest("fake", out_root=out, only=["tape"], verbose=False)
+    assert rows[0]["status"].startswith("refused: trailer says 1 frames, index has 2")
+    assert not out.exists()
+    (tape / "trailer.json").unlink()
+    rows = H.harvest("fake", out_root=out, only=["tape"], verbose=False)
+    assert rows[0]["status"] == "refused: no trailer.json: the writer has not finished"
+
+
+def test_a_tape_digest_moves_when_a_frame_is_appended_not_only_the_header(grove):
+    repo, trees, out = grove
+    tape = repo / "results/tapes/ab"
+    before = H.source_digest("tape", tape)
+    with open(tape / "frames.jsonl", "a") as f:
+        f.write(json.dumps({"i": 2, "step": 20, "t": 1.0, "n": 40, "off": 0, "len": 0}) + "\n")
+    assert H.source_digest("tape", tape) != before
+    assert H.tape_incomplete(tape)          # and the trailer now disagrees
+
+
+def test_a_row_with_the_old_header_only_digest_stays_current_and_is_upgraded(grove):
+    """The tapes hanging in the grove keep their ids across the digest change."""
+    repo, trees, out = grove
+    H.harvest("fake", out_root=out, only=["tape"], verbose=False)
+    doc = yaml.safe_load((trees / "fake.yaml").read_text())
+    row = doc["artefacts"][0]
+    new_digest, bundle = row["sha256"], row["bundle"]
+    row["sha256"] = H.legacy_tape_digest(repo / "results/tapes/ab")
+    (trees / "fake.yaml").write_text(yaml.safe_dump(doc))
+    rows = H.harvest("fake", out_root=out, only=["tape"], verbose=False)
+    assert rows[0]["status"] == "current" and rows[0].get("note")
+    tape = next(a for a in load(trees / "fake.yaml").artefacts if a.kind == "tape")
+    assert tape.bundle == bundle and tape.sha256 == new_digest
+
+
+def test_one_unreadable_manifest_does_not_block_the_other_trees(grove, capsys):
+    """einstruct's harvest died on phototroph's manifest mid-edit."""
+    import orchard.portfolio as P
+    repo, trees, out = grove
+    (trees / "broken.yaml").write_text("name: broken\npath: /nowhere\nquestion: 'unterminated\n")
+    names = [t.name for t in P.load_all()]
+    assert names == ["fake"]
+    assert list(P.BROKEN) == [str(trees / "broken.yaml")]
+    assert "skipping unreadable manifest" in capsys.readouterr().err
+    with pytest.raises(KeyError, match="unreadable"):
+        P.get("broken")
+    rows = H.harvest("fake", out_root=out, dry_run=True, verbose=False)
+    assert any(r["status"] == "would bundle" for r in rows)

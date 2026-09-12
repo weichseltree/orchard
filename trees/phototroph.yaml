@@ -5,7 +5,7 @@ question: '*A phototroph is an organism that feeds on light. Nothing in this eng
   is to find out whether matter, given only exact local physics and a spectral gradient, will become one
   on its own.*'
 status: active
-stage: scouted
+stage: planted
 gpu: none
 phenomena: []
 artefacts:
@@ -16,6 +16,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: clip
   path: studio/library/films/e05/animatic/video.mp4
   title: video
@@ -23,6 +24,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: clip
   path: studio/library/films/e05/animatic/017_15.mp4
   title: '017_15'
@@ -30,6 +32,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: clip
   path: studio/library/films/e05/animatic/016_14.mp4
   title: '016_14'
@@ -37,6 +40,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: clip
   path: studio/library/films/e05/animatic/015_13.mp4
   title: '015_13'
@@ -44,6 +48,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: still
   path: studio/library/films/e05/animatic/015_13.png
   title: '015_13'
@@ -51,6 +56,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: clip
   path: studio/library/films/e05/animatic/014_12.mp4
   title: '014_12'
@@ -58,6 +64,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: still
   path: studio/library/films/e05/animatic/014_12.png
   title: '014_12'
@@ -65,6 +72,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: clip
   path: studio/library/films/e05/animatic/013_11.mp4
   title: '013_11'
@@ -72,6 +80,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: still
   path: studio/library/films/e05/animatic/013_11.png
   title: '013_11'
@@ -79,6 +88,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: clip
   path: studio/library/films/e05/animatic/012_10.mp4
   title: '012_10'
@@ -86,6 +96,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: clip
   path: studio/library/films/e05/animatic/011_9.mp4
   title: 011_9
@@ -93,6 +104,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 producers:
   tape: ''
   render: ''

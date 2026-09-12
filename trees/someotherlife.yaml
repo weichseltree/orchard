@@ -1,0 +1,56 @@
+name: someotherlife
+path: /home/manuel/weichseltree/someotherlife
+remote: https://github.com/weichseltree/someotherlife.git
+question: Photograph a room with one phone, then stand in it with a headset on. How far can you lean before
+  it stops being a room?
+status: active
+stage: planted
+gpu: none
+phenomena: []
+artefacts: []
+producers:
+  tape: ''
+  render: ''
+  figure: ''
+  lane: none
+  env: {}
+theses:
+- id: lean-until-it-tears
+  question: A room shot on one phone, stood in with a headset. How far can you lean before the walls come
+    apart?
+  number: The measured lean radius in metres at the capture's standing point, beyond which parallax breaks,
+    taken in the Quest 3 browser at 72 Hz and checked at 0.5 m and 1.0 m offsets.
+  picture: One corner of the room seen from where the viewer stands, and the same corner a metre to the
+    side, where the far wall tears into floating smears.
+  phenomena: []
+  stage: thesis
+  episode: ''
+  blocked_by: Spike C has not run. No room has been shot (about an hour of the owner's time with a phone),
+    no reconstruction toolchain is chosen, and the client has no splat render pass. The reconstruction
+    is the part the orchard could fund in kind, about 5 GPU-hours, unmeasured.
+budget:
+  gpu_h: 5.0
+  cpu_h: 4.0
+  tts_chars: 0
+  llm_usd: 0.0
+  disk_gb: 15.0
+  prio_cap: 10
+kill: Prune as a donor if Spike C finds that no phone-captured room holds 72 Hz in the Quest 3 browser
+  and keeps its parallax at a 0.5 m lean, or if no room has been shot by 2026-11-30. The game built here
+  goes on either way; it is not the orchard's to fund or prune.
+potential: 0
+notes: 'Donor tree, not an episode tree. Nothing on disk is a splat, still, clip or tape. Spike C (docs/milestones.md)
+  has not run, so there is no captured room and no measured 6DoF budget. Every splat number from this
+  tree is a prior until Spike C''s ADR lands; the repo keeps unmeasured numbers out of its docs (ADR 0006).
+  The budget above is the Spike C estimate (one phone shoot, structure from motion, about three reconstruction
+  attempts on an 8 GB card, compression, coverage analysis), not a measurement. Exists but deliberately
+  not listed as artefacts: a playable WebXR chest room of draft proxies (apps/client, `pnpm dev`; desktop
+  orbit fallback plus Enter VR; covered by apps/client/tests/play.spec.ts), 20 SVG wardmark glyphs (content/art/wardmarks/),
+  and 25 synthesized voice lines (content/audio/vo/00-the-cellar/, Opus with provenance.json). The splat
+  asset''s metadata already has a schema, SplatAssetSchema in packages/scene-schema/src/capture.ts (lods
+  of srcUrl + splatCount, boundsM, coverage.radiusM, captureId, consentRef). Splat rooms are station-bound
+  by design (docs/vision.md constraint 12): the viewer leans inside a measured radius and never walks.
+  The grove''s XR entry already follows this repo''s rule. What is left worth lifting is apps/client/src/input/dwell.ts
+  + input/raycast.ts (pointing with a 300 ms dwell, mouse and controller rays; only three and two branded
+  string types) and xr/support.ts (a newer probe always wins over an older one). None of it uses eval
+  or Function.'

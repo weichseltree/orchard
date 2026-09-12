@@ -4,7 +4,7 @@ remote: https://github.com/weichseltree/premosaic.git
 question: 'This is the architecture documentation set for the engine you described: a **data-driven, adaptive,
   recursive domain-decomposition engine** in which'
 status: active
-stage: scouted
+stage: planted
 gpu: jax
 phenomena: []
 artefacts:
@@ -15,6 +15,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: still
   path: runs/curvature_model/film/engine.png
   title: engine
@@ -22,6 +23,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: still
   path: runs/curvature_model/film/micro.png
   title: micro
@@ -29,6 +31,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: still
   path: runs/regime/film_c16/learned.png
   title: learned
@@ -36,6 +39,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: still
   path: runs/regime/film_c16/engine.png
   title: engine
@@ -43,6 +47,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: still
   path: runs/regime/film_c16/micro.png
   title: micro
@@ -50,6 +55,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: still
   path: recording/out/lb_kn.png
   title: lb_kn
@@ -57,6 +63,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: still
   path: recording/out/lb_tiles.png
   title: lb_tiles
@@ -64,6 +71,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: still
   path: recording/out/front.png
   title: front
@@ -71,6 +79,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: still
   path: recording/out/pi.png
   title: pi
@@ -78,6 +87,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: still
   path: recording/out/spectrum.png
   title: spectrum
@@ -85,6 +95,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 - kind: still
   path: recording/out/tiles.png
   title: tiles
@@ -92,6 +103,7 @@ artefacts:
   commit: ''
   sha256: ''
   approved: false
+  bundle: ''
 producers:
   tape: ''
   render: ''
