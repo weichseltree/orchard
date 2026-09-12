@@ -73,15 +73,69 @@ def tape_reader(tape_dir) -> tuple[TapeReader, str]:
 # ----------------------------------------------------------------- provenance
 
 
+#: The manifest harvest writes back into a tree after bundling. Its own edits
+#: are not dirt: counting them, every harvest after the first would refuse.
+MANIFEST_NAME = "orchard.yaml"
+
+
+def tracked_changes(repo: Path, *paths) -> list[str] | None:
+    """Tracked files with uncommitted changes, staged or not; None outside git.
+
+    Untracked files are not counted (a tree's results are untracked or
+    ignored, and a new file changes nothing that was committed), and neither
+    is `orchard.yaml` at `repo`. `paths` narrows the question to those paths.
+    Paths come back relative to the repository's top.
+    """
+    spec = [str(p) for p in paths] or [":/", f":(exclude){MANIFEST_NAME}"]
+    try:
+        r = subprocess.run(["git", "-C", str(repo), "status", "--porcelain=v1", "-z",
+                            "--untracked-files=no", "--", *spec],
+                           capture_output=True, text=True, timeout=30)
+    except Exception:                                             # noqa: BLE001
+        return None
+    if r.returncode:
+        return None
+    out, parts, i = [], r.stdout.split("\0"), 0
+    while i < len(parts):
+        entry, i = parts[i], i + 1
+        if len(entry) < 4:
+            continue
+        if set(entry[:2]) & {"R", "C"}:  # a rename or copy: its origin follows
+            i += 1
+        out.append(entry[3:])
+    return out
+
+
+def last_commit(repo: Path, path: Path) -> str | None:
+    """The short commit that last touched `path`, when git tracks it; else None.
+
+    A result the tree gitignores has no such commit: only the tree knows when
+    it was made, and `None` says so rather than inventing HEAD.
+    """
+    try:
+        tracked = subprocess.run(["git", "-C", str(repo), "ls-files", "--", str(path)],
+                                 capture_output=True, text=True, timeout=30)
+        if tracked.returncode or not tracked.stdout.strip():
+            return None
+        log = subprocess.run(["git", "-C", str(repo), "log", "-1", "--format=%h",
+                              "--", str(path)],
+                             capture_output=True, text=True, timeout=30)
+    except Exception:                                             # noqa: BLE001
+        return None
+    if log.returncode:
+        return None
+    return log.stdout.strip() or None
+
+
 def _git_describe(repo: Path) -> str:
+    """`<short HEAD>`, with `-dirty` when tracked files other than the
+    manifest have uncommitted changes (`tracked_changes`)."""
     try:
         sha = subprocess.run(["git", "-C", str(repo), "rev-parse", "--short", "HEAD"],
                              capture_output=True, text=True, timeout=10)
         if sha.returncode:
             return "unknown"
-        dirty = subprocess.run(["git", "-C", str(repo), "status", "--porcelain"],
-                               capture_output=True, text=True, timeout=20)
-        return sha.stdout.strip() + ("-dirty" if dirty.stdout.strip() else "")
+        return sha.stdout.strip() + ("-dirty" if tracked_changes(repo) else "")
     except Exception:                                             # noqa: BLE001
         return "unknown"
 
@@ -572,7 +626,7 @@ def _poster(png: Path, pos_q, species, alive, times, box, *, title,
 
 def bundle_tape(tape_dir, tree: str, title: str, out_root=None, *,
                 slot_budget: int = SLOT_BUDGET, chunk_frames: int = CHUNK_FRAMES,
-                verbose: bool = True) -> Path:
+                verbose: bool = True, commit: str | None = None) -> Path:
     """Write `<out_root>/<id>/` for a `video/tape/1` tape. Returns the directory."""
     tape_dir = Path(tape_dir).resolve()
     out_root = Path(out_root) if out_root else RESULTS / "bundles"
@@ -635,7 +689,7 @@ def bundle_tape(tape_dir, tree: str, title: str, out_root=None, *,
                 "tape_dir": tape_rel,
                 "tape_header_sha256": sha256_file(tape_dir / "header.json"),
                 "tape_schema": header.get("schema", TAPE_SCHEMA),
-                "tree_commit": _git_describe(_tree_root(tree) or tape_dir),
+                "tree_commit": commit or _git_describe(_tree_root(tree) or tape_dir),
                 "scene": meta,
                 # additions to the spec's `source`: provenance only, and none
                 # of it a wall clock, so the id does not move between runs
@@ -712,8 +766,12 @@ def _fps(stream) -> float:
 
 
 def bundle_video(mp4, tree: str, title: str, out_root=None, *,
-                 verbose: bool = True) -> Path:
-    """Write `<out_root>/<id>/` holding an HLS ladder. Returns the directory."""
+                 verbose: bool = True, commit: str | None = None) -> Path:
+    """Write `<out_root>/<id>/` holding an HLS ladder. Returns the directory.
+
+    `commit` is the tree commit the source was made at, when the caller knows
+    it (harvest passes the artefact's); otherwise the tree's HEAD.
+    """
     mp4 = Path(mp4).resolve()
     out_root = Path(out_root) if out_root else RESULTS / "bundles"
     t_start = time.perf_counter()
@@ -833,7 +891,7 @@ def bundle_video(mp4, tree: str, title: str, out_root=None, *,
                 "file_sha256": sha256_file(mp4),
                 "bytes": mp4.stat().st_size,
                 "codec": v.get("codec_name"),
-                "tree_commit": _git_describe(_tree_root(tree) or mp4.parent),
+                "tree_commit": commit or _git_describe(_tree_root(tree) or mp4.parent),
                 **({"provenance": prov} if prov else {}),
             },
             "duration_s": duration,
@@ -914,7 +972,7 @@ def _has_avif() -> bool:
 
 
 def bundle_still(image, tree: str, title: str, out_root=None, *,
-                 verbose: bool = True) -> Path:
+                 verbose: bool = True, commit: str | None = None) -> Path:
     """Write `<out_root>/<id>/` holding a still at three widths. Returns the directory.
 
     Like every bundle the id covers the bytes (`files`) as well as the recipe.
@@ -975,7 +1033,7 @@ def bundle_still(image, tree: str, title: str, out_root=None, *,
                 "file_sha256": sha256_file(image),
                 "bytes": image.stat().st_size,
                 "codec": v.get("codec_name"),
-                "tree_commit": _git_describe(_tree_root(tree) or image.parent),
+                "tree_commit": commit or _git_describe(_tree_root(tree) or image.parent),
                 **({"provenance": prov} if prov else {}),
             },
             "width": src_w,

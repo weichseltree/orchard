@@ -144,11 +144,16 @@ def cmd_bundle_verify(a):
 
 
 def cmd_harvest(a):
-    from .harvest import harvest
+    from .harvest import DIRTY, dirty_message, harvest
+    from .portfolio import get
     rows = harvest(a.tree, only=a.only or None, out_root=a.out, dry_run=a.dry_run,
-                   force=a.force)
+                   force=a.force, allow_dirty=a.allow_dirty)
     _table([[r["kind"], r["status"], r.get("bundle") or "-", r["path"]] for r in rows],
            ["kind", "status", "bundle", "path"])
+    refused = next((r for r in rows if r["status"] == DIRTY), None)
+    if refused:
+        print("\n" + dirty_message(get(a.tree), refused["dirty"]), file=sys.stderr)
+        sys.exit(1)
 
 
 def cmd_exhibit_hang(a):
@@ -262,6 +267,9 @@ def main(argv=None):
     s.add_argument("--out", default=str(RESULTS / "bundles"))
     s.add_argument("--dry-run", action="store_true")
     s.add_argument("--force", action="store_true", help="re-bundle even when current")
+    s.add_argument("--allow-dirty", action="store_true",
+                   help="bundle although tracked files have uncommitted changes; "
+                        "the commit is recorded as <sha>-dirty")
     s.set_defaults(fn=cmd_harvest)
 
     s = sub.add_parser("exhibit", help="what hangs in the grove")

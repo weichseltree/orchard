@@ -141,6 +141,117 @@ def test_a_row_with_the_old_header_only_digest_stays_current_and_is_upgraded(gro
     assert tape.bundle == bundle and tape.sha256 == new_digest
 
 
+def test_a_commit_the_tree_wrote_is_the_one_its_bundle_records(grove):
+    """BACKLOG 19a: bundle.json said the harvest HEAD while the manifest kept the tree's."""
+    repo, trees, out = grove
+    doc = yaml.safe_load((trees / "fake.yaml").read_text())
+    doc["artefacts"][0]["commit"] = "9721bf8"
+    (trees / "fake.yaml").write_text(yaml.safe_dump(doc))
+    H.harvest("fake", out_root=out, only=["tape"], verbose=False)
+    tape = next(a for a in load(trees / "fake.yaml").artefacts if a.kind == "tape")
+    assert tape.commit == "9721bf8"
+    assert json.loads((out / tape.bundle / "bundle.json").read_text())["source"]["tree_commit"] == "9721bf8"
+
+
+# ------------------------------------------------------- dirty trees (git)
+
+
+def _git(repo, *args):
+    import subprocess
+    return subprocess.run(["git", "-C", str(repo), "-c", "user.name=t", "-c", "user.email=t@t",
+                           "-c", "commit.gpgsign=false", *args],
+                          check=True, capture_output=True, text=True).stdout.strip()
+
+
+@pytest.fixture
+def git_grove(grove):
+    """The fake tree as a git repo: code and a figure tracked, results ignored,
+    the canonical manifest in the repo like a planted tree's."""
+    repo, trees, out = grove
+    (repo / "src").mkdir()
+    (repo / "src/model.py").write_text("print('v1')\n")
+    (repo / "docs").mkdir()
+    make_png(repo / "docs/figure.png", 320, 200)
+    (repo / ".gitignore").write_text("results/\n")
+    doc = yaml.safe_load((trees / "fake.yaml").read_text())
+    doc["artefacts"].append({"kind": "figure", "path": "docs/figure.png", "title": "fig"})
+    (repo / "orchard.yaml").write_text(yaml.safe_dump(doc))
+    _git(repo, "init", "-q", "-b", "main")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "one")
+    return repo, trees, out
+
+
+def test_a_tree_with_uncommitted_changes_to_tracked_files_is_refused(git_grove):
+    repo, trees, out = git_grove
+    (repo / "src/model.py").write_text("print('v2, not committed')\n")
+    rows = H.harvest("fake", out_root=out, only=["tape"], verbose=False)
+    assert rows[0]["status"] == H.DIRTY and rows[0]["dirty"] == ["src/model.py"]
+    assert not out.exists(), "nothing is bundled from a dirty tree"
+    assert H.harvest("fake", out_root=out, only=["tape"], dry_run=True,
+                     verbose=False)[0]["status"] == H.DIRTY
+    msg = H.dirty_message(load(repo / "orchard.yaml"), rows[0]["dirty"])
+    assert "src/model.py" in msg and "--allow-dirty" in msg
+    # --allow-dirty bundles and says so, in the manifest and in the bundle
+    rows = H.harvest("fake", out_root=out, only=["tape"], allow_dirty=True, verbose=False)
+    assert rows[0]["status"] == "bundled"
+    tape = next(a for a in load(repo / "orchard.yaml").artefacts if a.kind == "tape")
+    head = _git(repo, "rev-parse", "--short", "HEAD")
+    assert tape.commit == f"{head}-dirty"
+    assert json.loads((out / tape.bundle / "bundle.json").read_text())["source"]["tree_commit"] == tape.commit
+    # a staged change is as dirty as an unstaged one
+    _git(repo, "add", "src/model.py")
+    rows = H.harvest("fake", out_root=out, only=["still"], verbose=False)
+    assert rows[1]["status"] == H.DIRTY
+
+
+@ffmpeg_missing
+def test_orchard_yaml_and_untracked_files_are_not_dirt(git_grove):
+    """harvest writes orchard.yaml itself: counting it, every second harvest refuses."""
+    repo, trees, out = git_grove
+    (repo / "notes.txt").write_text("untracked\n")
+    rows = H.harvest("fake", out_root=out, only=["tape"], verbose=False)
+    assert rows[0]["status"] == "bundled"
+    assert _git(repo, "status", "--porcelain", "--", "orchard.yaml"), "harvest wrote it"
+    rows = H.harvest("fake", out_root=out, only=["still"], verbose=False)
+    assert rows[1]["status"] == "bundled"
+    head = _git(repo, "rev-parse", "--short", "HEAD")
+    arts = {a.kind: a for a in load(repo / "orchard.yaml").artefacts}
+    # results/ is gitignored: only HEAD can be said, and it is clean
+    assert arts["tape"].commit == arts["still"].commit == head
+
+
+@ffmpeg_missing
+def test_a_tracked_source_records_the_commit_that_last_touched_it(git_grove):
+    """BACKLOG 19a: a committed figure was made at its own commit, not the harvest's HEAD."""
+    repo, trees, out = git_grove
+    figure_commit = _git(repo, "rev-parse", "--short", "HEAD")
+    (repo / "src/model.py").write_text("print('v2')\n")
+    _git(repo, "commit", "-q", "-am", "two")
+    rows = H.harvest("fake", out_root=out, only=["figure"], verbose=False)
+    fig = next(r for r in rows if r["kind"] == "figure")
+    assert fig["status"] == "bundled"
+    art = next(a for a in load(repo / "orchard.yaml").artefacts if a.kind == "figure")
+    assert art.commit == figure_commit != _git(repo, "rev-parse", "--short", "HEAD")
+    doc = json.loads((out / art.bundle / "bundle.json").read_text())
+    assert doc["source"]["tree_commit"] == figure_commit
+
+
+def test_tracked_changes_reads_renames_and_ignores_the_manifest(git_grove):
+    from orchard.bundle import _git_describe, tracked_changes
+    repo, trees, out = git_grove
+    assert tracked_changes(repo) == [] and not _git_describe(repo).endswith("-dirty")
+    (repo / "orchard.yaml").write_text((repo / "orchard.yaml").read_text() + "\n")
+    assert tracked_changes(repo) == [] and not _git_describe(repo).endswith("-dirty")
+    _git(repo, "mv", "src/model.py", "src/renamed.py")
+    assert tracked_changes(repo) == ["src/renamed.py"]
+    assert _git_describe(repo).endswith("-dirty")
+    # the exclusion is the manifest at the tree's root; the scan is the whole repo
+    assert tracked_changes(repo / "src") == ["orchard.yaml", "src/renamed.py"]
+    assert tracked_changes(repo, repo / "docs") == []
+    assert tracked_changes(out.parent / "not-a-repo") is None
+
+
 def test_one_unreadable_manifest_does_not_block_the_other_trees(grove, capsys):
     """einstruct's harvest died on phototroph's manifest mid-edit."""
     import orchard.portfolio as P

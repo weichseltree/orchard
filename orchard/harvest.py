@@ -20,9 +20,22 @@ Two things the trees found on 2026-09-12 and this now does:
   is still "current": the digest is upgraded in place, not re-bundled, so
   the tapes already hanging keep their ids.
 - `commit` is the commit the artefact was MADE at, which for a gitignored
-  result only the tree can know. Harvest stamps HEAD only when the field is
-  empty or the source bytes changed since the last harvest; a commit the
+  result only the tree can know. Harvest stamps a commit only when the field
+  is empty or the source bytes changed since the last harvest; a commit the
   tree wrote by hand survives.
+
+And since 2026-09-13:
+
+- **A dirty tree is refused.** An artefact that needs bundling is refused
+  while the tree has uncommitted changes to tracked files, because the
+  commit it would record does not describe the code that made it (the
+  manifests were collecting `-dirty` commits). `--allow-dirty` bundles
+  anyway and records `<sha>-dirty` as before. Untracked files are not dirt,
+  and neither is the tree's own `orchard.yaml`, which harvest rewrites.
+- **The commit is the source's own where git knows it** (BACKLOG 19a). A
+  source git tracks records the commit that last touched it; a gitignored
+  one records HEAD. Whichever commit the artefact ends up with is also what
+  its bundle's `source.tree_commit` says, so the two no longer disagree.
 
 The manifest written is the one that was read: `<repo>/orchard.yaml` when the
 tree carries one, else the fund's copy in `trees/`.
@@ -123,15 +136,48 @@ def _bundler(kind: str):
             "figure": bundle.bundle_still}[kind]
 
 
+DIRTY = "refused: the tree has uncommitted changes to tracked files"
+
+
+def dirty_message(tree: Tree, paths: list[str]) -> str:
+    shown = ", ".join(paths[:8]) + (f" and {len(paths) - 8} more" if len(paths) > 8 else "")
+    return (f"{tree.name}: {tree.root} has uncommitted changes to tracked files "
+            f"({shown}). A bundle records the commit it was made at, and that "
+            "commit would not describe this code. Commit (or stash) them and "
+            "harvest again, or pass --allow-dirty to bundle anyway and record "
+            "the commit as -dirty. Untracked files and orchard.yaml do not count.")
+
+
+def artefact_commit(tree: Tree, src: Path) -> str:
+    """The commit an artefact was made at, as far as git can say.
+
+    A source git tracks, and that has no uncommitted change of its own,
+    was made at the commit that last touched it. Anything else (a
+    gitignored result, the usual case) gets the tree's HEAD, `-dirty` when
+    the tree is.
+    """
+    from .bundle import _git_describe, last_commit, tracked_changes
+    last = last_commit(tree.root, src)
+    if last and not tracked_changes(tree.root, src):
+        return last
+    return _git_describe(tree.root)
+
+
 def harvest(name: str, *, only=None, out_root=None, dry_run: bool = False,
-            force: bool = False, verbose: bool = True) -> list[dict]:
-    """Bundle the tree's artefacts; returns one report row per artefact."""
-    from .bundle import _git_describe
+            force: bool = False, allow_dirty: bool = False,
+            verbose: bool = True) -> list[dict]:
+    """Bundle the tree's artefacts; returns one report row per artefact.
+
+    A row refused because the tree is dirty has `status == DIRTY`, on a dry
+    run too, and carries `dirty`, the paths.
+    """
+    from .bundle import tracked_changes
     from .portfolio import get
     tree = get(name)
     path = manifest_path(tree)
     out_root = Path(out_root) if out_root else RESULTS / "bundles"
     rows, changed = [], False
+    dirty: list[str] | None = None          # asked once, when first needed
     for art in tree.artefacts:
         row = {"kind": art.kind, "path": art.path, "title": art.title, "bundle": art.bundle}
         if art.kind not in BUNDLED_KINDS or (only and art.kind not in only):
@@ -161,6 +207,12 @@ def harvest(name: str, *, only=None, out_root=None, dry_run: bool = False,
                 row["note"] = "digest upgraded from header-only"
                 rows.append(row)
                 continue
+        if dirty is None:
+            dirty = tracked_changes(tree.root) or []
+        if dirty and not allow_dirty:
+            row.update({"status": DIRTY, "dirty": dirty})
+            rows.append(row)
+            continue
         if dry_run:
             row["status"] = "would bundle"
             rows.append(row)
@@ -168,11 +220,15 @@ def harvest(name: str, *, only=None, out_root=None, dry_run: bool = False,
         t0 = time.perf_counter()
         if verbose:
             print(f"harvest {name}: {art.kind} {art.path}", flush=True)
-        dest = _bundler(art.kind)(src, tree=name, title=art.title or src.name,
-                                  out_root=out_root, verbose=verbose)
+        # The tree's own commit survives unless the bytes moved under it; it
+        # goes into the bundle too, so bundle.json and the manifest agree.
         if not art.commit or (art.sha256 and art.sha256 != digest):
-            art.commit = _git_describe(tree.root)
-        art.bundle, art.sha256 = dest.name, digest
+            commit = artefact_commit(tree, src)
+        else:
+            commit = art.commit
+        dest = _bundler(art.kind)(src, tree=name, title=art.title or src.name,
+                                  out_root=out_root, verbose=verbose, commit=commit)
+        art.commit, art.bundle, art.sha256 = commit, dest.name, digest
         changed = True
         row.update({"status": "bundled", "bundle": dest.name,
                     "seconds": round(time.perf_counter() - t0, 1)})
