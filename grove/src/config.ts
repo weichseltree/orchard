@@ -11,11 +11,27 @@ export const MEDIA_BASE: string = trimSlash(env.VITE_MEDIA_BASE ?? "https://medi
 export const SPACETIME_URI: string = env.VITE_SPACETIME_URI ?? "wss://maincloud.spacetimedb.com";
 export const SPACETIME_DB: string = env.VITE_SPACETIME_DB ?? "orchard";
 
+/**
+ * The grove's token service (functions/auth, on the same Pages project). A
+ * visitor connects with the token it issues; see src/net/auth.ts. Empty turns
+ * it off and presence uses anonymous identities: `pnpm dev` has no Pages
+ * Functions, so it is off there unless VITE_AUTH_URL says otherwise.
+ */
+export const AUTH_URL: string = trimSlash(env.VITE_AUTH_URL ?? "/auth");
+
+/**
+ * Cloudflare Turnstile's site key (public by design). Empty: no human check is
+ * run in the browser, which matches a token service without TURNSTILE_SECRET.
+ */
+export const TURNSTILE_SITEKEY: string = env.VITE_TURNSTILE_SITEKEY ?? "";
+
 /** Where a visitor lands when the room they asked for is refused. */
 export const FALLBACK_ROOM = "grove";
 
 /** localStorage keys. The token is what makes an anonymous identity persist. */
 export const TOKEN_KEY = "orchard.grove.token";
+/** The token service's token: a separate key, so an old anonymous token is never sent to it. */
+export const PASS_KEY = "orchard.grove.pass";
 export const NAME_KEY = "orchard.grove.name";
 
 /** Presence: at most this often, and only while actually moving. */

@@ -39,7 +39,7 @@ from pathlib import Path
 from urllib.parse import quote
 
 from .bundle import sha256_file
-from .secrets import require
+from .secrets import get, require
 
 #: Statuses worth trying again on an idempotent request: the server asking
 #: for a slower client, or a transient edge failure.
@@ -138,10 +138,17 @@ class CF:
 
     The token never leaves this object: it is read from the secrets file, put
     in a header, and never printed, logged or returned.
+
+    Two scopes, so an everyday token can do less than a setup token:
+    `"r2"` (pushing bundles) uses CLOUDFLARE_R2_TOKEN, an R2-only token;
+    `"admin"` (creating the bucket, attaching its domain, which reads the
+    zone) uses CLOUDFLARE_ADMIN_TOKEN. Either falls back to
+    CLOUDFLARE_API_TOKEN, the one token this started with (docs/HOSTING.md).
     """
 
-    def __init__(self, token=None, account=None):
-        self._token = token or require("CLOUDFLARE_API_TOKEN")
+    def __init__(self, token=None, account=None, scope: str = "r2"):
+        scoped = {"r2": "CLOUDFLARE_R2_TOKEN", "admin": "CLOUDFLARE_ADMIN_TOKEN"}[scope]
+        self._token = token or get(scoped) or require("CLOUDFLARE_API_TOKEN")
         self.account = account or require("CLOUDFLARE_ACCOUNT_ID")
         self._conn = None
 
@@ -286,7 +293,7 @@ def ensure_bucket(bucket=BUCKET, *, domain=PUBLIC_HOST, zone_name=ZONE_NAME,
                   cf: CF | None = None, verbose=True) -> dict:
     """Create the bucket, set CORS, attach the custom domain. Safe to re-run."""
     own = cf is None
-    cf = cf or CF()
+    cf = cf or CF(scope="admin")
     report: dict = {"bucket": bucket, "domain": domain}
     try:
         # 1. the bucket
@@ -366,7 +373,7 @@ def enable_dev_url(bucket=BUCKET, cf: CF | None = None) -> str:
     should be on media.weichseltree.com. Only called when explicitly asked for.
     """
     own = cf is None
-    cf = cf or CF()
+    cf = cf or CF(scope="admin")
     try:
         cf.api("PUT",
                f"/accounts/{cf.account}/r2/buckets/{bucket}/domains/managed",

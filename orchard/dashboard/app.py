@@ -3,16 +3,26 @@
 The ledger and the portfolio are read from disk. The greenhouse panels (the
 review queue, rulings, directives, exhibits) are read from the live database
 through the `spacetime` CLI, whose login identity is the module's admin; the
-same identity signs the rulings this page writes. Local only: nothing here
-authenticates, the box does.
+same identity signs the rulings this page writes, and the moderation panel's
+mutes, kicks and bans.
+
+Local only, and nothing here logs in: the box is the boundary. Two things keep
+a web page open in the same browser from reaching through it. Every request
+must be addressed to localhost by name (a DNS-rebinding page arrives with its
+own hostname in `Host`), and every write must carry `X-Orchard: 1`, which a
+cross-site request cannot send without a CORS preflight this app never
+answers. The page may not be framed, so nothing can trick a click on it.
 """
 from __future__ import annotations
 
+import os
+import re
 from pathlib import Path
+from urllib.parse import urlsplit
 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse
-from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
+from pydantic import BaseModel, Field
 
 from ..ledger import snapshot
 from ..portfolio import load_all
@@ -20,6 +30,40 @@ from ..sync import _timestamp, call, sql
 
 app = FastAPI(title="orchard")
 HERE = Path(__file__).parent
+
+#: Hostnames this app answers to. ORCHARD_DASHBOARD_HOSTS adds more (comma-separated)
+#: for anyone who deliberately serves it elsewhere.
+LOCAL_HOSTS = {"127.0.0.1", "localhost", "::1"} | {
+    h.strip().lower() for h in os.environ.get("ORCHARD_DASHBOARD_HOSTS", "").split(",") if h.strip()
+}
+SAFE_METHODS = {"GET", "HEAD"}
+IDENTITY = r"^0x[0-9a-f]{64}$"
+#: The module's DEFAULT_ISSUER (spacetime/spacetimedb/src/index.ts).
+DEFAULT_ISSUER = "https://www.weichseltree.com/auth"
+
+
+def _hostname(value: str) -> str:
+    """The name part of a Host or Origin: no scheme, no port, no IPv6 brackets."""
+    netloc = value if "//" in value else f"//{value}"
+    return (urlsplit(netloc).hostname or "").lower()
+
+
+@app.middleware("http")
+async def local_only(request: Request, call_next):
+    if _hostname(request.headers.get("host", "")) not in LOCAL_HOSTS:
+        return PlainTextResponse("orchard serve answers to localhost only", status_code=421)
+    if request.method not in SAFE_METHODS:
+        if request.headers.get("x-orchard") != "1":
+            return PlainTextResponse("writes need the X-Orchard header", status_code=403)
+        origin = request.headers.get("origin")
+        if origin and _hostname(origin) not in LOCAL_HOSTS:
+            return PlainTextResponse("wrong origin", status_code=403)
+    response = await call_next(request)
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Content-Security-Policy"] = "frame-ancestors 'none'"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    return response
 
 
 @app.get("/api/portfolio")
@@ -113,6 +157,118 @@ def api_directive(d: Directive):
 @app.post("/api/directive/{directive_id}/retire")
 def api_retire(directive_id: int):
     return _call("retire_directive", directive_id)
+
+
+def _identity(value) -> str:
+    """An identity as the CLI's JSON writes it (`["0x…"]`), as a checked hex string."""
+    if isinstance(value, list) and value:
+        value = value[0]
+    if isinstance(value, dict):
+        value = next(iter(value.values()), "")
+    text = str(value or "").lower()
+    if not text.startswith("0x"):
+        text = f"0x{text}"
+    return text if re.match(IDENTITY, text) else ""
+
+
+@app.get("/api/people")
+def api_people():
+    """The moderation panel: who is online, open reports, active bans, the token gate."""
+    try:
+        visitors = sql("select * from visitor where online = true")
+        reports = sql("select * from report")
+        bans = sql("select * from ban")
+        guests = {_identity(g["identity"]): g.get("network", "") for g in sql("select * from guest")}
+        settings = {r["key"]: r["value"] for r in sql("select * from setting")}
+    except Exception as exc:                                    # noqa: BLE001
+        return JSONResponse({"error": str(exc)}, status_code=503, headers={"Cache-Control": "no-store"})
+    online = [{
+        "identity": _identity(v["identity"]),
+        "name": v["name"],
+        "room": v["room"],
+        "is_admin": v["is_admin"],
+        "muted": v["muted"],
+        "network": guests.get(_identity(v["identity"]), ""),
+        "last_seen": (_timestamp(v.get("last_seen")) or 0) / 1e6,
+    } for v in visitors]
+    return JSONResponse({
+        "online": sorted(online, key=lambda v: (v["room"], v["name"].lower())),
+        "reports": sorted(({
+            "id": int(r["id"]),
+            "subject": _identity(r["subject"]),
+            "subject_name": r["subject_name"],
+            "room": r["room"],
+            "reason": r["reason"],
+            "context": r["context"],
+            "status": r["status"],
+            "at": (_timestamp(r.get("at")) or 0) / 1e6,
+        } for r in reports), key=lambda r: (r["status"] != "open", -r["at"])),
+        "bans": sorted(({
+            "identity": _identity(b["identity"]),
+            "network": bool(b.get("network")),
+            "reason": b["reason"],
+            "until": (_timestamp(b.get("until")) or 0) / 1e6,
+        } for b in bans), key=lambda b: -b["until"]),
+        "auth": {
+            # Empty means the module's built-in default, DEFAULT_ISSUER.
+            "issuers": (settings.get("auth.issuers") or "").split(),
+            "default_issuer": DEFAULT_ISSUER,
+            "required": settings.get("auth.required") == "true",
+        },
+    }, headers={"Cache-Control": "no-store"})
+
+
+class Who(BaseModel):
+    who: str = Field(pattern=IDENTITY)
+
+
+class Mute(Who):
+    muted: bool
+
+
+class Ban(Who):
+    minutes: int = Field(ge=0, le=10_000_000)   # 0 is for good
+    reason: str = Field(default="", max_length=280)
+    network: bool = False
+
+
+class Gate(BaseModel):
+    issuers: list[str] = Field(min_length=1, max_length=8)
+    required: bool
+
+
+@app.post("/api/people/mute")
+def api_mute(m: Mute):
+    return _call("mute", m.who, m.muted)
+
+
+@app.post("/api/people/kick")
+def api_kick(w: Who):
+    return _call("kick", w.who)
+
+
+@app.post("/api/people/ban")
+def api_ban(b: Ban):
+    return _call("ban_visitor", b.who, b.minutes, b.reason, b.network)
+
+
+@app.post("/api/people/unban")
+def api_unban(w: Who):
+    return _call("unban", w.who)
+
+
+@app.post("/api/reports/{report_id}/resolve")
+def api_resolve(report_id: int):
+    return _call("resolve_report", report_id)
+
+
+@app.post("/api/auth")
+def api_auth(g: Gate):
+    """The token gate: which token services count, and whether anonymous visitors are turned away."""
+    issuers = [i.strip() for i in g.issuers if i.strip()]
+    if not all(re.match(r"^https?://[^\s]+$", i) for i in issuers):
+        raise HTTPException(status_code=400, detail="issuers are URLs")
+    return _call("set_auth", issuers, g.required)
 
 
 @app.get("/", response_class=HTMLResponse)

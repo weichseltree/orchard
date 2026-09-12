@@ -28,10 +28,20 @@ there last, with a pinned `id` for when the database is unreachable. Hangings
 are `tape` (a volume you walk into), `video` (an HLS wall) and `still` (a
 panel on a room's poster marker).
 
-Guardrails from day one: random guest names, no guest uploads, mute, kick,
-personal-space bubble, rate-limited chat, presence visible on the flat
-dashboard. One screen plays at a time (the decoder budget is enforced in
-`src/media/videowall.ts`).
+Guardrails: no guest uploads; names cleaned and capped; a visitor sees only
+the people, poses and chat of the room they stand in (the module's
+`people_here`, `poses_here` and `chat_here` views); poses rate-limited and
+bounded server-side; "N here" opens who is here, with a Report button; hosts
+carry a green tag no name can fake; mute, kick and ban from the flat
+dashboard. The token service in `functions/auth` (logic in `auth/issuer.ts`)
+gives each visitor a token after Cloudflare's human check; see
+[docs/SECURITY.md](../docs/SECURITY.md). One screen plays at a time (the
+decoder budget is enforced in `src/media/videowall.ts`).
+
+`scripts/module-check.ts` holds several visitors against a local SpacetimeDB
+and checks every rule of the module (visibility, floods, kicks, bans, the
+per-network cap, the gate); its header says how to start the local server
+and the token service. Run it before publishing a module change.
 
 [docs/impl/WP2-grove.md](../docs/impl/WP2-grove.md) is the implementation note:
 architecture, the frame budget as measured, what was tested where, and the open

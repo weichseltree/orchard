@@ -3,8 +3,10 @@
 # dependency cannot phone anywhere. 'unsafe-eval' is required by the spacetimedb
 # SDK 2.10, which compiles its BSATN (de)serializers with Function(); without it
 # the client never connects (found on the first production deploy, 2026-09-12).
+# challenges.cloudflare.com is Turnstile, the human check in front of the token
+# service (/auth, a Pages Function on this same origin): its script and its frame.
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://media.weichseltree.com; media-src 'self' blob: https://media.weichseltree.com; connect-src 'self' https://media.weichseltree.com https://maincloud.spacetimedb.com wss://maincloud.spacetimedb.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'unsafe-eval' blob: https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://media.weichseltree.com; media-src 'self' blob: https://media.weichseltree.com; connect-src 'self' https://media.weichseltree.com https://maincloud.spacetimedb.com wss://maincloud.spacetimedb.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'
   Referrer-Policy: strict-origin-when-cross-origin
   X-Content-Type-Options: nosniff
   Cross-Origin-Opener-Policy: same-origin

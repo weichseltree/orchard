@@ -42,6 +42,23 @@ services:
     used_for: DNS for weichseltree.com, Pages (site + grove), R2 (bundles)
     quota: {unit: GB}
     docs: https://developers.cloudflare.com/
+  cloudflare_r2:
+    kind: hosting
+    env: [CLOUDFLARE_R2_TOKEN]   # falls back to CLOUDFLARE_API_TOKEN until created (HOSTING.md)
+    used_for: pushing bundles to R2 with a token that can do nothing else
+    quota: {unit: GB}
+  grove_auth:
+    kind: auth
+    env: [AUTH_SIGNING_KEY, AUTH_NETWORK_KEY]   # `orchard auth keygen --write`
+    used_for: "the grove's token service (/auth), which signs visitor tokens and keys the network hash"
+    quota: {unit: req}
+    docs: docs/SECURITY.md
+  turnstile:
+    kind: auth
+    env: [TURNSTILE_SITEKEY, TURNSTILE_SECRET]
+    used_for: the human check in front of the token service
+    quota: {unit: req}
+    docs: https://developers.cloudflare.com/turnstile/
   cloudflare_realtime:
     kind: realtime
     env: [CLOUDFLARE_REALTIME_APP_ID, CLOUDFLARE_REALTIME_APP_SECRET]

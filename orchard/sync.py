@@ -32,6 +32,10 @@ from .manifest import Stage
 
 DB = os.environ.get("ORCHARD_DB", "orchard")
 SPACETIME_DIR = ROOT / "spacetime"
+# For tests against a local server: which server, and which CLI config (whose
+# login is that server's admin). Unset, the CLI's defaults: maincloud, ~/.config.
+SERVER = os.environ.get("ORCHARD_SPACETIME_SERVER", "")
+CLI_CONFIG = os.environ.get("ORCHARD_SPACETIME_CONFIG", "")
 
 
 def _cli() -> str:
@@ -41,9 +45,20 @@ def _cli() -> str:
     return exe
 
 
+def _command(sub: str) -> list[str]:
+    """`spacetime [--config-path C] <sub> [-s S]`, with the test overrides applied."""
+    cmd = [_cli()]
+    if CLI_CONFIG:
+        cmd += ["--config-path", CLI_CONFIG]
+    cmd.append(sub)
+    if SERVER:
+        cmd += ["-s", SERVER]
+    return cmd
+
+
 def call(reducer: str, *args) -> None:
     """spacetime call <db> <reducer> <json args...>; raises on failure."""
-    cmd = [_cli(), "call", DB, reducer, *[json.dumps(a) for a in args]]
+    cmd = [*_command("call"), DB, reducer, *[json.dumps(a) for a in args]]
     r = subprocess.run(cmd, cwd=SPACETIME_DIR, capture_output=True, text=True, timeout=60)
     out = (r.stdout + r.stderr).replace("WARNING: This command is UNSTABLE and subject to breaking changes.", "").strip()
     if r.returncode != 0:
@@ -70,7 +85,7 @@ def rows_from_sql_json(payload) -> list[dict]:
 
 def sql(query: str) -> list[dict]:
     """A read over the database as the CLI identity (the owner: private tables included)."""
-    cmd = [_cli(), "sql", DB, query, "--format", "json"]
+    cmd = [*_command("sql"), DB, query, "--format", "json"]
     r = subprocess.run(cmd, cwd=SPACETIME_DIR, capture_output=True, text=True, timeout=60)
     out = r.stdout.replace("WARNING: This command is UNSTABLE and subject to breaking changes.", "").strip()
     if r.returncode != 0:

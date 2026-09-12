@@ -161,3 +161,22 @@ Append-only. A decision names the day, the ruling, and the alternative it beat.
   budget and the style-B palette (backlog 16, 17, 20) are what the room
   still needs to read as the "one number" picture; it opens plain rather
   than not at all.
+- **2026-09-12 · The grove's people are private; each visitor reads their own
+  room.** `visitor`, `pose` and `chat` became private tables read through
+  three query views scoped to the caller's room. Beat row-level filters,
+  which SpacetimeDB stacks inside each other and then refuses ("subscriptions
+  require indexes on join columns") as soon as the pose filter joins a
+  filtered visitor table, and beat leaving the tables public, which let
+  anyone read the greenhouse's presence and every room's chat.
+- **2026-09-12 · Identities cost a human check, not a login.** A Pages
+  Function beside the grove runs Turnstile and signs an ES256 token whose
+  `ipk` is an HMAC of the visitor's network; SpacetimeDB verifies it through
+  OIDC discovery, the module caps and bans by `ipk`. Beat a login (the grove
+  is join-from-a-link), a Worker with its own state (nothing to store), and
+  raw per-connection limits (free anonymous identities make them per-socket).
+  The gate is a setting, off until the service has keys, so the rollout
+  needs no second republish.
+- **2026-09-12 · Admin is whoever publishes.** `init` seeds the allowlist
+  with the publisher; `bootstrap_admin` (first caller wins on an empty list)
+  is gone, because a `--delete-data` republish would have opened it to any
+  visitor.

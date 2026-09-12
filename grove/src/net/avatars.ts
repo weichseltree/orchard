@@ -12,7 +12,9 @@ import { PALETTE } from "../config";
 import type { Peer } from "./presence";
 
 // Other visitors: a capsule and a name. M0 has no avatars worth the name, and
-// a capsule that is honestly a capsule beats a humanoid that is not.
+// a capsule that is honestly a capsule beats a humanoid that is not. A name
+// can be anything, "Manuel" included; the orchard's admins carry a green tag
+// with "host" on it, which only the server can grant.
 
 const BODY_HEIGHT = 1.1;
 const BODY_RADIUS = 0.22;
@@ -25,6 +27,7 @@ interface Avatar {
   sprite: Sprite;
   texture: CanvasTexture;
   name: string;
+  host: boolean;
   x: number;
   y: number;
   z: number;
@@ -56,14 +59,15 @@ export class Avatars {
         avatar = this.#create(peer);
         this.#avatars.set(id, avatar);
         this.group.add(avatar.group);
-      } else if (avatar.name !== peer.name) {
+      } else if (avatar.name !== peer.name || avatar.host !== peer.host) {
         avatar.texture.dispose();
-        const built = nameTexture(peer.name);
+        const built = nameTexture(peer.name, peer.host);
         avatar.texture = built;
         (avatar.sprite.material as SpriteMaterial).map = built;
         (avatar.sprite.material as SpriteMaterial).needsUpdate = true;
         avatar.sprite.scale.set(built.image.width / 256, built.image.height / 256, 1);
         avatar.name = peer.name;
+        avatar.host = peer.host;
       }
       const k = 1 - Math.exp(-SMOOTHING * dt);
       avatar.x += (peer.x - avatar.x) * k;
@@ -97,20 +101,20 @@ export class Avatars {
     group.name = `avatar-${peer.identity.slice(0, 8)}`;
     const body = new Mesh(this.#geometry, this.#material);
     group.add(body);
-    const texture = nameTexture(peer.name);
+    const texture = nameTexture(peer.name, peer.host);
     const sprite = new Sprite(
       new SpriteMaterial({ map: texture, transparent: true, depthWrite: false }),
     );
     sprite.scale.set(texture.image.width / 256, texture.image.height / 256, 1);
     sprite.position.y = EYE - BODY_HEIGHT / 2 + 0.22;
     group.add(sprite);
-    return { group, sprite, texture, name: peer.name, x: peer.x, y: peer.y, z: peer.z, yaw: peer.yaw };
+    return { group, sprite, texture, name: peer.name, host: peer.host, x: peer.x, y: peer.y, z: peer.z, yaw: peer.yaw };
   }
 }
 
 /** A name tag drawn once into a canvas; sprites keep it facing the visitor. */
-function nameTexture(name: string): CanvasTexture {
-  const text = name || "visitor";
+function nameTexture(name: string, host: boolean): CanvasTexture {
+  const text = `${name || "visitor"}${host ? " · host" : ""}`;
   const canvas = document.createElement("canvas");
   const context = canvas.getContext("2d");
   const font = "600 36px system-ui, sans-serif";
@@ -129,7 +133,13 @@ function nameTexture(name: string): CanvasTexture {
     ctx.fillStyle = "rgba(14,19,16,0.72)";
     roundRect(ctx, 0, 6, canvas.width, 52, 10);
     ctx.fill();
-    ctx.fillStyle = PALETTE.text;
+    if (host) {
+      ctx.strokeStyle = PALETTE.accent;
+      ctx.lineWidth = 3;
+      roundRect(ctx, 1.5, 7.5, canvas.width - 3, 49, 9);
+      ctx.stroke();
+    }
+    ctx.fillStyle = host ? PALETTE.accent : PALETTE.text;
     ctx.textBaseline = "middle";
     ctx.fillText(text, 16, 33);
   }

@@ -16,6 +16,16 @@ export const Admin = __t.object("Admin", {
 });
 export type Admin = __Infer<typeof Admin>;
 
+export const Ban = __t.object("Ban", {
+  identity: __t.identity(),
+  network: __t.string(),
+  until: __t.timestamp(),
+  reason: __t.string(),
+  by: __t.identity(),
+  at: __t.timestamp(),
+});
+export type Ban = __Infer<typeof Ban>;
+
 export const Chat = __t.object("Chat", {
   id: __t.u64(),
   room: __t.string(),
@@ -25,6 +35,16 @@ export const Chat = __t.object("Chat", {
   at: __t.timestamp(),
 });
 export type Chat = __Infer<typeof Chat>;
+
+export const ChatHere = __t.object("ChatHere", {});
+export type ChatHere = __Infer<typeof ChatHere>;
+
+export const Connection = __t.object("Connection", {
+  id: __t.connectionId(),
+  identity: __t.identity(),
+  at: __t.timestamp(),
+});
+export type Connection = __Infer<typeof Connection>;
 
 export const Directive = __t.object("Directive", {
   id: __t.u64(),
@@ -46,6 +66,16 @@ export const Exhibit = __t.object("Exhibit", {
 });
 export type Exhibit = __Infer<typeof Exhibit>;
 
+export const Guest = __t.object("Guest", {
+  identity: __t.identity(),
+  network: __t.string(),
+  seenAt: __t.timestamp(),
+});
+export type Guest = __Infer<typeof Guest>;
+
+export const PeopleHere = __t.object("PeopleHere", {});
+export type PeopleHere = __Infer<typeof PeopleHere>;
+
 export const Pose = __t.object("Pose", {
   identity: __t.identity(),
   room: __t.string(),
@@ -56,6 +86,22 @@ export const Pose = __t.object("Pose", {
   updatedAt: __t.timestamp(),
 });
 export type Pose = __Infer<typeof Pose>;
+
+export const PosesHere = __t.object("PosesHere", {});
+export type PosesHere = __Infer<typeof PosesHere>;
+
+export const Report = __t.object("Report", {
+  id: __t.u64(),
+  reporter: __t.identity(),
+  subject: __t.identity(),
+  subjectName: __t.string(),
+  room: __t.string(),
+  reason: __t.string(),
+  context: __t.string(),
+  status: __t.string(),
+  at: __t.timestamp(),
+});
+export type Report = __Infer<typeof Report>;
 
 export const ReviewItem = __t.object("ReviewItem", {
   id: __t.u64(),
@@ -89,12 +135,32 @@ export const Ruling = __t.object("Ruling", {
 });
 export type Ruling = __Infer<typeof Ruling>;
 
+export const Setting = __t.object("Setting", {
+  key: __t.string(),
+  value: __t.string(),
+});
+export type Setting = __Infer<typeof Setting>;
+
 export const Snapshot = __t.object("Snapshot", {
   key: __t.string(),
   json: __t.string(),
   at: __t.timestamp(),
 });
 export type Snapshot = __Infer<typeof Snapshot>;
+
+export const SweepTimer = __t.object("SweepTimer", {
+  scheduledId: __t.u64(),
+  scheduledAt: __t.scheduleAt(),
+});
+export type SweepTimer = __Infer<typeof SweepTimer>;
+
+export const Throttle = __t.object("Throttle", {
+  identity: __t.identity(),
+  moveTokens: __t.f64(),
+  moveAt: __t.timestamp(),
+  reportAt: __t.timestamp(),
+});
+export type Throttle = __Infer<typeof Throttle>;
 
 export const Tree = __t.object("Tree", {
   name: __t.string(),
@@ -117,4 +183,10 @@ export const Visitor = __t.object("Visitor", {
   lastSaid: __t.timestamp(),
 });
 export type Visitor = __Infer<typeof Visitor>;
+
+export const Whereabouts = __t.object("Whereabouts", {
+  identity: __t.identity(),
+  room: __t.string(),
+});
+export type Whereabouts = __Infer<typeof Whereabouts>;
 

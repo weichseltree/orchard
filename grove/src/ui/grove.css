@@ -166,3 +166,33 @@ html, body {
   .provenance { top: 108px; max-height: 46vh; }
   .hint { display: none; }
 }
+
+/* Who is here: the "N here" count opens it. */
+.status .here {
+  font: inherit; font-weight: 600; color: var(--accent);
+  background: none; border: 0; padding: 0; cursor: pointer;
+  text-decoration: underline dotted rgba(127, 201, 127, 0.5); text-underline-offset: 3px;
+}
+.people { padding: 10px 12px; pointer-events: auto; max-height: 50vh; overflow: auto; }
+.people[hidden] { display: none; }
+.people h2 { margin: 0 0 6px; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--dim); font-weight: 600; }
+.person { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 4px 0; }
+.person-name { flex: 1; min-width: 6rem; overflow-wrap: anywhere; }
+.person-host { color: var(--accent); font-size: 12px; border: 1px solid var(--accent); border-radius: 4px; padding: 0 5px; }
+.people-empty { color: var(--dim); padding: 2px 0 4px; }
+.people-foot { margin: 8px 0 0; color: var(--dim); font-size: 12px; }
+.people-foot a { color: var(--accent); }
+.btn.small { padding: 3px 8px; font-size: 12.5px; }
+.report-form { display: flex; gap: 6px; width: 100%; }
+.report-form input {
+  flex: 1; min-width: 0; font: inherit; color: var(--text); background: var(--bg);
+  border: 1px solid var(--edge); border-radius: 6px; padding: 4px 7px;
+}
+#hud form, #hud .people a { pointer-events: auto; }
+
+/* Turnstile's box, when it wants a click; invisible otherwise. */
+.human-check {
+  position: absolute; left: 50%; bottom: 84px; transform: translateX(-50%);
+  pointer-events: auto;
+}
+.human-check:empty { display: none; }

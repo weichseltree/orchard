@@ -11,7 +11,7 @@ import {
 import { DbConnection } from "../module_bindings";
 import type { ExhibitRow } from "../world/exhibits";
 
-// Presence over SpacetimeDB. Four rules shape this file:
+// Presence over SpacetimeDB. Five rules shape this file:
 //
 //  1. Rendering never waits on the network. Every call is fire-and-forget and
 //     a failure becomes a notice, not an exception in the frame loop.
@@ -21,6 +21,10 @@ import type { ExhibitRow } from "../world/exhibits";
 //  3. A dropped socket is transient. Reconnect on capped, jittered backoff and
 //     re-join the room the body is actually standing in.
 //  4. `move` goes out at 10 Hz and only while moving, plus once on stopping.
+//  5. What arrives is not trusted. The server scopes who we can see to our
+//     room (the `people_here` and `poses_here` views) and refuses impossible
+//     poses, but a pose that is not a finite number is still skipped here,
+//     because one NaN would park a capsule nowhere for good.
 //
 // Everything the class touches on the connection is in `PresenceConnection`,
 // so the tests drive the join-refusal and reconnect paths against a stub
@@ -48,6 +52,8 @@ export function reconnectDelay(attempt: number, random: () => number = Math.rand
 export interface Peer {
   identity: string;
   name: string;
+  /** An admin of the orchard. Only the server can set this; names can be anything. */
+  host: boolean;
   x: number;
   y: number;
   z: number;
@@ -63,6 +69,7 @@ interface VisitorRow {
   name: string;
   room: string;
   online: boolean;
+  isAdmin: boolean;
 }
 
 interface PoseRow {
@@ -90,8 +97,10 @@ interface SubscriptionBuilderish {
 /** Exactly the surface of the generated `DbConnection` that presence uses. */
 export interface PresenceConnection {
   db: {
-    visitor: TableEvents<VisitorRow>;
-    pose: TableEvents<PoseRow>;
+    /** The people online in our room: a view the server scopes to us. */
+    peopleHere: TableEvents<VisitorRow>;
+    /** Their poses: likewise. */
+    posesHere: TableEvents<PoseRow>;
     room: { iter(): Iterable<{ name: string }> };
     exhibit: { iter(): Iterable<ExhibitRow> };
   };
@@ -99,6 +108,7 @@ export interface PresenceConnection {
     join(params: { name: string; room: string }): Promise<void>;
     move(params: { x: number; y: number; z: number; yaw: number }): Promise<void>;
     leave(params: Record<string, never>): Promise<void>;
+    reportVisitor(params: { who: Identityish; reason: string }): Promise<void>;
   };
   subscriptionBuilder(): SubscriptionBuilderish;
   disconnect(): void;
@@ -113,12 +123,23 @@ export interface TransportHandlers {
 /** How a connection is opened. Replaced in tests; the default is maincloud. */
 export type PresenceTransport = (handlers: TransportHandlers, token: string | null) => void;
 
+/**
+ * Where the token to connect with comes from, when the grove's token service
+ * is in use (auth.ts). Absent, the anonymous identity SpacetimeDB handed out
+ * last time is reused from storage. `fresh` is set on every retry, so a token
+ * the server stopped accepting is replaced rather than offered forever. A
+ * source that resolves null means "no token service here": presence then
+ * behaves as if it had none.
+ */
+export type TokenSource = (fresh: boolean) => Promise<string | null>;
+
 export interface PresenceDeps {
   random?: () => number;
   setTimer?: (fn: () => void, ms: number) => ReturnType<typeof setTimeout>;
   clearTimer?: (handle: ReturnType<typeof setTimeout>) => void;
   transport?: PresenceTransport;
   storage?: Pick<Storage, "getItem" | "setItem">;
+  token?: TokenSource;
 }
 
 export interface PresenceCallbacks {
@@ -173,6 +194,11 @@ export class Presence {
   #setTimer: (fn: () => void, ms: number) => ReturnType<typeof setTimeout>;
   #clearTimer: (handle: ReturnType<typeof setTimeout>) => void;
   #storage: Pick<Storage, "getItem" | "setItem"> | null;
+  #tokenSource: TokenSource | null;
+  /** A token is being fetched; the connection opens when it arrives. */
+  #opening = false;
+  /** This connection runs on an anonymous identity whose token is ours to keep. */
+  #anonymous = true;
 
   constructor(callbacks: PresenceCallbacks = {}, deps: PresenceDeps = {}) {
     this.#callbacks = callbacks;
@@ -181,6 +207,7 @@ export class Presence {
     this.#setTimer = deps.setTimer ?? ((fn, ms) => setTimeout(fn, ms));
     this.#clearTimer = deps.clearTimer ?? ((handle) => clearTimeout(handle));
     this.#storage = deps.storage ?? safeStorage();
+    this.#tokenSource = deps.token ?? null;
   }
 
   get identityHex(): string {
@@ -269,19 +296,26 @@ export class Presence {
     const room = this.joinedRoom;
     const seen = new Set<string>();
     if (room) {
-      for (const visitor of connection.db.visitor.iter()) {
+      for (const visitor of connection.db.peopleHere.iter()) {
         if (visitor.room !== room || !visitor.online) continue;
         const hex = visitor.identity.toHexString();
         if (hex === this.#identityHex) continue;
         seen.add(hex);
         const existing = this.peers.get(hex);
-        if (existing) existing.name = visitor.name;
-        else this.peers.set(hex, { identity: hex, name: visitor.name, x: 0, y: 0, z: 0, yaw: 0 });
+        if (existing) {
+          existing.name = visitor.name;
+          existing.host = visitor.isAdmin;
+        } else {
+          this.peers.set(hex, { identity: hex, name: visitor.name, host: visitor.isAdmin, x: 0, y: 0, z: 0, yaw: 0 });
+        }
       }
-      for (const pose of connection.db.pose.iter()) {
+      for (const pose of connection.db.posesHere.iter()) {
         const hex = pose.identity.toHexString();
         const peer = this.peers.get(hex);
         if (!peer || pose.room !== room) continue;
+        if (!(Number.isFinite(pose.x) && Number.isFinite(pose.y) && Number.isFinite(pose.z) && Number.isFinite(pose.yaw))) {
+          continue;
+        }
         peer.x = pose.x;
         peer.y = pose.y;
         peer.z = pose.z;
@@ -291,6 +325,18 @@ export class Presence {
     for (const hex of [...this.peers.keys()]) if (!seen.has(hex)) this.peers.delete(hex);
     this.#callbacks.onPeersChanged?.(this.peers);
     return true;
+  }
+
+  /**
+   * Flags a visitor in our room for the admin, with a reason. Rejects with the
+   * server's answer (one report every 30 seconds, and so on).
+   */
+  report(identityHex: string, reason: string): Promise<void> {
+    const connection = this.#connection;
+    if (!connection || this.status !== "online") return Promise.reject(new Error("not connected"));
+    const row = [...connection.db.peopleHere.iter()].find((v) => v.identity.toHexString() === identityHex);
+    if (!row) return Promise.reject(new Error("they are not here any more"));
+    return connection.reducers.reportVisitor({ who: row.identity, reason });
   }
 
   /** What hangs where, as the server has it now; empty while single-player. */
@@ -346,18 +392,45 @@ export class Presence {
   }
 
   #open(): void {
-    if (this.#connection || this.#disposed) return;
+    if (this.#connection || this.#disposed || this.#opening) return;
     if (this.#retryTimer !== null) {
       this.#clearTimer(this.#retryTimer);
       this.#retryTimer = null;
     }
     this.#setStatus("connecting");
+    const source = this.#tokenSource;
+    if (source) {
+      this.#opening = true;
+      source(this.#attempt > 0).then(
+        (token) => {
+          this.#opening = false;
+          if (this.#disposed || this.#connection) return;
+          if (token === null) this.#openAnonymous();
+          else this.#openWith(token, false);
+        },
+        (error: unknown) => {
+          this.#opening = false;
+          this.#dropped(message(error));
+        },
+      );
+      return;
+    }
+    this.#openAnonymous();
+  }
+
+  /** The anonymous identity SpacetimeDB handed out last time, or a new one. */
+  #openAnonymous(): void {
     let token: string | null = null;
     try {
       token = this.#storage?.getItem(TOKEN_KEY) ?? null;
     } catch {
       // A locked-down browser: a fresh anonymous identity each visit is fine.
     }
+    this.#openWith(token, true);
+  }
+
+  #openWith(token: string | null, anonymous: boolean): void {
+    this.#anonymous = anonymous;
     try {
       this.#transport(
         {
@@ -365,10 +438,14 @@ export class Presence {
             this.#connection = connection;
             this.#identityHex = identityHex;
             this.#attempt = 0;
-            try {
-              this.#storage?.setItem(TOKEN_KEY, newToken);
-            } catch {
-              // Not fatal; the identity is then per-session.
+            // With the token service, the token is auth.ts's to keep; the
+            // server only echoes it back.
+            if (this.#anonymous) {
+              try {
+                this.#storage?.setItem(TOKEN_KEY, newToken);
+              } catch {
+                // Not fatal; the identity is then per-session.
+              }
             }
             this.#setStatus("online");
             this.#watchTables(connection);
@@ -424,7 +501,9 @@ export class Presence {
       .join({ name: this.name, room: want })
       .then(() => {
         this.joinedRoom = want;
-        this.#subscribe(connection, want);
+        // Once per connection: the views follow us from room to room.
+        if (!this.#subscription) this.#subscribe(connection);
+        else this.#dirty = true;
         this.#resetPose(); // the first pose of a new room always goes out
       })
       .catch((error: unknown) => {
@@ -475,12 +554,12 @@ export class Presence {
     const touch = (): void => {
       this.#dirty = true;
     };
-    connection.db.visitor.onInsert(touch);
-    connection.db.visitor.onUpdate?.(touch);
-    connection.db.visitor.onDelete(touch);
-    connection.db.pose.onInsert(touch);
-    connection.db.pose.onUpdate?.(touch);
-    connection.db.pose.onDelete(touch);
+    connection.db.peopleHere.onInsert(touch);
+    connection.db.peopleHere.onUpdate?.(touch);
+    connection.db.peopleHere.onDelete(touch);
+    connection.db.posesHere.onInsert(touch);
+    connection.db.posesHere.onUpdate?.(touch);
+    connection.db.posesHere.onDelete(touch);
   }
 
   #subscribeExhibits(connection: PresenceConnection): void {
@@ -502,26 +581,21 @@ export class Presence {
       .subscribe(["SELECT * FROM exhibit"]);
   }
 
-  #subscribe(connection: PresenceConnection, room: string): void {
-    const previous = this.#subscription;
-    const escaped = room.replace(/'/g, "''");
-    // Subscribe before unsubscribing, so the client cache never empties
-    // between two rooms (SpacetimeDB best practice).
+  /**
+   * The people and poses of whatever room we are in. The server scopes both
+   * views to the caller's room and swaps their rows when we walk through a
+   * doorway, so this is one subscription for the life of the connection.
+   */
+  #subscribe(connection: PresenceConnection): void {
     this.#subscription = connection
       .subscriptionBuilder()
       .onApplied(() => {
         this.#dirty = true;
-        previous?.unsubscribe();
       })
       .onError(() => {
         this.#callbacks.onNotice?.("presence: the room subscription failed");
-        previous?.unsubscribe();
       })
-      .subscribe([
-        `SELECT * FROM visitor WHERE room = '${escaped}'`,
-        `SELECT * FROM pose WHERE room = '${escaped}'`,
-        "SELECT * FROM room",
-      ]);
+      .subscribe(["SELECT * FROM people_here", "SELECT * FROM poses_here", "SELECT * FROM room"]);
   }
 
   #setStatus(status: PresenceStatus, detail?: string): void {

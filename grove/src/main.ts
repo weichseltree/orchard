@@ -6,6 +6,7 @@ import { consumeDeltas, createInput, type Commands } from "./control/input";
 import { clampHead, createBody, step, teleport } from "./control/locomotion";
 import { attachTouchControls } from "./control/touch";
 import { XrControls, requestXrSession, watchXrSupport } from "./control/xr";
+import { deploymentTokenSource } from "./net/auth";
 import { Avatars } from "./net/avatars";
 import { Presence } from "./net/presence";
 import { EYE_HEIGHT, createView } from "./render/view";
@@ -76,6 +77,14 @@ const hud = new Hud(hudRoot, {
   },
   onUnmute: () => void toggleAudio(),
   onProvenance: () => provenance.toggle(view.camera),
+  onReport: (identity, reason) =>
+    presence.report(identity, reason).then(
+      () => notice("Report sent to the host. Thank you."),
+      (error: unknown) => {
+        notice(`Report not sent: ${message(error)}`);
+        throw error;
+      },
+    ),
 });
 const provenance = new Provenance(hud.provenancePanel);
 view.scene.add(provenance.panel);
@@ -88,20 +97,25 @@ function notice(text: string, sticky = false): void {
   console.info(`[grove] ${text}`);
 }
 
-const presence = new Presence({
-  onStatus: (status, detail) => {
-    if (status === "online") hud.setLink("connected");
-    else if (status === "connecting") hud.setLink("connecting...");
-    else {
-      hud.setLink("single-player", true);
-      if (detail && detail !== lastLinkDetail) {
-        lastLinkDetail = detail;
-        notice(`Presence is off: ${detail}. Everything else works; retrying.`);
+const presence = new Presence(
+  {
+    onStatus: (status, detail) => {
+      if (status === "online") hud.setLink("connected");
+      else if (status === "connecting") hud.setLink("connecting...");
+      else {
+        hud.setLink("single-player", true);
+        if (detail && detail !== lastLinkDetail) {
+          lastLinkDetail = detail;
+          notice(`Presence is off: ${detail}. Everything else works; retrying.`);
+        }
       }
-    }
+    },
+    onNotice: (text) => notice(text),
   },
-  onNotice: (text) => notice(text),
-});
+  // The grove's token service, when this build has one (a human check, then
+  // a token that carries the visitor's identity from visit to visit).
+  { token: deploymentTokenSource(hudRoot) },
+);
 let lastLinkDetail = "";
 
 let perfOpen = false;
@@ -338,7 +352,7 @@ view.start((dt) => {
 
   view.camera.getWorldPosition(headWorld);
   presence.sendPose(headWorld.x, 0, headWorld.z, wrapAngle(headingFromCamera()));
-  presence.sync();
+  if (presence.sync()) hud.setPeople(presence.peers.values());
   avatars.update(presence.peers, dt);
   hud.setHere(presence.here);
 

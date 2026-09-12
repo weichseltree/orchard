@@ -4,6 +4,13 @@ import { SPEEDS, type Speed } from "../tape/time";
 // number the visitor asked for or a failure they need to know about. No
 // counters on the world itself (LAWS 7): this is chrome, not scenery.
 
+/** Someone in the room, as the people panel lists them. */
+export interface HudPerson {
+  identity: string;
+  name: string;
+  host: boolean;
+}
+
 export interface HudCallbacks {
   onEnterVr(): void;
   onTogglePlay(): void;
@@ -12,6 +19,8 @@ export interface HudCallbacks {
   onSpeed(speed: Speed): void;
   onUnmute(): void;
   onProvenance(): void;
+  /** Resolves when the server took the report; rejects with its reason. */
+  onReport(identity: string, reason: string): Promise<void>;
 }
 
 export class Hud {
@@ -19,7 +28,12 @@ export class Hud {
   readonly provenancePanel: HTMLElement;
 
   #status: HTMLElement;
-  #here: HTMLElement;
+  #here: HTMLButtonElement;
+  #people: HTMLElement;
+  #peopleList: HTMLElement;
+  #peopleKey = "";
+  #reporting: string | null = null;
+  #callbacks: HudCallbacks;
   #link: HTMLElement;
   #notices: HTMLElement;
   #hint: HTMLElement;
@@ -35,14 +49,36 @@ export class Hud {
 
   constructor(root: HTMLElement, callbacks: HudCallbacks) {
     this.root = root;
+    this.#callbacks = callbacks;
     root.innerHTML = "";
 
     const topLeft = div("top-left");
     this.#status = div("status panel");
-    this.#here = span("here");
+    this.#here = button("1 here", "here", () => this.#togglePeople());
+    this.#here.setAttribute("aria-expanded", "false");
+    this.#here.title = "Who is here";
     this.#link = span("link");
     this.#status.append(this.#here, document.createTextNode(" "), this.#link);
     topLeft.append(this.#status);
+
+    // Who is here, with a way to flag someone to the host. Everything in it
+    // is textContent: names come from other people.
+    this.#people = div("people panel");
+    this.#people.hidden = true;
+    const heading = document.createElement("h2");
+    heading.textContent = "Here with you";
+    this.#peopleList = div("people-list");
+    const footer = document.createElement("p");
+    footer.className = "people-foot";
+    footer.append("Reports go to the orchard's host with the person's last lines of chat. ");
+    const privacy = document.createElement("a");
+    privacy.href = "/privacy/";
+    privacy.target = "_blank";
+    privacy.rel = "noopener";
+    privacy.textContent = "Privacy";
+    footer.append(privacy);
+    this.#people.append(heading, this.#peopleList, footer);
+    topLeft.append(this.#people);
     root.append(topLeft);
 
     const topRight = div("top-right");
@@ -111,7 +147,93 @@ export class Hud {
   }
 
   setHere(count: number): void {
-    this.#here.textContent = count === 1 ? "1 here" : `${count} here`;
+    const text = count === 1 ? "1 here" : `${count} here`;
+    if (this.#here.textContent !== text) this.#here.textContent = text;
+  }
+
+  /** The people in the room besides the visitor. Cheap to call on every change. */
+  setPeople(people: Iterable<HudPerson>): void {
+    const list = [...people].sort((a, b) => a.name.localeCompare(b.name));
+    const key = list.map((p) => `${p.identity}:${p.name}:${p.host ? 1 : 0}`).join("|");
+    if (key === this.#peopleKey) return;
+    this.#peopleKey = key;
+    this.#peopleNow = list;
+    // Never pull a half-typed report out from under the visitor.
+    if (!this.#people.hidden && this.#reporting === null) this.#renderPeople();
+  }
+
+  #peopleNow: HudPerson[] = [];
+
+  #togglePeople(): void {
+    this.#people.hidden = !this.#people.hidden;
+    this.#here.setAttribute("aria-expanded", String(!this.#people.hidden));
+    if (!this.#people.hidden) {
+      this.#reporting = null;
+      this.#renderPeople();
+    }
+  }
+
+  #renderPeople(): void {
+    const rows: HTMLElement[] = [];
+    if (this.#peopleNow.length === 0) {
+      const empty = div("people-empty");
+      empty.textContent = "Nobody else is here.";
+      rows.push(empty);
+    }
+    for (const person of this.#peopleNow) {
+      const row = div("person");
+      const name = span("person-name");
+      name.textContent = person.name || "visitor";
+      row.append(name);
+      if (person.host) {
+        const tag = span("person-host");
+        tag.textContent = "host";
+        row.append(tag);
+      } else if (this.#reporting === person.identity) {
+        row.append(this.#reportForm(person));
+      } else {
+        row.append(button("Report", "btn small", () => {
+          this.#reporting = person.identity;
+          this.#renderPeople();
+        }));
+      }
+      rows.push(row);
+    }
+    this.#peopleList.replaceChildren(...rows);
+    this.#peopleList.querySelector<HTMLInputElement>("input")?.focus();
+  }
+
+  #reportForm(person: HudPerson): HTMLElement {
+    const form = document.createElement("form");
+    form.className = "report-form";
+    const reason = document.createElement("input");
+    reason.type = "text";
+    reason.maxLength = 280;
+    reason.placeholder = "What happened?";
+    reason.setAttribute("aria-label", `Why report ${person.name}`);
+    const send = document.createElement("button");
+    send.type = "submit";
+    send.className = "btn small accent";
+    send.textContent = "Send";
+    const cancel = button("Cancel", "btn small", () => {
+      this.#reporting = null;
+      this.#renderPeople();
+    });
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      send.disabled = true;
+      this.#callbacks
+        .onReport(person.identity, reason.value.trim())
+        .then(() => {
+          this.#reporting = null;
+          this.#renderPeople();
+        })
+        .catch(() => {
+          send.disabled = false; // the reason is on the notice board; let them try again
+        });
+    });
+    form.append(reason, send, cancel);
+    return form;
   }
 
   setLink(text: string, bad = false): void {

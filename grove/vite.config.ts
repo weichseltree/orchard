@@ -70,6 +70,12 @@ export default defineConfig(({ command }) => ({
       process.env.VITE_MEDIA_BASE ??
         (command === "serve" ? "/local-bundles" : "https://media.weichseltree.com"),
     ),
+    // The token service is a Pages Function, which `vite` does not run: off in
+    // dev unless pointed at one (`wrangler pages dev`), on in a build.
+    "import.meta.env.VITE_AUTH_URL": JSON.stringify(
+      process.env.VITE_AUTH_URL ?? (command === "serve" ? "" : "/auth"),
+    ),
+    "import.meta.env.VITE_TURNSTILE_SITEKEY": JSON.stringify(process.env.VITE_TURNSTILE_SITEKEY ?? ""),
   },
   build: {
     target: "es2022",
@@ -85,7 +91,7 @@ export default defineConfig(({ command }) => ({
   preview: { port: 4173, strictPort: true },
   test: {
     root,
-    include: ["src/**/*.test.ts"],
+    include: ["src/**/*.test.ts", "auth/**/*.test.ts"],
     environment: "node",
   },
 }));

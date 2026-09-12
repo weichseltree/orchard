@@ -147,3 +147,23 @@ Ordered. Items with a name in brackets wait on that person.
     minutes. Needs a rule: a ruling advances a stage only if it is newer
     than the manifest's last change to that thesis, or the tree records the
     demotion as a ruling of its own.
+
+## Security (2026-09-12, docs/SECURITY.md)
+
+25. **[Manuel] Turn the token service on.** Needs a fresh approval to write
+    the secrets file: `orchard auth keygen --write`, the Turnstile widget
+    (its secret goes into the same file), `orchard auth push`, a grove deploy
+    with `VITE_TURNSTILE_SITEKEY`, `orchard auth status`, then
+    `orchard auth gate on`. Until then visitors stay anonymous and every rule
+    but the per-network cap holds.
+26. **[Manuel] Split the Cloudflare token** into deploy, R2 and admin tokens
+    (HOSTING.md, "Split it"); the code already reads all three.
+27. **Turnstile from the mainland.** Try challenges.cloudflare.com from a
+    mainland vantage point before the site key goes into a build; if it does
+    not load there, those visitors go single-player.
+28. **[Manuel] An Impressum** (ECG §5, MedienG §25): name and a contact
+    address; the privacy page points at GitHub issues meanwhile.
+29. The host in the browser (with item 8): an admin identity in the grove
+    needs its own token path; the CLI token must not go into a browser.
+30. Voice (item 7) mints Cloudflare Realtime session tokens in the same
+    token service, never in the client.

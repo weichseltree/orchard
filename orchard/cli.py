@@ -210,6 +210,11 @@ def cmd_r2_benchmark(a):
     print(json.dumps(benchmark(a.bundle_dir, bucket=a.bucket, n=a.n), indent=1))
 
 
+def cmd_auth(a):
+    from .auth import main as auth_main
+    auth_main(a)
+
+
 def cmd_serve(a):
     import uvicorn
     uvicorn.run("orchard.dashboard.app:app", host=a.host, port=a.port, reload=a.reload)
@@ -296,6 +301,16 @@ def main(argv=None):
     r.add_argument("bundle_dir"); r.add_argument("--bucket", default=BUCKET)
     r.add_argument("-n", type=int, default=10)
     r.set_defaults(fn=cmd_r2_benchmark)
+
+    s = sub.add_parser("auth", help="the grove's token service: keys, Pages secrets, the gate")
+    asub = s.add_subparsers(dest="what", required=True)
+    r = asub.add_parser("keygen", help="make AUTH_SIGNING_KEY and AUTH_NETWORK_KEY if missing")
+    r.add_argument("--write", action="store_true", help="append them to the secrets file")
+    asub.add_parser("push", help="send the token service's secrets to Cloudflare Pages")
+    asub.add_parser("status", help="what the live token service answers, and the gate")
+    r = asub.add_parser("gate", help="turn anonymous visitors away (on) or let them in (off)")
+    r.add_argument("state", choices=["on", "off"])
+    s.set_defaults(fn=cmd_auth)
 
     s = sub.add_parser("doctor", help="what is wired up"); s.set_defaults(fn=cmd_doctor)
     s = sub.add_parser("serve", help="the flat dashboard"); s.add_argument("--host", default="127.0.0.1"); s.add_argument("--port", type=int, default=8787); s.add_argument("--reload", action="store_true"); s.set_defaults(fn=cmd_serve)

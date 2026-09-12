@@ -16,6 +16,7 @@
   form.row { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; } input, select, button { background:#0e1310; color:var(--ink); border:1px solid #2a352c; border-radius:4px; padding:3px 6px; font:inherit; }
   button { cursor:pointer; } button.verdict { padding:1px 6px; font-size:12px; } button.ok { border-color:var(--leaf); } button.bad { border-color:var(--bad); }
   td.wrap { white-space:normal; max-width:420px; }
+  td.chat { white-space:pre-wrap; max-width:420px; color:var(--dim); font-size:12.5px; }
 </style>
 <h1>orchard <span>· the fund and the studio · weichseltree</span></h1>
 <div class="muted" id="meta">loading…</div>
@@ -42,9 +43,17 @@
     <form id="directive-form" class="row"><input name="text" placeholder="a standing instruction every session reads" size="48" required><button>set</button></form></div></div>
   <div><h2>Hanging in the grove</h2><div class="panel"><table id="exhibits"></table></div></div>
 </div>
+<h2>The grove · people</h2>
+<div class="muted">Visitors' names, reasons and chat are written by strangers: shown as text, never as markup.</div>
+<div class="grid">
+  <div><h2>Online now</h2><div class="panel"><table id="online"></table></div></div>
+  <div><h2>Reports</h2><div class="panel"><table id="reports"></table></div></div>
+  <div><h2>Bans</h2><div class="panel"><table id="bans"></table></div></div>
+  <div><h2>Token gate</h2><div class="panel" id="gate"></div></div>
+</div>
 <script>
 const $ = s => document.querySelector(s);
-const esc = s => String(s ?? '').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const row = (cells, cls=[]) => '<tr>' + cells.map((c,i)=>`<td class="${cls[i]||''}">${c}</td>`).join('') + '</tr>';
 const head = h => '<tr>' + h.map(x=>`<th>${x}</th>`).join('') + '</tr>';
 async function main(){
@@ -64,7 +73,8 @@ async function main(){
 }
 const STAGES=['scouted','planted','thesis','styleframe','animatic','greenlit','rendering','mastered','published','exhibited'];
 const when = s => s ? new Date(s*1000).toLocaleString() : '';
-async function post(url, body){ const r = await fetch(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}); if(!r.ok){ alert((await r.json()).detail||r.statusText); } await greenhouse(); }
+// X-Orchard: the server refuses writes without it, so no other page can post here.
+async function post(url, body){ const r = await fetch(url,{method:'POST',headers:{'content-type':'application/json','x-orchard':'1'},body:JSON.stringify(body)}); if(!r.ok){ alert(await r.text()); } await Promise.all([greenhouse(), people()]); }
 async function rule(id, verdict){ const note = verdict==='approved'||verdict==='greenlit' ? (prompt('note (optional)')??'') : (prompt('what must change?')??''); if(note===null) return; await post('/api/rule',{review_id:id,verdict,note}); }
 async function greenhouse(){
   const g = await fetch('/api/greenhouse').then(r=>r.json());
@@ -77,8 +87,52 @@ async function greenhouse(){
   $('#directives').innerHTML = head(['when','directive','']) + (g.directives.map(d=>row([when(d.at),d.active?esc(d.text):`<s class="muted">${esc(d.text)}</s>`,d.active?`<button class="verdict" onclick="post('/api/directive/${d.id}/retire',{})">retire</button>`:''],['muted','wrap',''])).join('') || row(['<span class="muted">no directives</span>']));
   $('#exhibits').innerHTML = head(['#','tree','kind','title','hung']) + (g.exhibits.map(e=>row([e.id,esc(e.tree),esc(e.kind),`<a href="${esc(e.url)}" target="_blank">${esc(e.title)}</a>`,when(e.hung_at)],['num','','','','muted'])).join('') || row(['<span class="muted">nothing hangs yet</span>']));
 }
+// Identities travel in data- attributes, checked by the server's pattern; nothing a
+// visitor typed is ever put into an attribute or a handler.
+const act = (a, who, label, cls='', extra='') => `<button class="verdict ${cls}" data-act="${a}" data-who="${esc(who)}" ${extra}>${label}</button>`;
+const until = s => s > Date.now()/1000 + 50*365*86400 ? 'for good' : when(s);
+async function people(){
+  const p = await fetch('/api/people').then(r=>r.json());
+  if(p.error){ $('#online').innerHTML = row([`<span class="muted">grove unreachable: ${esc(p.error)}</span>`]); return; }
+  $('#online').innerHTML = head(['name','room','network','']) + (p.online.map(v=>row([
+      esc(v.name) + (v.is_admin?' <span class="stage">host</span>':'') + (v.muted?' <span class="muted">muted</span>':''),
+      esc(v.room), `<span class="muted">${esc((v.network||'-').slice(0,8))}</span>`,
+      v.is_admin ? '' : [act(v.muted?'unmute':'mute', v.identity, v.muted?'unmute':'mute'), act('kick', v.identity, 'kick', 'bad'), act('ban', v.identity, 'ban…', 'bad')].join(' ')
+    ])).join('') || row(['<span class="muted">nobody online</span>']));
+  $('#reports').innerHTML = head(['when','about','room','reason','their last lines','']) + (p.reports.map(r=>row([
+      when(r.at), esc(r.subject_name), esc(r.room), esc(r.reason), esc(r.context),
+      r.status==='open' ? [act('resolve', r.subject, 'done', 'ok', `data-id="${Number(r.id)}"`), act('kick', r.subject, 'kick', 'bad'), act('ban', r.subject, 'ban…', 'bad')].join(' ') : '<span class="muted">done</span>'
+    ], ['muted','','','wrap','chat',''])).join('') || row(['<span class="muted">no reports</span>']));
+  $('#bans').innerHTML = head(['who','network','reason','until','']) + (p.bans.map(b=>row([
+      `<span class="muted">${esc(b.identity.slice(0,12))}…</span>`, b.network?'<span class="stage">yes</span>':'', esc(b.reason), until(b.until), act('unban', b.identity, 'unban')
+    ], ['','','wrap','muted',''])).join('') || row(['<span class="muted">nobody banned</span>']));
+  const issuers = p.auth.issuers.length ? p.auth.issuers : [p.auth.default_issuer];
+  $('#gate').innerHTML = `<div>${p.auth.required ? '<span class="stage">on</span>: only visitors with a grove token get in' : '<span class="muted">off</span>: anonymous visitors still get in'}</div>`
+    + `<div class="muted" style="margin:6px 0">token services: ${issuers.map(esc).join(', ')}</div>`
+    + `<button class="verdict ${p.auth.required?'bad':'ok'}" data-act="gate" data-required="${!p.auth.required}" data-issuers="${esc(JSON.stringify(issuers))}">${p.auth.required?'turn the gate off':'turn the gate on'}</button>`;
+}
+document.addEventListener('click', async ev => {
+  const b = ev.target.closest('button[data-act]'); if(!b) return;
+  const who = b.dataset.who, a = b.dataset.act;
+  if(a==='mute'||a==='unmute') await post('/api/people/mute', {who, muted: a==='mute'});
+  else if(a==='kick') await post('/api/people/kick', {who});
+  else if(a==='unban') await post('/api/people/unban', {who});
+  else if(a==='resolve') await post(`/api/reports/${Number(b.dataset.id)}/resolve`, {});
+  else if(a==='ban'){
+    const m = prompt('Ban for how many minutes? 0 is for good.', '1440'); if(m===null) return;
+    const reason = prompt('Reason (only you see it):', '') ?? '';
+    const network = confirm('Ban their whole network too? Everyone behind the same address is kept out.');
+    await post('/api/people/ban', {who, minutes: Math.max(0, Math.floor(Number(m)||0)), reason, network});
+  }
+  else if(a==='gate'){
+    const on = b.dataset.required==='true';
+    if(on && !confirm('Turn the gate on? Anyone without a grove token (old tabs, scripts) is turned away.')) return;
+    await post('/api/auth', {issuers: JSON.parse(b.dataset.issuers), required: on});
+  }
+});
 $('#review-form').addEventListener('submit', async ev => { ev.preventDefault(); const f = new FormData(ev.target); await post('/api/review', Object.fromEntries(f.entries())); ev.target.reset(); });
 $('#directive-form').addEventListener('submit', async ev => { ev.preventDefault(); const f = new FormData(ev.target); await post('/api/directive', {text:f.get('text')}); ev.target.reset(); });
 main().catch(e=>{$('#meta').textContent='error: '+e;});
 greenhouse().catch(e=>{$('#reviews').innerHTML=row(['<span class="muted">greenhouse: '+esc(e)+'</span>']);});
+people().catch(e=>{$('#online').innerHTML=row(['<span class="muted">people: '+esc(e)+'</span>']);});
 </script>

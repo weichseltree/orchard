@@ -13,16 +13,36 @@ import {
 // retry at network speed, and a dropped socket used to be permanent. Both are
 // now driven against a stub rather than against maincloud.
 
+interface StubVisitor {
+  hex: string;
+  name: string;
+  room: string;
+  isAdmin?: boolean;
+}
+
+interface StubPose {
+  hex: string;
+  room: string;
+  x: number;
+  y: number;
+  z: number;
+  yaw: number;
+}
+
 function stubConnection(options: {
   rooms?: string[];
   exhibits?: ExhibitRow[];
   refuse?: (room: string) => string | null;
-}): PresenceConnection & { joins: string[]; moves: number; queries: string[][] } {
+  people?: StubVisitor[];
+  poses?: StubPose[];
+}): PresenceConnection & { joins: string[]; moves: number; queries: string[][]; reports: Array<[string, string]> } {
   const joins: string[] = [];
   const queries: string[][] = [];
+  const reports: Array<[string, string]> = [];
   let moves = 0;
-  const table = () => ({
-    iter: () => [],
+  const id = (hex: string) => ({ toHexString: () => hex });
+  const table = <Row>(rows: () => Row[]) => ({
+    iter: rows,
     onInsert: () => undefined,
     onUpdate: () => undefined,
     onDelete: () => undefined,
@@ -30,12 +50,15 @@ function stubConnection(options: {
   const connection = {
     joins,
     queries,
+    reports,
     get moves() {
       return moves;
     },
     db: {
-      visitor: table(),
-      pose: table(),
+      peopleHere: table(() =>
+        (options.people ?? []).map((v) => ({ identity: id(v.hex), name: v.name, room: v.room, online: true, isAdmin: v.isAdmin ?? false })),
+      ),
+      posesHere: table(() => (options.poses ?? []).map((p) => ({ ...p, identity: id(p.hex) }))),
       room: { iter: () => (options.rooms ?? ["grove", "einstruct"]).map((name) => ({ name })) },
       exhibit: { iter: () => options.exhibits ?? [] },
     },
@@ -49,6 +72,9 @@ function stubConnection(options: {
         moves++;
       },
       leave: async () => undefined,
+      reportVisitor: async ({ who, reason }: { who: { toHexString(): string }; reason: string }) => {
+        reports.push([who.toHexString(), reason]);
+      },
     },
     subscriptionBuilder: () => {
       const builder = {
@@ -72,6 +98,7 @@ function stubConnection(options: {
     joins: string[];
     moves: number;
     queries: string[][];
+    reports: Array<[string, string]>;
   };
 }
 
@@ -157,7 +184,7 @@ describe("join refusal", () => {
     expect(notices.some((n) => n.includes("cellar"))).toBe(true);
   });
 
-  it("subscribes per room, quoting the room name", async () => {
+  it("subscribes to the room-scoped views once, and not again per room", async () => {
     const connection = stubConnection({});
     let handlers!: TransportHandlers;
     const presence = new Presence({}, { transport: (h) => (handlers = h), storage: memoryStorage() });
@@ -167,10 +194,14 @@ describe("join refusal", () => {
     // The exhibit table is subscribed once, on connect, before any room.
     expect(connection.queries[0]).toEqual(["SELECT * FROM exhibit"]);
     expect(connection.queries[1]).toEqual([
-      "SELECT * FROM visitor WHERE room = 'einstruct'",
-      "SELECT * FROM pose WHERE room = 'einstruct'",
+      "SELECT * FROM people_here",
+      "SELECT * FROM poses_here",
       "SELECT * FROM room",
     ]);
+    presence.join("grove");
+    await settle(20);
+    expect(presence.joinedRoom).toBe("grove");
+    expect(connection.queries).toHaveLength(2); // the server moves the views with us
   });
 });
 
@@ -353,5 +384,121 @@ describe("dispose", () => {
     handlers.onConnectError(new Error("nope"));
     presence.dispose();
     expect(cleared).toHaveBeenCalledWith(7);
+  });
+});
+
+describe("what arrives from other visitors", () => {
+  it("skips a pose that is not a finite number instead of parking a capsule nowhere", async () => {
+    const connection = stubConnection({
+      people: [
+        { hex: "p1", name: "ann", room: "grove" },
+        { hex: "p2", name: "bob", room: "grove", isAdmin: true },
+      ],
+      poses: [
+        { hex: "p1", room: "grove", x: Number.NaN, y: 0, z: Number.POSITIVE_INFINITY, yaw: 0 },
+        { hex: "p2", room: "grove", x: 1, y: 0, z: 2, yaw: 0.5 },
+      ],
+    });
+    let handlers!: TransportHandlers;
+    const presence = new Presence({}, { transport: (h) => (handlers = h), storage: memoryStorage() });
+    presence.connect("grove");
+    handlers.onConnect(connection, "me", "token");
+    await settle(20);
+    presence.sync();
+    const ann = presence.peers.get("p1");
+    const bob = presence.peers.get("p2");
+    expect(ann && [ann.x, ann.z]).toEqual([0, 0]);
+    expect(bob && [bob.x, bob.z, bob.yaw]).toEqual([1, 2, 0.5]);
+    expect(bob?.host).toBe(true);
+    expect(ann?.host).toBe(false);
+  });
+
+  it("reports a visitor by the identity the server gave, not by name", async () => {
+    const connection = stubConnection({ people: [{ hex: "p1", name: "ann", room: "grove" }] });
+    let handlers!: TransportHandlers;
+    const presence = new Presence({}, { transport: (h) => (handlers = h), storage: memoryStorage() });
+    presence.connect("grove");
+    handlers.onConnect(connection, "me", "token");
+    await settle(20);
+    await presence.report("p1", "shouting");
+    expect(connection.reports).toEqual([["p1", "shouting"]]);
+    await expect(presence.report("gone", "x")).rejects.toThrow("not here");
+  });
+});
+
+describe("the token service", () => {
+  it("connects with the token it hands over and does not store the echo", async () => {
+    const storage = memoryStorage();
+    const connection = stubConnection({});
+    let handlers!: TransportHandlers;
+    let given: string | null = "unset";
+    const presence = new Presence(
+      {},
+      {
+        transport: (h, token) => {
+          handlers = h;
+          given = token;
+        },
+        storage,
+        token: async () => "grove-token",
+      },
+    );
+    presence.connect("grove");
+    expect(presence.status).toBe("connecting");
+    await settle();
+    expect(given).toBe("grove-token");
+    handlers.onConnect(connection, "abc", "echoed");
+    expect(storage.getItem("orchard.grove.token")).toBeNull();
+  });
+
+  it("uses the anonymous identity, and keeps it, when the source says there is no service", async () => {
+    const storage = memoryStorage();
+    storage.setItem("orchard.grove.token", "anon-before");
+    const connection = stubConnection({});
+    let handlers!: TransportHandlers;
+    let given: string | null = "unset";
+    const presence = new Presence(
+      {},
+      {
+        transport: (h, token) => {
+          handlers = h;
+          given = token;
+        },
+        storage,
+        token: async () => null,
+      },
+    );
+    presence.connect("grove");
+    await settle();
+    expect(given).toBe("anon-before");
+    handlers.onConnect(connection, "abc", "anon-after");
+    expect(storage.getItem("orchard.grove.token")).toBe("anon-after");
+  });
+
+  it("treats a token service that fails like a dropped socket: single-player, retry later", async () => {
+    const timers: number[] = [];
+    let opened = 0;
+    const presence = new Presence(
+      {},
+      {
+        transport: () => {
+          opened++;
+        },
+        storage: memoryStorage(),
+        token: async () => {
+          throw new Error("the token service did not answer");
+        },
+        setTimer: (_fn, ms) => {
+          timers.push(ms);
+          return 1 as unknown as ReturnType<typeof setTimeout>;
+        },
+        clearTimer: () => undefined,
+      },
+    );
+    presence.connect("grove");
+    await settle();
+    expect(presence.status).toBe("failed");
+    expect(opened).toBe(0);
+    expect(timers).toEqual([expect.any(Number)]);
   });
 });

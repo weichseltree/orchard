@@ -31,6 +31,8 @@ export function attachDesktopControls(
   };
 
   const onKeyDown = (event: KeyboardEvent): void => {
+    // Typing into the HUD (a report, say) is typing, not walking.
+    if (isTypingInto(event.target)) return;
     if (event.repeat) {
       // Held brackets keep scrubbing; everything else fires once.
       if (event.code === "BracketLeft") commands.nudgeFrames(-1);
@@ -115,4 +117,10 @@ export function attachDesktopControls(
       window.removeEventListener("keyup", onKeyUp);
     },
   };
+}
+
+function isTypingInto(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  if (target.isContentEditable || target instanceof HTMLTextAreaElement) return true;
+  return target instanceof HTMLInputElement && target.type !== "range";
 }

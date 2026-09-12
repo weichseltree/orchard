@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Privacy · weichseltree</title>
+<meta name="description" content="What weichseltree.com and the grove keep about visitors, for how long, and who sees it.">
+<style>
+  :root{color-scheme:dark}
+  body{margin:0;background:#0e1310;color:#d9e2da;font:16px/1.6 system-ui,sans-serif;padding:32px 20px 64px;box-sizing:border-box}
+  main{max-width:40rem;margin:0 auto}
+  h1{font-weight:600;font-size:1.8rem;margin:0 0 .25rem;letter-spacing:.02em}
+  h2{font-weight:600;font-size:1.1rem;margin:2rem 0 .4rem;color:#d9e2da}
+  p,li{color:#b7c3b9}
+  .lede{color:#8a978c;margin-top:0}
+  a{color:#7fc97f;text-decoration:none}a:hover{text-decoration:underline}
+  table{border-collapse:collapse;width:100%;margin:.5rem 0;font-size:.95rem}
+  td,th{text-align:left;vertical-align:top;padding:.35rem .6rem .35rem 0;border-bottom:1px solid #26302a}
+  th{color:#8a978c;font-weight:600}
+  .wrap{overflow-x:auto}
+  code{font-size:.9em;color:#d9e2da}
+  .seed{display:inline-block;width:.55rem;height:.55rem;border-radius:50%;background:#7fc97f;margin-right:.5rem;box-shadow:0 0 12px #7fc97f88}
+</style></head>
+<body><main>
+  <h1><span class="seed"></span>Privacy</h1>
+  <p class="lede">What weichseltree.com and the grove keep about you, for how long, and who sees it. Last changed 12 September 2026.</p>
+
+  <h2>The short version</h2>
+  <p>No accounts, no analytics, no advertising. If you walk into the grove, other people in the same room see the name you pick, where you stand and what you say. We keep as little as makes that work, and delete it on a schedule.</p>
+
+  <h2>What is kept, and for how long</h2>
+  <div class="wrap"><table>
+    <tr><th>What</th><th>Who sees it</th><th>How long</th></tr>
+    <tr><td>The name you choose, and the room you are in</td><td>People in the same room</td><td>30 days after your last visit</td></tr>
+    <tr><td>Where you stand in the room</td><td>People in the same room</td><td>Only while you are there</td></tr>
+    <tr><td>What you say in chat</td><td>People in the same room</td><td>24 hours</td></tr>
+    <tr><td>A report someone makes about you: their reason and your last five lines of chat in that room</td><td>The host only</td><td>90 days</td></tr>
+    <tr><td>A ban, if you get one</td><td>The host only</td><td>Until it ends</td></tr>
+    <tr><td>A scrambled code for your network (see below)</td><td>Nobody reads it; the world uses it to count and to ban</td><td>30 days after your last visit</td></tr>
+  </table></div>
+  <p>Nobody outside a room can read who is in it or what is said there. The host is whoever runs this orchard; they can see everything in the table above.</p>
+
+  <h2>Your identity, without an account</h2>
+  <p>When you enter the grove, your browser asks our token service (at <code>/auth</code> on this site) for a token. The service may first run Cloudflare's human check, Turnstile, which usually shows nothing. The token names a random identity for you. Your browser keeps it for 30 days and renews it, so you are the same visitor next time. Clearing this site's data in your browser makes you a new visitor.</p>
+  <p>The token service sees your IP address, as every website does. It does not store it. It turns your network (your IPv4 address, or the first half of an IPv6 address) into a scrambled code using a secret key that only the service holds. That code goes into the token. It lets the world notice that eight visitors came from one network, or keep a banned network out, without ever learning the address.</p>
+
+  <h2>What your browser stores</h2>
+  <p>We set no cookies. The grove keeps three entries in your browser's local storage: <code>orchard.grove.pass</code> (the token), <code>orchard.grove.name</code> (the name you picked) and, from older visits, <code>orchard.grove.token</code>. Cloudflare may set cookies of its own that the human check needs.</p>
+
+  <h2>Who else handles data</h2>
+  <ul>
+    <li><b>Cloudflare</b> serves this site, the media and the token service, and runs the human check. <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare's privacy policy</a>.</li>
+    <li><b>Clockwork Labs</b> hosts the world's database (SpacetimeDB). Names, rooms, positions, chat, reports and bans live there. <a href="https://spacetimedb.com/privacy">Their privacy policy</a>.</li>
+  </ul>
+
+  <h2>Your rights</h2>
+  <p>You can ask what is kept about you, and ask for it to be deleted, at any time. Because there are no accounts, tell us the name you used and roughly when you visited, or open the grove and ask the host. The quickest way to reach us is an issue at <a href="https://github.com/weichseltree/orchard/issues">github.com/weichseltree/orchard</a>. If you are in the EU you may also complain to your data protection authority; in Austria that is the <a href="https://www.dsb.gv.at/">Datenschutzbehörde</a>.</p>
+
+  <p style="margin-top:2.5rem"><a href="/">weichseltree</a> · <a href="/grove/">Enter the grove</a> · <a href="https://github.com/weichseltree/orchard">Source (AGPL-3.0)</a></p>
+</main></body></html>

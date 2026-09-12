@@ -35,7 +35,7 @@ import {
 
 // Import all reducer arg schemas
 import AddAdminReducer from "./add_admin_reducer";
-import BootstrapAdminReducer from "./bootstrap_admin_reducer";
+import BanVisitorReducer from "./ban_visitor_reducer";
 import HangReducer from "./hang_reducer";
 import JoinReducer from "./join_reducer";
 import KickReducer from "./kick_reducer";
@@ -44,43 +44,34 @@ import MoveReducer from "./move_reducer";
 import MuteReducer from "./mute_reducer";
 import PutSnapshotReducer from "./put_snapshot_reducer";
 import RemoveTreeReducer from "./remove_tree_reducer";
+import ReportVisitorReducer from "./report_visitor_reducer";
+import ResolveReportReducer from "./resolve_report_reducer";
 import RetireDirectiveReducer from "./retire_directive_reducer";
 import RuleReducer from "./rule_reducer";
 import SayReducer from "./say_reducer";
+import SetAuthReducer from "./set_auth_reducer";
 import SetDirectiveReducer from "./set_directive_reducer";
 import SetRoomReducer from "./set_room_reducer";
 import SubmitReviewReducer from "./submit_review_reducer";
+import SweepNowReducer from "./sweep_now_reducer";
 import TakeDownReducer from "./take_down_reducer";
+import UnbanReducer from "./unban_reducer";
 import UpsertTreeReducer from "./upsert_tree_reducer";
 
 // Import all procedure arg schemas
 
 // Import all table schema definitions
-import ChatRow from "./chat_table";
+import ChatHereRow from "./chat_here_table";
 import ExhibitRow from "./exhibit_table";
-import PoseRow from "./pose_table";
+import PeopleHereRow from "./people_here_table";
+import PosesHereRow from "./poses_here_table";
 import RoomRow from "./room_table";
 import TreeRow from "./tree_table";
-import VisitorRow from "./visitor_table";
 
 /** Type-only namespace exports for generated type groups. */
 
 /** The schema information for all tables in this module. This is defined the same was as the tables would have been defined in the server. */
 const tablesSchema = __schema({
-  chat: __table({
-    name: 'chat',
-    indexes: [
-      { accessor: 'id', name: 'chat_id_idx_btree', algorithm: 'btree', columns: [
-        'id',
-      ] },
-      { accessor: 'room', name: 'chat_room_idx_btree', algorithm: 'btree', columns: [
-        'room',
-      ] },
-    ],
-    constraints: [
-      { name: 'chat_id_key', constraint: 'unique', columns: ['id'] },
-    ],
-  }, ChatRow),
   exhibit: __table({
     name: 'exhibit',
     indexes: [
@@ -95,20 +86,6 @@ const tablesSchema = __schema({
       { name: 'exhibit_id_key', constraint: 'unique', columns: ['id'] },
     ],
   }, ExhibitRow),
-  pose: __table({
-    name: 'pose',
-    indexes: [
-      { accessor: 'identity', name: 'pose_identity_idx_btree', algorithm: 'btree', columns: [
-        'identity',
-      ] },
-      { accessor: 'room', name: 'pose_room_idx_btree', algorithm: 'btree', columns: [
-        'room',
-      ] },
-    ],
-    constraints: [
-      { name: 'pose_identity_key', constraint: 'unique', columns: ['identity'] },
-    ],
-  }, PoseRow),
   room: __table({
     name: 'room',
     indexes: [
@@ -131,26 +108,33 @@ const tablesSchema = __schema({
       { name: 'tree_name_key', constraint: 'unique', columns: ['name'] },
     ],
   }, TreeRow),
-  visitor: __table({
-    name: 'visitor',
+  chatHere: __table({
+    name: 'chat_here',
     indexes: [
-      { accessor: 'identity', name: 'visitor_identity_idx_btree', algorithm: 'btree', columns: [
-        'identity',
-      ] },
-      { accessor: 'room', name: 'visitor_room_idx_btree', algorithm: 'btree', columns: [
-        'room',
-      ] },
     ],
     constraints: [
-      { name: 'visitor_identity_key', constraint: 'unique', columns: ['identity'] },
     ],
-  }, VisitorRow),
+  }, ChatHereRow),
+  peopleHere: __table({
+    name: 'people_here',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, PeopleHereRow),
+  posesHere: __table({
+    name: 'poses_here',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, PosesHereRow),
 });
 
 /** The schema information for all reducers in this module. This is defined the same way as the reducers would have been defined in the server, except the body of the reducer is omitted in code generation. */
 const reducersSchema = __reducers(
   __reducerSchema("add_admin", AddAdminReducer),
-  __reducerSchema("bootstrap_admin", BootstrapAdminReducer),
+  __reducerSchema("ban_visitor", BanVisitorReducer),
   __reducerSchema("hang", HangReducer),
   __reducerSchema("join", JoinReducer),
   __reducerSchema("kick", KickReducer),
@@ -159,13 +143,18 @@ const reducersSchema = __reducers(
   __reducerSchema("mute", MuteReducer),
   __reducerSchema("put_snapshot", PutSnapshotReducer),
   __reducerSchema("remove_tree", RemoveTreeReducer),
+  __reducerSchema("report_visitor", ReportVisitorReducer),
+  __reducerSchema("resolve_report", ResolveReportReducer),
   __reducerSchema("retire_directive", RetireDirectiveReducer),
   __reducerSchema("rule", RuleReducer),
   __reducerSchema("say", SayReducer),
+  __reducerSchema("set_auth", SetAuthReducer),
   __reducerSchema("set_directive", SetDirectiveReducer),
   __reducerSchema("set_room", SetRoomReducer),
   __reducerSchema("submit_review", SubmitReviewReducer),
+  __reducerSchema("sweep_now", SweepNowReducer),
   __reducerSchema("take_down", TakeDownReducer),
+  __reducerSchema("unban", UnbanReducer),
   __reducerSchema("upsert_tree", UpsertTreeReducer),
 );
 

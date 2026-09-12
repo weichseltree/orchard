@@ -1,22 +1,78 @@
 // orchard: world state for the grove (public) and the greenhouse (admin).
 //
-// Public tables are what every visitor's client subscribes to: rooms, who is
-// here, where they stand, what they say, which trees exist and what hangs on
-// them. Private tables (review queue, rulings, directives, ledger snapshots)
-// are readable by the database owner only; the home box writes them with the
-// owner token and the greenhouse client reads them with the same identity.
+// Public tables are what anyone may read: rooms, which trees exist and what
+// hangs on them. People (who is here, where they stand, what they say) are
+// private tables that a visitor reads through three views, each scoped to the
+// room the visitor is standing in (bottom of this file). The rest is private:
+// the review queue, rulings, directives, ledger snapshots and the moderation
+// tables (bans, reports, guests, throttles, settings), readable by the
+// database owner only; the home box writes them with the owner token and the
+// flat dashboard reads them with the same identity.
 //
-// Reducers enforce guest vs admin. Admin is an identity allowlist; the first
-// caller of `bootstrapAdmin` on an empty allowlist becomes admin, so call it
-// right after the first publish.
+// Who may do what:
+//
+//  - Admin is an identity allowlist, seeded in `init` with whoever publishes.
+//    `init` runs as the publisher on the first publish and after a
+//    --delete-data republish, so there is no moment when the allowlist is
+//    empty and a visitor could claim it.
+//  - A visitor connects with a token from the grove's token service
+//    (grove/functions/auth), which runs Cloudflare's human check and stamps a
+//    keyed hash of the visitor's network address into the token (`ipk`). That
+//    hash is what caps how many people one network can bring in at once and
+//    what a network-wide ban matches. The gate is the `auth.required` setting
+//    (`set_auth`); while it is off, plain anonymous identities still get in.
+//  - What a visitor can read of other people (who, where, what they said) is
+//    the room they are standing in, and nothing else. `admin_only` on a room
+//    keeps people out; the views keep its presence and its chat from being
+//    read from outside.
+//
+// Retention: chat 24 h, reports 90 days, a visitor's row 30 days after they
+// were last seen. `sweep` runs every ten minutes and enforces it.
 import {
   schema, table, t, SenderError,
   type InferSchema, type ReducerCtx,
 } from 'spacetimedb/server';
+import { ScheduleAt, Timestamp, type Identity } from 'spacetimedb';
 
 const NAME_MAX = 24;
 const CHAT_MAX = 280;
-const CHAT_MIN_GAP_MICROS = 700_000n; // one message per 0.7 s per visitor
+const REASON_MAX = 280;
+
+const SECOND = 1_000_000n;
+const MINUTE = 60n * SECOND;
+const HOUR = 60n * MINUTE;
+const DAY = 24n * HOUR;
+
+const CHAT_MIN_GAP = 700_000n;          // one message per 0.7 s per visitor
+const REPORT_MIN_GAP = 30n * SECOND;     // one report per 30 s per visitor
+const KICK_FOR = 10n * MINUTE;           // a kick is a short ban
+const BAN_FOREVER = 100n * 365n * DAY;
+const CHAT_KEEP = DAY;
+const REPORT_KEEP = 90n * DAY;
+const VISITOR_KEEP = 30n * DAY;
+const SWEEP_EVERY = 10n * MINUTE;
+
+// The client sends poses at 10 Hz while moving. The bucket lets 20 a second
+// through with a burst of 10 for a stalled link catching up; past that a pose
+// is dropped silently, never written and never broadcast.
+const MOVE_RATE = 20;
+const MOVE_BURST = 10;
+// Every room of the mansion sits well inside this box; a pose outside it is
+// not a visitor walking.
+const WORLD_HALF_EXTENT_M = 500;
+const WORLD_Y_MIN_M = -50;
+const WORLD_Y_MAX_M = 100;
+
+// How many people one network (one IPv4 address, one IPv6 /64) may have in the
+// world at once. A school or a carrier NAT is several real people; a script is
+// dozens.
+const PER_NETWORK_ONLINE = 8;
+
+// The grove's token service. Tokens carry this audience; the issuer list is a
+// setting so a preview deployment or a local test can be added without a
+// republish.
+const DEFAULT_ISSUER = 'https://www.weichseltree.com/auth';
+const AUDIENCE = 'orchard-grove';
 
 const admin = table(
   { name: 'admin' },
@@ -35,7 +91,7 @@ const room = table(
 );
 
 const visitor = table(
-  { name: 'visitor', public: true },
+  { name: 'visitor' },
   {
     identity: t.identity().primaryKey(),
     name: t.string(),
@@ -49,7 +105,7 @@ const visitor = table(
 );
 
 const pose = table(
-  { name: 'pose', public: true },
+  { name: 'pose' },
   {
     identity: t.identity().primaryKey(),
     room: t.string().index('btree'),
@@ -60,7 +116,7 @@ const pose = table(
 );
 
 const chat = table(
-  { name: 'chat', public: true },
+  { name: 'chat' },
   {
     id: t.u64().primaryKey().autoInc(),
     room: t.string().index('btree'),
@@ -143,23 +199,131 @@ const snapshot = table(
   { key: t.string().primaryKey(), json: t.string(), at: t.timestamp() }
 );
 
+// --- private: moderation ---
+
+// One ban per identity. `network` is the banned guest's network key when the
+// ban covers their whole network, else empty.
+const ban = table(
+  { name: 'ban' },
+  {
+    identity: t.identity().primaryKey(),
+    network: t.string().index('btree'),
+    until: t.timestamp(),
+    reason: t.string(),
+    by: t.identity(),
+    at: t.timestamp(),
+  }
+);
+
+// Which room each online visitor is standing in: one row per online visitor,
+// kept in step with `visitor` by join, leave, disconnect and kick. The views
+// at the bottom start from the caller's row here.
+const whereabouts = table(
+  { name: 'whereabouts' },
+  { identity: t.identity().primaryKey(), room: t.string().index('btree') }
+);
+
+// Open connections. One identity can hold several (two tabs, a phone and a
+// headset); a visitor goes offline when the last one closes, not the first.
+const connection = table(
+  { name: 'connection' },
+  {
+    id: t.connectionId().primaryKey(),
+    identity: t.identity().index('btree'),
+    at: t.timestamp(),
+  }
+);
+
+// A visitor who arrived with a grove token: the network key it carried.
+const guest = table(
+  { name: 'guest' },
+  {
+    identity: t.identity().primaryKey(),
+    network: t.string().index('btree'),
+    seen_at: t.timestamp(),
+  }
+);
+
+const throttle = table(
+  { name: 'throttle' },
+  {
+    identity: t.identity().primaryKey(),
+    move_tokens: t.f64(),
+    move_at: t.timestamp(),
+    report_at: t.timestamp(),
+  }
+);
+
+const report = table(
+  { name: 'report' },
+  {
+    id: t.u64().primaryKey().autoInc(),
+    reporter: t.identity(),
+    subject: t.identity().index('btree'),
+    subject_name: t.string(),
+    room: t.string(),
+    reason: t.string(),
+    context: t.string(),       // the subject's last lines of chat in that room
+    status: t.string().index('btree'),   // open | done
+    at: t.timestamp(),
+  }
+);
+
+// Plain key/value settings: `auth.issuers` (space-separated), `auth.required`.
+const setting = table(
+  { name: 'setting' },
+  { key: t.string().primaryKey(), value: t.string() }
+);
+
+const sweep_timer = table(
+  { name: 'sweep_timer', scheduled: (): any => sweep },
+  { scheduled_id: t.u64().primaryKey().autoInc(), scheduled_at: t.scheduleAt() }
+);
+
 const spacetimedb = schema({
   admin, room, visitor, pose, chat, tree, exhibit, review_item, ruling, directive, snapshot,
+  ban, whereabouts, connection, guest, throttle, report, setting, sweep_timer,
 });
 export default spacetimedb;
 
 type Ctx = ReducerCtx<InferSchema<typeof spacetimedb>>;
 
+const EPOCH = new Timestamp(0n);
+
+function micros(ts: Timestamp): bigint {
+  return ts.microsSinceUnixEpoch;
+}
+
+function isAdminIdentity(ctx: Ctx, who: Identity): boolean {
+  return ctx.db.admin.identity.find(who) !== null;
+}
+
 function isAdmin(ctx: Ctx): boolean {
-  return ctx.db.admin.identity.find(ctx.sender) !== null;
+  return isAdminIdentity(ctx, ctx.sender);
 }
 
 function requireAdmin(ctx: Ctx) {
   if (!isAdmin(ctx)) throw new SenderError('admin only');
 }
 
+/** At most `max` code points, so a cut never leaves half a surrogate pair. */
+function clip(s: string, max: number): string {
+  const points = Array.from(s);
+  return points.length > max ? points.slice(0, max).join('') : s;
+}
+
+/**
+ * Text a person typed, made safe to show another person: no control
+ * characters, no invisible formatting (bidi overrides, zero-width spaces)
+ * except the joiner inside emoji, whitespace collapsed.
+ */
+function cleanText(raw: string, max: number): string {
+  const visible = raw.replace(/\p{Cf}/gu, c => (c === '‍' ? c : ''));
+  return clip(visible.replace(/[\s\p{Cc}]+/gu, ' ').trim(), max);
+}
+
 function cleanName(ctx: Ctx, raw: string): string {
-  const s = raw.replace(/[^\p{L}\p{N} _.-]/gu, '').trim().slice(0, NAME_MAX);
+  const s = clip(raw.replace(/[^\p{L}\p{N} _.-]/gu, '').trim(), NAME_MAX).trim();
   if (s.length >= 2) return s;
   const n = Math.floor(ctx.random() * 9000) + 1000;
   return `visitor-${n}`;
@@ -179,61 +343,246 @@ function online(ctx: Ctx) {
   return v;
 }
 
+function authSettings(ctx: Ctx): { issuers: string[]; required: boolean } {
+  const issuers = ctx.db.setting.key.find('auth.issuers')?.value.split(/\s+/).filter(Boolean);
+  return {
+    issuers: issuers && issuers.length > 0 ? issuers : [DEFAULT_ISSUER],
+    required: ctx.db.setting.key.find('auth.required')?.value === 'true',
+  };
+}
+
+function putSetting(ctx: Ctx, key: string, value: string) {
+  if (ctx.db.setting.key.find(key)) ctx.db.setting.key.update({ key, value });
+  else ctx.db.setting.insert({ key, value });
+}
+
+/** The network key from the caller's token, when the token is one of ours. */
+function groveNetwork(ctx: Ctx): string | null {
+  const jwt = ctx.senderAuth.jwt;
+  if (!jwt) return null;
+  if (!authSettings(ctx).issuers.includes(jwt.issuer)) return null;
+  if (!jwt.audience.includes(AUDIENCE)) return null;
+  const ipk = jwt.fullPayload['ipk'];
+  return typeof ipk === 'string' ? ipk.slice(0, 64) : '';
+}
+
+function activeBan(ctx: Ctx, who: Identity) {
+  const now = micros(ctx.timestamp);
+  const own = ctx.db.ban.identity.find(who);
+  if (own && micros(own.until) > now) return own;
+  const network = ctx.db.guest.identity.find(who)?.network;
+  if (!network) return null;
+  for (const b of ctx.db.ban.network.filter(network)) {
+    if (micros(b.until) > now) return b;
+  }
+  return null;
+}
+
+function onlineFromNetwork(ctx: Ctx, network: string): number {
+  let n = 0;
+  for (const g of ctx.db.guest.network.filter(network)) {
+    if (g.identity.equals(ctx.sender)) continue;
+    if (ctx.db.visitor.identity.find(g.identity)?.online) n++;
+  }
+  return n;
+}
+
+function setWhereabouts(ctx: Ctx, who: Identity, room: string | null) {
+  const here = ctx.db.whereabouts.identity.find(who);
+  if (room === null) {
+    if (here) ctx.db.whereabouts.identity.delete(who);
+  } else if (here) {
+    if (here.room !== room) ctx.db.whereabouts.identity.update({ identity: who, room });
+  } else {
+    ctx.db.whereabouts.insert({ identity: who, room });
+  }
+}
+
+function noteConnection(ctx: Ctx) {
+  const id = ctx.connectionId;
+  if (id && !ctx.db.connection.id.find(id)) ctx.db.connection.insert({ id, identity: ctx.sender, at: ctx.timestamp });
+}
+
+/** Out of the world now: offline, out of every room, no pose. */
+function dropFromWorld(ctx: Ctx, who: Identity) {
+  const v = ctx.db.visitor.identity.find(who);
+  if (v) ctx.db.visitor.identity.update({ ...v, online: false, room: '', last_seen: ctx.timestamp });
+  if (ctx.db.pose.identity.find(who)) ctx.db.pose.identity.delete(who);
+  setWhereabouts(ctx, who, null);
+}
+
+function putBan(ctx: Ctx, who: Identity, forMicros: bigint, reason: string, wholeNetwork: boolean, keepLonger: boolean) {
+  if (isAdminIdentity(ctx, who)) throw new SenderError('an admin cannot be banned; remove them from the allowlist first');
+  const until = new Timestamp(micros(ctx.timestamp) + forMicros);
+  const existing = ctx.db.ban.identity.find(who);
+  if (existing && keepLonger && micros(existing.until) >= micros(until)) return;
+  const network = wholeNetwork ? (ctx.db.guest.identity.find(who)?.network ?? '') : '';
+  const row = { identity: who, network, until, reason: cleanText(reason, REASON_MAX), by: ctx.sender, at: ctx.timestamp };
+  if (existing) ctx.db.ban.identity.update(row); else ctx.db.ban.insert(row);
+}
+
+function throttleRow(ctx: Ctx) {
+  return ctx.db.throttle.identity.find(ctx.sender)
+    ?? { identity: ctx.sender, move_tokens: MOVE_BURST, move_at: EPOCH, report_at: EPOCH };
+}
+
+function putThrottle(ctx: Ctx, row: ReturnType<typeof throttleRow>) {
+  if (ctx.db.throttle.identity.find(ctx.sender)) ctx.db.throttle.identity.update(row);
+  else ctx.db.throttle.insert(row);
+}
+
+/** Takes a token from the caller's pose bucket; false when it is empty. */
+function spendMove(ctx: Ctx): boolean {
+  const row = throttleRow(ctx);
+  const elapsed = Number(micros(ctx.timestamp) - micros(row.move_at)) / 1e6;
+  const tokens = Math.min(MOVE_BURST, row.move_tokens + Math.max(0, elapsed) * MOVE_RATE);
+  // An empty bucket writes nothing: the refill is recomputed from the same
+  // stored state next time, which is the same as having written it.
+  if (tokens < 1) return false;
+  putThrottle(ctx, { ...row, move_tokens: tokens - 1, move_at: ctx.timestamp });
+  return true;
+}
+
+function wrapAngle(a: number): number {
+  const w = a % (Math.PI * 2);
+  return w > Math.PI ? w - Math.PI * 2 : w < -Math.PI ? w + Math.PI * 2 : w;
+}
+
+function ensureSweep(ctx: Ctx) {
+  if (!ctx.db.sweep_timer.iter().next().done) return;
+  ctx.db.sweep_timer.insert({ scheduled_id: 0n, scheduled_at: ScheduleAt.interval(SWEEP_EVERY) });
+}
+
+/** Deletes what the retention rules say is past keeping. */
+function sweepNowImpl(ctx: Ctx) {
+  const now = micros(ctx.timestamp);
+  for (const c of [...ctx.db.chat.iter()]) {
+    if (now - micros(c.at) > CHAT_KEEP) ctx.db.chat.id.delete(c.id);
+  }
+  for (const r of [...ctx.db.report.iter()]) {
+    if (now - micros(r.at) > REPORT_KEEP) ctx.db.report.id.delete(r.id);
+  }
+  for (const b of [...ctx.db.ban.iter()]) {
+    if (micros(b.until) <= now) ctx.db.ban.identity.delete(b.identity);
+  }
+  for (const v of [...ctx.db.visitor.iter()]) {
+    if (v.online || now - micros(v.last_seen) <= VISITOR_KEEP) continue;
+    ctx.db.visitor.identity.delete(v.identity);
+    if (ctx.db.pose.identity.find(v.identity)) ctx.db.pose.identity.delete(v.identity);
+  }
+  // Guests and throttles outlive nobody: gone with the visitor row, or after
+  // the same 30 days for a guest who connected and never joined.
+  for (const g of [...ctx.db.guest.iter()]) {
+    if (!ctx.db.visitor.identity.find(g.identity) && now - micros(g.seen_at) > VISITOR_KEEP) {
+      ctx.db.guest.identity.delete(g.identity);
+    }
+  }
+  // A connection the server never saw close (a crash, a restart) must not keep
+  // a visitor online for ever.
+  for (const c of [...ctx.db.connection.iter()]) {
+    if (now - micros(c.at) > DAY) ctx.db.connection.id.delete(c.id);
+  }
+  for (const w of [...ctx.db.whereabouts.iter()]) {
+    if (!ctx.db.visitor.identity.find(w.identity)?.online) ctx.db.whereabouts.identity.delete(w.identity);
+  }
+  for (const th of [...ctx.db.throttle.iter()]) {
+    if (!ctx.db.visitor.identity.find(th.identity)) ctx.db.throttle.identity.delete(th.identity);
+  }
+}
+
 export const init = spacetimedb.init(ctx => {
+  if (!ctx.db.admin.identity.find(ctx.sender)) ctx.db.admin.insert({ identity: ctx.sender, added_at: ctx.timestamp });
   ctx.db.room.insert({ name: 'grove', title: 'The grove', admin_only: false, open: true, capacity: 24 });
   ctx.db.room.insert({ name: 'greenhouse', title: 'The greenhouse', admin_only: true, open: true, capacity: 4 });
-  // Tree rooms the client's mansion.json knows about. Added by hand on maincloud
-  // 2026-09-12 via set_room; listed here so a --delete-data republish keeps them.
-  ctx.db.room.insert({ name: 'einstruct', title: 'The einstruct room', admin_only: false, open: true, capacity: 24 });
+  // Tree rooms the client's mansion.json knows about. Added on maincloud with
+  // set_room as each room shipped; listed here so a --delete-data republish
+  // keeps them.
+  for (const name of ['einstruct', 'world-engine', 'phototroph', 'spectre']) {
+    ctx.db.room.insert({ name, title: `The ${name} room`, admin_only: false, open: true, capacity: 24 });
+  }
+  ensureSweep(ctx);
+});
+
+export const onConnect = spacetimedb.clientConnected(ctx => {
+  ensureSweep(ctx);
+  // Admins pass with whatever token they hold: the CLI's, on the home box.
+  if (isAdmin(ctx)) {
+    noteConnection(ctx);
+    return;
+  }
+  const network = groveNetwork(ctx);
+  if (network === null && authSettings(ctx).required) throw new SenderError('connect through the grove');
+  noteConnection(ctx);
+  if (network === null) return;
+  const row = { identity: ctx.sender, network, seen_at: ctx.timestamp };
+  if (ctx.db.guest.identity.find(ctx.sender)) ctx.db.guest.identity.update(row); else ctx.db.guest.insert(row);
 });
 
 export const onDisconnect = spacetimedb.clientDisconnected(ctx => {
+  if (ctx.connectionId && ctx.db.connection.id.find(ctx.connectionId)) ctx.db.connection.id.delete(ctx.connectionId);
+  // Another tab of the same visitor is still open: they are still here.
+  if (!ctx.db.connection.identity.filter(ctx.sender).next().done) return;
   const v = ctx.db.visitor.identity.find(ctx.sender);
   if (v) ctx.db.visitor.identity.update({ ...v, online: false, last_seen: ctx.timestamp });
   if (ctx.db.pose.identity.find(ctx.sender)) ctx.db.pose.identity.delete(ctx.sender);
+  setWhereabouts(ctx, ctx.sender, null);
 });
 
 // --- everyone ---
-
-export const bootstrapAdmin = spacetimedb.reducer(ctx => {
-  if ([...ctx.db.admin.iter()].length > 0) throw new SenderError('admin already set');
-  ctx.db.admin.insert({ identity: ctx.sender, added_at: ctx.timestamp });
-});
 
 export const join = spacetimedb.reducer(
   { name: t.string(), room: t.string() },
   (ctx, { name, room }) => {
     const r = roomOrThrow(ctx, room);
-    const here = [...ctx.db.visitor.room.filter(room)].filter(v => v.online && !v.identity.equals(ctx.sender)).length;
-    if (here >= r.capacity) throw new SenderError('room full');
+    const admin = isAdmin(ctx);
+    if (!admin) {
+      if (activeBan(ctx, ctx.sender)) throw new SenderError('banned');
+      const network = ctx.db.guest.identity.find(ctx.sender)?.network;
+      if (network && onlineFromNetwork(ctx, network) >= PER_NETWORK_ONLINE) {
+        throw new SenderError('too many visitors from your network');
+      }
+      const here = [...ctx.db.visitor.room.filter(room)].filter(v => v.online && !v.identity.equals(ctx.sender)).length;
+      if (here >= r.capacity) throw new SenderError('room full');
+    }
     const existing = ctx.db.visitor.identity.find(ctx.sender);
     const row = {
       identity: ctx.sender,
       name: cleanName(ctx, name || existing?.name || ''),
       room,
-      is_admin: isAdmin(ctx),
+      is_admin: admin,
       online: true,
       muted: existing?.muted ?? false,
       last_seen: ctx.timestamp,
       last_said: existing?.last_said ?? ctx.timestamp,
     };
     if (existing) ctx.db.visitor.identity.update(row); else ctx.db.visitor.insert(row);
+    setWhereabouts(ctx, ctx.sender, room);
     const p = ctx.db.pose.identity.find(ctx.sender);
     if (p && p.room !== room) ctx.db.pose.identity.delete(ctx.sender);
   }
 );
 
 export const leave = spacetimedb.reducer(ctx => {
+  // A tab closing says goodbye; the visitor stays while another tab is open.
+  for (const c of ctx.db.connection.identity.filter(ctx.sender)) {
+    if (!ctx.connectionId || !c.id.isEqual(ctx.connectionId)) return;
+  }
   const v = ctx.db.visitor.identity.find(ctx.sender);
   if (v) ctx.db.visitor.identity.update({ ...v, online: false, last_seen: ctx.timestamp });
   if (ctx.db.pose.identity.find(ctx.sender)) ctx.db.pose.identity.delete(ctx.sender);
+  setWhereabouts(ctx, ctx.sender, null);
 });
 
 export const move = spacetimedb.reducer(
   { x: t.f32(), y: t.f32(), z: t.f32(), yaw: t.f32() },
   (ctx, { x, y, z, yaw }) => {
     const v = online(ctx);
-    const row = { identity: ctx.sender, room: v.room, x, y, z, yaw, updated_at: ctx.timestamp };
+    if (![x, y, z, yaw].every(Number.isFinite)) throw new SenderError('bad pose');
+    if (Math.abs(x) > WORLD_HALF_EXTENT_M || Math.abs(z) > WORLD_HALF_EXTENT_M || y < WORLD_Y_MIN_M || y > WORLD_Y_MAX_M) {
+      throw new SenderError('pose outside the world');
+    }
+    if (!spendMove(ctx)) return;
+    const row = { identity: ctx.sender, room: v.room, x, y, z, yaw: wrapAngle(yaw), updated_at: ctx.timestamp };
     if (ctx.db.pose.identity.find(ctx.sender)) ctx.db.pose.identity.update(row); else ctx.db.pose.insert(row);
   }
 );
@@ -243,13 +592,45 @@ export const say = spacetimedb.reducer(
   (ctx, { text }) => {
     const v = online(ctx);
     if (v.muted) throw new SenderError('muted');
-    const clean = text.replace(/\s+/g, ' ').trim().slice(0, CHAT_MAX);
+    const clean = cleanText(text, CHAT_MAX);
     if (!clean) return;
-    if (ctx.timestamp.microsSinceUnixEpoch - v.last_said.microsSinceUnixEpoch < CHAT_MIN_GAP_MICROS) {
+    if (micros(ctx.timestamp) - micros(v.last_said) < CHAT_MIN_GAP) {
       throw new SenderError('slow down');
     }
     ctx.db.chat.insert({ id: 0n, room: v.room, sender: ctx.sender, name: v.name, text: clean, at: ctx.timestamp });
     ctx.db.visitor.identity.update({ ...v, last_said: ctx.timestamp });
+  }
+);
+
+/** A visitor flags another for the admin. Kept 90 days, with their last lines of chat. */
+export const reportVisitor = spacetimedb.reducer(
+  { who: t.identity(), reason: t.string() },
+  (ctx, { who, reason }) => {
+    const me = online(ctx);
+    if (who.equals(ctx.sender)) throw new SenderError('that is you');
+    const subject = ctx.db.visitor.identity.find(who);
+    if (!subject) throw new SenderError('no such visitor');
+    const th = throttleRow(ctx);
+    if (micros(ctx.timestamp) - micros(th.report_at) < REPORT_MIN_GAP) {
+      throw new SenderError('one report every 30 seconds');
+    }
+    const lines = [...ctx.db.chat.room.filter(me.room)]
+      .filter(c => c.sender.equals(who))
+      .sort((a, b) => (micros(a.at) < micros(b.at) ? -1 : 1))
+      .slice(-5)
+      .map(c => `${c.name}: ${c.text}`);
+    ctx.db.report.insert({
+      id: 0n,
+      reporter: ctx.sender,
+      subject: who,
+      subject_name: subject.name,
+      room: me.room,
+      reason: cleanText(reason, REASON_MAX),
+      context: lines.join('\n'),
+      status: 'open',
+      at: ctx.timestamp,
+    });
+    putThrottle(ctx, { ...th, report_at: ctx.timestamp });
   }
 );
 
@@ -273,13 +654,40 @@ export const mute = spacetimedb.reducer(
   }
 );
 
+/** Out now, and back in no sooner than ten minutes. A longer ban stays as it is. */
 export const kick = spacetimedb.reducer(
   { who: t.identity() },
   (ctx, { who }) => {
     requireAdmin(ctx);
-    const v = ctx.db.visitor.identity.find(who);
-    if (v) ctx.db.visitor.identity.update({ ...v, online: false, room: '', last_seen: ctx.timestamp });
-    if (ctx.db.pose.identity.find(who)) ctx.db.pose.identity.delete(who);
+    putBan(ctx, who, KICK_FOR, 'kicked', false, true);
+    dropFromWorld(ctx, who);
+  }
+);
+
+/** `minutes` 0 is for good; `network` bans every identity from the same network too. */
+export const banVisitor = spacetimedb.reducer(
+  { who: t.identity(), minutes: t.u32(), reason: t.string(), network: t.bool() },
+  (ctx, { who, minutes, reason, network }) => {
+    requireAdmin(ctx);
+    putBan(ctx, who, minutes === 0 ? BAN_FOREVER : BigInt(minutes) * MINUTE, reason, network, false);
+    dropFromWorld(ctx, who);
+  }
+);
+
+export const unban = spacetimedb.reducer(
+  { who: t.identity() },
+  (ctx, { who }) => {
+    requireAdmin(ctx);
+    if (ctx.db.ban.identity.find(who)) ctx.db.ban.identity.delete(who);
+  }
+);
+
+export const resolveReport = spacetimedb.reducer(
+  { id: t.u64() },
+  (ctx, { id }) => {
+    requireAdmin(ctx);
+    const r = ctx.db.report.id.find(id);
+    if (r) ctx.db.report.id.update({ ...r, status: 'done' });
   }
 );
 
@@ -290,6 +698,35 @@ export const addAdmin = spacetimedb.reducer(
     if (!ctx.db.admin.identity.find(who)) ctx.db.admin.insert({ identity: who, added_at: ctx.timestamp });
   }
 );
+
+/**
+ * The token gate. `issuers` are the token services whose tokens count as a
+ * grove visitor's; `required` turns anonymous connections away.
+ */
+export const setAuth = spacetimedb.reducer(
+  { issuers: t.array(t.string()), required: t.bool() },
+  (ctx, { issuers, required }) => {
+    requireAdmin(ctx);
+    const list = issuers.map(s => s.trim()).filter(Boolean);
+    if (list.some(s => /\s/.test(s))) throw new SenderError('an issuer is a URL, no spaces');
+    putSetting(ctx, 'auth.issuers', list.join(' '));
+    putSetting(ctx, 'auth.required', String(required));
+  }
+);
+
+export const sweep = spacetimedb.reducer(
+  { timer: sweep_timer.rowType },
+  ctx => {
+    if (!ctx.senderAuth.isInternal) throw new SenderError('the scheduler runs this; admins call sweep_now');
+    sweepNowImpl(ctx);
+  }
+);
+
+export const sweepNow = spacetimedb.reducer(ctx => {
+  requireAdmin(ctx);
+  ensureSweep(ctx);
+  sweepNowImpl(ctx);
+});
 
 // --- admin: the harvest (written by the home box) ---
 
@@ -376,4 +813,38 @@ export const putSnapshot = spacetimedb.reducer(
     const row = { key, json, at: ctx.timestamp };
     if (ctx.db.snapshot.key.find(key)) ctx.db.snapshot.key.update(row); else ctx.db.snapshot.insert(row);
   }
+);
+
+// --- what a visitor can read of other people ---
+//
+// Only the people online in the room you are online in, where they stand, and
+// what was said there. These are query views: SpacetimeDB keeps each viewer's
+// copy up to date incrementally, like any subscription, and walking through a
+// doorway swaps one room's rows for the next. (Row-level filters cannot say
+// this: a filter on `pose` that joins a filtered `visitor` is refused.) The
+// owner reads the tables themselves.
+
+export const peopleHere = spacetimedb.view(
+  { name: 'people_here', public: true },
+  t.array(visitor.rowType),
+  ctx => ctx.from.whereabouts
+    .where(w => w.identity.eq(ctx.sender))
+    .rightSemijoin(ctx.from.visitor, (w, v) => w.room.eq(v.room))
+    .where(v => v.online.eq(true))
+);
+
+export const posesHere = spacetimedb.view(
+  { name: 'poses_here', public: true },
+  t.array(pose.rowType),
+  ctx => ctx.from.whereabouts
+    .where(w => w.identity.eq(ctx.sender))
+    .rightSemijoin(ctx.from.pose, (w, p) => w.room.eq(p.room))
+);
+
+export const chatHere = spacetimedb.view(
+  { name: 'chat_here', public: true },
+  t.array(chat.rowType),
+  ctx => ctx.from.whereabouts
+    .where(w => w.identity.eq(ctx.sender))
+    .rightSemijoin(ctx.from.chat, (w, c) => w.room.eq(c.room))
 );
