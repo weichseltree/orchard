@@ -157,6 +157,34 @@ def cmd_bundle_verify(a):
     sys.exit(0 if rep["ok"] else 1)
 
 
+def cmd_bundle_gc(a):
+    from .gc import GcRefused, gc
+    try:
+        rep = gc(r2=a.r2, apply=a.apply, root=a.root, bucket=a.bucket,
+                 min_age_hours=a.min_age_hours)
+    except GcRefused as exc:
+        print(f"gc refused: {exc}", file=sys.stderr)
+        sys.exit(2)
+    if a.json:
+        print(json.dumps(rep, indent=1)); return
+    where = rep.get("bucket") or rep.get("root")
+    mb = lambda rows: sum(r["bytes"] for r in rows) / 1e6
+    print(f"live ids: {rep['live_ids']} (from {rep['sources']['manifests']} manifests, "
+          f"{rep['sources']['mansion.json']} mansion.json, {rep['sources']['exhibit rows']} exhibit rows)")
+    print(f"{where}: {len(rep['live'])} live ({mb(rep['live']):.1f} MB), "
+          f"{len(rep['young'])} unreferenced but younger than {a.min_age_hours:g} h, "
+          f"{len(rep['garbage'])} unreferenced ({mb(rep['garbage']):.1f} MB)")
+    if rep["garbage"]:
+        _table([[r["id"], f"{r['bytes'] / 1e6:.1f} MB", f"{r['age_hours']:g} h"] for r in rep["garbage"]],
+               ["unreferenced", "size", "age"])
+    if rep["young"]:
+        print("kept for age: " + ", ".join(r["id"] for r in rep["young"]))
+    if rep["ignored"]:
+        print("not bundle ids, left alone: " + ", ".join(rep["ignored"]))
+    print(f"deleted {rep['deleted']}" if a.apply else
+          f"dry run: nothing deleted; --apply deletes the {len(rep['garbage'])} above")
+
+
 def cmd_harvest(a):
     from .harvest import DIRTY, dirty_message, harvest
     from .portfolio import get
@@ -278,6 +306,15 @@ def main(argv=None):
     b.set_defaults(fn=cmd_bundle_still)
     b = bsub.add_parser("verify", help="id and every digest, no token needed")
     b.add_argument("bundle_dir"); b.set_defaults(fn=cmd_bundle_verify)
+    b = bsub.add_parser("gc", help="bundles no manifest, mansion.json or exhibit names (dry run)")
+    b.add_argument("--apply", action="store_true", help="delete them (default: only list)")
+    b.add_argument("--r2", action="store_true", help="the bucket's <id>/ prefixes, not results/bundles")
+    b.add_argument("--root", default=str(RESULTS / "bundles"), help="local bundles (default %(default)s)")
+    b.add_argument("--bucket", default=BUCKET)
+    b.add_argument("--min-age-hours", type=float, default=24.0,
+                   help="keep unreferenced bundles younger than this (default %(default)s)")
+    b.add_argument("--json", action="store_true")
+    b.set_defaults(fn=cmd_bundle_gc)
 
     s = sub.add_parser("harvest", help="bundle a tree's artefacts and record the ids")
     s.add_argument("tree")
