@@ -141,6 +141,14 @@ runs off the edges (backlog 17).
   styleframes.py, shots.py (18 shots, 17 distinct, 11 moving, variety
   clean), stagings.py, 9 plates. Candidly one brown disc at different
   zooms; the redesign should use time and the trio, not only the camera.
+- the sweep's final verdict (spectre 7432c06, computed on the complete
+  tapes): converged at its last row on a 1.2% margin, nothing degraded; the
+  cores read 60 / 97 / 99% heavy at 96 dynamical times, and the thesis's
+  numbers at 24 (53 / 83 / 97) stand. The kill's physics clause is spent,
+  not triggered: the cooling-not-chemistry check read 0.0494 against 0.05,
+  on its line, so the manifest forbids narration saying the unmixing CAUSED
+  the core until saturation and shared cooling are separated. A constraint
+  on the script rewrite, not on the room; no bundle changed.
 - the verdict tool's dress rehearsal (a727137): three instrument defects
   (a finished chunk read as unfinished because the broken gpurun of 09-10
   printed after BALL COMPLETE; chi0 read as "drainage winning" when it has
