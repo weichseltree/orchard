@@ -446,26 +446,27 @@
           "position": [
             -12.5,
             1.0,
-            -15.4
+            -14.5
           ],
           "rotationDeg": [
             -90,
             0,
             0
           ],
-          "longSideMeters": 6,
+          "longSideMeters": 3,
           "pedestal": {
             "position": [
               -12.5,
               0,
-              -12.4
+              -12.6
             ],
             "rotationDeg": [
               0,
               0,
               0
             ]
-          }
+          },
+          "pointSize": 40
         }
       ]
     }

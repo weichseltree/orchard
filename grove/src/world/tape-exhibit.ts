@@ -172,6 +172,7 @@ export class TapeExhibit {
       longSideMeters: options.hanging.longSideMeters,
       speciesCount: Math.max(1, bundle.species_names.length),
       pixelRatio: options.pixelRatio,
+      pointSize: options.hanging.pointSize,
     });
     const tl = timeline(picked.variant.frames, picked.variant.dt_tau, picked.variant.t0_tau);
     stream.request(0);

@@ -139,3 +139,17 @@ Append-only. A decision names the day, the ruling, and the alternative it beat.
   bounds widened to 15 m for the two sheets), because the hall is a baked
   mesh whose doorways are holes in real geometry; a new hall doorway is a
   rebake. The palace plan decides the real plan of rooms.
+- **2026-09-12 · Manuel walked the new rooms and they looked terrible; what
+  was wrong.** The three world-engine stills and einstruct's second wall
+  were placed 10 cm inside the bounds, inside the 20 cm box walls, so the
+  rooms were empty boxes; hangings must sit deeper than `WALL_THICKNESS`
+  and a facing test now says so. Hangings loaded one after another across
+  the whole mansion, so a room's pictures waited behind another room's
+  tapes; they load at once now. A second video wall was refused the
+  decoder and drawn as a dark rectangle; walls are built showing their
+  poster frame and the decoder goes to the wall nearest the visitor. A
+  tape of eight particles at 14 px was invisible; a tape hanging has a
+  `pointSize`. Local screenshots had hidden all of this because the WSL
+  resolver does not resolve the media host: the check now runs the full
+  Chromium over the DevTools protocol with the host mapped to Cloudflare's
+  edge (scratchpad shot.mjs, to be moved into grove/tools).

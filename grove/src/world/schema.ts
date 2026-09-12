@@ -71,6 +71,8 @@ export const TapeHangingSchema = z.looseObject({
   kind: z.literal("tape"),
   /** The tape box is scaled so its longest side measures this many metres. */
   longSideMeters: z.number().positive().default(6),
+  /** Point size in pixels at 1 m; a tape of a few particles wants a larger one. */
+  pointSize: z.number().positive().default(14),
   pedestal: z
     .looseObject({ position: Vec3, rotationDeg: Vec3.default([0, 0, 0]) })
     .optional(),

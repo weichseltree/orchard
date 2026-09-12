@@ -26,7 +26,10 @@ Ordered. Items with a name in brackets wait on that person.
    world-engine and phototroph box rooms off its east and west walls, in a
    real browser; the headless shell shows the live site as sky only (every
    deployment, so a tooling artifact), and on this box the WSL resolver
-   does not resolve media.weichseltree.com although public DNS does.
+   does not resolve media.weichseltree.com although public DNS does. The
+   hall's poster wall pins `c59c7baa6fd15489`, a still never pushed (it is
+   unapproved), so the wall 404s and stays bare until that styleframe is
+   ruled on or the pin changes.
 
 ## Known visual issues from the first deploy
 
