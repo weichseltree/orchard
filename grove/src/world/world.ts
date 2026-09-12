@@ -54,6 +54,12 @@ export interface BuiltWorld {
   dispose(): void;
 }
 
+/** The room each exhibit hangs in; the client plays what is in the visitor's room. */
+const roomOf = new WeakMap<object, string>();
+export function exhibitRoom(exhibit: object): string | undefined {
+  return roomOf.get(exhibit);
+}
+
 /**
  * Where a bundle's directory lives: what the exhibit table hangs on the tree,
  * else a content hash on the media host, else a dev path. Null when the ref
@@ -147,6 +153,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
               })
                 .then((tape) => {
                   tapesByOrder[slot] = tape;
+                  roomOf.set(tape, room.id);
                   group.add(tape.group);
                   provenance.register({
                     id: `tape:${hanging.id}`,
@@ -170,6 +177,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
               )
                 .then((still) => {
                   stillsByOrder[slot] = still;
+                  roomOf.set(still, room.id);
                   group.add(still.mesh);
                 })
                 .catch((error: unknown) => onNotice(`still ${hanging.id}: ${message(error)}`)),
@@ -181,6 +189,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
                 .then((video) => {
                   if (!video) return;
                   videosByOrder[slot] = video;
+                  roomOf.set(video, room.id);
                   group.add(video.mesh);
                 })
                 .catch((error: unknown) => onNotice(`video ${hanging.id}: ${message(error)}`)),

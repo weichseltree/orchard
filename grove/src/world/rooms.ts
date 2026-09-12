@@ -2,7 +2,6 @@ import {
   BoxGeometry,
   Color,
   DirectionalLight,
-  DoubleSide,
   Group,
   HemisphereLight,
   Mesh,
@@ -246,7 +245,6 @@ export function proceduralRoom(room: Room): Group {
     color: base,
     roughness: 0.96,
     metalness: 0,
-    side: DoubleSide,
   });
   const floorMaterial = new MeshStandardMaterial({
     color: base.clone().multiplyScalar(0.55),
@@ -287,7 +285,8 @@ export function proceduralRoom(room: Room): Group {
         wall.axis === "x"
           ? new BoxGeometry(WALL_THICKNESS, piece.height, piece.length)
           : new BoxGeometry(piece.length, piece.height, WALL_THICKNESS);
-      const mesh = new Mesh(geometry, wallMaterial);
+      dropOutwardFace(geometry, wall.axis, wall.inward);
+      const mesh = new Mesh(geometry, [wallMaterial]);
       const offset = wall.at + (wall.inward * WALL_THICKNESS) / 2;
       if (wall.axis === "x") mesh.position.set(offset, piece.centreY, piece.centre);
       else mesh.position.set(piece.centre, piece.centreY, offset);
@@ -297,6 +296,23 @@ export function proceduralRoom(room: Room): Group {
   }
   group.add(...roomLights(room, 1));
   return group;
+}
+
+/**
+ * BoxGeometry's face groups, in its own order: +x, -x, +y, -y, +z, -z.
+ * A wall's OUTWARD face lies on the room's bounds, exactly where the
+ * neighbouring room's wall (or the hall's baked wall) also has a face, and
+ * two coplanar faces z-fight. Nobody can see the outward face from inside
+ * either room, so it is dropped: with a material array, three.js draws only
+ * the groups that remain.
+ */
+export function dropOutwardFace(geometry: BoxGeometry, axis: "x" | "z", inward: 1 | -1): void {
+  const outward = axis === "x" ? (inward === 1 ? 1 : 0) : inward === 1 ? 5 : 4;
+  const groups = geometry.groups.map((g) => ({ ...g }));
+  geometry.clearGroups();
+  groups.forEach((g, i) => {
+    if (i !== outward) geometry.addGroup(g.start, g.count, 0);
+  });
 }
 
 interface WallPiece {

@@ -17,7 +17,7 @@ import { WorldNotices } from "./ui/worldnotice";
 import { frameAt } from "./tape/time";
 import mansionDocument from "./world/mansion.json";
 import { parseMansion, roomById } from "./world/schema";
-import { buildWorld, type BuiltWorld } from "./world/world";
+import { buildWorld, exhibitRoom, type BuiltWorld } from "./world/world";
 import type { VideoWall } from "./media/videowall";
 import type { TapeExhibit } from "./world/tape-exhibit";
 
@@ -235,7 +235,11 @@ function handOverVideo(force = false): void {
   const now = performance.now();
   if (!force && now < nextWallCheck) return;
   nextWallCheck = now + 400;
-  const walls = (world?.videos ?? []).filter((w): w is VideoWall => w !== null);
+  // Only the walls of the room the visitor is in are candidates: a wall seen
+  // through a doorway stays a poster, and leaving a room releases its decoder.
+  const walls = (world?.videos ?? []).filter(
+    (w): w is VideoWall => w !== null && exhibitRoom(w) === body.room,
+  );
   let nearest: VideoWall | null = null;
   let best = Infinity;
   for (const wall of walls) {
@@ -268,7 +272,7 @@ function nearestTape(): TapeExhibit | null {
   let best = Infinity;
   nearestTapeCached = null;
   for (const tape of world?.tapes ?? []) {
-    if (!tape) continue;
+    if (!tape || exhibitRoom(tape) !== body.room) continue;
     // The exhibit's group sits at the origin; its bounds carry the metres.
     const cx = (tape.bounds.min.x + tape.bounds.max.x) / 2;
     const cz = (tape.bounds.min.z + tape.bounds.max.z) / 2;
@@ -329,7 +333,10 @@ view.start((dt) => {
       // the HUD below for every frame until it lands.
       if (!each) continue;
       if (input.scrub !== 0) each.scrubBySeconds(input.scrub * dt * 4);
-      each.update(dt);
+      // Tapes advance only in the room the visitor is in; the others freeze
+      // where they are and cost no frame time. Scrubbing moves them all, so
+      // tapes that share a clock stay in step when the visitor comes back.
+      if (exhibitRoom(each) === body.room) each.update(dt);
     }
     if (performance.now() > scrubbingUntil) {
       const frame = frameAt(tape.timeline, tape.tau);
