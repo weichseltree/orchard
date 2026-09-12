@@ -1,0 +1,6 @@
+node_modules/
+dist/
+# copied out of node_modules by scripts/copy-basis.mjs
+public/basis/
+# written by `pnpm dev:bundle`; served only by the dev middleware, never built
+dev/

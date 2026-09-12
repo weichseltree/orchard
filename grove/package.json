@@ -1,0 +1,40 @@
+{
+  "name": "@weichseltree/grove",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The grove: the orchard's WebXR client (M0 hall + einstruct room).",
+  "license": "AGPL-3.0-or-later",
+  "scripts": {
+    "prepare:assets": "node scripts/copy-basis.mjs",
+    "dev": "pnpm run prepare:assets && vite",
+    "build": "pnpm run prepare:assets && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "dev:bundle": "tsx scripts/make-dev-bundle.ts",
+    "gen:bindings": "spacetime generate --lang typescript --out-dir src/module_bindings -p ../spacetime/spacetimedb -y",
+    "deploy": "pnpm run build && wrangler pages deploy dist --project-name weichseltree --branch main"
+  },
+  "dependencies": {
+    "hls.js": "^1.7.3",
+    "spacetimedb": "2.10.*",
+    "three": "^0.186.0",
+    "zod": "^4.6.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.1",
+    "@types/three": "^0.186.0",
+    "sirv": "^3.0.2",
+    "tsx": "^4.20.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.0",
+    "vitest": "^5.0.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
+}

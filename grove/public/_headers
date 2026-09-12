@@ -1,0 +1,21 @@
+# Cloudflare Pages headers. The client loads code from nowhere but itself, data
+# from R2 and the SpacetimeDB socket, and nothing else; say so, so a compromised
+# dependency cannot phone anywhere.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://media.weichseltree.com; media-src 'self' blob: https://media.weichseltree.com; connect-src 'self' https://media.weichseltree.com https://maincloud.spacetimedb.com wss://maincloud.spacetimedb.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Content-Type-Options: nosniff
+  Cross-Origin-Opener-Policy: same-origin
+  Permissions-Policy: xr-spatial-tracking=(self), camera=(), microphone=(), geolocation=()
+
+# Hashed by the build; safe to keep forever.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# The transcoder is a pinned copy of a versioned dependency.
+/basis/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# The hall changes only when WP3 rebakes it; a day is the compromise.
+/assets/hall/*
+  Cache-Control: public, max-age=86400
