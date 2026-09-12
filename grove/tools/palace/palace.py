@@ -122,6 +122,7 @@ WAINSCOT_P, CORNICE_P = 0.06, 0.12
 WALL_HALF = 0.10
 DOOR_DEPTH, WIN_DEPTH = WALL_HALF, 0.40
 FACADE_X = -7.5            # the garden front's outer face (blender x); interior faces are at -6.9
+STEP_H = 0.02              # the facade's door thresholds stand this much above the terrace
 PANEL_DEPTH = 0.04
 PIL_W, PIL_P = 0.50, 0.12
 CAP_W, CAP_H, CAP_P = 0.72, 0.32, 0.20
@@ -837,7 +838,9 @@ def build_facade(b, mansion):
         b.quad((FACADE_X, y0, z0), (0, 0, z1 - z0), (depth, 0, 0), C_STONE, want=(0, 1, 0))
         b.quad((FACADE_X, y1, z0), (0, 0, z1 - z0), (depth, 0, 0), C_STONE, want=(0, -1, 0))
         b.quad((FACADE_X, y0, z1), (0, y1 - y0, 0), (depth, 0, 0), C_STONE, want=(0, 0, -1))
-        b.quad((FACADE_X, y0, 0.0), (0, y1 - y0, 0), (depth, 0, 0), C_STONE, want=(0, 0, 1))
+        # a 2 cm stone step, not a strip coplanar with the cell's ground
+        b.quad((FACADE_X, y0, STEP_H), (0, y1 - y0, 0), (depth, 0, 0), C_STONE, want=(0, 0, 1))
+        b.quad((FACADE_X, y0, 0.0), (0, y1 - y0, 0), (0, 0, STEP_H), C_STONE, want=(-1, 0, 0))
     # stone surrounds round every opening, standing proud of the limewash
     for y0, y1, z0, z1, kind in holes:
         fw, fp = 0.28, 0.10
