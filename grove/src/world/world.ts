@@ -83,7 +83,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
     stills: [],
     load: async () => {
       for (const room of mansion.rooms) {
-        const shell = await buildRoom({ room, renderer, onNotice });
+        const shell = await buildRoom({ room, renderer, tier: device.tier, onNotice });
         shells.set(room.id, shell);
         group.add(shell.group);
         applyMarkers(room, shell);

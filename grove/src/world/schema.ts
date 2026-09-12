@@ -107,6 +107,8 @@ export const RoomSchema = z.looseObject({
   glb: z.string().default(""),
   /** Lightmap siblings to try in order when the glb does not embed one. */
   lightmap: z.array(z.string()).default([]),
+  /** The phone's list, when it has its own tier; empty means `lightmap`. */
+  lightmapPhone: z.array(z.string()).default([]),
   fallback: z
     .looseObject({ kind: z.literal("box"), color: z.string().default("#8e968d") })
     .default({ kind: "box", color: "#8e968d" }),

@@ -35,8 +35,8 @@
   },
   "lightmap": {
     "file": "lightmap.png",
-    "ktx2": null,
-    "ktx2_note": "toktx not on PATH -- shipping lightmap.png only",
+    "ktx2": "lightmap.ktx2",
+    "ktx2_note": "UASTC quality 2 + zstd 18 (smooth signal; ETC1S bands on large walls); ; mipmapped; the PNG stays as the fallback",
     "encoding": "sRGB transfer, 8 bit RGBA PNG (alpha constant 1)",
     "colour_space_hint": "THREE.SRGBColorSpace",
     "scale": 3.410822,
@@ -46,7 +46,8 @@
     "clipped_fraction": 2.9e-05,
     "noise_metric": 0.048063,
     "three_light_map_intensity": 10.715413,
-    "binding": "texture.colorSpace = SRGBColorSpace, flipY = false, channel = 1 (TEXCOORD_1), material.lightMapIntensity = three_light_map_intensity"
+    "binding": "texture.colorSpace = SRGBColorSpace, flipY = false, channel = 1 (TEXCOORD_1), material.lightMapIntensity = three_light_map_intensity",
+    "ktx2_phone": "lightmap-1024.ktx2"
   },
   "geometry": {
     "units": "metres",
@@ -234,8 +235,8 @@
   },
   "files": {
     "hall.glb": {
-      "bytes": 52560,
-      "sha256": "bae6f79348657c36fd754cf4567954e14b6410200e4f77c31dee9dfd538d5b78"
+      "bytes": 52928,
+      "sha256": "90bfeb54bf714f354636ebd8c7abfd23892271122feffb5101ea8740fc9e9ca4"
     },
     "lightmap.png": {
       "bytes": 2324189,
@@ -244,6 +245,14 @@
     "preview.png": {
       "bytes": 784609,
       "sha256": "069ef6c95031bb1b5c78eefd343e8079da8f96ed19893c5a6e7f6658bdf003ff"
+    },
+    "lightmap.ktx2": {
+      "bytes": 1995927,
+      "sha256": "4ce7d7c9024432c861094fd059f688f3ec4b7819aaa42d5c24a4dd069bb8284e"
+    },
+    "lightmap-1024.ktx2": {
+      "bytes": 600733,
+      "sha256": "2bf7e244b9dceb1f6c2a0bda03f1d6859ea18164996288511ad62c4088364213"
     }
   },
   "post_bake_patch": {
@@ -259,5 +268,16 @@
       "material hall_floor baseColorFactor [0.15, 0.135, 0.125, 1.0] -> [0.15, 0.135, 0.125, 1.0], roughnessFactor 0.38 -> 0.38",
       "lightmap.three_light_map_intensity = 10.715413 (scale * pi); encoding string corrected to RGBA"
     ]
+  },
+  "post_bake_ktx2": {
+    "script": "grove/tools/compress_lightmap.py",
+    "script_sha256": "661b19e8fd1357a0afa58db6666f3aa430f1df02b1e11cc6f0e7e5fa45b37cfd",
+    "applied_utc": "2026-09-12T14:35:41Z",
+    "toktx": "",
+    "files": [
+      "lightmap.ktx2",
+      "lightmap-1024.ktx2"
+    ],
+    "rebaked": false
   }
 }

@@ -21,6 +21,7 @@ import {
   type LightmapMeta,
   type LightmapReport,
 } from "../render/lightmap";
+import type { DeviceTier } from "../tape/bundle";
 import type { Doorway, Room } from "./schema";
 
 // A room's shell. The hall comes from WP3's bake when it is there and from a
@@ -66,7 +67,22 @@ export interface BuildRoomOptions {
   renderer: WebGLRenderer;
   /** Base URL the room's glb and lightmap siblings hang off, e.g. "/". */
   assetBase?: string;
+  /** Picks the lightmap tier; the phone gets `lightmapPhone` when the room has one. */
+  tier?: DeviceTier;
   onNotice?: (message: string) => void;
+}
+
+/**
+ * The lightmap files to try, in order, for this device. A 2048² UASTC
+ * lightmap is 2 MB; the phone tier is a quarter of that and, on a phone
+ * screen, indistinguishable.
+ */
+export function lightmapCandidates(
+  room: Pick<Room, "lightmap" | "lightmapPhone">,
+  tier: DeviceTier | undefined,
+): string[] {
+  if (tier === "phone" && room.lightmapPhone.length > 0) return room.lightmapPhone;
+  return room.lightmap;
 }
 
 export async function buildRoom(options: BuildRoomOptions): Promise<RoomShell> {
@@ -74,7 +90,7 @@ export async function buildRoom(options: BuildRoomOptions): Promise<RoomShell> {
   const base = options.assetBase ?? "/";
   if (room.glb) {
     try {
-      const shell = await loadRoomGlb(room, base, renderer);
+      const shell = await loadRoomGlb(room, base, renderer, lightmapCandidates(room, options.tier));
       return shell;
     } catch (error) {
       options.onNotice?.(
@@ -90,7 +106,12 @@ export async function buildRoom(options: BuildRoomOptions): Promise<RoomShell> {
   };
 }
 
-async function loadRoomGlb(room: Room, base: string, renderer: WebGLRenderer): Promise<RoomShell> {
+async function loadRoomGlb(
+  room: Room,
+  base: string,
+  renderer: WebGLRenderer,
+  lightmaps: readonly string[],
+): Promise<RoomShell> {
   const loader = new GLTFLoader();
   // A KTX2-textured glb needs the transcoder wired up before parse.
   loader.setKTX2Loader(ktx2Loader(renderer));
@@ -99,7 +120,7 @@ async function loadRoomGlb(room: Room, base: string, renderer: WebGLRenderer): P
   group.name = `${room.id}-glb`;
   group.add(gltf.scene);
   const sibling = await loadLightmap(
-    room.lightmap.map((path) => base + path),
+    lightmaps.map((path) => base + path),
     renderer,
   );
   const asset = gltf.parser.json.asset as Record<string, unknown> | undefined;
@@ -115,7 +136,7 @@ async function loadRoomGlb(room: Room, base: string, renderer: WebGLRenderer): P
       source: room.glb,
       generator: asset?.generator ?? "(unknown)",
       ...extras,
-      lightmap: `${lightmap.source}, intensity ${lightmap.intensity.toFixed(3)} (${lightmap.applied} materials, ${lightmap.withUv1} meshes with UV2)`,
+      lightmap: `${lightmap.source}${sibling?.userData.orchardUrl ? ` ${String(sibling.userData.orchardUrl)}` : ""}, intensity ${lightmap.intensity.toFixed(3)} (${lightmap.applied} materials, ${lightmap.withUv1} meshes with UV2)`,
     },
     lightmap,
     markers: readMarkers(gltf.scene, room),

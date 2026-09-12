@@ -56,6 +56,9 @@ export async function loadLightmap(
         ? await ktx2Loader(renderer).loadAsync(url)
         : await new TextureLoader().loadAsync(url);
       prepareLightmap(texture);
+      // For the provenance panel, and the console: which file actually loaded.
+      texture.userData.orchardUrl = url;
+      console.info(`[lightmap] ${url} (${texture.image?.width ?? "?"} px)`);
       return texture;
     } catch {
       // Try the next candidate; a missing lightmap is expected before WP3 lands.

@@ -1,7 +1,7 @@
 import { Group, Object3D, Quaternion, Vector3 } from "three";
 import { describe, expect, it } from "vitest";
 import mansionDocument from "./mansion.json";
-import { readMarkers } from "./rooms";
+import { lightmapCandidates, readMarkers } from "./rooms";
 import { parseMansion, roomById } from "./schema";
 
 // The glb's marker empties are the authority on where things are. This is
@@ -48,5 +48,26 @@ describe("readMarkers", () => {
     expect(normal.x).toBeCloseTo(-1);
     expect(normal.y).toBeCloseTo(0);
     expect(normal.z).toBeCloseTo(0);
+  });
+});
+
+describe("lightmapCandidates", () => {
+  const hall = roomById(parseMansion(mansionDocument), "hall")!;
+
+  it("gives the phone its 1024 tier and everyone else the 2048 KTX2, PNG behind both", () => {
+    expect(lightmapCandidates(hall, "phone")).toEqual([
+      "assets/hall/lightmap-1024.ktx2",
+      "assets/hall/lightmap.png",
+    ]);
+    for (const tier of ["desktop", "vr-quest", "vr-high", undefined] as const) {
+      expect(lightmapCandidates(hall, tier)).toEqual([
+        "assets/hall/lightmap.ktx2",
+        "assets/hall/lightmap.png",
+      ]);
+    }
+  });
+
+  it("falls back to the one list when a room has no phone tier", () => {
+    expect(lightmapCandidates({ lightmap: ["a.png"], lightmapPhone: [] }, "phone")).toEqual(["a.png"]);
   });
 });

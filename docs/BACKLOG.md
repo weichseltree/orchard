@@ -16,9 +16,9 @@ Ordered. Items with a name in brackets wait on that person.
    bundles (the einstruct master, the spectre master and assembly, the
    styleframe for the hall's poster wall) wait on their own rulings;
    `orchard exhibit hang <dir> --approve` is the whole step for each.
-2. **[Manuel] Release the custom domain in Patreon** so the apex
-   `weichseltree.com` stops being Patreon's SaaS hostname; then re-validate the
-   Pages domain (docs/HOSTING.md). `www.weichseltree.com` already serves the grove.
+2. ~~**[Manuel] Release the custom domain in Patreon**~~ Done by 2026-09-12
+   16:30: both Pages domains report active and `https://weichseltree.com/`
+   serves the grove.
 3. **[Manuel] Hardware pass**: Quest 3 browser (XR entry, controllers,
    teleport, scrub, 72 Hz) and an iPhone (native HLS, touch stick). Everything
    past `requestSession` is untested on hardware (docs/impl/WP2-grove.md).
@@ -32,9 +32,15 @@ Ordered. Items with a name in brackets wait on that person.
    client (`cd grove && pnpm run deploy`; `pnpm deploy` without `run` is
    pnpm's own workspace command and fails). The dome's colours are a first
    guess and belong to item 6.
-5. Lightmap ships as a 2.2 MB PNG; produce KTX2 (UASTC) when `toktx` is
-   installed (it is not on this box; KTX-Software ships a `.deb`), and a
-   1024² tier for phones.
+5. ~~Lightmap ships as a 2.2 MB PNG; produce KTX2~~ Done 2026-09-12:
+   KTX-Software 4.4.2 in `~/tools/ktx` (`toktx` on PATH),
+   `grove/tools/compress_lightmap.py` writes `lightmap.ktx2` (2048², 1.9 MB,
+   UASTC q2 + zstd 18, mipmapped) and `lightmap-1024.ktx2` (0.6 MB) and
+   records both in hall.json and the glb; `mansion.json` lists the KTX2
+   first with the PNG behind it, and a `lightmapPhone` list gives the phone
+   the 1024 tier (`lightmapCandidates`, tested). Headless Chromium loads the
+   2048 KTX2 through the Basis transcoder and the hall reads as before; the
+   phone tier is unit-tested only (the headless shell does not emulate touch).
 6. Windows' blown highlights and the plain grey palette; a first pass of
    material and colour design for the hall (LAWS 12, 13).
 
