@@ -242,8 +242,17 @@ class CF:
             raise CloudflareError(status, f"PUT {key}", errors)
 
     def head_object(self, key: str, bucket=BUCKET) -> dict | None:
-        """Response headers, or None if the object is not there."""
+        """Response headers; None if the object is not there; `{"unsupported":
+        True}` when the API refuses HEAD altogether.
+
+        It does refuse: measured 405 on every object on 2026-09-12, the day
+        R2 went on, while GET of the same key returned 200 and the bytes. A
+        405 must not read as "missing", or the first push ever made raises
+        `did not survive the upload` on the first chunk over 1 MB.
+        """
         status, _body, hdrs = self.raw("HEAD", self.object_path(key, bucket))
+        if status == 405:
+            return {"unsupported": True}
         return hdrs if status == 200 else None
 
     def get_object(self, key: str, bucket=BUCKET) -> bytes | None:
@@ -435,15 +444,24 @@ def verify_local(bundle_dir) -> dict:
             "unclaimed": unclaimed}
 
 
+#: Objects up to this size are read back whole and hashed. Every file a
+#: bundle serves is a chunk or a segment of a few MB, so this is all of them;
+#: it doubles the transfer, and it is the only check the REST API allows.
+INLINE_VERIFY_MAX = 64 << 20
+
+
 def _verify_uploaded(cf, bid: str, rel: str, path: Path, digest: str | None,
-                     bucket: str, inline_max=1 << 20) -> str:
+                     bucket: str, inline_max=INLINE_VERIFY_MAX) -> str:
     """What actually landed. 'ok' | 'unverified' | a reason it is wrong.
 
-    A small object is re-fetched and hashed. A large one is checked by
-    `Content-Length`, and by `ETag` when R2 gives a plain (non-multipart) MD5.
+    An object up to `inline_max` is re-fetched and hashed. A larger one is
+    checked by `Content-Length`, and by `ETag` when R2 gives a plain
+    (non-multipart) MD5 — where the API answers HEAD at all; it did not on
+    2026-09-12 (405), and then the object is read back like a small one.
     """
     size = path.stat().st_size
-    if size <= inline_max:
+    hdrs = None if size <= inline_max else cf.head_object(f"{bid}/{rel}", bucket)
+    if size <= inline_max or (hdrs and hdrs.get("unsupported")):
         got = cf.get_object(f"{bid}/{rel}", bucket)
         if got is None:
             return "missing after upload"
@@ -452,7 +470,6 @@ def _verify_uploaded(cf, bid: str, rel: str, path: Path, digest: str | None,
         if digest and hashlib.sha256(got).hexdigest() != digest:
             return "sha256 mismatch"
         return "ok"
-    hdrs = cf.head_object(f"{bid}/{rel}", bucket)
     if hdrs is None:
         return "missing after upload"
     length = hdrs.get("Content-Length")

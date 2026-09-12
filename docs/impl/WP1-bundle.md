@@ -379,7 +379,9 @@ which is a rename on the same filesystem. A failure removes it
 
 ## Open, and owed
 
-1. **Enable R2, then run `uv run orchard r2 ensure` and push both bundles.**
+1. ~~**Enable R2, then run `uv run orchard r2 ensure` and push both bundles.**~~
+   Done 2026-09-12 (docs/impl/M2-harvest-exhibit.md); the wildcard in 2 was
+   accepted by the CORS API.
    Nothing else in WP1 is unfinished. `wait_public` polls
    `https://media.weichseltree.com/<id>/bundle.json` for 5 minutes (a fresh
    custom domain is a DNS record plus a certificate) and `cors_preflight`

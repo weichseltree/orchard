@@ -96,8 +96,15 @@ Left to do:
 2. Redeploy: `wrangler pages deploy ./grove/public --project-name weichseltree
    --branch main` with `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` in the
    environment (`set -a; . ~/.config/orchard/secrets.env; set +a`).
-3. R2 bucket `weichseltree-media`, public via `media.weichseltree.com`, when the
-   first bundle exists (M0).
+3. ~~R2 bucket `weichseltree-media`, public via `media.weichseltree.com`, when the
+   first bundle exists (M0).~~ Done 2026-09-12: Manuel purchased R2 in the
+   dashboard (the API cannot accept the terms), then `uv run orchard r2 ensure`
+   created the bucket, the CORS list (both production origins, the
+   `*.weichseltree.pages.dev` wildcard, which the API accepted, and the two
+   localhost ports) and attached the custom domain. The REST API answers 405
+   to HEAD on objects, so `push` reads every object back to verify it.
+   The WSL resolver on SirBase may cache the new name negatively for a
+   while; public DNS was right within minutes.
 
 ## SpacetimeDB
 

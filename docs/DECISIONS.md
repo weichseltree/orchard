@@ -86,3 +86,7 @@ Append-only. A decision names the day, the ruling, and the alternative it beat.
   phone 1600, thumb 640, the thumb JPEG only), recipe in the id and digests in
   `media.json` like video, because libaom is not promised bit-stable.
   spectre's stock sidecar (`<file>.json`) rides into `source.provenance`.
+- **2026-09-12 · The first two exhibits: einstruct's ab_d2 tape and its 40 s
+  clip**, approved by Manuel and hung the day R2 went on. The einstruct
+  master, the spectre master and assembly, and the styleframe are bundled
+  and not hung; each waits on its own ruling.

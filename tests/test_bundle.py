@@ -1114,3 +1114,27 @@ def test_the_cors_fallback_only_fires_on_an_origin_error(monkeypatch):
     with pytest.raises(pushmod.CloudflareError, match="Authentication error"):
         pushmod.ensure_bucket("b", cf=Boom(), verbose=False)
     assert sum(1 for m, p in calls if p.endswith("/cors")) == 1
+
+
+def test_a_large_object_is_read_back_when_the_api_refuses_head(tmp_path):
+    """R2's REST API answered 405 to every HEAD on 2026-09-12; that is not 'missing'."""
+    from orchard.push import _verify_uploaded
+    data = bytes(range(256)) * 8192                      # 2 MB, over a 1 MB inline cap
+    f = tmp_path / "c0000.bin"; f.write_bytes(data)
+    digest = __import__("hashlib").sha256(data).hexdigest()
+
+    class NoHead(FakeCF):
+        def head_object(self, key, bucket="b"):
+            self.heads.append(key)
+            return {"unsupported": True}
+
+    cf = NoHead({"bid/c0000.bin": data})
+    assert _verify_uploaded(cf, "bid", "c0000.bin", f, digest, "b", inline_max=1 << 20) == "ok"
+    assert cf.heads == ["bid/c0000.bin"] and cf.gets == ["bid/c0000.bin"]
+    cf = NoHead({"bid/c0000.bin": data[:-1]})
+    assert _verify_uploaded(cf, "bid", "c0000.bin", f, digest, "b", inline_max=1 << 20).startswith("length")
+    cf = NoHead({})
+    assert _verify_uploaded(cf, "bid", "c0000.bin", f, digest, "b", inline_max=1 << 20) == "missing after upload"
+    # And by default nothing a bundle ships reaches the HEAD path at all.
+    cf = NoHead({"bid/c0000.bin": data})
+    assert _verify_uploaded(cf, "bid", "c0000.bin", f, digest, "b") == "ok" and cf.heads == []

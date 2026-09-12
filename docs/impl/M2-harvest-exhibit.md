@@ -55,10 +55,11 @@ marker).
 
 ## Not done, and why
 
-1. **Nothing is hung.** R2 is off (API code 10042) and `hang` pushes before
-   it names, by design: an exhibit row whose bytes are not servable would
-   beat the pinned id in every client and empty the room. BACKLOG 1 has the
-   two commands to run once R2 is on.
+1. ~~**Nothing is hung.**~~ R2 went on later the same day; the tape and the
+   clip are exhibits 1 and 2 (37 s and 31 s to push 45 MB and 40 MB,
+   every object read back and hashed). The first real push found that the
+   REST API refuses HEAD (405), which the post-upload check had read as
+   "missing"; `push` now reads objects back whole up to 64 MB.
 2. **Approval is per artefact in the manifest, by hand or `--approve`.** The
    greenhouse (M1) is where rulings should come from; until then the manifest
    is the record.

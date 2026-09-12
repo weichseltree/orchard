@@ -37,7 +37,7 @@ artefacts:
   produced_by: python -m film.render ab_d2 --tau-per-s 10 --seconds 40
   commit: b498778-dirty
   sha256: 2c0096b060967e462dc4711dedd6195ba2ae3048f8249ab7b50ec8c4b8461255
-  approved: false
+  approved: true
   bundle: 216b720501856b14
 - kind: tape
   path: results/film/tapes/ab_d2
@@ -45,7 +45,7 @@ artefacts:
   produced_by: exprun python -m film.scenes ab-d2
   commit: b498778-dirty
   sha256: b9f98c73720e8d342df20df6ef4adb293a443525c470033059c0bfee6e0e2612
-  approved: false
+  approved: true
   bundle: 2dd0038799b2db15
 - kind: still
   path: results/film/renders/ab_d2-ep05/preview.png
