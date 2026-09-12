@@ -235,5 +235,13 @@ reviewed. What each asks next:
     tree and expects vo.py's take layout, so it breaks the moment the
     removal lands. Extract pacing, vo, encode, scene, render/plate,
     check/variety, the generic mts and measure.py into `studio/` from
-    that tag (`git archive film-final`), and point einstruct at the
-    package; until then einstruct pins a copy.
+    that tag (`git archive film-final core/film lanes/m03_first_film`;
+    the tag is 9721bf8, the removal 68239c4, and every commit the film
+    produced_by lines name is an ancestor of the tag), and point einstruct
+    at the package; until then einstruct pins a copy. Left behind by the
+    removal: core/film/pacing.py stays as a stub for einstruct's sys.path
+    import (delete it and its two tests once einstruct carries its own),
+    vo.py is gone and einstruct depends only on its take naming
+    `S<nn>_<hash>.mp3`, which the studio copy must keep; mitsuba left
+    spectre's pyproject; spectre's episode is now the studio's to make
+    from lanes/m03_first_film/episodes/ep03 at the tag.
