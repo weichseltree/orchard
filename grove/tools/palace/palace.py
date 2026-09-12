@@ -111,13 +111,17 @@ TYPE_DEFAULTS = {
 }
 
 WAINSCOT_P, CORNICE_P = 0.06, 0.12
-# Each room's wall faces stand WALL_HALF outside its bounds, so two rooms
-# sharing a plane have their faces 2 * WALL_HALF apart: coplanar faces
-# shadow each other black in the bake and z-fight in the client. The body
-# clamp keeps the visitor inside the bounds, 10 cm short of the wall.
+# Each room's wall faces stand WALL_HALF inside its bounds, so two rooms
+# sharing a plane have their faces 2 * WALL_HALF apart (a wall that thick)
+# and every room's geometry lies within its own bounds: coplanar faces
+# shadow each other black in the bake and z-fight in the client, and walls
+# standing outside the bounds ran 2 * WALL_HALF into the neighbour along
+# every shared plane (its side walls, floor, wainscot and cornice showed
+# through). Door reveals run to the bounds plane and meet the neighbour's
+# there. The body clamp (BODY_RADIUS 0.35) keeps the visitor off the face.
 WALL_HALF = 0.10
 DOOR_DEPTH, WIN_DEPTH = WALL_HALF, 0.40
-FACADE_X = -7.5            # the garden front's outer face (blender x); interior faces are at -7.1
+FACADE_X = -7.5            # the garden front's outer face (blender x); interior faces are at -6.9
 PANEL_DEPTH = 0.04
 PIL_W, PIL_P = 0.50, 0.12
 CAP_W, CAP_H, CAP_P = 0.72, 0.32, 0.20
@@ -323,8 +327,12 @@ class RoomPlan:
         d.update({k: v for k, v in p.items() if k in d})
         self.style = d
         (gx0, gy0, gz0), (gx1, gy1, gz1) = room["bounds"]["min"], room["bounds"]["max"]
-        self.x0, self.x1 = float(gx0) - WALL_HALF, float(gx1) + WALL_HALF
-        self.y0, self.y1 = -float(gz1) - WALL_HALF, -float(gz0) + WALL_HALF   # blender y = -gltf z
+        # the bounds themselves, and the wall faces WALL_HALF inside them
+        self.bx0, self.bx1 = float(gx0), float(gx1)
+        self.by0, self.by1 = -float(gz1), -float(gz0)                          # blender y = -gltf z
+        self.x0, self.x1 = self.bx0 + WALL_HALF, self.bx1 - WALL_HALF
+        self.y0, self.y1 = self.by0 + WALL_HALF, self.by1 - WALL_HALF
+        self.extends = {}                              # wall -> how far a reveal runs past the bounds
         self.h = float(gy1 - gy0) if not p.get("h") else float(p["h"])
         self.h = d["h"] if abs(self.h - d["h"]) > 1e-6 and not p.get("h") else self.h
         self.windows = p.get("windows", [])            # [{wall, bays|centers, width, sill, head, reveal}]
@@ -349,9 +357,9 @@ class RoomPlan:
 
     def wall_of_door(self, d):
         if d["axis"] == "x":
-            return "-x" if abs(d["at"] - (self.x0 + WALL_HALF)) < 1e-6 else "+x"
+            return "-x" if abs(d["at"] - self.bx0) < 1e-6 else "+x"
         by = -d["at"]
-        return "-y" if abs(by - (self.y0 + WALL_HALF)) < 1e-6 else "+y"
+        return "-y" if abs(by - self.by0) < 1e-6 else "+y"
 
     def u_of(self, wall, x=None, y=None):
         """Distance along the wall from its A corner, for a point given by the
@@ -363,6 +371,28 @@ class RoomPlan:
 
     def interior_normal(self, wall):
         return {"+x": (-1, 0, 0), "-x": (1, 0, 0), "+y": (0, -1, 0), "-y": (0, 1, 0)}[wall]
+
+    def on_garden_front(self, wall):
+        """This wall is the -x face at the facade's line: its reveals run to FACADE_X."""
+        return wall == "-x" and abs(self.bx0 + 7.0) < 1e-6
+
+    def wall_hangings(self):
+        """(wall, u0, u1) for every still or video the plan hangs on a wall,
+        so pilasters keep clear of the picture."""
+        out = []
+        for h in self.raw.get("hangings", []):
+            if h.get("kind") not in ("still", "video"):
+                continue
+            px, pz = float(h["position"][0]), float(h["position"][2])
+            x, y = px, -pz
+            dist = {"+x": abs(x - self.x1), "-x": abs(x - self.x0), "+y": abs(y - self.y1), "-y": abs(y - self.y0)}
+            wall = min(dist, key=dist.get)
+            if dist[wall] > 0.5:
+                continue
+            u = self.u_of(wall, y=y) if wall in ("+x", "-x") else self.u_of(wall, x=x)
+            w = float(h.get("widthMeters", 6.0))
+            out.append((wall, u - w / 2, u + w / 2))
+        return out
 
     def hole_for_door(self, d):
         wall = self.wall_of_door(d)
@@ -390,8 +420,11 @@ class RoomPlan:
                 n = int(w.get("bays", 3))
                 step = L / n
                 us = [step * (i + 0.5) for i in range(n)]
+            # on the garden front the reveal runs from the face to the facade's
+            # outer plane exactly; anywhere else it is the window's own depth
+            depth = (self.x0 - FACADE_X) if self.on_garden_front(wall) else float(w.get("reveal", WIN_DEPTH))
             for u in us:
-                out.append((wall, (u - width / 2, u + width / 2, sill, head), float(w.get("reveal", WIN_DEPTH))))
+                out.append((wall, (u - width / 2, u + width / 2, sill, head), depth))
         return out
 
 
@@ -543,7 +576,7 @@ def build_room(plan):
         wall, hole = plan.hole_for_door(d)
         closed = bool(d.get("closed"))
         if closed:
-            # a door leaf set 0.12 m into the wall, framed: the wall stays solid behind it
+            # a door leaf set into the wall to the bounds plane, framed: the wall stays solid behind it
             holes_by_wall[wall].append(hole)
             leaves.append((wall, hole))
         else:
@@ -576,6 +609,7 @@ def build_room(plan):
     build_corner_caps(b, plan)
 
     for wall, hole, depth, sides, mat, kind in reveals:
+        plan.extends[wall] = max(plan.extends.get(wall, 0.0), depth - WALL_HALF)
         A, B = plan.walls()[wall]
         o = Vector((A[0], A[1], 0.0))
         u = Vector((B[0] - A[0], B[1] - A[1], 0.0))
@@ -600,12 +634,15 @@ def build_room(plan):
         uh = u.normalized()
         n = Vector(plan.interior_normal(wall))
         u0, u1, z0, z1 = hole
-        b.reveal(o, u, Vector((0, 0, plan.h)), hole, 0.12, P_TRIM, inward=plan.interior_normal(wall), sides="lrt")
-        b.quad(o + uh * u0 - n * 0.12, uh * (u1 - u0), Z * (z1 - z0), P_LEAF, want=n)
+        b.reveal(o, u, Vector((0, 0, plan.h)), hole, WALL_HALF, P_TRIM, inward=plan.interior_normal(wall), sides="lrt")
+        b.quad(o + uh * u0 - n * WALL_HALF, uh * (u1 - u0), Z * (z1 - z0), P_LEAF, want=n)
     for wall, hole in surrounds:
         build_surround(b, plan, wall, hole)
     if plan.pilasters:
-        build_pilasters(b, plan, holes_by_wall)
+        avoid = {w: list(hs) for w, hs in holes_by_wall.items()}
+        for wall, u0, u1 in plan.wall_hangings():
+            avoid[wall].append((u0, u1, 0.0, plan.h))
+        build_pilasters(b, plan, avoid)
     build_ceiling(b, plan)
     return b, markers
 
@@ -715,7 +752,7 @@ def add_room_markers(scene, plan, markers):
         uc = (u0 + u1) / 2
         if kind == "door":
             d = ref
-            out.append(empty("door_%s" % d["to"], tuple(a + uh * uc + Vector(n) * WALL_HALF), n,
+            out.append(empty("door_%s" % d["to"], tuple(a + uh * uc - Vector(n) * WALL_HALF), n,
                              {"role": "doorway", "width_m": float(d["width"]), "height_m": float(d["height"]),
                               "to": d["to"], **({"closed": True} if d.get("closed") else {})}))
         elif kind == "poster":
@@ -782,8 +819,8 @@ def build_facade(b, mansion):
     window and door of the rooms behind it, a parapet, end returns and a
     flat slate roof over the whole plan."""
     fronts = garden_front(mansion)
-    y_lo = min(p.y0 for p, _ in fronts)
-    y_hi = max(p.y1 for p, _ in fronts)
+    y_lo = min(p.by0 for p, _ in fronts)
+    y_hi = max(p.by1 for p, _ in fronts)
     top = 8.2
     holes = []
     for plan, hs in fronts:
@@ -1280,11 +1317,50 @@ def ktx_tiers(png, out_dir):
 
 
 # --------------------------------------------------------------------------
+def check_bounds(objects, plans):
+    """Every interior room's vertices lie within its bounds (plus what its
+    reveals run past them) and under its ceiling: nothing of one room can
+    then show inside another. Cells are the grounds and carry the facade,
+    the roof and the returns, which reach over the rooms by design."""
+    bad = 0
+    for rid, (ob, _) in objects.items():
+        plan = plans[rid]
+        if isinstance(plan, CellPlan):
+            continue
+        lo = (plan.bx0 - plan.extends.get("-x", 0.0), plan.by0 - plan.extends.get("-y", 0.0), -EPS)
+        hi = (plan.bx1 + plan.extends.get("+x", 0.0), plan.by1 + plan.extends.get("+y", 0.0), plan.h + COFFER_D + EPS)
+        co = np.empty(len(ob.data.vertices) * 3, dtype=np.float32)
+        ob.data.vertices.foreach_get("co", co)
+        co = co.reshape(-1, 3)
+        out = np.zeros(len(co), dtype=bool)
+        for k in range(3):
+            out |= (co[:, k] < lo[k] - 1e-4) | (co[:, k] > hi[k] + 1e-4)
+        n = int(out.sum())
+        if n:
+            bad += n
+            worst = co[out]
+            log("%s: %d vertices outside %s..%s, e.g. %s" % (rid, n, lo, hi, worst[:3].tolist()))
+        else:
+            log("%s: %d vertices, all within bounds" % (rid, len(co)))
+    # and no two rooms' bounds overlap
+    ids = list(plans)
+    for i, a in enumerate(ids):
+        for bname in ids[i + 1:]:
+            pa, pb = plans[a], plans[bname]
+            if isinstance(pa, CellPlan) or isinstance(pb, CellPlan):
+                continue
+            if pa.bx0 < pb.bx1 - 1e-6 and pb.bx0 < pa.bx1 - 1e-6 and pa.by0 < pb.by1 - 1e-6 and pb.by0 < pa.by1 - 1e-6:
+                bad += 1
+                log("%s and %s: bounds overlap" % (a, bname))
+    return bad
+
+
 def parse_args(argv):
     p = argparse.ArgumentParser(prog="palace.py")
     p.add_argument("--out", default="grove/public/assets/palace")
     p.add_argument("--room", default="")
     p.add_argument("--list", action="store_true")
+    p.add_argument("--check", action="store_true", help="build every room and verify none leaves its bounds")
     p.add_argument("--stills", action="store_true")
     p.add_argument("--still-rooms", default="hall,einstruct,spectre,gallery,orangery")
     p.add_argument("--still-yaw", type=float, default=None, help="override the spawn yaw for every still")
@@ -1329,6 +1405,12 @@ def main():
     bake_args.bake_type = "DIFFUSE"
     bake_args.margin = args.margin
     hb.configure_cycles(scene, bake_args)
+
+    if args.check:
+        objects, plans, _, _ = build_scene(mansion, textures, 256, 2, None)
+        bad = check_bounds(objects, plans)
+        log("CHECK %s" % ("OK" if not bad else "FAILED: %d" % bad))
+        return
 
     if args.stills:
         objects, plans, _, _ = build_scene(mansion, textures, 256, 2, None)
