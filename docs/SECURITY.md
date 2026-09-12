@@ -29,7 +29,11 @@ checks every rule here against a local server; run it after touching the module.
   SirBase, which the sync timer and the dashboard use. Hosts pass the token
   gate with any token, get into full rooms and admin-only rooms, cannot be
   banned (remove them from the list first), and carry a green "host" name tag
-  that no visitor can fake by picking a name.
+  that no visitor can fake by picking a name. Since 2026-09-12 the list also
+  holds Manuel's browser (`0xc200b5df…0501`, added with `add_admin`): an
+  identity from a grove token, so it lasts as long as that browser keeps its
+  site data. A new one is added the same way (`grove.presence.identityHex`
+  in the console, then `spacetime call orchard add_admin '"0x…"'`).
 - **Not built:** moderators short of admin, tree owners, node operators with
   portable identities (PLATFORM.md), a host in the browser (BACKLOG 8).
 
