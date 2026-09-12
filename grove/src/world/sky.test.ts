@@ -62,8 +62,8 @@ describe("buildSky", () => {
     expect(material.depthWrite).toBe(false);
     expect(sky.mesh.renderOrder).toBeLessThan(0);
     expect(sky.mesh.frustumCulled).toBe(false);
-    // Rooms sit within 20 m of the origin; the far plane is 120 (view.ts).
-    expect(SKY_RADIUS + 20).toBeLessThan(120);
+    // The orchard reaches 130 m from the origin; the far plane is 600 (view.ts).
+    expect(SKY_RADIUS + 130).toBeLessThan(600);
     sky.dispose();
   });
 

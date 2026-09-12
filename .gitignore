@@ -14,3 +14,6 @@ secrets.env
 # operator-private notes (audits of private repos, transcripts)
 notes/
 spacetime/spacetime.local.json
+# palace bake outputs are large and regenerated; the hall's shipped set is tracked by hand
+grove/public/assets/palace/*/lightmap.png
+grove/public/assets/palace/textures/

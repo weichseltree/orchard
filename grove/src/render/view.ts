@@ -61,7 +61,7 @@ export function createView(
     fovFor(window.innerWidth / window.innerHeight),
     window.innerWidth / window.innerHeight,
     0.05,
-    120,
+    600,
   );
   camera.position.set(0, EYE_HEIGHT, 0);
 

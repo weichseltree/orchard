@@ -276,7 +276,7 @@ export function proceduralRoom(room: Room): Group {
   ];
   for (const wall of walls) {
     const doors = room.doorways.filter(
-      (d) => d.axis === wall.axis && Math.abs(d.at - wall.at) < 1e-6,
+      (d) => !d.closed && d.axis === wall.axis && Math.abs(d.at - wall.at) < 1e-6,
     );
     const spanMin = wall.axis === "x" ? minZ : minX;
     const spanMax = wall.axis === "x" ? maxZ : maxX;

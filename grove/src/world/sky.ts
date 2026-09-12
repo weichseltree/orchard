@@ -8,8 +8,8 @@ import type { Sky } from "./schema";
 // the place the bake put it, so the pools on the floor and the disc in the
 // window agree. An HDR or a real exterior is a later milestone.
 
-/** Dome radius, metres. Rooms sit within ±20 m of the origin; the camera's far plane is 120. */
-export const SKY_RADIUS = 80;
+/** Dome radius, metres. The palace front is 128 m and the orchard reaches 130 m; the camera's far plane is 600. */
+export const SKY_RADIUS = 400;
 
 /**
  * The bake records the sunlight's TRAVEL direction in Blender's Z-up axes.

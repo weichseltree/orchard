@@ -77,6 +77,7 @@ export function resolveMove(
   const open = _open;
   open.length = 0;
   for (const door of room.doorways) {
+    if (door.closed) continue;
     const neighbour = mansion.rooms.find((r) => r.id === door.to);
     if (!neighbour) continue;
     // The body must line up with the opening both where it is and where it is

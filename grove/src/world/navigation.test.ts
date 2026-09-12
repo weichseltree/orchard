@@ -17,7 +17,8 @@ describe("resolveMove", () => {
     expect(out.x).toBeCloseTo(hall.bounds.max[0] - BODY_RADIUS);
     expect(out.room).toBe("hall");
     expect(out.crossed).toBe(false);
-    const back = resolveMove(mansion, "hall", { x: 0, z: 0 }, { x: 0, z: 99 });
+    // Straight ahead in z is the phototroph doorway now; step at x = 5, off the opening.
+    const back = resolveMove(mansion, "hall", { x: 5, z: 0 }, { x: 5, z: 99 });
     expect(back.z).toBeCloseTo(hall.bounds.max[2] - BODY_RADIUS);
   });
 
@@ -66,7 +67,7 @@ describe("resolveMove", () => {
 });
 
 describe("apertures and rooms", () => {
-  const door: Doorway = { to: "einstruct", axis: "z", at: -10, center: 0, width: 2.4, height: 3.2 };
+  const door: Doorway = { to: "einstruct", axis: "z", at: -10, center: 0, width: 2.4, height: 3.2, closed: false };
 
   it("is only passable across the opening, minus shoulders", () => {
     expect(inAperture(door, 0, BODY_RADIUS)).toBe(true);
@@ -91,7 +92,7 @@ describe("wallPieces", () => {
   });
 
   it("cuts two jambs and a lintel around a doorway", () => {
-    const door: Doorway = { to: "x", axis: "z", at: -10, center: 0, width: 2.4, height: 3.2 };
+    const door: Doorway = { to: "x", axis: "z", at: -10, center: 0, width: 2.4, height: 3.2, closed: false };
     const pieces = wallPieces(-7, 7, 0, 7, [door]);
     expect(pieces).toHaveLength(3);
     const lintel = pieces.find((p) => p.length === 2.4)!;
@@ -104,7 +105,7 @@ describe("wallPieces", () => {
   });
 
   it("leaves no lintel when the opening is the full height", () => {
-    const door: Doorway = { to: "x", axis: "z", at: 0, center: 0, width: 2, height: 5 };
+    const door: Doorway = { to: "x", axis: "z", at: 0, center: 0, width: 2, height: 5, closed: false };
     expect(wallPieces(-5, 5, 0, 5, [door])).toHaveLength(2);
   });
 });

@@ -13,7 +13,7 @@ describe("mansion.json", () => {
   it("parses", () => {
     const mansion = parseMansion(mansionDocument);
     expect(mansion.schema).toBe("orchard/mansion/1");
-    expect(mansion.rooms.map((room) => room.id)).toEqual(["hall", "einstruct", "world-engine", "phototroph", "spectre"]);
+    expect(mansion.rooms.map((room) => room.id)).toEqual(["hall", "einstruct", "world-engine", "orangery", "phototroph", "gallery", "spectre", "greenhouse"]);
     expect(mansion.start).toBe("hall");
   });
 
@@ -25,8 +25,11 @@ describe("mansion.json", () => {
     expect(max[1] - min[1]).toBeCloseTo(7);
     expect(max[2] - min[2]).toBeCloseTo(20);
     expect(hall!.presence).toBe("grove");
-    expect(hall!.doorways).toHaveLength(1);
+    // The palace: the einstruct door, the phototroph door in the once-blank back
+    // wall, and the greenhouse door, closed to visitors.
+    expect(hall!.doorways).toHaveLength(3);
     expect(hall!.doorways[0]).toMatchObject({ to: "einstruct", width: 2.4, height: 3.2 });
+    expect(hall!.doorways.find((d) => d.to === "greenhouse")).toMatchObject({ closed: true });
   });
 
   it("hangs a still on the hall's poster wall, taken from the exhibit table", () => {
@@ -40,23 +43,21 @@ describe("mansion.json", () => {
     expect([still.widthMeters, still.heightMeters]).toEqual([6, 3.4]);
   });
 
-  it("describes einstruct as 15 x 10 x 5 m with two tape sheets side by side and two video walls", () => {
+  it("describes einstruct as a 14 x 12 x 6 m state room with two tape sheets and two video walls", () => {
     const room = roomById(parseMansion(mansionDocument), "einstruct");
     const { min, max } = room!.bounds;
-    expect([max[0] - min[0], max[1] - min[1], max[2] - min[2]]).toEqual([15, 5, 10]);
+    expect([max[0] - min[0], max[1] - min[1], max[2] - min[2]]).toEqual([14, 6, 12]);
     expect(room!.presence).toBe("einstruct");
     const kinds = room!.hangings.map((h) => h.kind).sort();
     expect(kinds).toEqual(["tape", "tape", "video", "video"]);
     // The segregation tape and its stirred twin (ruling 2026-09-12), each 6 m,
-    // side by side in a 15 m room, and each pinned to its own bundle so the
-    // latest einstruct tape does not land on both sheets.
+    // either side of the enfilade line, pinned to their own bundles.
     const tapes = room!.hangings.filter((h) => h.kind === "tape");
     expect(tapes.map((h) => h.bundle.exhibit?.bundle)).toEqual(["2dd0038799b2db15", "903d0c5a939b0ba1"]);
-    expect(tapes.map((h) => h.position[0])).toEqual([-3.7, 3.7]);
-    for (const d of room!.doorways) expect(["hall", "world-engine", "phototroph", "spectre"]).toContain(d.to);
+    expect(tapes.map((h) => h.position[0])).toEqual([-3.6, 3.6]);
+    expect(room!.doorways.map((d) => d.to).sort()).toEqual(["hall", "spectre", "world-engine"]);
     const tape = tapes[0];
     expect(tape).toMatchObject({ longSideMeters: 6 });
-    // Ruling 2026-09-12: a 2D tape lies flat, waist height on a 1.6 m eye.
     expect(tape!.position[1]).toBeCloseTo(1.0);
     expect(tape!.rotationDeg).toEqual([-90, 0, 0]);
   });
@@ -83,7 +84,7 @@ describe("MansionSchema", () => {
 
   it("rejects a start room that is not in the list", () => {
     const broken = doc();
-    broken.start = "greenhouse";
+    broken.start = "nowhere";
     expect(() => MansionSchema.parse(broken)).toThrow(/start room/);
   });
 
@@ -158,16 +159,18 @@ describe("BundleRefSchema", () => {
     }
   });
 
-  it("the rooms off einstruct sit against its walls with matching doorways", () => {
+  it("every open doorway is listed by both rooms at the same wall and opening", () => {
     const mansion = parseMansion(mansionDocument);
-    const e = roomById(mansion, "einstruct")!;
-    for (const [id, x] of [["world-engine", 7.5], ["phototroph", -7.5]] as const) {
-      const room = roomById(mansion, id)!;
-      const door = e.doorways.find((d) => d.to === id)!;
-      const back = room.doorways.find((d) => d.to === "einstruct")!;
-      expect(door).toMatchObject({ axis: "x", at: x, center: -15 });
-      expect(back).toMatchObject({ axis: "x", at: x, center: -15 });
-      expect(x > 0 ? room.bounds.min[0] : room.bounds.max[0]).toBe(x);
+    for (const room of mansion.rooms) {
+      for (const door of room.doorways) {
+        if (door.closed) continue;
+        const other = roomById(mansion, door.to)!;
+        const back = other.doorways.find((d) => d.to === room.id)!;
+        expect(back).toMatchObject({ axis: door.axis, at: door.at, center: door.center, width: door.width, height: door.height });
+        const axis = door.axis === "x" ? 0 : 2;
+        expect([room.bounds.min[axis], room.bounds.max[axis]]).toContain(door.at);
+        expect([other.bounds.min[axis], other.bounds.max[axis]]).toContain(door.at);
+      }
     }
   });
 });

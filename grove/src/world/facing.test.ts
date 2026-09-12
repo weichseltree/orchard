@@ -11,7 +11,7 @@ import { WALL_THICKNESS } from "./rooms";
 describe("wall hangings face into their room", () => {
   const mansion = parseMansion(mansionDocument);
   for (const room of mansion.rooms) {
-    if (room.glb) continue; // a baked room's markers own the facing
+    // The grey box is the reference whether or not the room's glb has landed.
     const centre = roomBox(room).getCenter(new Vector3());
     for (const hanging of room.hangings) {
       if (hanging.kind === "tape") continue;

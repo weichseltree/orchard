@@ -31,6 +31,8 @@ export const DoorwaySchema = z.looseObject({
   center: z.number().default(0),
   width: z.number().positive(),
   height: z.number().positive(),
+  /** A door leaf, not an opening: drawn solid, never crossed. A tree earns its room. */
+  closed: z.boolean().default(false),
 });
 
 /**
@@ -164,7 +166,9 @@ export const MansionSchema = z
     const hangingIds = new Set<string>();
     for (const room of doc.rooms) {
       for (const door of room.doorways) {
-        if (!ids.has(door.to)) {
+        // A closed door may lead to a room that is not built yet: the door
+        // leaf is the promise, and navigation never crosses it.
+        if (!ids.has(door.to) && !door.closed) {
           ctx.addIssue({
             code: "custom",
             message: `room "${room.id}" has a doorway to unknown room "${door.to}"`,

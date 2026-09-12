@@ -1,6 +1,6 @@
 {
   "schema": "orchard/mansion/1",
-  "title": "The first mansion",
+  "title": "The palace",
   "start": "hall",
   "sky": {
     "sunTravelBlender": [
@@ -20,14 +20,14 @@
       "id": "hall",
       "title": "The hall",
       "presence": "grove",
-      "glb": "assets/hall/hall.glb",
+      "glb": "assets/palace/hall/hall.glb",
       "lightmap": [
-        "assets/hall/lightmap.ktx2",
-        "assets/hall/lightmap.png"
+        "assets/palace/hall/lightmap.ktx2",
+        "assets/palace/hall/lightmap.png"
       ],
       "lightmapPhone": [
-        "assets/hall/lightmap-1024.ktx2",
-        "assets/hall/lightmap.png"
+        "assets/palace/hall/lightmap-1024.ktx2",
+        "assets/palace/hall/lightmap.png"
       ],
       "fallback": {
         "kind": "box",
@@ -61,8 +61,65 @@
           "center": 0,
           "width": 2.4,
           "height": 3.2
+        },
+        {
+          "to": "phototroph",
+          "axis": "z",
+          "at": 10,
+          "center": 0,
+          "width": 2.4,
+          "height": 3.2
+        },
+        {
+          "to": "greenhouse",
+          "axis": "x",
+          "at": 7,
+          "center": 6,
+          "width": 1.6,
+          "height": 3.0,
+          "closed": true,
+          "admin": true
         }
       ],
+      "palace": {
+        "type": "hall",
+        "windows": [
+          {
+            "wall": "-x",
+            "centers": [
+              8.333,
+              5.0,
+              -5.0,
+              -8.333
+            ],
+            "width": 1.6,
+            "sill": 1.6,
+            "head": 5.6,
+            "reveal": 0.35
+          },
+          {
+            "wall": "-x",
+            "centers": [
+              1.667,
+              -1.667
+            ],
+            "width": 1.6,
+            "sill": 0.0,
+            "head": 5.6,
+            "reveal": 0.35
+          }
+        ],
+        "posters": [
+          {
+            "wall": "+x",
+            "center": 0,
+            "width": 6,
+            "height": 3.4,
+            "z0": 1.4
+          }
+        ],
+        "floor": "floor_marble"
+      },
       "hangings": [
         {
           "id": "hall-poster",
@@ -77,7 +134,7 @@
           },
           "marker": "poster_wall",
           "position": [
-            6.98,
+            6.74,
             3.1,
             0
           ],
@@ -95,21 +152,28 @@
       "id": "einstruct",
       "title": "einstruct",
       "presence": "einstruct",
-      "glb": "",
-      "lightmap": [],
+      "glb": "assets/palace/einstruct/einstruct.glb",
+      "lightmap": [
+        "assets/palace/einstruct/lightmap.ktx2",
+        "assets/palace/einstruct/lightmap.png"
+      ],
+      "lightmapPhone": [
+        "assets/palace/einstruct/lightmap-1024.ktx2",
+        "assets/palace/einstruct/lightmap.png"
+      ],
       "fallback": {
         "kind": "box",
         "color": "#7d857e"
       },
       "bounds": {
         "min": [
-          -7.5,
+          -7,
           0,
-          -20
+          -22
         ],
         "max": [
-          7.5,
-          5,
+          7,
+          6,
           -10
         ]
       },
@@ -132,29 +196,33 @@
         },
         {
           "to": "world-engine",
-          "axis": "x",
-          "at": 7.5,
-          "center": -15,
-          "width": 2.4,
-          "height": 3.2
-        },
-        {
-          "to": "phototroph",
-          "axis": "x",
-          "at": -7.5,
-          "center": -15,
+          "axis": "z",
+          "at": -22,
+          "center": 0,
           "width": 2.4,
           "height": 3.2
         },
         {
           "to": "spectre",
-          "axis": "z",
-          "at": -20,
-          "center": 5,
+          "axis": "x",
+          "at": 7,
+          "center": -20,
           "width": 2.4,
           "height": 3.2
         }
       ],
+      "palace": {
+        "type": "state-room",
+        "windows": [
+          {
+            "wall": "-x",
+            "bays": 3,
+            "width": 1.6,
+            "sill": 1.6,
+            "head": 5.6
+          }
+        ]
+      },
       "hangings": [
         {
           "id": "einstruct-tape",
@@ -166,13 +234,12 @@
               "kind": "tape",
               "bundle": "2dd0038799b2db15"
             },
-            "id": "2dd0038799b2db15",
-            "path": "/dev-bundle/"
+            "id": "2dd0038799b2db15"
           },
           "position": [
-            -3.7,
+            -3.6,
             1.0,
-            -15.4
+            -16
           ],
           "rotationDeg": [
             -90,
@@ -182,9 +249,9 @@
           "longSideMeters": 6,
           "pedestal": {
             "position": [
-              -3.7,
+              -3.6,
               0,
-              -12.4
+              -13
             ],
             "rotationDeg": [
               0,
@@ -206,9 +273,9 @@
             "id": "903d0c5a939b0ba1"
           },
           "position": [
-            3.7,
+            3.6,
             1.0,
-            -15.4
+            -16
           ],
           "rotationDeg": [
             -90,
@@ -218,9 +285,9 @@
           "longSideMeters": 6,
           "pedestal": {
             "position": [
-              3.7,
+              3.6,
               0,
-              -12.4
+              -13
             ],
             "rotationDeg": [
               0,
@@ -239,17 +306,16 @@
               "kind": "video",
               "bundle": "216b720501856b14"
             },
-            "id": "216b720501856b14",
-            "path": "/dev-video/"
+            "id": "216b720501856b14"
           },
           "position": [
-            0,
+            6.74,
             2.35,
-            -19.74
+            -14
           ],
           "rotationDeg": [
             0,
-            0,
+            -90,
             0
           ],
           "widthMeters": 6
@@ -267,7 +333,7 @@
             "id": "f0b3eba5f655c2a9"
           },
           "position": [
-            -4.5,
+            -4.2,
             2.35,
             -10.26
           ],
@@ -276,7 +342,7 @@
             180,
             0
           ],
-          "widthMeters": 5
+          "widthMeters": 4.5
         }
       ]
     },
@@ -284,42 +350,69 @@
       "id": "world-engine",
       "title": "world-engine",
       "presence": "world-engine",
-      "glb": "",
-      "lightmap": [],
+      "glb": "assets/palace/world-engine/world-engine.glb",
+      "lightmap": [
+        "assets/palace/world-engine/lightmap.ktx2",
+        "assets/palace/world-engine/lightmap.png"
+      ],
+      "lightmapPhone": [
+        "assets/palace/world-engine/lightmap-1024.ktx2",
+        "assets/palace/world-engine/lightmap.png"
+      ],
       "fallback": {
         "kind": "box",
         "color": "#6f7580"
       },
       "bounds": {
         "min": [
-          7.5,
+          -7,
           0,
-          -20
+          -34
         ],
         "max": [
-          17.5,
-          5,
-          -10
+          7,
+          6,
+          -22
         ]
       },
       "spawn": {
         "position": [
-          8.8,
           0,
-          -15
+          0,
+          -23
         ],
-        "yawDeg": -90
+        "yawDeg": 0
       },
       "doorways": [
         {
           "to": "einstruct",
-          "axis": "x",
-          "at": 7.5,
-          "center": -15,
+          "axis": "z",
+          "at": -22,
+          "center": 0,
+          "width": 2.4,
+          "height": 3.2
+        },
+        {
+          "to": "orangery",
+          "axis": "z",
+          "at": -34,
+          "center": 0,
           "width": 2.4,
           "height": 3.2
         }
       ],
+      "palace": {
+        "type": "state-room",
+        "windows": [
+          {
+            "wall": "-x",
+            "bays": 3,
+            "width": 1.6,
+            "sill": 1.6,
+            "head": 5.6
+          }
+        ]
+      },
       "hangings": [
         {
           "id": "world-engine-classroom",
@@ -334,16 +427,16 @@
             "id": "8fd0f876cee6a54f"
           },
           "position": [
-            17.24,
+            6.74,
             2.4,
-            -15
+            -25.2
           ],
           "rotationDeg": [
             0,
             -90,
             0
           ],
-          "widthMeters": 6,
+          "widthMeters": 5,
           "heightMeters": 3.4
         },
         {
@@ -359,16 +452,16 @@
             "id": "0a674d5fc6ec8899"
           },
           "position": [
-            12.5,
+            6.74,
             2.4,
-            -19.74
+            -30.8
           ],
           "rotationDeg": [
             0,
-            0,
+            -90,
             0
           ],
-          "widthMeters": 6,
+          "widthMeters": 5,
           "heightMeters": 3.4
         },
         {
@@ -384,60 +477,167 @@
             "id": "df31b52fbd0faada"
           },
           "position": [
-            12.5,
+            4.1,
             2.4,
-            -10.26
+            -33.74
           ],
           "rotationDeg": [
             0,
-            180,
+            0,
             0
           ],
-          "widthMeters": 6,
+          "widthMeters": 4.5,
           "heightMeters": 3.4
         }
       ]
     },
     {
+      "id": "orangery",
+      "title": "orangery",
+      "presence": "orangery",
+      "glb": "assets/palace/orangery/orangery.glb",
+      "lightmap": [
+        "assets/palace/orangery/lightmap.ktx2",
+        "assets/palace/orangery/lightmap.png"
+      ],
+      "lightmapPhone": [
+        "assets/palace/orangery/lightmap-1024.ktx2",
+        "assets/palace/orangery/lightmap.png"
+      ],
+      "fallback": {
+        "kind": "box",
+        "color": "#8a8f8a"
+      },
+      "bounds": {
+        "min": [
+          -7,
+          0,
+          -70
+        ],
+        "max": [
+          7,
+          7,
+          -34
+        ]
+      },
+      "spawn": {
+        "position": [
+          0,
+          0,
+          -36
+        ],
+        "yawDeg": 0
+      },
+      "doorways": [
+        {
+          "to": "world-engine",
+          "axis": "z",
+          "at": -34,
+          "center": 0,
+          "width": 2.4,
+          "height": 3.2
+        }
+      ],
+      "palace": {
+        "type": "orangery",
+        "windows": [
+          {
+            "wall": "-x",
+            "bays": 9,
+            "width": 3.0,
+            "sill": 0.0,
+            "head": 5.0,
+            "reveal": 0.45
+          }
+        ],
+        "niches": [
+          {
+            "wall": "+x",
+            "centers": [
+              -38,
+              -42,
+              -46,
+              -50,
+              -54,
+              -58,
+              -62,
+              -66
+            ],
+            "width": 2.4,
+            "height": 4.0,
+            "depth": 0.6
+          }
+        ]
+      },
+      "hangings": []
+    },
+    {
       "id": "phototroph",
       "title": "phototroph",
       "presence": "phototroph",
-      "glb": "",
-      "lightmap": [],
+      "glb": "assets/palace/phototroph/phototroph.glb",
+      "lightmap": [
+        "assets/palace/phototroph/lightmap.ktx2",
+        "assets/palace/phototroph/lightmap.png"
+      ],
+      "lightmapPhone": [
+        "assets/palace/phototroph/lightmap-1024.ktx2",
+        "assets/palace/phototroph/lightmap.png"
+      ],
       "fallback": {
         "kind": "box",
         "color": "#5f6a66"
       },
       "bounds": {
         "min": [
-          -17.5,
+          -7,
           0,
-          -20
+          10
         ],
         "max": [
-          -7.5,
-          5,
-          -10
+          7,
+          6,
+          22
         ]
       },
       "spawn": {
         "position": [
-          -8.8,
           0,
-          -15
+          0,
+          11
         ],
-        "yawDeg": 90
+        "yawDeg": 0
       },
       "doorways": [
         {
-          "to": "einstruct",
-          "axis": "x",
-          "at": -7.5,
-          "center": -15,
+          "to": "hall",
+          "axis": "z",
+          "at": 10,
+          "center": 0,
+          "width": 2.4,
+          "height": 3.2
+        },
+        {
+          "to": "gallery",
+          "axis": "z",
+          "at": 22,
+          "center": 0,
           "width": 2.4,
           "height": 3.2
         }
       ],
+      "palace": {
+        "type": "state-room",
+        "windows": [
+          {
+            "wall": "-x",
+            "bays": 3,
+            "width": 1.6,
+            "sill": 3.5,
+            "head": 5.6
+          }
+        ]
+      },
       "hangings": [
         {
           "id": "phototroph-tape",
@@ -452,9 +652,9 @@
             "id": "cecbb68e2d2274af"
           },
           "position": [
-            -12.5,
+            0,
             1.0,
-            -14.5
+            16
           ],
           "rotationDeg": [
             -90,
@@ -464,9 +664,9 @@
           "longSideMeters": 3,
           "pedestal": {
             "position": [
-              -12.5,
               0,
-              -12.6
+              0,
+              13.5
             ],
             "rotationDeg": [
               0,
@@ -479,45 +679,182 @@
       ]
     },
     {
+      "id": "gallery",
+      "title": "gallery",
+      "presence": "gallery",
+      "glb": "assets/palace/gallery/gallery.glb",
+      "lightmap": [
+        "assets/palace/gallery/lightmap.ktx2",
+        "assets/palace/gallery/lightmap.png"
+      ],
+      "lightmapPhone": [
+        "assets/palace/gallery/lightmap-1024.ktx2",
+        "assets/palace/gallery/lightmap.png"
+      ],
+      "fallback": {
+        "kind": "box",
+        "color": "#8e968d"
+      },
+      "bounds": {
+        "min": [
+          -7,
+          0,
+          22
+        ],
+        "max": [
+          7,
+          7,
+          58
+        ]
+      },
+      "spawn": {
+        "position": [
+          0,
+          0,
+          23
+        ],
+        "yawDeg": 0
+      },
+      "doorways": [
+        {
+          "to": "phototroph",
+          "axis": "z",
+          "at": 22,
+          "center": 0,
+          "width": 2.4,
+          "height": 3.2
+        },
+        {
+          "to": "event-atoms",
+          "axis": "x",
+          "at": 7,
+          "center": 28,
+          "width": 2.4,
+          "height": 3.2,
+          "closed": true
+        },
+        {
+          "to": "mosaic",
+          "axis": "x",
+          "at": 7,
+          "center": 40,
+          "width": 2.4,
+          "height": 3.2,
+          "closed": true
+        },
+        {
+          "to": "HNL",
+          "axis": "x",
+          "at": 7,
+          "center": 52,
+          "width": 2.4,
+          "height": 3.2,
+          "closed": true
+        },
+        {
+          "to": "someotherlife",
+          "axis": "z",
+          "at": 58,
+          "center": -3.5,
+          "width": 2.4,
+          "height": 3.2,
+          "closed": true
+        }
+      ],
+      "palace": {
+        "type": "gallery",
+        "windows": [
+          {
+            "wall": "-x",
+            "bays": 9,
+            "width": 1.6,
+            "sill": 1.6,
+            "head": 5.6
+          }
+        ],
+        "posters": [
+          {
+            "wall": "+x",
+            "center": 25,
+            "width": 4.5,
+            "height": 3.0,
+            "z0": 1.5
+          },
+          {
+            "wall": "+x",
+            "center": 34,
+            "width": 4.5,
+            "height": 3.0,
+            "z0": 1.5
+          },
+          {
+            "wall": "+x",
+            "center": 46,
+            "width": 4.5,
+            "height": 3.0,
+            "z0": 1.5
+          },
+          {
+            "wall": "+x",
+            "center": 55,
+            "width": 4.5,
+            "height": 3.0,
+            "z0": 1.5
+          }
+        ]
+      },
+      "hangings": []
+    },
+    {
       "id": "spectre",
       "title": "spectre",
       "presence": "spectre",
-      "glb": "",
-      "lightmap": [],
+      "glb": "assets/palace/spectre/spectre.glb",
+      "lightmap": [
+        "assets/palace/spectre/lightmap.ktx2",
+        "assets/palace/spectre/lightmap.png"
+      ],
+      "lightmapPhone": [
+        "assets/palace/spectre/lightmap-1024.ktx2",
+        "assets/palace/spectre/lightmap.png"
+      ],
       "fallback": {
         "kind": "box",
         "color": "#15171a"
       },
       "bounds": {
         "min": [
-          -7.5,
+          7,
           0,
-          -32
+          -24
         ],
         "max": [
-          7.5,
-          5,
-          -20
+          21,
+          6,
+          -10
         ]
       },
       "spawn": {
         "position": [
-          5,
+          8.5,
           0,
-          -21.2
+          -20
         ],
-        "yawDeg": 0
+        "yawDeg": -90
       },
       "doorways": [
         {
           "to": "einstruct",
-          "axis": "z",
-          "at": -20,
-          "center": 5,
+          "axis": "x",
+          "at": 7,
+          "center": -20,
           "width": 2.4,
           "height": 3.2
         }
       ],
+      "palace": {
+        "type": "planet"
+      },
       "hangings": [
         {
           "id": "spectre-chi0",
@@ -532,9 +869,9 @@
             "id": "a8ec9bed055fd471"
           },
           "position": [
-            -5,
+            14,
             1.5,
-            -27
+            -21.5
           ],
           "rotationDeg": [
             0,
@@ -556,9 +893,9 @@
             "id": "8794241278d990fa"
           },
           "position": [
-            0,
+            14,
             1.5,
-            -27
+            -17
           ],
           "rotationDeg": [
             0,
@@ -580,9 +917,9 @@
             "id": "64546061a0b52660"
           },
           "position": [
-            5,
+            14,
             1.5,
-            -27
+            -12.5
           ],
           "rotationDeg": [
             0,
@@ -604,18 +941,88 @@
             "id": "0462efca96af7297"
           },
           "position": [
-            0,
+            20.74,
             2.35,
-            -31.74
+            -17
           ],
           "rotationDeg": [
             0,
-            0,
+            -90,
             0
           ],
           "widthMeters": 6
         }
       ]
+    },
+    {
+      "id": "greenhouse",
+      "title": "greenhouse",
+      "presence": "greenhouse",
+      "glb": "assets/palace/greenhouse/greenhouse.glb",
+      "lightmap": [
+        "assets/palace/greenhouse/lightmap.ktx2",
+        "assets/palace/greenhouse/lightmap.png"
+      ],
+      "lightmapPhone": [
+        "assets/palace/greenhouse/lightmap-1024.ktx2",
+        "assets/palace/greenhouse/lightmap.png"
+      ],
+      "fallback": {
+        "kind": "box",
+        "color": "#7c8a80"
+      },
+      "bounds": {
+        "min": [
+          7,
+          0,
+          2
+        ],
+        "max": [
+          15,
+          5,
+          10
+        ]
+      },
+      "spawn": {
+        "position": [
+          11,
+          0,
+          6
+        ],
+        "yawDeg": 0
+      },
+      "doorways": [
+        {
+          "to": "hall",
+          "axis": "x",
+          "at": 7,
+          "center": 6,
+          "width": 1.6,
+          "height": 3.0,
+          "closed": true,
+          "admin": true
+        }
+      ],
+      "palace": {
+        "type": "greenhouse",
+        "windows": [
+          {
+            "wall": "+x",
+            "bays": 2,
+            "width": 2.0,
+            "sill": 1.0,
+            "head": 4.2
+          },
+          {
+            "wall": "-y",
+            "bays": 2,
+            "width": 2.0,
+            "sill": 1.0,
+            "head": 4.2
+          }
+        ]
+      },
+      "hangings": []
     }
   ]
 }

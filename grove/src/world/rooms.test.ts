@@ -56,13 +56,13 @@ describe("lightmapCandidates", () => {
 
   it("gives the phone its 1024 tier and everyone else the 2048 KTX2, PNG behind both", () => {
     expect(lightmapCandidates(hall, "phone")).toEqual([
-      "assets/hall/lightmap-1024.ktx2",
-      "assets/hall/lightmap.png",
+      "assets/palace/hall/lightmap-1024.ktx2",
+      "assets/palace/hall/lightmap.png",
     ]);
     for (const tier of ["desktop", "vr-quest", "vr-high", undefined] as const) {
       expect(lightmapCandidates(hall, tier)).toEqual([
-        "assets/hall/lightmap.ktx2",
-        "assets/hall/lightmap.png",
+        "assets/palace/hall/lightmap.ktx2",
+        "assets/palace/hall/lightmap.png",
       ]);
     }
   });
