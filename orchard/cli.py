@@ -1,4 +1,5 @@
-"""orchard <verb>. Verbs are the orchard's: scout, plant, board, ledger, doctor, serve."""
+"""orchard <verb>. Verbs are the orchard's: scout, plant, board, bundle, push, r2,
+ledger, doctor, serve."""
 from __future__ import annotations
 
 import argparse
@@ -7,8 +8,14 @@ import sys
 import time
 from pathlib import Path
 
-from . import TREES, WEICHSELTREE
+from . import RESULTS, TREES, WEICHSELTREE
 from .manifest import Stage, dump, load
+from .push import BUCKET, PUBLIC_HOST
+
+# `orchard.bundle` pulls in numpy, so the two knobs its parser needs are named
+# here and asserted against the module in tests/test_bundle.py rather than
+# imported: every verb would otherwise pay for numpy.
+SLOT_BUDGET, CHUNK_FRAMES = 4000, 60
 
 
 def _table(rows, hdr):
@@ -106,6 +113,51 @@ def cmd_doctor(a):
         print(f"{flag}{svc:<20} {kind:<9} " + (f"missing {', '.join(missing)}" if missing else ""))
 
 
+def cmd_bundle_tape(a):
+    from .bundle import bundle_tape
+    out = bundle_tape(a.dir, tree=a.tree, title=a.title, out_root=a.out,
+                      slot_budget=a.slot_budget, chunk_frames=a.chunk_frames)
+    print(out)
+
+
+def cmd_bundle_video(a):
+    from .bundle import bundle_video
+    out = bundle_video(a.mp4, tree=a.tree, title=a.title, out_root=a.out)
+    print(out)
+
+
+def cmd_push(a):
+    from .push import R2NotEnabled, cors_preflight, push, wait_public
+    try:
+        rep = push(a.bundle_dir, bucket=a.bucket, method=a.method,
+                   dry_run=a.dry_run, force=a.force, check=a.check)
+    except R2NotEnabled as exc:
+        print(exc, file=sys.stderr)
+        sys.exit(2)
+    if a.verify and not a.dry_run:
+        rep["public"] = wait_public(rep["id"], host=a.host,
+                                    timeout_s=a.verify_timeout)
+        rep["cors"] = cors_preflight(rep["id"], host=a.host)
+        print("  cors:", json.dumps(rep["cors"]))
+    if a.json:
+        print(json.dumps(rep, indent=1))
+
+
+def cmd_r2_ensure(a):
+    from .push import R2NotEnabled, ensure_bucket
+    try:
+        ensure_bucket(a.bucket, domain=a.domain)
+    except R2NotEnabled as exc:
+        print(exc, file=sys.stderr)
+        sys.exit(2)
+
+
+def cmd_r2_benchmark(a):
+    from .push import benchmark, wrangler_spawn_cost
+    print(f"wrangler process start-up: {wrangler_spawn_cost():.2f} s per call")
+    print(json.dumps(benchmark(a.bundle_dir, bucket=a.bucket, n=a.n), indent=1))
+
+
 def cmd_serve(a):
     import uvicorn
     uvicorn.run("orchard.dashboard.app:app", host=a.host, port=a.port, reload=a.reload)
@@ -118,6 +170,48 @@ def main(argv=None):
     s = sub.add_parser("plant", help="register: write orchard.yaml into the repo"); s.add_argument("name"); s.add_argument("--force", action="store_true"); s.set_defaults(fn=cmd_plant)
     s = sub.add_parser("board", help="the portfolio"); s.set_defaults(fn=cmd_board)
     s = sub.add_parser("ledger", help="capital spent and left"); s.add_argument("--days", type=int, default=30); s.add_argument("--json", action="store_true"); s.set_defaults(fn=cmd_ledger)
+    s = sub.add_parser("bundle", help="write a content-addressed bundle")
+    bsub = s.add_subparsers(dest="what", required=True)
+    b = bsub.add_parser("tape", help="a particle tape as chunked variants")
+    b.add_argument("dir"); b.add_argument("--tree", required=True)
+    b.add_argument("--title", required=True)
+    b.add_argument("--out", default=str(RESULTS / "bundles"))
+    b.add_argument("--slot-budget", type=int, default=SLOT_BUDGET,
+                   help="slots the vr-high variant keeps (default %(default)s)")
+    b.add_argument("--chunk-frames", type=int, default=CHUNK_FRAMES)
+    b.set_defaults(fn=cmd_bundle_tape)
+    b = bsub.add_parser("video", help="an mp4 as an HLS ladder")
+    b.add_argument("mp4"); b.add_argument("--tree", required=True)
+    b.add_argument("--title", required=True)
+    b.add_argument("--out", default=str(RESULTS / "bundles"))
+    b.set_defaults(fn=cmd_bundle_video)
+
+    s = sub.add_parser("push", help="upload a bundle to R2")
+    s.add_argument("bundle_dir")
+    s.add_argument("--bucket", default=BUCKET)
+    s.add_argument("--host", default=PUBLIC_HOST)
+    s.add_argument("--method", choices=["rest", "wrangler"], default="rest")
+    s.add_argument("--dry-run", action="store_true")
+    s.add_argument("--force", action="store_true", help="ignore the push index")
+    s.add_argument("--no-check", dest="check", action="store_false",
+                   help="skip the digest checks on either side of the upload")
+    s.add_argument("--no-verify", dest="verify", action="store_false",
+                   help="do not fetch the pushed bundle.json over https")
+    s.add_argument("--verify-timeout", type=int, default=300)
+    s.add_argument("--json", action="store_true")
+    s.set_defaults(fn=cmd_push)
+
+    s = sub.add_parser("r2", help="the media bucket")
+    rsub = s.add_subparsers(dest="what", required=True)
+    r = rsub.add_parser("ensure", help="bucket, CORS and the custom domain")
+    r.add_argument("--bucket", default=BUCKET)
+    r.add_argument("--domain", default=PUBLIC_HOST)
+    r.set_defaults(fn=cmd_r2_ensure)
+    r = rsub.add_parser("benchmark", help="time REST against wrangler")
+    r.add_argument("bundle_dir"); r.add_argument("--bucket", default=BUCKET)
+    r.add_argument("-n", type=int, default=10)
+    r.set_defaults(fn=cmd_r2_benchmark)
+
     s = sub.add_parser("doctor", help="what is wired up"); s.set_defaults(fn=cmd_doctor)
     s = sub.add_parser("serve", help="the flat dashboard"); s.add_argument("--host", default="127.0.0.1"); s.add_argument("--port", type=int, default=8787); s.add_argument("--reload", action="store_true"); s.set_defaults(fn=cmd_serve)
     a = p.parse_args(argv)

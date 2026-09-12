@@ -84,15 +84,41 @@ Chunk file, little-endian:
 | 24 | `u8[8]` | reserved, zero |
 | 32 | frames × (`u16[3]`×n, `u8`×n, `u8`×n) | per frame: positions, species, alive |
 
-**Amendments 2026-09-12 (from WP1, measured):** `slot_stride` is the decimation
-rate only; membership is a sorted blake2b-seeded subset of the slots (seed
-`orchard/bundle/1|slots|{n_slots}|{n}`, the construction spectre's
-`subset_indices` uses), because an index stride aliases against einstruct's
-even/odd species layout and silently deleted species B. `slot_stride == 1` is
-the identity. New fields: `slot_budget` (default 4000), `slot_selection`,
-`species_counts`, `poster_sha256`. Video bundles keep per-file digests in a
-sibling `media.json` that the id does not cover, because x264 under VBV is
-not bit-reproducible; the id covers the recipe.
+**Amendments 2026-09-12 (from WP1, measured; revised after review):**
+`slot_stride` is the decimation RATE only. Membership is chosen **survivors
+first**: every slot alive in the tape's FINAL frame, then the remainder taken
+as the smallest `blake2b(seed|slot, digest_size=8)` digests over the slots not
+already kept, sorted by slot index, with
+seed `orchard/bundle/1|slots|{n_slots}|{n}`. An index stride aliases against
+einstruct's even/odd species layout and silently deleted species B; a uniform
+draw of any kind spends the budget on particles that have annihilated (4,000
+uniform slots of ab_d2 hold 4,000 live points at frame 0 and **56** at the
+last). The digest rank replaces a NumPy `Generator` draw, whose stream NumPy
+does not guarantee across versions (NEP 19) — a `uv sync` must not move a
+tape's address. `slot_stride == 1` is the identity.
+
+**Each variant states its own rule.** `vr-quest` and `phone` are `vr-high`'s
+slot list strided, not the base rule re-run at a larger stride — the two name
+different particles — so their `slot_selection` reads
+`{"rule": "every 2th slot of vr-high", "from": "vr-high", "take_every": 2}`
+while `vr-high` carries
+`{"rule": "alive-last-then-blake2b", "alive_last": N, "filled": M, "seed": …}`.
+
+New fields: `slot_budget` (default 4000), `slot_selection` (an object, above),
+`variants[*].alive` (`first`/`last`/`min` live slots — the number a uniform
+sampler got wrong), `species_counts` (over the BUNDLED slots; `n_slots` is the
+tape's count), `poster_sha256`, `variants[*].n` and `payload_bytes` (`bytes` is
+the bytes on disk, headers included). A non-positive box axis is coerced to
+1.0 and the original recorded as `source.box_raw`. The poster is drawn from
+the bundled slots, not from the whole tape.
+
+Video bundles keep per-file digests in a sibling `media.json` that the id does
+NOT cover, because x264 under VBV is not bit-reproducible (the same command
+gave 22.10/22.08/22.07 MB of 1080p on three runs); the id covers the recipe,
+and `push` must verify `media.json` before uploading and verify what landed
+after. CORS is `GET`/`HEAD` from the two production origins, the Pages preview
+wildcard and `http://localhost:5173` and `:4173` only — R2 takes a list, not
+`localhost:*`.
 
 Positions quantize `[0, L)` per axis onto `[0, 65535]`; a 2D tape has z = 0
 for every slot and `Lz` = 1. `alive` is 1 or 0; a dead slot keeps its last
