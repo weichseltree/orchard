@@ -21,8 +21,8 @@ pnpm build         # -> dist/index.html and dist/grove/index.html
 ```
 
 `src/world/mansion.json` is the scene document: rooms, their glb, their spawn,
-their doorways and what hangs where. No room is hard-coded; adding one is a
-change to that file.
+their doorways, what hangs where, and the sky outside the windows. No room is
+hard-coded; adding one is a change to that file.
 
 Guardrails from day one: random guest names, no guest uploads, mute, kick,
 personal-space bubble, rate-limited chat, presence visible on the flat

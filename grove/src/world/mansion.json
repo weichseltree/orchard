@@ -2,6 +2,15 @@
   "schema": "orchard/mansion/1",
   "title": "The first mansion",
   "start": "hall",
+  "sky": {
+    "sunTravelBlender": [0.7796, 0.2999, -0.5498],
+    "sunAngleDeg": 1.6,
+    "zenith": "#4a78b8",
+    "horizon": "#d6dfe8",
+    "ground": "#2f3a2c",
+    "sun": "#fff1d6",
+    "source": "grove/public/assets/hall/hall.json lighting: the bake's sun, Blender axes, converted by the client"
+  },
   "rooms": [
     {
       "id": "hall",

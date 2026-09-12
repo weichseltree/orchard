@@ -87,11 +87,30 @@ export const RoomSchema = z.looseObject({
   hangings: z.array(HangingSchema).default([]),
 });
 
+/**
+ * What is outside the windows: a gradient dome with the sun where the bake put
+ * it. `sunTravelBlender` is copied verbatim from the bake record
+ * (hall.json `lighting.sun_direction_blender`, Blender Z-up, the direction the
+ * light travels); the client converts. An asset whose extras carry the same
+ * record overrides it.
+ */
+export const SkySchema = z.looseObject({
+  sunTravelBlender: Vec3,
+  sunAngleDeg: z.number().positive().default(1.6),
+  zenith: z.string().default("#4a78b8"),
+  horizon: z.string().default("#d6dfe8"),
+  ground: z.string().default("#2f3a2c"),
+  sun: z.string().default("#fff1d6"),
+  /** Where the numbers came from, for the reader. */
+  source: z.string().default(""),
+});
+
 export const MansionSchema = z
   .looseObject({
     schema: z.literal("orchard/mansion/1"),
     title: z.string().default(""),
     start: z.string().min(1),
+    sky: SkySchema.optional(),
     rooms: z.array(RoomSchema).min(1),
   })
   .superRefine((doc, ctx) => {
@@ -132,6 +151,7 @@ export type TapeHanging = z.infer<typeof TapeHangingSchema>;
 export type VideoHanging = z.infer<typeof VideoHangingSchema>;
 export type Hanging = z.infer<typeof HangingSchema>;
 export type Room = z.infer<typeof RoomSchema>;
+export type Sky = z.infer<typeof SkySchema>;
 export type Mansion = z.infer<typeof MansionSchema>;
 
 export function parseMansion(input: unknown): Mansion {

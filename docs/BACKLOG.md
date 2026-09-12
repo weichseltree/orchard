@@ -19,12 +19,15 @@ Ordered. Items with a name in brackets wait on that person.
 
 ## Known visual issues from the first deploy
 
-4. Hall windows read as black rectangles with a bright rim: the openings are
-   unglazed and nothing exists outside them in the client. Add a sky (emissive
-   dome or HDR) outside the hall, or glaze the windows with an emissive pane
-   matching the bake's sun. WP3 review, docs/reviews/WP3-hall-bake-review.md.
+4. ~~Hall windows read as black rectangles with a bright rim~~ — fixed
+   2026-09-12 in the client: a gradient sky dome outside the mansion with the
+   sun where the bake put it (`grove/src/world/sky.ts`, `sky` in
+   `mansion.json`; DECISIONS). **[Manuel] Deploy it**: `cd grove && pnpm
+   deploy` (LAWS 22, publishing needs approval). The dome's colours are a
+   first guess and belong to item 6.
 5. Lightmap ships as a 2.2 MB PNG; produce KTX2 (UASTC) when `toktx` is
-   installed, and a 1024² tier for phones.
+   installed (it is not on this box; KTX-Software ships a `.deb`), and a
+   1024² tier for phones.
 6. Windows' blown highlights and the plain grey palette; a first pass of
    material and colour design for the hall (LAWS 12, 13).
 

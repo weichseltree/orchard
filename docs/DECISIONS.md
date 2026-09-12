@@ -65,3 +65,9 @@ Append-only. A decision names the day, the ruling, and the alternative it beat.
   2.10 generates its BSATN serializers with `Function()`; the first production
   deploy blocked it and presence silently retried forever. Everything else in
   the policy stays strict. Revisit when the SDK offers a non-JIT path.
+- **2026-09-12 · The outside is a sky dome in the client, its sun taken from
+  the bake record.** Beat glazing the windows with an emissive pane (hides
+  the sun disc, and the pane's brightness would need a rebake to agree with
+  the pools on the floor) and an HDR environment (a download on the phone
+  tier for six apertures). The dome's colours are a placeholder until the
+  hall gets its material and colour pass.

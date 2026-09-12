@@ -101,6 +101,7 @@ grove/
       schema.ts              its zod schema; a bad edit fails at boot
       world.ts               builds the mansion out of it
       rooms.ts               glb + lightmap, or the procedural grey shell
+      sky.ts                 the dome outside the windows, sun from the bake record
       navigation.ts          the per-room AABB clamp and the doorway crossing
       tape-exhibit.ts        the tape volume, its clock and its pedestal
     tape/
@@ -414,8 +415,13 @@ module):
    wall at z ∈ [−10.2, −10] sits inside the hall glb's 0.45 m jamb, which is
    harmless doubled geometry today and wrong the moment einstruct gets its own
    baked asset.
-10. **No chat, no voice, no greenhouse, no environment behind the windows.**
-    M1. WP3 notes the hall's six window openings and the doorway show the
-    client's own background; a sky or an environment map is the smallest fix.
+10. **No chat, no voice, no greenhouse.** M1. ~~No environment behind the
+    windows~~: since 2026-09-12 `src/world/sky.ts` puts a gradient dome
+    (radius 80 m, drawn first, depth off) outside the mansion, with the sun
+    where the bake's record says it travels — `sky.sunTravelBlender` in
+    `mansion.json` is copied verbatim from hall.json and a test holds the
+    two equal; an asset whose glb extras carry `lighting.sun_direction_blender`
+    (the bake script now writes it) overrides the copy. Verified in headless
+    Chromium: the windows show sky, the sun pools on the floor are unchanged.
 11. **The dev video ladder is two rungs** (360p, 720p) against WP1's real
     three; the fixture only exists to exercise the player offline.

@@ -1044,6 +1044,8 @@ def main():
             "bake": record["bake"],
             "lightmap": record["lightmap"],
             "geometry": record["geometry"],
+            # The client's sky dome puts its sun where the bake put it (grove/src/world/sky.ts).
+            "lighting": record["lighting"],
         }
     }
     patch_glb_extras(glb, extras)

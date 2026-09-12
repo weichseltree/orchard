@@ -5,6 +5,7 @@ import { VideoWall } from "../media/videowall";
 import { VideoBundleSchema } from "../tape/bundle";
 import type { Provenance } from "../ui/provenance";
 import { buildRoom, type RoomShell } from "./rooms";
+import { buildSky, sunFromAsset, type SkyDome } from "./sky";
 import { TapeExhibit } from "./tape-exhibit";
 import type { BundleRef, Mansion, Room } from "./schema";
 
@@ -50,6 +51,10 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
   const { mansion, renderer, device, provenance, onNotice } = options;
   const group = new Group();
   group.name = "mansion";
+  // The outside goes in first: it costs nothing to load, so the very first
+  // frame already has a horizon, and the hall's windows never show the page.
+  const sky: SkyDome | null = mansion.sky ? buildSky(mansion.sky) : null;
+  if (sky) group.add(sky.mesh);
 
   const world: BuiltWorld = {
     group,
@@ -60,6 +65,9 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
         const shell = await buildRoom({ room, renderer, onNotice });
         group.add(shell.group);
         applyMarkers(room, shell);
+        // A baked room knows where its sun was; the dome follows the asset.
+        const assetSun = sunFromAsset(shell.provenance);
+        if (sky && assetSun) sky.setSun(assetSun);
         provenance.register({
           id: `room:${room.id}`,
           title: room.title || room.id,
@@ -119,6 +127,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
       }
     },
     dispose() {
+      sky?.dispose();
       world.tape?.dispose();
       world.video?.dispose();
     },
