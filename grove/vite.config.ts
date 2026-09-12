@@ -1,11 +1,16 @@
-import { existsSync } from "node:fs";
-import { rm } from "node:fs/promises";
+import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import type { Plugin } from "vite";
 import { defineConfig } from "vitest/config";
 import sirv from "sirv";
+import { fingerprintAssets } from "./build/fingerprint";
 
 const root = fileURLToPath(new URL(".", import.meta.url));
+const threeVersion = (
+  JSON.parse(
+    readFileSync(fileURLToPath(new URL("node_modules/three/package.json", import.meta.url)), "utf8"),
+  ) as { version: string }
+).version;
 const devFixtures = fileURLToPath(new URL("dev", import.meta.url));
 const repoBundles = fileURLToPath(new URL("../results/bundles", import.meta.url));
 
@@ -42,29 +47,22 @@ function localContent(): Plugin {
   };
 }
 
-/**
- * WP3 ships `preview.png` (766 kB) beside the hall asset. It is documentation
- * of the bake, not something the client ever fetches, and `public/` is a
- * deploy manifest. Keep the file where WP3 writes it; keep it out of dist.
- */
-function dropUnshippedAssets(): Plugin {
-  return {
-    name: "grove-drop-unshipped",
-    apply: "build",
-    async closeBundle() {
-      await rm(fileURLToPath(new URL("dist/assets/hall/preview.png", import.meta.url)), {
-        force: true,
-      });
-    },
-  };
-}
-
 // Two pages out of one build: the site home at / and the app at /grove/.
 // Base is "/" because Cloudflare Pages serves this project at the domain root.
 export default defineConfig(({ command }) => ({
   base: "/",
-  plugins: [localContent(), dropUnshippedAssets()],
+  plugins: [
+    localContent(),
+    // Room assets ship under content-hashed names, and only the ones the scene
+    // names (no bake previews, provenance json or retired WP3 hall).
+    fingerprintAssets({
+      scene: fileURLToPath(new URL("src/world/mansion.json", import.meta.url)),
+      publicDir: fileURLToPath(new URL("public", import.meta.url)),
+    }),
+  ],
   define: {
+    // scripts/copy-basis.mjs writes the transcoder under three's version.
+    "import.meta.env.VITE_BASIS_PATH": JSON.stringify(`/basis/${threeVersion}/`),
     // Dev reads WP1's bundles straight off the disk; a build reads R2.
     "import.meta.env.VITE_MEDIA_BASE": JSON.stringify(
       process.env.VITE_MEDIA_BASE ??

@@ -9,6 +9,7 @@ import { XrControls, requestXrSession, watchXrSupport } from "./control/xr";
 import { deploymentTokenSource } from "./net/auth";
 import { Avatars } from "./net/avatars";
 import { Presence } from "./net/presence";
+import { installAssetMap } from "./render/asset-map";
 import { EYE_HEIGHT, createView } from "./render/view";
 import { Hud } from "./ui/hud";
 import { PerfMeter } from "./ui/perf";
@@ -28,6 +29,9 @@ import type { TapeExhibit } from "./world/tape-exhibit";
 const canvas = document.querySelector<HTMLCanvasElement>("#stage");
 const hudRoot = document.querySelector<HTMLElement>("#hud");
 if (!canvas || !hudRoot) throw new Error("grove/index.html is missing #stage or #hud");
+
+// Before any loader runs: room assets are fetched by their hashed names.
+installAssetMap();
 
 const mansion = parseMansion(mansionDocument);
 const device = detectDevice();

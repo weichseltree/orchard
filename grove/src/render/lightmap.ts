@@ -23,8 +23,8 @@ import { KTX2Loader } from "three/examples/jsm/loaders/KTX2Loader.js";
 // Whichever it is, the texture is bound to the *second* UV set, which is what
 // a bake writes and what the base colour must not share.
 
-/** Where copy-basis.mjs puts the Basis Universal transcoder. */
-export const TRANSCODER_PATH = "/basis/";
+/** Where copy-basis.mjs puts the Basis Universal transcoder: /basis/<three version>/. */
+export const TRANSCODER_PATH: string = import.meta.env.VITE_BASIS_PATH ?? "/basis/";
 
 let ktx2: KTX2Loader | null = null;
 
