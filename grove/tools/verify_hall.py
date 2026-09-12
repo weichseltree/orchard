@@ -133,10 +133,20 @@ def main():
         pbr = floor[0].pbrMetallicRoughness
         base = tuple(pbr.baseColorFactor or (1.0, 1.0, 1.0, 1.0))
         rough = 1.0 if pbr.roughnessFactor is None else pbr.roughnessFactor
-        check(all(abs(a - b) < 1e-3 for a, b in zip(base, EXPECT_FLOOR[0])),
-              "hall_floor baseColorFactor %s (not the white glTF default)"
-              % (tuple(round(c, 3) for c in base),))
-        check(abs(rough - EXPECT_FLOOR[1]) < 1e-3, "hall_floor roughnessFactor %.2f" % rough)
+        # The palette the bake ran with (bake_hall.py --palette) is recorded in
+        # hall.json since 2026-09-12; the stone constants are the fallback for
+        # the M0 record, which predates the field.
+        expect = EXPECT_FLOOR
+        try:
+            geom = json.load(open(json_path))["geometry"]
+            expect = (tuple(geom["albedo_linear"]["hall_floor"]) + (1.0,),
+                      geom["roughness"]["hall_floor"])
+        except (OSError, KeyError, ValueError):
+            pass
+        check(all(abs(a - b) < 1e-3 for a, b in zip(base, expect[0])),
+              "hall_floor baseColorFactor %s (the palette's %s, not the white glTF default)"
+              % (tuple(round(c, 3) for c in base), tuple(round(c, 3) for c in expect[0][:3])))
+        check(abs(rough - expect[1]) < 1e-3, "hall_floor roughnessFactor %.2f" % rough)
     for m in g.materials:
         b = tuple(m.pbrMetallicRoughness.baseColorFactor or (1.0, 1.0, 1.0, 1.0))
         check(b != (1.0, 1.0, 1.0, 1.0), "%s carries a real baseColorFactor" % m.name)

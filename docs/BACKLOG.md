@@ -44,9 +44,13 @@ Ordered. Items with a name in brackets wait on that person.
 6. Windows' blown highlights and the plain grey palette; a first pass of
    material and colour design for the hall (LAWS 12, 13). **Ruled 2026-09-12:
    gallery** (charcoal walls, near-black polished floor), from the four
-   previews in `docs/img/hall-palettes-2026-09-12.png`; the 1024-sample bake,
-   the KTX2 step and a deploy follow in the same session. The blown windows
-   are the preview's exposure; the client has the sky dome in them.
+   previews in `docs/img/hall-palettes-2026-09-12.png`. Baked at 1024
+   samples (794 s CPU, scale 2.969, 0.007% clipped), KTX2 tiers encoded,
+   verified and deployed 2026-09-12 17:12. verify_hall.py now reads the
+   baked palette from hall.json instead of the stone constants. Still
+   open under this item: the doorway's light spill on the floor (WP3 known
+   issue 2, a rebake with the neighbour room in place) and the windows'
+   reveals, which the sky dome now sits behind.
 
 ## M1 (company)
 

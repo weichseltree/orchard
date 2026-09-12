@@ -2,13 +2,13 @@
   "schema": "orchard/hall/1",
   "asset": "hall",
   "generated_by": "grove/tools/bake_hall.py",
-  "script_sha256": "d83ed9d63a1bdaece323ea4b2a749edffd95c9b177b9a148105a230415c9056d",
+  "script_sha256": "a6591621d972d7dcc5f08225acb82df4fb5cdf3e76643bf34b596a16544f548a",
   "blender": "4.2.1 LTS",
   "git": {
-    "commit": "4c373c30552b67675ce976096d7c2ffe4a841373",
+    "commit": "6a209aa607662052c4d70df0f1b7912258239dff",
     "dirty": true
   },
-  "generated_at_utc": "2026-09-11T23:54:42Z",
+  "generated_at_utc": "2026-09-12T15:07:28Z",
   "bake": {
     "engine": "cycles",
     "type": "DIFFUSE",
@@ -28,10 +28,10 @@
     "device": "CPU",
     "threads": 16,
     "denoise": "OpenImageDenoise via the compositor Denoise node",
-    "seconds_bake": 1265.17,
-    "seconds_denoise": 4.52,
-    "seconds_wall_clock": 1275.16,
-    "seconds_preview": 3.92
+    "seconds_bake": 794.11,
+    "seconds_denoise": 4.28,
+    "seconds_wall_clock": 811.46,
+    "seconds_preview": 4.11
   },
   "lightmap": {
     "file": "lightmap.png",
@@ -39,14 +39,14 @@
     "ktx2_note": "UASTC quality 2 + zstd 18 (smooth signal; ETC1S bands on large walls); ; mipmapped; the PNG stays as the fallback",
     "encoding": "sRGB transfer, 8 bit RGBA PNG (alpha constant 1)",
     "colour_space_hint": "THREE.SRGBColorSpace",
-    "scale": 3.410822,
+    "scale": 2.968751,
     "scale_meaning": "irradiance/pi = srgb_decode(texel) * scale",
+    "three_light_map_intensity": 9.326606,
+    "binding": "texture.colorSpace = SRGBColorSpace, flipY = false, channel = 1 (TEXCOORD_1), material.lightMapIntensity = three_light_map_intensity",
     "uv": "TEXCOORD_1 (blender uv2)",
     "coverage": 0.6008,
-    "clipped_fraction": 2.9e-05,
-    "noise_metric": 0.048063,
-    "three_light_map_intensity": 10.715413,
-    "binding": "texture.colorSpace = SRGBColorSpace, flipY = false, channel = 1 (TEXCOORD_1), material.lightMapIntensity = three_light_map_intensity",
+    "clipped_fraction": 6.5e-05,
+    "noise_metric": 0.041384,
     "ktx2_phone": "lightmap-1024.ktx2"
   },
   "geometry": {
@@ -139,12 +139,12 @@
       ],
       "eye_height": 1.6,
       "marker_node": "spawn",
-      "note": "the marker sits on the FLOOR (y = 0 in glTF): it is the body position, the client adds its own eye height (view.ts EYE_HEIGHT). eye_height_m = 1.6 in the node's extras is what preview.png was rendered from, not an instruction. Facing is the node's local -Z, (0, 0, -1), which is three.js' default camera forward.",
       "marker_translation_gltf": [
         0.0,
         0.0,
         8.0
-      ]
+      ],
+      "note": "the marker sits on the FLOOR (y = 0 in glTF): it is the body position, the client adds its own eye height (view.ts EYE_HEIGHT). eye_height_m = 1.60 in the node's extras is what preview.png was rendered from, not an instruction. Facing is the node's local -Z, (0, 0, -1), which is three.js' default camera forward."
     },
     "poster_panel": {
       "wall": "+X (blender) / +X (gltf)",
@@ -217,6 +217,41 @@
       "hall_trim",
       "hall_poster_panel"
     ],
+    "palette": "gallery",
+    "albedo_linear": {
+      "hall_floor": [
+        0.055,
+        0.055,
+        0.056
+      ],
+      "hall_wall": [
+        0.195,
+        0.205,
+        0.198
+      ],
+      "hall_ceiling": [
+        0.235,
+        0.24,
+        0.232
+      ],
+      "hall_trim": [
+        0.135,
+        0.14,
+        0.135
+      ],
+      "hall_poster_panel": [
+        0.32,
+        0.325,
+        0.315
+      ]
+    },
+    "roughness": {
+      "hall_floor": 0.22,
+      "hall_wall": 0.9,
+      "hall_ceiling": 0.92,
+      "hall_trim": 0.55,
+      "hall_poster_panel": 0.92
+    },
     "surface_area_m2": 1133.0,
     "texels_per_m2": 3701.8
   },
@@ -235,44 +270,30 @@
   },
   "files": {
     "hall.glb": {
-      "bytes": 52928,
-      "sha256": "90bfeb54bf714f354636ebd8c7abfd23892271122feffb5101ea8740fc9e9ca4"
+      "bytes": 52648,
+      "sha256": "e7805fea3b69018fac6767de60d3e28869cf479149b2b453f0a3d4f938d66211"
     },
     "lightmap.png": {
-      "bytes": 2324189,
-      "sha256": "27d992cefb82d6447c85ec26d29dea237da90c3bae1ad5564ea735ab7a36c9e8"
-    },
-    "preview.png": {
-      "bytes": 784609,
-      "sha256": "069ef6c95031bb1b5c78eefd343e8079da8f96ed19893c5a6e7f6658bdf003ff"
+      "bytes": 2387777,
+      "sha256": "d426c1d42f1cfa2dca9235fdfd9b24ed50361456a43769b031221c8b8e52d37b"
     },
     "lightmap.ktx2": {
-      "bytes": 1995927,
-      "sha256": "4ce7d7c9024432c861094fd059f688f3ec4b7819aaa42d5c24a4dd069bb8284e"
+      "bytes": 2032897,
+      "sha256": "feed4acaa59351fb1991e423d12c6b9a7c86b51c0c6369b8d9f72f02946c0deb"
+    },
+    "preview.png": {
+      "bytes": 749694,
+      "sha256": "55eb928745746ea190c177708a546f606e2ae2e87fc6033d65d5faabb085c524"
     },
     "lightmap-1024.ktx2": {
-      "bytes": 600733,
-      "sha256": "2bf7e244b9dceb1f6c2a0bda03f1d6859ea18164996288511ad62c4088364213"
+      "bytes": 609697,
+      "sha256": "e87c4bf83b97b4b1d96e3063fb0abd20815760d43b2d9325433c14cb4db8a63e"
     }
-  },
-  "post_bake_patch": {
-    "script": "grove/tools/patch_hall_glb.py",
-    "script_sha256": "ebc381089ee9f71cc6ad3d3e625c71f86d6d4adc360adb90763af6d7549c34e7",
-    "applied_utc": "2026-09-12T00:20:45Z",
-    "reason": "review docs/reviews/WP3-hall-bake-review.md, findings 1, 3, 4, 5",
-    "rebaked": false,
-    "changes": [
-      "node spawn rotation [0.0, 0.0, 0.0, 1.0] -> [0.0, 0.0, 0.0, 1.0], local -Z now (0, 0, -1), down the hall at the doorway",
-      "node door_einstruct rotation [0.0, 1.0, 0.0, 0.0] -> [0.0, 1.0, 0.0, 0.0], local -Z now (0, 0, +1), back into the hall",
-      "node poster_wall rotation [0.0, 0.7071, 0.0, 0.7071] -> [0.0, 0.7071, 0.0, 0.7071], local -Z now (-1, 0, 0), the panel normal",
-      "material hall_floor baseColorFactor [0.15, 0.135, 0.125, 1.0] -> [0.15, 0.135, 0.125, 1.0], roughnessFactor 0.38 -> 0.38",
-      "lightmap.three_light_map_intensity = 10.715413 (scale * pi); encoding string corrected to RGBA"
-    ]
   },
   "post_bake_ktx2": {
     "script": "grove/tools/compress_lightmap.py",
     "script_sha256": "661b19e8fd1357a0afa58db6666f3aa430f1df02b1e11cc6f0e7e5fa45b37cfd",
-    "applied_utc": "2026-09-12T14:35:41Z",
+    "applied_utc": "2026-09-12T15:08:21Z",
     "toktx": "",
     "files": [
       "lightmap.ktx2",
