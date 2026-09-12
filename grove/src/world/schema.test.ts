@@ -13,7 +13,7 @@ describe("mansion.json", () => {
   it("parses", () => {
     const mansion = parseMansion(mansionDocument);
     expect(mansion.schema).toBe("orchard/mansion/1");
-    expect(mansion.rooms.map((room) => room.id)).toEqual(["hall", "einstruct", "world-engine", "orangery", "phototroph", "gallery", "spectre", "greenhouse"]);
+    expect(mansion.rooms.map((room) => room.id)).toEqual(["hall", "einstruct", "world-engine", "orangery", "phototroph", "gallery", "spectre", "greenhouse", "terrace", "parterre", "orchard-west", "orchard-south", "orchard-east"]);
     expect(mansion.start).toBe("hall");
   });
 
@@ -27,7 +27,7 @@ describe("mansion.json", () => {
     expect(hall!.presence).toBe("grove");
     // The palace: the einstruct door, the phototroph door in the once-blank back
     // wall, and the greenhouse door, closed to visitors.
-    expect(hall!.doorways).toHaveLength(3);
+    expect(hall!.doorways).toHaveLength(5);
     expect(hall!.doorways[0]).toMatchObject({ to: "einstruct", width: 2.4, height: 3.2 });
     expect(hall!.doorways.find((d) => d.to === "greenhouse")).toMatchObject({ closed: true });
   });
@@ -150,7 +150,9 @@ describe("BundleRefSchema", () => {
   it("every hanging in mansion.json names an exhibit on its room's tree and keeps a pinned id", () => {
     for (const room of parseMansion(mansionDocument).rooms) {
       for (const hanging of room.hangings) {
-        expect(hanging.bundle.exhibit?.tree).toBe(room.id === "hall" ? "einstruct" : room.id);
+        // The hall's poster wall shows einstruct; the terrace's moon is spectre's chi12 ball.
+        const guest: Record<string, string> = { hall: "einstruct", terrace: "spectre" };
+        expect(hanging.bundle.exhibit?.tree).toBe(guest[room.id] ?? room.id);
         expect(hanging.bundle.exhibit?.kind).toBe(hanging.kind);
         expect(hanging.bundle.id).toMatch(/^[0-9a-f]{16}$/);
         // A hanging pinned to a bundle names the same bundle as its fallback id.
@@ -165,7 +167,12 @@ describe("BundleRefSchema", () => {
       for (const door of room.doorways) {
         if (door.closed) continue;
         const other = roomById(mansion, door.to)!;
-        const back = other.doorways.find((d) => d.to === room.id)!;
+        // Two rooms may share several openings (the hall's French doors, the
+        // orangery's arches): match the one at the same place.
+        const back = other.doorways.find(
+          (d) => d.to === room.id && d.axis === door.axis && d.at === door.at && d.center === door.center,
+        )!;
+        expect(back).toBeDefined();
         expect(back).toMatchObject({ axis: door.axis, at: door.at, center: door.center, width: door.width, height: door.height });
         const axis = door.axis === "x" ? 0 : 2;
         expect([room.bounds.min[axis], room.bounds.max[axis]]).toContain(door.at);

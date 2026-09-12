@@ -157,7 +157,11 @@ export class TapeExhibit {
     const response = await fetch(`${base}bundle.json`);
     if (!response.ok) throw new Error(`bundle.json: HTTP ${response.status}`);
     const bundle = TapeBundleSchema.parse(await response.json());
-    const picked = pickVariant(bundle, options.tier);
+    const forced = options.hanging.variant;
+    const picked =
+      forced && bundle.variants[forced]
+        ? { name: forced, variant: bundle.variants[forced]! }
+        : pickVariant(bundle, options.tier);
     if (!picked) throw new Error(`bundle ${bundle.id} has no variants`);
     const slots = variantSlots(bundle, picked.variant);
     const stream = new TapeStream({

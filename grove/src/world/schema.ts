@@ -73,6 +73,8 @@ export const TapeHangingSchema = z.looseObject({
   kind: z.literal("tape"),
   /** The tape box is scaled so its longest side measures this many metres. */
   longSideMeters: z.number().positive().default(6),
+  /** Force a bundle variant (e.g. "phone" for a tape seen only from afar); empty picks by device tier. */
+  variant: z.string().default(""),
   /** Point size in pixels at 1 m; a tape of a few particles wants a larger one. */
   pointSize: z.number().positive().default(14),
   pedestal: z
@@ -117,8 +119,9 @@ export const RoomSchema = z.looseObject({
   lightmap: z.array(z.string()).default([]),
   /** The phone's list, when it has its own tier; empty means `lightmap`. */
   lightmapPhone: z.array(z.string()).default([]),
+  /** "box": a grey shell with walls and a ceiling; "ground": a cell of the grounds, floor only. */
   fallback: z
-    .looseObject({ kind: z.literal("box"), color: z.string().default("#8e968d") })
+    .looseObject({ kind: z.enum(["box", "ground"]).default("box"), color: z.string().default("#8e968d") })
     .default({ kind: "box", color: "#8e968d" }),
   bounds: BoundsSchema,
   spawn: SpawnSchema,

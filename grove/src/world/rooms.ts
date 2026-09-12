@@ -263,6 +263,13 @@ export function proceduralRoom(room: Room): Group {
   floor.name = "floor";
   group.add(floor);
 
+  // A cell of the grounds is a floor and nothing else: no ceiling, no walls.
+  // The body clamp is its fence; the sky dome is its ceiling.
+  if (room.fallback.kind === "ground") {
+    group.add(...roomLights(room, 1));
+    return group;
+  }
+
   const ceiling = new Mesh(new PlaneGeometry(width, depth), ceilMaterial);
   ceiling.rotation.x = Math.PI / 2;
   ceiling.position.set((minX + maxX) / 2, maxY - 0.001, (minZ + maxZ) / 2);

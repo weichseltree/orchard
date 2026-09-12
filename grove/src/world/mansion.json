@@ -79,6 +79,22 @@
           "height": 3.0,
           "closed": true,
           "admin": true
+        },
+        {
+          "to": "terrace",
+          "axis": "x",
+          "at": -7,
+          "center": -1.667,
+          "width": 1.6,
+          "height": 5.6
+        },
+        {
+          "to": "terrace",
+          "axis": "x",
+          "at": -7,
+          "center": 1.667,
+          "width": 1.6,
+          "height": 5.6
         }
       ],
       "palace": {
@@ -94,17 +110,6 @@
             ],
             "width": 1.6,
             "sill": 1.6,
-            "head": 5.6,
-            "reveal": 0.35
-          },
-          {
-            "wall": "-x",
-            "centers": [
-              1.667,
-              -1.667
-            ],
-            "width": 1.6,
-            "sill": 0.0,
             "head": 5.6,
             "reveal": 0.35
           }
@@ -536,6 +541,30 @@
           "center": 0,
           "width": 2.4,
           "height": 3.2
+        },
+        {
+          "to": "terrace",
+          "axis": "x",
+          "at": -7,
+          "center": -40,
+          "width": 3.0,
+          "height": 5.0
+        },
+        {
+          "to": "terrace",
+          "axis": "x",
+          "at": -7,
+          "center": -52,
+          "width": 3.0,
+          "height": 5.0
+        },
+        {
+          "to": "terrace",
+          "axis": "x",
+          "at": -7,
+          "center": -64,
+          "width": 3.0,
+          "height": 5.0
         }
       ],
       "palace": {
@@ -543,7 +572,14 @@
         "windows": [
           {
             "wall": "-x",
-            "bays": 9,
+            "centers": [
+              -36,
+              -44,
+              -48,
+              -56,
+              -60,
+              -68
+            ],
             "width": 3.0,
             "sill": 0.0,
             "head": 5.0,
@@ -1021,6 +1057,457 @@
             "head": 4.2
           }
         ]
+      },
+      "hangings": []
+    },
+    {
+      "id": "terrace",
+      "title": "terrace",
+      "presence": "terrace",
+      "glb": "assets/palace/terrace/terrace.glb",
+      "lightmap": [
+        "assets/palace/terrace/lightmap.ktx2",
+        "assets/palace/terrace/lightmap.png"
+      ],
+      "lightmapPhone": [
+        "assets/palace/terrace/lightmap-1024.ktx2",
+        "assets/palace/terrace/lightmap.png"
+      ],
+      "fallback": {
+        "kind": "ground",
+        "color": "#8a8578"
+      },
+      "bounds": {
+        "min": [
+          -15,
+          0,
+          -70
+        ],
+        "max": [
+          -7,
+          8,
+          58
+        ]
+      },
+      "spawn": {
+        "position": [
+          -11,
+          0,
+          0
+        ],
+        "yawDeg": 90
+      },
+      "doorways": [
+        {
+          "to": "hall",
+          "axis": "x",
+          "at": -7,
+          "center": -1.667,
+          "width": 1.6,
+          "height": 5.6
+        },
+        {
+          "to": "hall",
+          "axis": "x",
+          "at": -7,
+          "center": 1.667,
+          "width": 1.6,
+          "height": 5.6
+        },
+        {
+          "to": "orangery",
+          "axis": "x",
+          "at": -7,
+          "center": -40,
+          "width": 3.0,
+          "height": 5.0
+        },
+        {
+          "to": "orangery",
+          "axis": "x",
+          "at": -7,
+          "center": -52,
+          "width": 3.0,
+          "height": 5.0
+        },
+        {
+          "to": "orangery",
+          "axis": "x",
+          "at": -7,
+          "center": -64,
+          "width": 3.0,
+          "height": 5.0
+        },
+        {
+          "to": "parterre",
+          "axis": "x",
+          "at": -15,
+          "center": 0,
+          "width": 12,
+          "height": 8
+        },
+        {
+          "to": "parterre",
+          "axis": "x",
+          "at": -15,
+          "center": -36,
+          "width": 4,
+          "height": 8
+        },
+        {
+          "to": "parterre",
+          "axis": "x",
+          "at": -15,
+          "center": 36,
+          "width": 4,
+          "height": 8
+        }
+      ],
+      "palace": {
+        "type": "cell",
+        "ground": "gravel",
+        "balustrade": {
+          "x": -15,
+          "openings": [
+            [
+              -6,
+              6
+            ],
+            [
+              -38,
+              -34
+            ],
+            [
+              34,
+              38
+            ]
+          ]
+        },
+        "facade": true
+      },
+      "hangings": [
+        {
+          "id": "moon",
+          "kind": "tape",
+          "title": "The chi 12 world, as a moon",
+          "bundle": {
+            "exhibit": {
+              "tree": "spectre",
+              "kind": "tape",
+              "bundle": "64546061a0b52660"
+            },
+            "id": "64546061a0b52660"
+          },
+          "position": [
+            -105,
+            55,
+            -60
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "longSideMeters": 14,
+          "pointSize": 600,
+          "variant": "phone"
+        }
+      ]
+    },
+    {
+      "id": "parterre",
+      "title": "parterre",
+      "presence": "parterre",
+      "glb": "assets/palace/parterre/parterre.glb",
+      "lightmap": [
+        "assets/palace/parterre/lightmap.ktx2",
+        "assets/palace/parterre/lightmap.png"
+      ],
+      "lightmapPhone": [
+        "assets/palace/parterre/lightmap-1024.ktx2",
+        "assets/palace/parterre/lightmap.png"
+      ],
+      "fallback": {
+        "kind": "ground",
+        "color": "#8a8578"
+      },
+      "bounds": {
+        "min": [
+          -55,
+          0,
+          -40
+        ],
+        "max": [
+          -15,
+          8,
+          40
+        ]
+      },
+      "spawn": {
+        "position": [
+          -20,
+          0,
+          0
+        ],
+        "yawDeg": 90
+      },
+      "doorways": [
+        {
+          "to": "terrace",
+          "axis": "x",
+          "at": -15,
+          "center": 0,
+          "width": 12,
+          "height": 8
+        },
+        {
+          "to": "terrace",
+          "axis": "x",
+          "at": -15,
+          "center": -36,
+          "width": 4,
+          "height": 8
+        },
+        {
+          "to": "terrace",
+          "axis": "x",
+          "at": -15,
+          "center": 36,
+          "width": 4,
+          "height": 8
+        },
+        {
+          "to": "orchard-south",
+          "axis": "x",
+          "at": -55,
+          "center": 0,
+          "width": 80,
+          "height": 8
+        },
+        {
+          "to": "orchard-west",
+          "axis": "z",
+          "at": -40,
+          "center": -35,
+          "width": 40,
+          "height": 8
+        },
+        {
+          "to": "orchard-east",
+          "axis": "z",
+          "at": 40,
+          "center": -35,
+          "width": 40,
+          "height": 8
+        }
+      ],
+      "palace": {
+        "type": "cell",
+        "ground": "parterre",
+        "basin": {
+          "center": [
+            -35,
+            0
+          ],
+          "radius": 5
+        }
+      },
+      "hangings": []
+    },
+    {
+      "id": "orchard-west",
+      "title": "orchard-west",
+      "presence": "orchard-west",
+      "glb": "assets/palace/orchard-west/orchard-west.glb",
+      "lightmap": [
+        "assets/palace/orchard-west/lightmap.ktx2",
+        "assets/palace/orchard-west/lightmap.png"
+      ],
+      "lightmapPhone": [
+        "assets/palace/orchard-west/lightmap-1024.ktx2",
+        "assets/palace/orchard-west/lightmap.png"
+      ],
+      "fallback": {
+        "kind": "ground",
+        "color": "#5a6b47"
+      },
+      "bounds": {
+        "min": [
+          -130,
+          0,
+          -110
+        ],
+        "max": [
+          -15,
+          8,
+          -40
+        ]
+      },
+      "spawn": {
+        "position": [
+          -30,
+          0,
+          -50
+        ],
+        "yawDeg": 90
+      },
+      "doorways": [
+        {
+          "to": "parterre",
+          "axis": "z",
+          "at": -40,
+          "center": -35,
+          "width": 40,
+          "height": 8
+        },
+        {
+          "to": "orchard-south",
+          "axis": "z",
+          "at": -40,
+          "center": -92.5,
+          "width": 75,
+          "height": 8
+        }
+      ],
+      "palace": {
+        "type": "cell",
+        "ground": "grass",
+        "trees": true,
+        "seed": 11
+      },
+      "hangings": []
+    },
+    {
+      "id": "orchard-south",
+      "title": "orchard-south",
+      "presence": "orchard-south",
+      "glb": "assets/palace/orchard-south/orchard-south.glb",
+      "lightmap": [
+        "assets/palace/orchard-south/lightmap.ktx2",
+        "assets/palace/orchard-south/lightmap.png"
+      ],
+      "lightmapPhone": [
+        "assets/palace/orchard-south/lightmap-1024.ktx2",
+        "assets/palace/orchard-south/lightmap.png"
+      ],
+      "fallback": {
+        "kind": "ground",
+        "color": "#5a6b47"
+      },
+      "bounds": {
+        "min": [
+          -130,
+          0,
+          -40
+        ],
+        "max": [
+          -55,
+          8,
+          40
+        ]
+      },
+      "spawn": {
+        "position": [
+          -60,
+          0,
+          0
+        ],
+        "yawDeg": 90
+      },
+      "doorways": [
+        {
+          "to": "parterre",
+          "axis": "x",
+          "at": -55,
+          "center": 0,
+          "width": 80,
+          "height": 8
+        },
+        {
+          "to": "orchard-west",
+          "axis": "z",
+          "at": -40,
+          "center": -92.5,
+          "width": 75,
+          "height": 8
+        },
+        {
+          "to": "orchard-east",
+          "axis": "z",
+          "at": 40,
+          "center": -92.5,
+          "width": 75,
+          "height": 8
+        }
+      ],
+      "palace": {
+        "type": "cell",
+        "ground": "grass",
+        "trees": true,
+        "seed": 12
+      },
+      "hangings": []
+    },
+    {
+      "id": "orchard-east",
+      "title": "orchard-east",
+      "presence": "orchard-east",
+      "glb": "assets/palace/orchard-east/orchard-east.glb",
+      "lightmap": [
+        "assets/palace/orchard-east/lightmap.ktx2",
+        "assets/palace/orchard-east/lightmap.png"
+      ],
+      "lightmapPhone": [
+        "assets/palace/orchard-east/lightmap-1024.ktx2",
+        "assets/palace/orchard-east/lightmap.png"
+      ],
+      "fallback": {
+        "kind": "ground",
+        "color": "#5a6b47"
+      },
+      "bounds": {
+        "min": [
+          -130,
+          0,
+          40
+        ],
+        "max": [
+          -15,
+          8,
+          110
+        ]
+      },
+      "spawn": {
+        "position": [
+          -30,
+          0,
+          50
+        ],
+        "yawDeg": 90
+      },
+      "doorways": [
+        {
+          "to": "parterre",
+          "axis": "z",
+          "at": 40,
+          "center": -35,
+          "width": 40,
+          "height": 8
+        },
+        {
+          "to": "orchard-south",
+          "axis": "z",
+          "at": 40,
+          "center": -92.5,
+          "width": 75,
+          "height": 8
+        }
+      ],
+      "palace": {
+        "type": "cell",
+        "ground": "grass",
+        "trees": true,
+        "seed": 13
       },
       "hangings": []
     }
