@@ -469,6 +469,13 @@ def configure_cycles(scene, args):
             except Exception:
                 pass
     else:
+        if os.environ.get("ORCHARD_GPU_LANE_HELD") != "1":
+            raise SystemExit(
+                "--device GPU refused: nothing here holds the GPU lane, and an unserialised "
+                "CUDA context freezes WSL2. The CPU bake fits the 30 min budget; if you really "
+                "need the card, take the lane and say so:\n"
+                "  exp run orchard-hall-bake-gpu --prio 10 -- env ORCHARD_GPU_LANE_HELD=1 "
+                "<blender> --background --python grove/tools/bake_hall.py -- --device GPU ...")
         cy.device = "GPU"
         if prefs is not None:
             for kind in ("OPTIX", "CUDA"):
@@ -620,7 +627,12 @@ def add_markers(scene):
         e.empty_display_type = "SINGLE_ARROW"
         e.empty_display_size = 0.5
         e.location = loc
-        e.rotation_euler = Vector((0.0, 0.0, -1.0)).rotation_difference(Vector(facing)).to_euler()
+        # The Y-up export conjugates each node's rotation by the Z-up -> Y-up
+        # change of basis, which sends the object's local +Y to the exported
+        # node's local -Z.  So to make the node's -Z (the camera convention) the
+        # facing, aim the BLENDER-local +Y at it here -- aiming Blender's own -Z
+        # lands the facing on the node's local -Y and points -Z at the ceiling.
+        e.rotation_euler = Vector(facing).normalized().to_track_quat("Y", "Z").to_euler()
         for k, v in props.items():
             e[k] = v
         scene.collection.objects.link(e)
@@ -629,12 +641,36 @@ def add_markers(scene):
     out = [
         empty("spawn", (SPAWN_XY[0], SPAWN_XY[1], 0.0), (0, 1, 0),
               {"role": "spawn", "eye_height_m": EYE_H}),
-        empty("door_einstruct", (0.0, D / 2, 0.0), (0, 1, 0),
+        # the doorway marker faces back INTO the hall (you travel the other way)
+        empty("door_einstruct", (0.0, D / 2, 0.0), (0, -1, 0),
               {"role": "doorway", "width_m": DOOR_W, "height_m": DOOR_H, "to": "einstruct"}),
         empty("poster_wall", (W / 2 + PANEL_DEPTH, 0.0, PANEL_Z0 + PANEL_H / 2), (-1, 0, 0),
               {"role": "poster", "width_m": PANEL_W, "height_m": PANEL_H}),
     ]
     return out
+
+
+def flatten_materials_for_export(mats):
+    """glTF carries a constant baseColor and roughness, not a node graph: any
+    input still driven by a procedural exports as the glTF DEFAULT (white, 1.0),
+    not as what the bake saw.  Drop those links and restore the constants.  An
+    image texture is left alone -- that one the exporter can carry."""
+    for idx, mat in enumerate(mats):
+        nt = mat.node_tree
+        bsdf = nt.nodes.get("Principled BSDF")
+        if bsdf is None:
+            continue
+        for socket, value in (("Base Color", (*MAT_BASE[idx], 1.0)),
+                              ("Roughness", MAT_ROUGH[idx])):
+            inp = bsdf.inputs[socket]
+            for link in list(inp.links):
+                source = link.from_node.type
+                if source == "TEX_IMAGE":
+                    continue
+                nt.links.remove(link)
+                inp.default_value = value
+                log("export: %s.%s unlinked from %s, constant %s"
+                    % (mat.name, socket, source, value))
 
 
 def export_glb(path, objects):
@@ -867,6 +903,7 @@ def main():
     ktx, ktx_note = maybe_ktx2(png, out_dir)
     log("ktx2: %s" % ktx_note)
 
+    flatten_materials_for_export(mats)
     markers = add_markers(scene)
     ob["orchard_role"] = "hall"
     ob["orchard_lightmap_uv"] = uv2_name
@@ -906,11 +943,13 @@ def main():
             "file": "lightmap.png",
             "ktx2": os.path.basename(ktx) if ktx else None,
             "ktx2_note": ktx_note,
-            "encoding": "sRGB transfer, 8 bit RGB PNG",
+            "encoding": "sRGB transfer, 8 bit RGBA PNG (alpha constant 1)",
             "colour_space_hint": "THREE.SRGBColorSpace",
             "scale": stats["scale"],
-            "scale_meaning": "irradiance/pi = srgb_decode(texel) * scale; "
-                             "start with three.js lightMapIntensity = scale",
+            "scale_meaning": "irradiance/pi = srgb_decode(texel) * scale",
+            "three_light_map_intensity": round(stats["scale"] * math.pi, 6),
+            "binding": "texture.colorSpace = SRGBColorSpace, flipY = false, channel = 1 "
+                       "(TEXCOORD_1), material.lightMapIntensity = three_light_map_intensity",
             "uv": "TEXCOORD_1 (blender uv2)",
             "coverage": stats["coverage"],
             "clipped_fraction": stats["clipped_fraction"],
@@ -931,6 +970,10 @@ def main():
                 "through_direction_blender": [0.0, 1.0, 0.0],
                 "through_direction_gltf": [0.0, 0.0, -1.0],
                 "marker_node": "door_einstruct",
+                "marker_facing_gltf": [0.0, 0.0, 1.0],
+                "marker_facing_note": "the door_einstruct node's local -Z points back INTO "
+                                      "the hall; you travel through the doorway the other "
+                                      "way, towards -Z world",
             },
             "spawn": {
                 "floor_blender": [SPAWN_XY[0], SPAWN_XY[1], 0.0],
@@ -940,8 +983,12 @@ def main():
                 "facing_gltf": [0.0, 0.0, -1.0],
                 "eye_height": EYE_H,
                 "marker_node": "spawn",
-                "note": "facing_gltf is three.js' default camera forward, so a fresh "
-                        "camera at eye_gltf with identity rotation already looks at the doorway",
+                "marker_translation_gltf": [SPAWN_XY[0], 0.0, -SPAWN_XY[1]],
+                "note": "the marker sits on the FLOOR (y = 0 in glTF): it is the body "
+                        "position, the client adds its own eye height (view.ts EYE_HEIGHT). "
+                        "eye_height_m = %.2f in the node's extras is what preview.png was "
+                        "rendered from, not an instruction. Facing is the node's local -Z, "
+                        "(0, 0, -1), which is three.js' default camera forward." % EYE_H,
             },
             "poster_panel": {
                 "wall": "+X (blender) / +X (gltf)",

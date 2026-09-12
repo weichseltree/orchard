@@ -37,14 +37,16 @@
     "file": "lightmap.png",
     "ktx2": null,
     "ktx2_note": "toktx not on PATH -- shipping lightmap.png only",
-    "encoding": "sRGB transfer, 8 bit RGB PNG",
+    "encoding": "sRGB transfer, 8 bit RGBA PNG (alpha constant 1)",
     "colour_space_hint": "THREE.SRGBColorSpace",
     "scale": 3.410822,
-    "scale_meaning": "irradiance/pi = srgb_decode(texel) * scale; start with three.js lightMapIntensity = scale",
+    "scale_meaning": "irradiance/pi = srgb_decode(texel) * scale",
     "uv": "TEXCOORD_1 (blender uv2)",
     "coverage": 0.6008,
     "clipped_fraction": 2.9e-05,
-    "noise_metric": 0.048063
+    "noise_metric": 0.048063,
+    "three_light_map_intensity": 10.715413,
+    "binding": "texture.colorSpace = SRGBColorSpace, flipY = false, channel = 1 (TEXCOORD_1), material.lightMapIntensity = three_light_map_intensity"
   },
   "geometry": {
     "units": "metres",
@@ -100,7 +102,13 @@
         0.0,
         -1.0
       ],
-      "marker_node": "door_einstruct"
+      "marker_node": "door_einstruct",
+      "marker_facing_gltf": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "marker_facing_note": "the door_einstruct node's local -Z points back INTO the hall; you travel through the doorway the other way, towards -Z world"
     },
     "spawn": {
       "floor_blender": [
@@ -130,7 +138,12 @@
       ],
       "eye_height": 1.6,
       "marker_node": "spawn",
-      "note": "facing_gltf is three.js' default camera forward, so a fresh camera at eye_gltf with identity rotation already looks at the doorway"
+      "note": "the marker sits on the FLOOR (y = 0 in glTF): it is the body position, the client adds its own eye height (view.ts EYE_HEIGHT). eye_height_m = 1.6 in the node's extras is what preview.png was rendered from, not an instruction. Facing is the node's local -Z, (0, 0, -1), which is three.js' default camera forward.",
+      "marker_translation_gltf": [
+        0.0,
+        0.0,
+        8.0
+      ]
     },
     "poster_panel": {
       "wall": "+X (blender) / +X (gltf)",
@@ -221,8 +234,8 @@
   },
   "files": {
     "hall.glb": {
-      "bytes": 51108,
-      "sha256": "6e1ae168b7f55f0ab6a03850a2073d1093d42ec594c5bb0c57c7e256b67b0f83"
+      "bytes": 52560,
+      "sha256": "bae6f79348657c36fd754cf4567954e14b6410200e4f77c31dee9dfd538d5b78"
     },
     "lightmap.png": {
       "bytes": 2324189,
@@ -232,5 +245,19 @@
       "bytes": 784609,
       "sha256": "069ef6c95031bb1b5c78eefd343e8079da8f96ed19893c5a6e7f6658bdf003ff"
     }
+  },
+  "post_bake_patch": {
+    "script": "grove/tools/patch_hall_glb.py",
+    "script_sha256": "ebc381089ee9f71cc6ad3d3e625c71f86d6d4adc360adb90763af6d7549c34e7",
+    "applied_utc": "2026-09-12T00:20:45Z",
+    "reason": "review docs/reviews/WP3-hall-bake-review.md, findings 1, 3, 4, 5",
+    "rebaked": false,
+    "changes": [
+      "node spawn rotation [0.0, 0.0, 0.0, 1.0] -> [0.0, 0.0, 0.0, 1.0], local -Z now (0, 0, -1), down the hall at the doorway",
+      "node door_einstruct rotation [0.0, 1.0, 0.0, 0.0] -> [0.0, 1.0, 0.0, 0.0], local -Z now (0, 0, +1), back into the hall",
+      "node poster_wall rotation [0.0, 0.7071, 0.0, 0.7071] -> [0.0, 0.7071, 0.0, 0.7071], local -Z now (-1, 0, 0), the panel normal",
+      "material hall_floor baseColorFactor [0.15, 0.135, 0.125, 1.0] -> [0.15, 0.135, 0.125, 1.0], roughnessFactor 0.38 -> 0.38",
+      "lightmap.three_light_map_intensity = 10.715413 (scale * pi); encoding string corrected to RGBA"
+    ]
   }
 }

@@ -18,11 +18,14 @@ import pygltflib
 
 MAX_GLB_BYTES = 8 * 1024 * 1024
 EXPECT_NODES = {
-    # node name -> glTF translation (Y up): (x, z_blender, -y_blender)
-    "spawn": (0.0, 0.0, 8.0),
-    "door_einstruct": (0.0, 0.0, -10.0),
-    "poster_wall": (7.04, 3.1, 0.0),
+    # node name -> (glTF translation, the direction its local -Z must point)
+    # translation is (x, z_blender, -y_blender); facing is the camera convention,
+    # so a three.js object given this quaternion looks the documented way.
+    "spawn": ((0.0, 0.0, 8.0), (0.0, 0.0, -1.0)),          # down the hall, at the doorway
+    "door_einstruct": ((0.0, 0.0, -10.0), (0.0, 0.0, 1.0)),  # back into the hall
+    "poster_wall": ((7.04, 3.1, 0.0), (-1.0, 0.0, 0.0)),   # the panel normal
 }
+EXPECT_FLOOR = ((0.150, 0.135, 0.125, 1.0), 0.38)
 
 fails: list[str] = []
 notes: list[str] = []
@@ -34,6 +37,21 @@ def check(cond, msg):
     else:
         fails.append("  FAIL  %s" % msg)
     return cond
+
+
+def qrot(q, v):
+    """Rotate v by quaternion q, which glTF stores as (x, y, z, w)."""
+    x, y, z, w = q
+    ux, uy, uz = x, y, z
+    dot = ux * v[0] + uy * v[1] + uz * v[2]
+    uu = ux * ux + uy * uy + uz * uz
+    cx = uy * v[2] - uz * v[1]
+    cy = uz * v[0] - ux * v[2]
+    cz = ux * v[1] - uy * v[0]
+    k = w * w - uu
+    return (2 * dot * ux + k * v[0] + 2 * w * cx,
+            2 * dot * uy + k * v[1] + 2 * w * cy,
+            2 * dot * uz + k * v[2] + 2 * w * cz)
 
 
 def png_size(path):
@@ -83,13 +101,21 @@ def main():
     check(bake.get("resolution") == 2048, "baked at 2048^2 (got %r)" % bake.get("resolution"))
 
     names = {n.name: n for n in g.nodes}
-    for want, xyz in EXPECT_NODES.items():
+    for want, (xyz, facing) in EXPECT_NODES.items():
         node = names.get(want)
         if not check(node is not None, "node %r present" % want):
             continue
         got = tuple(round(c, 3) for c in (node.translation or (0.0, 0.0, 0.0)))
         check(all(abs(a - b) < 0.02 for a, b in zip(got, xyz)),
               "node %r at %s (expected %s)" % (want, got, xyz))
+        q = node.rotation or (0.0, 0.0, 0.0, 1.0)
+        aim = tuple(round(c, 4) for c in qrot(q, (0.0, 0.0, -1.0)))
+        up = tuple(round(c, 4) for c in qrot(q, (0.0, 1.0, 0.0)))
+        check(all(abs(a - b) < 0.01 for a, b in zip(aim, facing)),
+              "node %r local -Z points %s (expected %s)" % (want, aim, facing))
+        check(abs(up[1] - 1.0) < 0.01, "node %r is upright, local +Y -> %s" % (want, up))
+    check(abs((names["spawn"].translation or (0, 0, 0))[1]) < 1e-6,
+          "spawn marker sits on the floor (y = 0): it is the body, the client adds eye height")
 
     # mesh bounds, in glTF axes
     pos = [g.accessors[p.attributes.POSITION] for p in prims]
@@ -101,6 +127,19 @@ def main():
           "doorway wall towards -Z: z in [%.2f, %.2f]" % (lo[2], hi[2]))
     check(abs(lo[0] + 7.35) < 0.02 and abs(hi[0] - 7.04) < 0.02,
           "windows towards -X: x in [%.2f, %.2f]" % (lo[0], hi[0]))
+
+    floor = [m for m in g.materials if m.name == "hall_floor"]
+    if check(bool(floor), "material hall_floor present"):
+        pbr = floor[0].pbrMetallicRoughness
+        base = tuple(pbr.baseColorFactor or (1.0, 1.0, 1.0, 1.0))
+        rough = 1.0 if pbr.roughnessFactor is None else pbr.roughnessFactor
+        check(all(abs(a - b) < 1e-3 for a, b in zip(base, EXPECT_FLOOR[0])),
+              "hall_floor baseColorFactor %s (not the white glTF default)"
+              % (tuple(round(c, 3) for c in base),))
+        check(abs(rough - EXPECT_FLOOR[1]) < 1e-3, "hall_floor roughnessFactor %.2f" % rough)
+    for m in g.materials:
+        b = tuple(m.pbrMetallicRoughness.baseColorFactor or (1.0, 1.0, 1.0, 1.0))
+        check(b != (1.0, 1.0, 1.0, 1.0), "%s carries a real baseColorFactor" % m.name)
 
     w, h, depth, ctype = png_size(png_path)
     check((w, h) == (2048, 2048), "lightmap.png %dx%d" % (w, h))
@@ -125,6 +164,14 @@ def main():
               "hall.json digest matches %s on disk" % name)
     lm = rec["lightmap"]
     check(0.05 < lm["scale"] < 100.0, "lightmap scale %.3f" % lm["scale"])
+    import math
+    check(abs(lm.get("three_light_map_intensity", 0) - lm["scale"] * math.pi) < 1e-3,
+          "three_light_map_intensity %.4f == scale * pi (three r155+ has no 1/pi)"
+          % lm.get("three_light_map_intensity", float("nan")))
+    check(lm.get("three_light_map_intensity") == orchard["lightmap"].get(
+        "three_light_map_intensity"), "glb extras carry the same intensity")
+    check("RGBA" in lm["encoding"] and ctype == 6, "encoding string matches the PNG colour type")
+    check("channel = 1" in lm.get("binding", ""), "lightmap.binding spells out the client binding")
     check(lm["clipped_fraction"] < 0.01, "clipped %.4f%% of baked texels"
           % (100 * lm["clipped_fraction"]))
     check(lm["coverage"] > 0.35, "atlas coverage %.1f%%" % (100 * lm["coverage"]))

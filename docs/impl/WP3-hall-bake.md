@@ -1,5 +1,45 @@
 # WP3 · the baked hall
 
+## What changed after the review (2026-09-12)
+
+`docs/reviews/WP3-hall-bake-review.md` accepted the asset with fixes.  All of
+them were applied **without re-baking** — the 21-minute lightmap is untouched and
+still the shipped bytes.  The glb was patched in place by
+`grove/tools/patch_hall_glb.py` (recorded in `asset.extras.orchard.post_bake_patch`
+with its own sha256), and `bake_hall.py` was fixed so a future bake produces all
+of it directly; a fresh `--no-bake` export was diffed against the patched glb to
+prove the two now agree.
+
+1. **Marker facing (HIGH).**  The Y-up export conjugates each node's rotation by
+   the change of basis, which sends Blender-local **+Y** to the exported node's
+   local **−Z**.  Aiming Blender's own −Z therefore put the facing on the node's
+   local −Y and pointed −Z at the ceiling.  The three markers now carry
+   rotations whose local −Z *is* the facing, and `verify_hall.py` asserts it
+   numerically (it rotates (0,0,−1) by the quaternion) as well as asserting each
+   marker is upright.
+2. **Lightmap intensity (HIGH).**  three.js r155+ dropped the 1/π from the light
+   map path, so `scale` alone is π× too dark.  `hall.json` and the glb extras now
+   carry **both** `lightmap.scale` = 3.410822 (the irradiance/π convention the
+   texture actually holds) and `lightmap.three_light_map_intensity` = scale·π =
+   **10.715413**, which is what `material.lightMapIntensity` wants.
+3. **Floor albedo (MED).**  `hall_floor` exported the glTF default white because
+   its base colour and roughness were node-linked to the procedural.  Both are
+   now constants in the glb — baseColorFactor `[0.150, 0.135, 0.125, 1]`,
+   roughness `0.38` — and the script unlinks any non-image driver before export.
+4. **Encoding string (LOW).**  The PNG is RGBA, not RGB; the record says so and
+   the verifier checks the colour type against it.
+5. **`--device GPU` (LOW)** now refuses unless `ORCHARD_GPU_LANE_HELD=1`, which
+   only an `exp run … --prio 10 --` line has any business setting.  The docstring
+   rule is a gate now.
+
+Not done, and why: `preview.png` stays in `public/` (moving it to `docs/img/` is
+outside this work package's write scope — WP2 or the coordinator should decide);
+the spawn is at z = 8.0 against `mansion.json`'s 7.5, a 0.5 m disagreement that
+is WP2's to reconcile since the marker is the asset's own authority; the recorded
+git commit is the parent of the one that first contains the script, because the
+tree was dirty at bake time — the script sha256 in the record is the reproducible
+identity, not the commit.
+
 `grove/tools/bake_hall.py` builds the M0 hall from nothing but numbers, bakes a
 Cycles lightmap onto a second UV set and writes the client's asset:
 
@@ -8,6 +48,8 @@ Cycles lightmap onto a second UV set and writes the client's asset:
         lightmap.png    2048², sRGB, diffuse direct+indirect with no colour
         hall.json       provenance and geometry, the same record as asset.extras
         preview.png     1280×720, what you see standing on the spawn point
+    grove/tools/verify_hall.py     the checks below, "VERIFY OK"
+    grove/tools/patch_hall_glb.py  the one post-review edit to the shipped bytes
 
 Nothing is modelled by hand: change a constant at the top of the script and the
 hall changes.  The bake runs on the CPU under `exprun`; no CUDA context is ever
@@ -32,7 +74,7 @@ doorway**.  The interior is 14 (X) × 20 (Y) × 7 m (Z) to the beam soffits.
 | back wall | −Y, blank |
 | wainscot | 0 → 1.1 m, standing 0.06 m proud |
 | cornice | 6.55 → 6.85 m, standing 0.12 m proud |
-| spawn | (0, −8, 0) on the floor, eye at 1.6 m, facing +Y |
+| spawn | (0, −8, 0) **on the floor**, facing +Y (preview eye height 1.6 m) |
 
 The walls are a stepped profile (wainscot → field → cornice → frieze) built from
 visible faces only: no face is hidden behind another, so no lightmap texel is
@@ -47,19 +89,31 @@ opening gets a reveal ring so the bake has depth to shade.
 so in the client's coordinates the hall is x ∈ [−7, 7], y ∈ [0, 7],
 z ∈ [−10, 10]; **the doorway is at z = −10** and the windows are on −X.
 
-* **spawn**: position `(0, 1.6, 8)`, looking down −Z.  That is three.js' default
-  camera forward, so a fresh `PerspectiveCamera` placed at the spawn with
-  identity rotation already faces the doorway down the length of the hall, with
-  the windows on its left and the poster wall on its right.
-* **doorway**: floor centre `(0, 0, −10)`, you walk through it towards −Z; the
-  opening is 2.4 wide × 3.2 high, and the jamb is 0.45 m deep, so the far side
-  of the wall is at z = −10.45.
+* **spawn**: translation `(0, 0, 8)` — **on the floor, y = 0**.  It is the body
+  position, not the eye: the client adds its own eye height (`view.ts`
+  `EYE_HEIGHT`), which is the convention `mansion.json` already uses.  Its
+  rotation is identity, so its local −Z is `(0, 0, −1)`: three.js' default camera
+  forward, facing the doorway down the length of the hall, windows on the left,
+  poster wall on the right.  (`extras.eye_height_m = 1.6` is the height
+  `preview.png` was rendered from, not an instruction.)
+* **doorway**: floor centre `(0, 0, −10)`; you walk through it towards −Z, and the
+  jamb is 0.45 m deep, so the far side of the wall is at z = −10.45.  The
+  `door_einstruct` node's local −Z points the other way, `(0, 0, +1)`, **back
+  into the hall** — the portal-normal convention, so a quad given that rotation
+  faces a visitor standing in the hall.
 * **poster panel**: centre `(7.04, 3.1, 0)`, normal −X, 6 × 3.4 m.
 
 Those three are also **empty nodes in the glb** — `spawn`, `door_einstruct`,
 `poster_wall` — so WP2 can read them instead of copying numbers.  Convention:
-the node's local **−Z is the facing direction** (camera convention), and each
-carries its own `extras` (`role`, `width_m`, `height_m`, `eye_height_m`).
+the node's local **−Z is the facing direction** (camera convention) and local +Y
+is up; each carries its own `extras` (`role`, `width_m`, `height_m`,
+`eye_height_m`).  Final transforms:
+
+| node | translation | rotation (xyzw) | local −Z |
+|---|---|---|---|
+| `spawn` | (0, 0, 8) | (0, 0, 0, 1) | (0, 0, −1) |
+| `door_einstruct` | (0, 0, −10) | (0, 1, 0, 0) | (0, 0, +1) |
+| `poster_wall` | (7.04, 3.1, 0) | (0, √½, 0, √½) | (−1, 0, 0) |
 `hall.json` and `asset.extras.orchard.geometry` carry the same coordinates in
 both spaces.
 
@@ -94,12 +148,25 @@ plus their margins cover 60% of the atlas, so the delivered density is about
 47 px/m — a texel is roughly 2 cm.
 
 The float bake is normalised so that its 99.9th percentile lands at 0.95, then
-sRGB-encoded to 8 bit.  The divisor is recorded as `lightmap.scale`:
+sRGB-encoded to 8 bit RGBA (the alpha channel is a constant 1).  The divisor is
+recorded as `lightmap.scale` = **3.410822**:
 
     irradiance/pi = srgb_decode(texel) * scale
 
-so the client sets `texture.colorSpace = THREE.SRGBColorSpace` and starts from
-`material.lightMapIntensity = scale`.  Clipping above the percentile is measured
+**The exact client binding**, which is also spelled out in
+`lightmap.binding`:
+
+    texture.colorSpace          = THREE.SRGBColorSpace   // the PNG is sRGB-encoded
+    texture.flipY               = false                  // glTF UV origin
+    texture.channel             = 1                      // TEXCOORD_1 = uv2
+    material.lightMapIntensity  = lightmap.three_light_map_intensity   // 10.715413
+
+`three_light_map_intensity` is `scale · π`, **not** `scale`: three.js r155+
+removed the 1/π that used to sit in the light map path, so it adds
+`texel · lightMapIntensity` straight to irradiance and then multiplies by
+`albedo/π`.  With `scale·π` the product is `albedo · texel · scale`, which is
+exactly the radiance `preview.png` was rendered at, so the preview remains the
+calibration for the corrected binding.  Clipping above the percentile is measured
 and reported in `hall.json` (it is the sunlit floor and window reveals only).
 
 `toktx` is **not installed on this box**, so the asset ships `lightmap.png` and
@@ -212,7 +279,10 @@ in Y-up, `lightmap.png` at 2048² 8-bit, `preview.png` at 1280×720, the glb und
 
 ## The preview
 
-`preview.png` is rendered from the spawn point (0, −8, 1.6) with a 22 mm lens,
+`preview.png` is still the reference for the shipped asset: nothing in the
+post-review patch changed a pixel of the lightmap, and the floor albedo the
+patch wrote into the glb is the same constant the preview multiplies by.  It is
+rendered from the spawn point (0, −8, 1.6) with a 22 mm lens,
 Cycles, emission only (`max_bounces = 0`), using the **saved** `lightmap.png`
 re-loaded as sRGB and multiplied by each material's flat base colour — that is,
 it renders exactly what the client will assemble, not what Blender knows.  It is
