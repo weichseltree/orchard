@@ -378,6 +378,16 @@ measurement (its ADR 0006 keeps unmeasured numbers out of its own docs).
 Collected here as the answers come in; each is one `orchard exhibit hang
 <dir> --approve` or a verdict in the flat dashboard.
 
+**Accepted 2026-09-12 (every recommendation):** world-engine's three stills
+and phototroph's tape are hung (exhibits 3 to 6); einstruct's stirred twin
+and `row` hang once the client that gives them a second sheet and wall is
+published; spectre's trio and clip hang after its harvest; Spike C and the
+dimer-split conversion are funded (the conversion ran, 136 KB). Left to
+Manuel's own hands: publishing the client (`cd grove && pnpm run deploy`),
+creating spectre's private remote (the scan is clean), the rate decision,
+the styleframe verdicts, the world-engine doorway session, and the two
+housekeeping commits.
+
 - **einstruct, hang the stirred twin.** ab_d2_stir `903d0c5a939b0ba1`
   beside the ab_d2 tape already in the room, the segregation-versus-stirred
   pair that is the new thesis picture; harvested 2026-09-12 (einstruct

@@ -31,6 +31,13 @@ describe("pickExhibit", () => {
     expect(pickExhibit(rows, "spectre", "video")?.id).toBe(3n);
   });
 
+  it("takes the latest row for a named bundle, so two sheets of one tree can differ", () => {
+    expect(pickExhibit(rows, "einstruct", "video", "aaaaaaaaaaaaaaaa")?.id).toBe(1n);
+    expect(pickExhibit(rows, "einstruct", "video", "dddddddddddddddd")?.id).toBe(4n);
+    expect(pickExhibit(rows, "einstruct", "tape", "bbbbbbbbbbbbbbbb")?.id).toBe(2n);
+    expect(pickExhibit(rows, "einstruct", "tape", "0000000000000000")).toBeNull();
+  });
+
   it("is null when nothing of that kind hangs on that tree", () => {
     expect(pickExhibit(rows, "spectre", "tape")).toBeNull();
     expect(pickExhibit([], "einstruct", "video")).toBeNull();

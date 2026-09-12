@@ -3,7 +3,11 @@
   "title": "The first mansion",
   "start": "hall",
   "sky": {
-    "sunTravelBlender": [0.7796, 0.2999, -0.5498],
+    "sunTravelBlender": [
+      0.7796,
+      0.2999,
+      -0.5498
+    ],
     "sunAngleDeg": 1.6,
     "zenith": "#4a78b8",
     "horizon": "#d6dfe8",
@@ -17,23 +21,71 @@
       "title": "The hall",
       "presence": "grove",
       "glb": "assets/hall/hall.glb",
-      "lightmap": ["assets/hall/lightmap.ktx2", "assets/hall/lightmap.png"],
-      "lightmapPhone": ["assets/hall/lightmap-1024.ktx2", "assets/hall/lightmap.png"],
-      "fallback": { "kind": "box", "color": "#8e968d" },
-      "bounds": { "min": [-7, 0, -10], "max": [7, 7, 10] },
-      "spawn": { "position": [0, 0, 8], "yawDeg": 0 },
+      "lightmap": [
+        "assets/hall/lightmap.ktx2",
+        "assets/hall/lightmap.png"
+      ],
+      "lightmapPhone": [
+        "assets/hall/lightmap-1024.ktx2",
+        "assets/hall/lightmap.png"
+      ],
+      "fallback": {
+        "kind": "box",
+        "color": "#8e968d"
+      },
+      "bounds": {
+        "min": [
+          -7,
+          0,
+          -10
+        ],
+        "max": [
+          7,
+          7,
+          10
+        ]
+      },
+      "spawn": {
+        "position": [
+          0,
+          0,
+          8
+        ],
+        "yawDeg": 0
+      },
       "doorways": [
-        { "to": "einstruct", "axis": "z", "at": -10, "center": 0, "width": 2.4, "height": 3.2 }
+        {
+          "to": "einstruct",
+          "axis": "z",
+          "at": -10,
+          "center": 0,
+          "width": 2.4,
+          "height": 3.2
+        }
       ],
       "hangings": [
         {
           "id": "hall-poster",
           "kind": "still",
           "title": "ab_d2 segregation, styleframe",
-          "bundle": { "exhibit": { "tree": "einstruct", "kind": "still" }, "id": "c59c7baa6fd15489" },
+          "bundle": {
+            "exhibit": {
+              "tree": "einstruct",
+              "kind": "still"
+            },
+            "id": "c59c7baa6fd15489"
+          },
           "marker": "poster_wall",
-          "position": [6.98, 3.1, 0],
-          "rotationDeg": [0, -90, 0],
+          "position": [
+            6.98,
+            3.1,
+            0
+          ],
+          "rotationDeg": [
+            0,
+            -90,
+            0
+          ],
           "widthMeters": 6,
           "heightMeters": 3.4
         }
@@ -45,31 +97,375 @@
       "presence": "einstruct",
       "glb": "",
       "lightmap": [],
-      "fallback": { "kind": "box", "color": "#7d857e" },
-      "bounds": { "min": [-5, 0, -20], "max": [5, 5, -10] },
-      "spawn": { "position": [0, 0, -11], "yawDeg": 0 },
+      "fallback": {
+        "kind": "box",
+        "color": "#7d857e"
+      },
+      "bounds": {
+        "min": [
+          -7.5,
+          0,
+          -20
+        ],
+        "max": [
+          7.5,
+          5,
+          -10
+        ]
+      },
+      "spawn": {
+        "position": [
+          0,
+          0,
+          -11
+        ],
+        "yawDeg": 0
+      },
       "doorways": [
-        { "to": "hall", "axis": "z", "at": -10, "center": 0, "width": 2.4, "height": 3.2 }
+        {
+          "to": "hall",
+          "axis": "z",
+          "at": -10,
+          "center": 0,
+          "width": 2.4,
+          "height": 3.2
+        },
+        {
+          "to": "world-engine",
+          "axis": "x",
+          "at": 7.5,
+          "center": -15,
+          "width": 2.4,
+          "height": 3.2
+        },
+        {
+          "to": "phototroph",
+          "axis": "x",
+          "at": -7.5,
+          "center": -15,
+          "width": 2.4,
+          "height": 3.2
+        }
       ],
       "hangings": [
         {
           "id": "einstruct-tape",
           "kind": "tape",
           "title": "A+B annihilation, 2D, seed 0",
-          "bundle": { "exhibit": { "tree": "einstruct", "kind": "tape" }, "id": "2dd0038799b2db15", "path": "/dev-bundle/" },
-          "position": [0, 1.0, -15.4],
-          "rotationDeg": [-90, 0, 0],
+          "bundle": {
+            "exhibit": {
+              "tree": "einstruct",
+              "kind": "tape",
+              "bundle": "2dd0038799b2db15"
+            },
+            "id": "2dd0038799b2db15",
+            "path": "/dev-bundle/"
+          },
+          "position": [
+            -3.7,
+            1.0,
+            -15.4
+          ],
+          "rotationDeg": [
+            -90,
+            0,
+            0
+          ],
           "longSideMeters": 6,
-          "pedestal": { "position": [0, 0, -12.4], "rotationDeg": [0, 0, 0] }
+          "pedestal": {
+            "position": [
+              -3.7,
+              0,
+              -12.4
+            ],
+            "rotationDeg": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "id": "einstruct-tape-stirred",
+          "kind": "tape",
+          "title": "A+B annihilation, stirred: the control",
+          "bundle": {
+            "exhibit": {
+              "tree": "einstruct",
+              "kind": "tape",
+              "bundle": "903d0c5a939b0ba1"
+            },
+            "id": "903d0c5a939b0ba1"
+          },
+          "position": [
+            3.7,
+            1.0,
+            -15.4
+          ],
+          "rotationDeg": [
+            -90,
+            0,
+            0
+          ],
+          "longSideMeters": 6,
+          "pedestal": {
+            "position": [
+              3.7,
+              0,
+              -12.4
+            ],
+            "rotationDeg": [
+              0,
+              0,
+              0
+            ]
+          }
         },
         {
           "id": "einstruct-wall",
           "kind": "video",
           "title": "ab_d2 segregation, 40 s",
-          "bundle": { "exhibit": { "tree": "einstruct", "kind": "video" }, "id": "216b720501856b14", "path": "/dev-video/" },
-          "position": [0, 2.35, -19.9],
-          "rotationDeg": [0, 0, 0],
+          "bundle": {
+            "exhibit": {
+              "tree": "einstruct",
+              "kind": "video",
+              "bundle": "216b720501856b14"
+            },
+            "id": "216b720501856b14",
+            "path": "/dev-video/"
+          },
+          "position": [
+            0,
+            2.35,
+            -19.9
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
           "widthMeters": 6
+        },
+        {
+          "id": "einstruct-wall-row",
+          "kind": "video",
+          "title": "A row does not know which way is up",
+          "bundle": {
+            "exhibit": {
+              "tree": "einstruct",
+              "kind": "video",
+              "bundle": "f0b3eba5f655c2a9"
+            },
+            "id": "f0b3eba5f655c2a9"
+          },
+          "position": [
+            -4.5,
+            2.35,
+            -10.1
+          ],
+          "rotationDeg": [
+            0,
+            180,
+            0
+          ],
+          "widthMeters": 5
+        }
+      ]
+    },
+    {
+      "id": "world-engine",
+      "title": "world-engine",
+      "presence": "world-engine",
+      "glb": "",
+      "lightmap": [],
+      "fallback": {
+        "kind": "box",
+        "color": "#6f7580"
+      },
+      "bounds": {
+        "min": [
+          7.5,
+          0,
+          -20
+        ],
+        "max": [
+          17.5,
+          5,
+          -10
+        ]
+      },
+      "spawn": {
+        "position": [
+          8.8,
+          0,
+          -15
+        ],
+        "yawDeg": -90
+      },
+      "doorways": [
+        {
+          "to": "einstruct",
+          "axis": "x",
+          "at": 7.5,
+          "center": -15,
+          "width": 2.4,
+          "height": 3.2
+        }
+      ],
+      "hangings": [
+        {
+          "id": "world-engine-classroom",
+          "kind": "still",
+          "title": "The classroom rebuilt from 28,112 spheres in 2.1 MB",
+          "bundle": {
+            "exhibit": {
+              "tree": "world-engine",
+              "kind": "still",
+              "bundle": "8fd0f876cee6a54f"
+            },
+            "id": "8fd0f876cee6a54f"
+          },
+          "position": [
+            17.4,
+            2.4,
+            -15
+          ],
+          "rotationDeg": [
+            0,
+            -90,
+            0
+          ],
+          "widthMeters": 6,
+          "heightMeters": 3.4
+        },
+        {
+          "id": "world-engine-behind-the-chair",
+          "kind": "still",
+          "title": "Behind the chair: true, torn, stretched, stretched within objects",
+          "bundle": {
+            "exhibit": {
+              "tree": "world-engine",
+              "kind": "still",
+              "bundle": "0a674d5fc6ec8899"
+            },
+            "id": "0a674d5fc6ec8899"
+          },
+          "position": [
+            12.5,
+            2.4,
+            -19.9
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "widthMeters": 6,
+          "heightMeters": 3.4
+        },
+        {
+          "id": "world-engine-fringe",
+          "kind": "still",
+          "title": "The fringe round a chair leg, six ways",
+          "bundle": {
+            "exhibit": {
+              "tree": "world-engine",
+              "kind": "still",
+              "bundle": "df31b52fbd0faada"
+            },
+            "id": "df31b52fbd0faada"
+          },
+          "position": [
+            12.5,
+            2.4,
+            -10.1
+          ],
+          "rotationDeg": [
+            0,
+            180,
+            0
+          ],
+          "widthMeters": 6,
+          "heightMeters": 3.4
+        }
+      ]
+    },
+    {
+      "id": "phototroph",
+      "title": "phototroph",
+      "presence": "phototroph",
+      "glb": "",
+      "lightmap": [],
+      "fallback": {
+        "kind": "box",
+        "color": "#5f6a66"
+      },
+      "bounds": {
+        "min": [
+          -17.5,
+          0,
+          -20
+        ],
+        "max": [
+          -7.5,
+          5,
+          -10
+        ]
+      },
+      "spawn": {
+        "position": [
+          -8.8,
+          0,
+          -15
+        ],
+        "yawDeg": 90
+      },
+      "doorways": [
+        {
+          "to": "einstruct",
+          "axis": "x",
+          "at": -7.5,
+          "center": -15,
+          "width": 2.4,
+          "height": 3.2
+        }
+      ],
+      "hangings": [
+        {
+          "id": "phototroph-tape",
+          "kind": "tape",
+          "title": "A three-body capture: two atoms fall together and stay, the third leaves",
+          "bundle": {
+            "exhibit": {
+              "tree": "phototroph",
+              "kind": "tape",
+              "bundle": "cecbb68e2d2274af"
+            },
+            "id": "cecbb68e2d2274af"
+          },
+          "position": [
+            -12.5,
+            1.0,
+            -15.4
+          ],
+          "rotationDeg": [
+            -90,
+            0,
+            0
+          ],
+          "longSideMeters": 6,
+          "pedestal": {
+            "position": [
+              -12.5,
+              0,
+              -12.4
+            ],
+            "rotationDeg": [
+              0,
+              0,
+              0
+            ]
+          }
         }
       ]
     }

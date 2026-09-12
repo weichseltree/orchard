@@ -22,16 +22,21 @@ export const EXHIBIT_KINDS_FOR = {
   still: ["still"],
 } as const;
 
-/** The most recently hung row for the tree, of a kind the hanging can show. */
+/**
+ * The most recently hung row for the tree, of a kind the hanging can show;
+ * with `bundle`, the most recent row whose media lives under that bundle id.
+ */
 export function pickExhibit(
   rows: Iterable<ExhibitRow>,
   tree: string,
   hanging: keyof typeof EXHIBIT_KINDS_FOR,
+  bundle = "",
 ): ExhibitRow | null {
   const kinds: readonly string[] = EXHIBIT_KINDS_FOR[hanging];
   let best: ExhibitRow | null = null;
   for (const row of rows) {
     if (row.tree !== tree || !kinds.includes(row.kind)) continue;
+    if (bundle && !bundleBaseOf(row).endsWith(`/${bundle}/`)) continue;
     if (!best || row.id > best.id) best = row;
   }
   return best;

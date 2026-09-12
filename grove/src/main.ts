@@ -58,14 +58,14 @@ const hud = new Hud(hudRoot, {
   onEnterVr: () => void enterVr(),
   onTogglePlay: () => commands.togglePlay(),
   onScrub: (fraction) => {
-    world?.tape?.scrubToFraction(fraction);
+    for (const tape of world?.tapes ?? []) tape.scrubToFraction(fraction);
     scrubbingUntil = performance.now() + 400;
   },
   onScrubEnd: () => {
     scrubbingUntil = 0;
   },
   onSpeed: (speed) => {
-    world?.tape?.setSpeed(speed);
+    for (const tape of world?.tapes ?? []) tape.setSpeed(speed);
     hud.setSpeed(speed);
   },
   onUnmute: () => void toggleAudio(),
@@ -103,13 +103,18 @@ const commands: Commands = {
   togglePlay: () => {
     const tape = world?.tape;
     if (!tape) return;
-    hud.setPlaying(tape.togglePlay());
+    const playing = tape.togglePlay();
+    for (const other of world?.tapes.slice(1) ?? []) other.setPlaying(playing);
+    hud.setPlaying(playing);
   },
-  nudgeFrames: (delta) => world?.tape?.nudgeFrames(delta),
+  nudgeFrames: (delta) => {
+    for (const tape of world?.tapes ?? []) tape.nudgeFrames(delta);
+  },
   cycleSpeed: () => {
     const tape = world?.tape;
     if (!tape) return;
     const speed = tape.cycleSpeed();
+    for (const other of world?.tapes.slice(1) ?? []) other.setSpeed(speed);
     hud.setSpeed(speed);
     notice(`${speed}x`);
   },
@@ -239,8 +244,10 @@ view.start((dt) => {
 
   const tape = world?.tape;
   if (tape) {
-    if (input.scrub !== 0) tape.scrubBySeconds(input.scrub * dt * 4);
-    tape.update(dt);
+    for (const each of world?.tapes ?? []) {
+      if (input.scrub !== 0) each.scrubBySeconds(input.scrub * dt * 4);
+      each.update(dt);
+    }
     if (performance.now() > scrubbingUntil) {
       const frame = frameAt(tape.timeline, tape.tau);
       // Building the label every frame is a string per frame for nothing: the

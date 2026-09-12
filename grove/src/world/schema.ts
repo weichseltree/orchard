@@ -35,13 +35,17 @@ export const DoorwaySchema = z.looseObject({
 
 /**
  * Which bundle a hanging shows. `exhibit` names a tree and what kind of thing
- * hangs on it, and takes the latest row of the live `exhibit` table; `id` is a
- * content hash on the media host, the fallback while single-player; `path` a
- * dev directory. Precedence: exhibit, id, path.
+ * hangs on it, and takes the latest row of the live `exhibit` table; with
+ * `bundle` it takes the latest row FOR THAT BUNDLE instead, so a room can
+ * hold two sheets of one tree (einstruct's ab_d2 beside its stirred twin)
+ * and a take-down still reaches visitors. `id` is a content hash on the
+ * media host, the fallback while single-player; `path` a dev directory.
+ * Precedence: exhibit, id, path.
  */
 export const ExhibitRefSchema = z.looseObject({
   tree: z.string().min(1),
   kind: z.enum(["tape", "video", "still"]),
+  bundle: z.string().default(""),
 });
 
 export const BundleRefSchema = z

@@ -105,9 +105,12 @@ Ordered. Items with a name in brackets wait on that person.
     `meta.species_masses` names heavy and light; the client's orange and
     blue break LAWS 12 for spectre's style B (iron-warm and pale). A
     per-exhibit palette in the hanging, defaulting from the header.
-18. **The `ke` channel and per-frame `t`** (spectre bugs 5, 6): carry heat
-    as a channel, and the index's per-frame t instead of one mean dt (drift
-    up to a tau inside a chunk).
+18. **Extra channels and per-frame `t`** (spectre bugs 5, 6; phototroph):
+    the bundler reads only pos, species and alive, so spectre's `ke` (heat)
+    and phototroph's `bond_count` never reach the grove; carry declared
+    extra channels, and the index's per-frame t instead of one mean dt
+    (drift up to a tau inside a chunk). The poster labels time in "tau"
+    whatever the header's `units` says; phototroph's unit is t0.
 19. **`<stem>.json` render sidecars** (spectre bug 4): carry beside the
     stock `<file>.json` sidecar, under a different key; the measured numbers
     live there.

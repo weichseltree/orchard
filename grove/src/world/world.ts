@@ -37,8 +37,13 @@ export interface BuildWorldOptions {
 
 export interface BuiltWorld {
   group: Group;
-  tape: TapeExhibit | null;
-  video: VideoWall | null;
+  /** Every tape volume, in hanging order; the HUD's transport drives them all in step. */
+  tapes: TapeExhibit[];
+  /** The first tape, for the HUD's readouts. */
+  readonly tape: TapeExhibit | null;
+  videos: VideoWall[];
+  /** The first video wall, for the audio toggle. */
+  readonly video: VideoWall | null;
   stills: StillPanel[];
   /** Streams the mansion in. Resolves when everything that can load has. */
   load(): Promise<void>;
@@ -52,7 +57,7 @@ export interface BuiltWorld {
  */
 export function bundleUrl(ref: BundleRef, exhibits: Iterable<ExhibitRow> = []): string | null {
   if (ref.exhibit) {
-    const row = pickExhibit(exhibits, ref.exhibit.tree, ref.exhibit.kind);
+    const row = pickExhibit(exhibits, ref.exhibit.tree, ref.exhibit.kind, ref.exhibit.bundle);
     if (row) return bundleBaseOf(row);
   }
   if (ref.id) return `${MEDIA_BASE}/${ref.id}/`;
@@ -78,8 +83,14 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
   const shells = new Map<string, RoomShell>();
   const world: BuiltWorld = {
     group,
-    tape: null,
-    video: null,
+    tapes: [],
+    get tape() {
+      return this.tapes[0] ?? null;
+    },
+    videos: [],
+    get video() {
+      return this.videos[0] ?? null;
+    },
     stills: [],
     load: async () => {
       for (const room of mansion.rooms) {
@@ -114,10 +125,6 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
             continue;
           }
           if (hanging.kind === "tape") {
-            if (world.tape) {
-              onNotice(`${hanging.id}: only one tape volume in M0`);
-              continue;
-            }
             try {
               const tape = await TapeExhibit.load({
                 hanging,
@@ -126,7 +133,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
                 pixelRatio: Math.min(window.devicePixelRatio, device.maxPixelRatio),
                 onNotice,
               });
-              world.tape = tape;
+              world.tapes.push(tape);
               group.add(tape.group);
               provenance.register({
                 id: `tape:${hanging.id}`,
@@ -163,7 +170,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
                 onNotice,
               );
               if (video) {
-                world.video = video;
+                world.videos.push(video);
                 group.add(video.mesh);
               }
             } catch (error) {
@@ -175,8 +182,8 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
     },
     dispose() {
       sky?.dispose();
-      world.tape?.dispose();
-      world.video?.dispose();
+      for (const tape of world.tapes) tape.dispose();
+      for (const video of world.videos) video.dispose();
       for (const still of world.stills) still.dispose();
     },
   };

@@ -110,3 +110,32 @@ Append-only. A decision names the day, the ruling, and the alternative it beat.
   greenhouse panels in place, the next sessions run inside the research
   repos against `docs/BRIEF-FOR-TREES.md`: what each can show now, which of
   its ideas is a mechanism of the mansion, one thesis, and what it needs.
+- **2026-09-12 · The first exhibit plan's rulings, accepted by Manuel** ("I
+  accept your recommendations", on docs/EXHIBIT-PLAN.md): einstruct's
+  stirred twin `903d0c5a939b0ba1` beside its ab_d2 tape and the `row`
+  animation `f0b3eba5f655c2a9` as a clip; spectre's trio once chi6 lands,
+  its 42.8 s excerpt reclassed clip and hung silent; world-engine's three
+  stills in a room of its own; phototroph's dimer-split tape funded (one
+  CPU conversion, `cecbb68e2d2274af`, hung); a private remote for spectre
+  after a clean secrets scan (the scan came back clean; creating the repo
+  is Manuel's own step); someotherlife's Spike C capture funded with the
+  orchard grounds as the first target.
+- **2026-09-12 · A hanging may pin an exhibit to a bundle.** `exhibit:
+  {tree, kind, bundle}` takes the latest row of the live table whose media
+  is under that bundle id, so one room holds two sheets of one tree and a
+  take-down still reaches visitors; without `bundle` the latest row of the
+  kind still wins. Beat a slot column in the exhibit table (the database
+  would then know the client's furniture) and pinning by `id` alone (no
+  take-down without a deploy).
+- **2026-09-12 · Several tapes, one transport.** The client's single tape
+  volume and single video wall became lists; the HUD's scrub, speed and
+  play act on every tape in step, which is what einstruct's pair (same
+  801 frames over 400 tau) and spectre's trio (identical per-frame clocks)
+  both want, and the HUD reads from the first. Beat one transport per
+  volume for now; a per-room or nearest-tape transport comes with the
+  spectre room.
+- **2026-09-12 · Rooms off einstruct, not off the hall.** world-engine and
+  phototroph are grey box rooms on einstruct's east and west walls (its
+  bounds widened to 15 m for the two sheets), because the hall is a baked
+  mesh whose doorways are holes in real geometry; a new hall doorway is a
+  rebake. The palace plan decides the real plan of rooms.
