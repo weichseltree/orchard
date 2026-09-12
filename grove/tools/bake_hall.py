@@ -73,6 +73,28 @@ MAT_BASE = {
 }
 MAT_ROUGH = {M_FLOOR: 0.38, M_WALL: 0.88, M_CEIL: 0.90, M_TRIM: 0.62, M_PANEL: 0.92}
 
+# Palette options for the hall's material and colour pass (BACKLOG 6, LAWS 12,
+# 13, 14): render each as a cheap preview, get a ruling, then bake the one
+# chosen. `--palette stone` is the M0 bake above. Linear RGB albedo.
+PALETTES = {
+    "stone": (dict(MAT_BASE), dict(MAT_ROUGH)),
+    # warm plaster over a dark waxed floor; the sun pools read amber
+    "warm": ({M_FLOOR: (0.095, 0.075, 0.062), M_WALL: (0.430, 0.385, 0.330),
+              M_CEIL: (0.500, 0.460, 0.410), M_TRIM: (0.290, 0.250, 0.210),
+              M_PANEL: (0.600, 0.565, 0.515)},
+             {M_FLOOR: 0.32, M_WALL: 0.90, M_CEIL: 0.92, M_TRIM: 0.60, M_PANEL: 0.92}),
+    # a dark gallery: charcoal walls, near-black polished floor, the exhibits carry the light
+    "gallery": ({M_FLOOR: (0.055, 0.055, 0.056), M_WALL: (0.195, 0.205, 0.198),
+                 M_CEIL: (0.235, 0.240, 0.232), M_TRIM: (0.135, 0.140, 0.135),
+                 M_PANEL: (0.320, 0.325, 0.315)},
+                {M_FLOOR: 0.22, M_WALL: 0.90, M_CEIL: 0.92, M_TRIM: 0.55, M_PANEL: 0.92}),
+    # sage walls on a dark floor, the orchard's green as a wall field rather than an accent
+    "moss": ({M_FLOOR: (0.090, 0.098, 0.082), M_WALL: (0.300, 0.340, 0.290),
+              M_CEIL: (0.380, 0.410, 0.360), M_TRIM: (0.200, 0.230, 0.190),
+              M_PANEL: (0.460, 0.490, 0.440)},
+             {M_FLOOR: 0.34, M_WALL: 0.90, M_CEIL: 0.92, M_TRIM: 0.60, M_PANEL: 0.92}),
+}
+
 EPS = 1e-6
 Z = Vector((0.0, 0.0, 1.0))
 
@@ -824,13 +846,18 @@ def parse_args(argv):
     p.add_argument("--no-preview", dest="preview", action="store_false")
     p.add_argument("--preview-samples", type=int, default=48)
     p.add_argument("--save-blend", default="")
+    p.add_argument("--palette", default="stone", choices=sorted(PALETTES),
+                   help="material palette (BACKLOG 6); stone is the M0 bake")
     p.set_defaults(denoise=True, preview=True)
     return p.parse_args(argv)
 
 
 def main():
+    global MAT_BASE, MAT_ROUGH
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     args = parse_args(argv)
+    MAT_BASE, MAT_ROUGH = (dict(d) for d in PALETTES[args.palette])
+    log("palette %s" % args.palette)
 
     script = os.path.abspath(__file__)
     repo = os.path.dirname(os.path.dirname(os.path.dirname(script)))
@@ -1019,6 +1046,9 @@ def main():
                 "cornice_z": [CORNICE_Z0, CORNICE_Z1], "cornice_proud": CORNICE_P,
             },
             "materials": MAT_NAMES,
+            "palette": args.palette,
+            "albedo_linear": {MAT_NAMES[i]: [round(c, 3) for c in MAT_BASE[i]] for i in MAT_BASE},
+            "roughness": {MAT_NAMES[i]: MAT_ROUGH[i] for i in MAT_ROUGH},
             "surface_area_m2": round(area, 1),
             "texels_per_m2": round(args.res ** 2 / area, 1),
         },
