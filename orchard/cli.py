@@ -179,8 +179,14 @@ def cmd_sync(a):
 
 
 def cmd_push(a):
-    from .push import R2NotEnabled, cors_preflight, push, wait_public
+    from .push import R2NotEnabled, cors_preflight, push, refresh_headers, wait_public
     try:
+        if a.refresh_headers:
+            rep = refresh_headers(a.bundle_dir, bucket=a.bucket, dry_run=a.dry_run,
+                                  force=a.force)
+            if a.json:
+                print(json.dumps(rep, indent=1))
+            sys.exit(1 if rep["still_wrong"] else 0)
         rep = push(a.bundle_dir, bucket=a.bucket, method=a.method,
                    dry_run=a.dry_run, force=a.force, check=a.check)
     except R2NotEnabled as exc:
@@ -283,6 +289,9 @@ def main(argv=None):
     s.add_argument("--method", choices=["rest", "wrangler"], default="rest")
     s.add_argument("--dry-run", action="store_true")
     s.add_argument("--force", action="store_true", help="ignore the push index")
+    s.add_argument("--refresh-headers", action="store_true",
+                   help="re-put an already-pushed bundle's objects whose Cache-Control "
+                        "is missing or stale (same bytes; --dry-run lists them)")
     s.add_argument("--no-check", dest="check", action="store_false",
                    help="skip the digest checks on either side of the upload")
     s.add_argument("--no-verify", dest="verify", action="store_false",

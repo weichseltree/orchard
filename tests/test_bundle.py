@@ -962,12 +962,19 @@ def test_a_clip_with_an_audio_track_bundles(tmp_path):
 
 
 class FakeCF:
-    """Enough of `CF` for `push`, with a bucket in a dict."""
+    """Enough of `CF` for `push`, with a bucket in a dict.
 
-    def __init__(self, objects=None, fail_get=None):
+    `keeps_headers=False` is R2 as every push before 2026-09-13 left it: the
+    bytes and the type stored, no Cache-Control.
+    """
+
+    def __init__(self, objects=None, fail_get=None, keeps_headers=True):
         self.objects = dict(objects or {})
-        self.puts, self.gets, self.heads = [], [], []
+        self.meta = {k: {"contentType": "application/octet-stream"} for k in self.objects}
+        self.puts, self.gets, self.heads, self.deletes = [], [], [], []
+        self.cache = {}
         self.fail_get = fail_get
+        self.keeps_headers = keeps_headers
         self.closed = False
 
     def get_object(self, key, bucket="b"):
@@ -976,9 +983,32 @@ class FakeCF:
             raise self.fail_get
         return self.objects.get(key)
 
-    def put_object(self, key, data, ctype, bucket="b"):
+    def put_object(self, key, data, ctype, bucket="b", cache_control=None):
         self.puts.append((key, ctype, len(data)))
+        self.cache[key] = cache_control
         self.objects[key] = data
+        self.meta[key] = {"contentType": ctype,
+                          **({"cacheControl": cache_control}
+                             if cache_control and self.keeps_headers else {})}
+
+    def list_objects(self, prefix="", bucket="b", delimiter=None, per_page=1000):
+        import hashlib
+        keys = sorted(k for k in self.objects if k.startswith(prefix))
+        objs = [{"key": k, "size": len(self.objects[k]),
+                 "etag": hashlib.md5(self.objects[k]).hexdigest(),
+                 "last_modified": "2026-09-12T14:28:15.170Z",
+                 "http_metadata": dict(self.meta.get(k, {}))} for k in keys]
+        if delimiter:
+            tops = sorted({k[len(prefix):].split(delimiter)[0] + delimiter
+                           for k in keys if delimiter in k[len(prefix):]})
+            return [o for o in objs if delimiter not in o["key"][len(prefix):]], \
+                [prefix + t for t in tops]
+        return objs, []
+
+    def delete_object(self, key, bucket="b"):
+        self.deletes.append(key)
+        self.objects.pop(key, None)
+        self.meta.pop(key, None)
 
     def head_object(self, key, bucket="b"):
         self.heads.append(key)
@@ -1049,9 +1079,9 @@ def test_push_notices_bytes_that_did_not_survive_the_upload(small_bundle):
     from orchard.push import push
 
     class Corrupting(FakeCF):
-        def put_object(self, key, data, ctype, bucket="b"):
+        def put_object(self, key, data, ctype, bucket="b", cache_control=None):
             super().put_object(key, data[:-1] if key.endswith(".bin") else data,
-                               ctype, bucket)
+                               ctype, bucket, cache_control)
 
     with pytest.raises(ValueError, match="did not survive the upload"):
         push(small_bundle, bucket="b", cf=Corrupting(), verbose=False)
@@ -1071,6 +1101,112 @@ def test_expected_digests_covers_the_files_the_bundle_serves(small_bundle):
     assert served == set(want)
     for rel, digest in want.items():
         assert sha256_file(small_bundle / rel) == digest
+
+
+# ----------------------------------------------------------- Cache-Control
+
+
+def test_every_object_is_cached_forever_except_the_push_index(small_bundle):
+    from orchard.push import CACHE_IMMUTABLE, INDEX_KEY, push
+    cf = FakeCF()
+    push(small_bundle, bucket="b", cf=cf, verbose=False)
+    bid = small_bundle.name
+    assert cf.cache.pop(f"{bid}/{INDEX_KEY}") == "no-cache"
+    assert cf.cache and set(cf.cache.values()) == {CACHE_IMMUTABLE}
+    assert CACHE_IMMUTABLE == "public, max-age=31536000, immutable"
+    index = json.loads(cf.objects[f"{bid}/{INDEX_KEY}"])["files"]
+    assert {f["cache_control"] for f in index.values()} == {CACHE_IMMUTABLE}
+
+
+def test_put_object_sends_the_header_the_rest_api_maps_to_http_metadata(monkeypatch):
+    """The same header `wrangler r2 object put --cache-control` sends to this path."""
+    cf, conn = _wired(monkeypatch, [_Resp(200), _Resp(200)])
+    sent = []
+    conn.request = lambda m, p, body=None, headers=None: sent.append((m, p, headers))
+    cf.put_object("abc/x.bin", b"123", "application/octet-stream", bucket="b",
+                  cache_control="public, max-age=31536000, immutable")
+    cf.put_object("abc/y.bin", b"1", "application/octet-stream", bucket="b")
+    (m, p, h), (_m, _p, h2) = sent
+    assert m == "PUT" and p.endswith("/r2/buckets/b/objects/abc/x.bin")
+    assert h["Cache-Control"] == "public, max-age=31536000, immutable"
+    assert "Cache-Control" not in h2
+
+
+def test_the_wrangler_path_passes_cache_control(tmp_path, monkeypatch):
+    from orchard import push as pushmod
+    ran = []
+    monkeypatch.setattr(pushmod, "require", lambda name: "x")
+    monkeypatch.setattr(pushmod.subprocess, "run",
+                        lambda cmd, **kw: ran.append(cmd) or type("R", (), {"returncode": 0})())
+    f = tmp_path / "c.bin"; f.write_bytes(b"1")
+    pushmod._wrangler_put("id/c.bin", f, "application/octet-stream", "b",
+                          pushmod.CACHE_IMMUTABLE)
+    assert ran[0][-2:] == ["--cache-control", pushmod.CACHE_IMMUTABLE]
+
+
+def test_a_plain_push_of_an_old_bundle_does_not_rewrite_its_objects(small_bundle):
+    """Re-putting published objects is `--refresh-headers`' decision, not push's."""
+    from orchard.push import INDEX_KEY, push
+    cf = FakeCF(keeps_headers=False)
+    push(small_bundle, bucket="b", cf=cf, verbose=False)
+    bid = small_bundle.name
+    index = json.loads(cf.objects[f"{bid}/{INDEX_KEY}"])
+    for f in index["files"].values():
+        f.pop("cache_control")                       # an index from before
+    cf.objects[f"{bid}/{INDEX_KEY}"] = json.dumps(index).encode()
+    cf.puts.clear()
+    rep = push(small_bundle, bucket="b", cf=cf, verbose=False)
+    assert rep["uploaded"] == 0 and len(cf.puts) == 1
+    index = json.loads(cf.objects[f"{bid}/{INDEX_KEY}"])["files"]
+    assert {f["cache_control"] for f in index.values()} == {None}, \
+        "the index must not claim a header the object does not have"
+
+
+def test_refresh_headers_re_puts_the_objects_without_it_and_nothing_else(small_bundle):
+    from orchard.push import CACHE_IMMUTABLE, INDEX_KEY, push, refresh_headers
+    cf = FakeCF(keeps_headers=False)                 # pushed before 2026-09-13
+    push(small_bundle, bucket="b", cf=cf, verbose=False)
+    cf.keeps_headers = True
+    bid, n = small_bundle.name, len(list(small_bundle.rglob("*.*")))
+    before = {k: v for k, v in cf.objects.items() if k != f"{bid}/{INDEX_KEY}"}
+
+    cf.puts.clear()
+    rep = refresh_headers(small_bundle, bucket="b", cf=cf, dry_run=True, verbose=False)
+    assert rep["refreshed"] == n and cf.puts == [], "a dry run puts nothing"
+
+    rep = refresh_headers(small_bundle, bucket="b", cf=cf, verbose=False)
+    assert rep["refreshed"] == n and rep["still_wrong"] == []
+    keys = [k for k, _c, _n in cf.puts]
+    assert keys[-2:] == [f"{bid}/bundle.json", f"{bid}/{INDEX_KEY}"]
+    assert {k: v for k, v in cf.objects.items() if k != f"{bid}/{INDEX_KEY}"} == before, \
+        "only metadata changes"
+    objs, _ = cf.list_objects(prefix=f"{bid}/")
+    assert {o["http_metadata"]["cacheControl"] for o in objs
+            if not o["key"].endswith(INDEX_KEY)} == {CACHE_IMMUTABLE}
+    index = json.loads(cf.objects[f"{bid}/{INDEX_KEY}"])["files"]
+    assert {f["cache_control"] for f in index.values()} == {CACHE_IMMUTABLE}
+
+    cf.puts.clear()
+    rep = refresh_headers(small_bundle, bucket="b", cf=cf, verbose=False)
+    assert rep["refreshed"] == 0 and rep["current"] == n
+    assert [k for k, _c, _n in cf.puts] == [f"{bid}/{INDEX_KEY}"]
+
+
+def test_refresh_headers_refuses_to_change_bytes_under_a_published_address(small_bundle):
+    from orchard.push import push, refresh_headers
+    cf = FakeCF(keeps_headers=False)
+    push(small_bundle, bucket="b", cf=cf, verbose=False)
+    bid = small_bundle.name
+    chunk = next(k for k in cf.objects if k.endswith(".bin"))
+    old = cf.objects[chunk]
+    cf.objects[chunk] = old[:-1] + bytes([old[-1] ^ 0xFF])    # an older encode
+    cf.puts.clear()
+    with pytest.raises(ValueError, match="push --force"):
+        refresh_headers(small_bundle, bucket="b", cf=cf, verbose=False)
+    assert cf.puts == []
+    with pytest.raises(ValueError, match="never pushed"):
+        refresh_headers(small_bundle, bucket="b", cf=FakeCF(), verbose=False)
+    assert bid
 
 
 # ------------------------------------------------------------ retry policy

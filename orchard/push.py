@@ -22,6 +22,14 @@ is a hash of `bundle.json` and `bundle.json` names the sha256 of every chunk,
 so re-pushing the same id is almost always a no-op — but "almost always" is
 not "always" (an interrupted first push), and the index is what tells the
 difference without downloading the objects.
+
+CACHED FOREVER. Everything under `<id>/` is immutable, because the id is a
+hash over the digests of every file there, so each object is PUT with
+`Cache-Control: public, max-age=31536000, immutable` — the REST PUT maps the
+header onto the object's httpMetadata, exactly as `wrangler r2 object put
+--cache-control` sends it. The one exception is the push index, which every
+push rewrites: `no-cache`. Objects pushed before 2026-09-13 carry no
+Cache-Control; `orchard push --refresh-headers <dir>` re-puts them.
 """
 from __future__ import annotations
 
@@ -36,7 +44,7 @@ import time
 import urllib.error
 import urllib.request
 from pathlib import Path
-from urllib.parse import quote
+from urllib.parse import quote, urlencode
 
 from .bundle import sha256_file
 from .secrets import get, require
@@ -102,6 +110,18 @@ def content_type(path) -> str:
     return mimetypes.guess_type(str(path))[0] or "application/octet-stream"
 
 
+#: A bundle's objects never change under their address, so a browser and the
+#: edge may keep them for a year without asking again.
+CACHE_IMMUTABLE = "public, max-age=31536000, immutable"
+#: The push index is rewritten by every push; it must always be revalidated.
+CACHE_INDEX = "no-cache"
+
+
+def cache_control(rel: str) -> str:
+    """The Cache-Control an object at `<id>/<rel>` is stored with."""
+    return CACHE_INDEX if rel == INDEX_KEY else CACHE_IMMUTABLE
+
+
 # ------------------------------------------------------------------ the API
 
 
@@ -131,6 +151,18 @@ class R2NotEnabled(RuntimeError):
     Not a bug and not something a token can fix, so it is its own type: the
     CLI prints it as an instruction and exits 2 instead of a traceback.
     """
+
+
+def _raise_for(status: int, body: bytes, what: str):
+    """The object API's error body as a CloudflareError, or R2NotEnabled."""
+    try:
+        errors = json.loads(body).get("errors")
+    except Exception:                                             # noqa: BLE001
+        errors = [{"code": status, "message": (body or b"")[:200].decode(
+            "utf-8", "replace")}]
+    if any(e.get("code") == 10042 for e in (errors or [])):
+        raise R2NotEnabled(R2_OFF)
+    raise CloudflareError(status, what, errors)
 
 
 class CF:
@@ -234,19 +266,53 @@ class CF:
         return (f"/client/v4/accounts/{self.account}/r2/buckets/{bucket}"
                 f"/objects/{quote(key, safe='/')}")
 
-    def put_object(self, key: str, data: bytes, ctype: str, bucket=BUCKET) -> None:
-        status, body, _ = self.raw(
-            "PUT", self.object_path(key, bucket), data,
-            {"Content-Type": ctype, "Content-Length": str(len(data))})
+    def put_object(self, key: str, data: bytes, ctype: str, bucket=BUCKET,
+                   cache_control: str | None = None) -> None:
+        headers = {"Content-Type": ctype, "Content-Length": str(len(data))}
+        if cache_control:
+            headers["Cache-Control"] = cache_control
+        status, body, _ = self.raw("PUT", self.object_path(key, bucket), data,
+                                   headers)
         if status not in (200, 201):
+            _raise_for(status, body, f"PUT {key}")
+
+    def list_objects(self, prefix: str = "", bucket=BUCKET, delimiter: str | None = None,
+                     per_page: int = 1000) -> tuple[list[dict], list[str]]:
+        """(objects, common prefixes) under `prefix`, every page followed.
+
+        Each object is `{key, size, etag, last_modified, http_metadata, ...}`;
+        `http_metadata` holds `contentType` and, once set, `cacheControl`.
+        With `delimiter="/"` the second list is the `<id>/` prefixes.
+        """
+        objects, prefixes, cursor = [], [], None
+        while True:
+            q = {"per_page": per_page}
+            if prefix:
+                q["prefix"] = prefix
+            if delimiter:
+                q["delimiter"] = delimiter
+            if cursor:
+                q["cursor"] = cursor
+            path = (f"/client/v4/accounts/{self.account}/r2/buckets/{bucket}"
+                    f"/objects?{urlencode(q)}")
+            status, body, _ = self.raw("GET", path)
             try:
-                errors = json.loads(body).get("errors")
-            except Exception:                                     # noqa: BLE001
-                errors = [{"code": status, "message": body[:200].decode(
-                    "utf-8", "replace")}]
-            if any(e.get("code") == 10042 for e in (errors or [])):
-                raise R2NotEnabled(R2_OFF)
-            raise CloudflareError(status, f"PUT {key}", errors)
+                doc = json.loads(body or b"{}")
+            except json.JSONDecodeError:
+                doc = {}
+            if status != 200 or not doc.get("success", False):
+                _raise_for(status, body, f"LIST {bucket}/{prefix}")
+            objects += doc.get("result") or []
+            info = doc.get("result_info") or {}
+            prefixes += info.get("delimited") or []
+            if not info.get("is_truncated") or not info.get("cursor"):
+                return objects, prefixes
+            cursor = info["cursor"]
+
+    def delete_object(self, key: str, bucket=BUCKET) -> None:
+        status, body, _ = self.raw("DELETE", self.object_path(key, bucket))
+        if status not in (200, 204, 404):
+            _raise_for(status, body, f"DELETE {key}")
 
     def head_object(self, key: str, bucket=BUCKET) -> dict | None:
         """Response headers; None if the object is not there; `{"unsupported":
@@ -499,14 +565,16 @@ def _verify_uploaded(cf, bid: str, rel: str, path: Path, digest: str | None,
     return "ok" if length is not None else "unverified"
 
 
-def _wrangler_put(key: str, path: Path, ctype: str, bucket=BUCKET) -> None:
+def _wrangler_put(key: str, path: Path, ctype: str, bucket=BUCKET,
+                  cache_control: str | None = None) -> None:
     env = dict(os.environ)
     env["CLOUDFLARE_API_TOKEN"] = require("CLOUDFLARE_API_TOKEN")
     env["CLOUDFLARE_ACCOUNT_ID"] = require("CLOUDFLARE_ACCOUNT_ID")
-    out = subprocess.run(
-        [WRANGLER, "r2", "object", "put", f"{bucket}/{key}",
-         "--file", str(path), "--content-type", ctype, "--remote"],
-        capture_output=True, text=True, env=env)
+    cmd = [WRANGLER, "r2", "object", "put", f"{bucket}/{key}",
+           "--file", str(path), "--content-type", ctype, "--remote"]
+    if cache_control:
+        cmd += ["--cache-control", cache_control]
+    out = subprocess.run(cmd, capture_output=True, text=True, env=env)
     if out.returncode:
         raise RuntimeError(f"wrangler r2 object put {key}: "
                            f"{(out.stderr or out.stdout).strip()[:400]}")
@@ -548,23 +616,23 @@ def push(bundle_dir, *, bucket=BUCKET, method="rest", dry_run=False,
     try:
         index = {}
         if not force and not dry_run:
-            raw = cf.get_object(f"{bid}/{INDEX_KEY}", bucket)
-            if raw:
-                try:
-                    index = json.loads(raw).get("files") or {}
-                except json.JSONDecodeError:
-                    index = {}
+            index = _read_index(cf, bid, bucket)
 
         uploaded, skipped, unverified, sent_bytes = [], [], [], 0
         new_index = {}
         for rel, path in files:
             digest = sha256_file(path)
             ctype = content_type(path)
+            cc = cache_control(rel)
             size = path.stat().st_size
             new_index[rel] = {"sha256": digest, "bytes": size,
-                              "content_type": ctype}
+                              "content_type": ctype, "cache_control": cc}
             was = index.get(rel)
             if was and was.get("sha256") == digest and was.get("content_type") == ctype:
+                # Same bytes, same type: skipped, and the index keeps saying
+                # which Cache-Control the object really has (none, for one
+                # pushed before 2026-09-13; `--refresh-headers` fixes those).
+                new_index[rel]["cache_control"] = was.get("cache_control")
                 skipped.append(rel)
                 continue
             if dry_run:
@@ -572,9 +640,10 @@ def push(bundle_dir, *, bucket=BUCKET, method="rest", dry_run=False,
                 sent_bytes += size
                 continue
             if method == "wrangler":
-                _wrangler_put(f"{bid}/{rel}", path, ctype, bucket)
+                _wrangler_put(f"{bid}/{rel}", path, ctype, bucket, cc)
             else:
-                cf.put_object(f"{bid}/{rel}", path.read_bytes(), ctype, bucket)
+                cf.put_object(f"{bid}/{rel}", path.read_bytes(), ctype, bucket,
+                              cache_control=cc)
             uploaded.append(rel)
             sent_bytes += size
             if check:
@@ -588,11 +657,7 @@ def push(bundle_dir, *, bucket=BUCKET, method="rest", dry_run=False,
                 print(f"  put {rel}  {size / 1e6:.2f} MB  {ctype}", flush=True)
 
         if not dry_run:
-            payload = json.dumps({"schema": "orchard/push-index/1",
-                                  "bundle_id": bid, "files": new_index},
-                                 indent=1).encode()
-            cf.put_object(f"{bid}/{INDEX_KEY}", payload, "application/json",
-                          bucket)
+            _put_index(cf, bid, new_index, bucket)
         elapsed = time.perf_counter() - t0
         report = {"id": bid, "kind": doc.get("kind"), "bucket": bucket,
                   "method": method, "files": len(files),
@@ -613,6 +678,129 @@ def push(bundle_dir, *, bucket=BUCKET, method="rest", dry_run=False,
         return report
     finally:
         if own and cf is not None:
+            cf.close()
+
+
+def _read_index(cf, bid: str, bucket=BUCKET) -> dict:
+    raw = cf.get_object(f"{bid}/{INDEX_KEY}", bucket)
+    if not raw:
+        return {}
+    try:
+        return json.loads(raw).get("files") or {}
+    except (json.JSONDecodeError, AttributeError):
+        return {}
+
+
+def _put_index(cf, bid: str, files: dict, bucket=BUCKET) -> None:
+    payload = json.dumps({"schema": "orchard/push-index/1", "bundle_id": bid,
+                          "files": files}, indent=1).encode()
+    cf.put_object(f"{bid}/{INDEX_KEY}", payload, "application/json", bucket,
+                  cache_control=cache_control(INDEX_KEY))
+
+
+def _md5(path: Path) -> str:
+    h = hashlib.md5()                                             # noqa: S324
+    with open(path, "rb") as f:
+        for blk in iter(lambda: f.read(1 << 20), b""):
+            h.update(blk)
+    return h.hexdigest()
+
+
+def refresh_headers(bundle_dir, *, bucket=BUCKET, dry_run=False, force=False,
+                    cf: CF | None = None, verbose=True) -> dict:
+    """Re-put the objects of an already-pushed bundle whose Cache-Control is wrong.
+
+    The bucket's own listing is the truth, not the push index: every object
+    under `<id>/` whose `http_metadata.cacheControl` is not what `push` would
+    set now is PUT again from the local bundle with the same bytes, type and
+    the right header (the REST API has no metadata-only update, and the
+    objects are small). `force` re-puts every object regardless.
+
+    Only metadata changes. Before anything is sent, every object to be re-put
+    must match the local file (size, and the MD5 R2 reports as a plain ETag),
+    and the local bundle must match its own `bundle.json`; any disagreement
+    refuses the whole bundle, because re-putting then would change bytes under
+    a published address — `push --force` is the verb for that.
+    """
+    root = Path(bundle_dir).resolve()
+    doc = json.loads((root / "bundle.json").read_text())
+    bid = doc["id"]
+    if root.name != bid:
+        raise ValueError(f"{root} is named {root.name!r} but its bundle.json "
+                         f"says id={bid!r}")
+    local = verify_local(root)
+    if local["mismatched"] or local["missing"]:
+        raise ValueError(f"{bid} does not match its own manifest: "
+                         f"mismatched={local['mismatched']} "
+                         f"missing={local['missing']}")
+    own = cf is None
+    cf = cf or CF()
+    try:
+        objects, _ = cf.list_objects(prefix=f"{bid}/", bucket=bucket)
+        if not objects:
+            raise ValueError(f"nothing under {bid}/ in {bucket}; this bundle "
+                             "was never pushed, so `orchard push` it instead")
+        stale, current, no_local, differs = [], [], [], []
+        for obj in objects:
+            rel = obj["key"][len(bid) + 1:]
+            have = (obj.get("http_metadata") or {}).get("cacheControl")
+            if rel == INDEX_KEY:
+                continue
+            path = root / rel
+            if not path.is_file():
+                no_local.append(rel)
+                continue
+            if have == cache_control(rel) and not force:
+                current.append(rel)
+                continue
+            etag = str(obj.get("etag") or "").strip('"')
+            if (int(obj.get("size", -1)) != path.stat().st_size
+                    or (len(etag) == 32 and "-" not in etag and _md5(path) != etag)):
+                differs.append(rel)
+            stale.append(rel)
+        if differs:
+            raise ValueError(
+                f"{bid}: {len(differs)} object(s) in the bucket are not the "
+                f"local bytes ({', '.join(differs[:5])}); refreshing headers "
+                "would change bytes under a published address. Use "
+                "`orchard push --force` to replace them deliberately.")
+        # bundle.json last, as in push: it names every other object
+        stale.sort(key=lambda r: r == "bundle.json")
+        if not dry_run:
+            for rel in stale:
+                path = root / rel
+                cf.put_object(f"{bid}/{rel}", path.read_bytes(), content_type(path),
+                              bucket, cache_control=cache_control(rel))
+                why = _verify_uploaded(cf, bid, rel, path, sha256_file(path), bucket)
+                if why not in ("ok", "unverified"):
+                    raise ValueError(f"{bid}/{rel} did not survive the re-put: {why}")
+                if verbose:
+                    print(f"  re-put {rel}  {cache_control(rel)}", flush=True)
+            index = _read_index(cf, bid, bucket)
+            for rel in stale + current:
+                if rel in index:
+                    index[rel]["cache_control"] = cache_control(rel)
+            _put_index(cf, bid, index, bucket)
+            # what the bucket now says, not what was sent
+            after, _ = cf.list_objects(prefix=f"{bid}/", bucket=bucket)
+            wrong = sorted(o["key"][len(bid) + 1:] for o in after
+                           if (o.get("http_metadata") or {}).get("cacheControl")
+                           != cache_control(o["key"][len(bid) + 1:])
+                           and o["key"][len(bid) + 1:] not in no_local)
+        else:
+            wrong = []
+        rep = {"id": bid, "bucket": bucket, "objects": len(objects),
+               "refreshed": len(stale), "current": len(current),
+               "no_local_copy": no_local, "still_wrong": wrong,
+               "dry_run": dry_run}
+        if verbose:
+            print(f"{'would refresh' if dry_run else 'refreshed'} {bid}: "
+                  f"{len(stale)} re-put, {len(current)} already right, "
+                  f"{len(no_local)} with no local copy"
+                  + (f", STILL WRONG: {wrong}" if wrong else ""), flush=True)
+        return rep
+    finally:
+        if own:
             cf.close()
 
 
