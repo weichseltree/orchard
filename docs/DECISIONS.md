@@ -61,3 +61,7 @@ Append-only. A decision names the day, the ruling, and the alternative it beat.
 - **2026-09-12 · Production CSP allows only self, media.weichseltree.com and
   maincloud.spacetimedb.com** (https and wss); microphone stays denied until
   voice lands in M1.
+- **2026-09-12 · CSP allows `unsafe-eval` for scripts.** The spacetimedb SDK
+  2.10 generates its BSATN serializers with `Function()`; the first production
+  deploy blocked it and presence silently retried forever. Everything else in
+  the policy stays strict. Revisit when the SDK offers a non-JIT path.
