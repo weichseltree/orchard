@@ -1,114 +1,63 @@
+# generated from /home/manuel/weichseltree/premosaic/orchard.yaml — edit that file, not this one
 name: premosaic
 path: /home/manuel/weichseltree/premosaic
 remote: https://github.com/weichseltree/premosaic.git
-question: 'This is the architecture documentation set for the engine you described: a **data-driven, adaptive,
-  recursive domain-decomposition engine** in which'
-status: active
+question: If a simulation cut itself into tiles and gave each tile the cheapest description that still
+  told the truth, would it run faster than one that simply skips the empty space? It does not; on the
+  one system where the shortcut is known in advance, it ran at half the speed.
+status: archived
 stage: planted
 gpu: jax
-phenomena: []
+phenomena:
+- id: validity_boundary
+  title: The boundary lands where a fluid stops being a fluid
+  hook: Give a box of simulated gas two ways to describe itself, as a smooth fluid or as molecules streaming
+    in nine directions, and let the cheapest honest description win in every square. The molecular squares
+    line up in one row under the moving lid, and nowhere else.
+  evidence: recording/out/lb_tiles.png
+  hero: false
+- id: stripes_as_waves
+  title: A stripe pattern cut into squares of waves
+  hook: Ask for the shortest description of one frame of a Turing stripe pattern and it cuts the frame
+    into 49 squares, 44 of them a single wave each, and gets the stripe spacing within a tenth.
+  evidence: recording/out/tiles.png
+  hero: false
+- id: engine_abstracts_nothing
+  title: On a shape that only slides, the engine skips nothing
+  hook: A blob sliding sideways is the easiest shortcut there is, since its future is its present moved
+    over. The engine found none of it and ran at half the speed of a program that just skips the empty
+    cells.
+  evidence: preregistrations/2026-08-14-engine-positive-control.md
+  hero: false
 artefacts:
 - kind: still
-  path: runs/curvature_model/film/learned.png
-  title: learned
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
-- kind: still
-  path: runs/curvature_model/film/engine.png
-  title: engine
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
-- kind: still
-  path: runs/curvature_model/film/micro.png
-  title: micro
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
-- kind: still
-  path: runs/regime/film_c16/learned.png
-  title: learned
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
-- kind: still
-  path: runs/regime/film_c16/engine.png
-  title: engine
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
-- kind: still
-  path: runs/regime/film_c16/micro.png
-  title: micro
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
-- kind: still
-  path: recording/out/lb_kn.png
-  title: lb_kn
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
-- kind: still
   path: recording/out/lb_tiles.png
-  title: lb_tiles
-  produced_by: ''
-  commit: ''
-  sha256: ''
+  title: Lid-driven cavity, the 16 molecular tiles under the lid
+  produced_by: 'plot not recorded: a Matplotlib 3.11 figure (PNG tEXt) drawn inline on 2026-07-03 14:49
+    +0200 from runs/run_0032/artifacts/lattice_flow.npz at commit 2fdf90d; the data is reproducible with
+    `git checkout 2fdf90d && python -m experiments.lattice_flow --config runs/run_0032/config.json` (CPU,
+    numpy, seconds)'
+  commit: 2fdf90d
+  sha256: 5862530c916dd8838a5e89b3409be1d2c94523068a91c429f197846b69a65af4
   approved: false
-  bundle: ''
-- kind: still
-  path: recording/out/front.png
-  title: front
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
-- kind: still
-  path: recording/out/pi.png
-  title: pi
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
-- kind: still
-  path: recording/out/spectrum.png
-  title: spectrum
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
+  bundle: de02c4fd02881d3c
 - kind: still
   path: recording/out/tiles.png
-  title: tiles
-  produced_by: ''
-  commit: ''
-  sha256: ''
+  title: Turing stripes cut into 49 tiles, 44 of them waves
+  produced_by: 'plot not recorded: a Matplotlib 3.11 figure (PNG tEXt) drawn inline on 2026-07-03 11:54
+    +0200 from runs/run_0028/artifacts at the working tree committed 41 s later as 2c60850; the data is
+    reproducible with `git checkout 2c60850 && python -m experiments.gray_scott --config runs/run_0028/config.json`
+    (CPU, numpy, seconds). At HEAD the defaults changed (bpp 12 gives 223 leaves), so HEAD does not reproduce
+    this frame'
+  commit: 2c60850
+  sha256: 0e6e50e05583840ffbae197a0e26cf00cfc2709b752a4107ee459d6e1cf73459
   approved: false
-  bundle: ''
+  bundle: ae70864df21aa916
 producers:
   tape: ''
   render: ''
   figure: ''
-  lane: cpu
+  lane: none
   env: {}
 theses: []
 budget:
@@ -117,8 +66,31 @@ budget:
   tts_chars: 0
   llm_usd: 0.0
   disk_gb: 0.0
-  prio_cap: 10
-kill: ''
+  prio_cap: 0
+kill: 'FIRED 2026-08-18. Criterion (preregistrations/2026-08-14-engine-positive-control.md, written before
+  the run): beat B1, the baseline that steps only non-empty cells, on rigid advection at fixed fidelity,
+  or stop. Measured at n=256 over 400 steps with a budget of 5% of the occupied field''s RMS (scripts/advection/engine_control.py,
+  logs/advctl-20260818-123659.log): the engine ran at 0.50x, 0.53x and 0.68x the speed of B1 at transit
+  times 4, 8 and 16 steps, and found no tolerance that meets the budget at 32. B1 is bit-exact there.
+  The engine''s own abstraction (occupied speedup) was 1.00 at every passing point, and a closed form
+  predicted it: horizon k = (2/pi)(R/v)sqrt(tol/A). The tree is pruned.'
 potential: 0
-notes: 'last commit 2026-08-18 | media on disk: {''clip'': 0, ''still'': 13, ''tape'': 0} | ledger: 0.1
-  gpu-h, 0.2 cpu-h, 0.0 h on video, 35 jobs, 6 failed'
+notes: 'PRUNED. Last commit 2026-08-18 (94bd14e); both venvs deleted in the 2026-09-09 disk reclaim. Ledger:
+  0.1 gpu-h, 0.2 cpu-h, 35 jobs, 6 failed. | ARTEFACTS: 2 of the 13 PNGs on disk are stills. runs/*/film*/{micro,engine,learned}.png
+  are sprite sheets (200 Flow Lenia frames tiled for an HTML player), not pictures; front, pi, spectrum,
+  oracle and lb_kn are diagnostic plots. Both stills are 400 px, light-theme Matplotlib with axes and
+  a title: poster-wall figures at most, never letterboxed into a dark frame (LAWS 7, 13). Both live in
+  gitignored dirs (recording/out/, runs/), on this disk only. `commit` is the commit each still was made
+  at; harvest stamps HEAD, which is wrong for these. | LEVEL OF DETAIL: does not survive the kill as a
+  premosaic mechanism. Tile-granular scheduling lost to a per-cell empty-space mask by 1.5-2x, and at
+  transit 4 three quarters of the engine''s flops went to deciding and bookkeeping (38% detect, 37% macro
+  step) against 24% on the physics. Its earlier wins came from tile size against coupling radius, not
+  from abstraction. Premosaic never tested fidelity that depends on where an observer looks; its budget
+  was one global error. Grove LOD is conventional rendering (screen-space error, meshopt, splat LOD tiers,
+  the harvest''s device tiers) and owes nothing to this repo. | requirements-jax-frozen-2026-09-09.txt:
+  `pip freeze` of .venv-jax (jax 0.11.0 + CUDA 12, cax 0.3.3, flax 0.12.8, mosaic pinned at 94bd14e),
+  written by the 2026-09-09 disk reclaim just before it deleted that 5 GB venv. It was the only record
+  of the environment behind the Flow Lenia, M7 and advection stages. All 50 pins now live in
+  pyproject.toml as uv constraints and in the committed uv.lock (distribution `premosaic`, Python 3.12);
+  the JAX stack is `uv sync --all-groups`. The file itself is redundant and stays untracked. | OPEN, NOT FUNDED: the preregistration''s own next step, a propagator that
+  can express a shift, is a different engine and belongs in a new repo if anywhere.'

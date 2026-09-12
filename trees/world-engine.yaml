@@ -1,124 +1,119 @@
+# generated from /home/manuel/weichseltree/world-engine/orchard.yaml — edit that file, not this one
 name: world-engine
 path: /home/manuel/weichseltree/world-engine
 remote: git@github.com-weichseltree:weichseltree/world-engine.git
-question: Experiments in representing a world as a single neural field rather than as stored geometry
-  — efficient novel rendering, and a Minecraft-like world held in network weights instead of block memory.
-  Small networks, used for compression and optimisation, not for rendering.
-status: active
+question: How little stored geometry does a world need before a viewer notices?
+status: dormant
 stage: planted
 gpu: torch
-phenomena: []
+phenomena:
+- id: wrong-distance-is-glass
+  title: A wrong distance map is a correct map of light
+  hook: Take any map of distances and get it wrong on purpose. It is not broken, it is an exact map of
+    how light bends through a glass whose thickness you can read straight off the map.
+  evidence: experiments/bent-light/README.md
+  hero: true
+- id: crescent-is-a-circle
+  title: A crescent that is really a circle
+  hook: A dented crescent traced with straight light and a perfect circle traced with bent light are the
+    same picture, and testing a ray against the circle is one dot product.
+  evidence: experiments/bent-light/bent-light.html
+  hero: true
+- id: look-dont-guess
+  title: Looking beats guessing
+  hook: Stretching the picture to hide what is behind a chair looks worse than having photographed the
+    room from one more spot, and it is not close.
+  evidence: experiments/sphere-space/results/classroom/fig_objbend_holes.png
+  hero: false
+- id: two-megabyte-classroom
+  title: A classroom in two megabytes
+  hook: A whole classroom rebuilt from 28,000 spheres fits in 2 MB against 126 MB for the best splats,
+    and it still looks worse than a 6 MB stack of photographs with depth.
+  evidence: experiments/sphere-space/README.md
+  hero: false
+- id: reuse-does-not-emerge
+  title: The network does not notice that things repeat
+  hook: A network asked to hold a world full of identical chairs stores every chair separately; it never
+    finds out that they are the same chair.
+  evidence: experiments/warp-lattice/README.md
+  hero: false
 artefacts:
 - kind: still
-  path: experiments/sphere-space/results/scenetex6/frames/sk_024.png
-  title: sk_024
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
+  path: experiments/sphere-space/results/classroom/fig_objbend_holes.png
+  title: 'Behind the chair: the true view, then the view torn, stretched, and stretched only within each
+    object (holes in magenta)'
+  produced_by: cd experiments/sphere-space && EXP_NAME=viz-objbend-holes GPU_LOCK=$HOME/.cache/cpu0.lock
+    $HOME/.local/bin/gpurun /home/manuel/weichseltree/world-engine/.venv/bin/python viz.py --bake results/classroom
+    --source rgbd --out results/classroom/fig_objbend_holes.png --zoom 4
+  commit: ad92cbb-dirty
+  sha256: a1eb500d631cc20ed2a4933c829927f5e22a7af22a7fbecdbda75c572464269b
+  approved: true
+  bundle: 0a674d5fc6ec8899
+- kind: still
+  path: experiments/sphere-space/results/classroom/fig_matte.png
+  title: 'The fringe round a chair leg: true view, torn, finer colour, a two-layer edge, stretched, stretched
+    within objects'
+  produced_by: cd experiments/sphere-space && EXP_NAME=viz-matte GPU_LOCK=$HOME/.cache/cpu0.lock $HOME/.local/bin/gpurun
+    /home/manuel/weichseltree/world-engine/.venv/bin/python viz.py --bake results/classroom --ss-bake
+    results/classroom_ss4 --source rgbd --out results/classroom/fig_matte.png --crop 288 108 56 56 --zoom
+    9 --gain 3.0 --no-mark-holes
+  commit: ad92cbb-dirty
+  sha256: d4eb84db394bda9f1a28c9db7bf8847ceff0094ef9670a336e4cc53e4f4a777a
+  approved: true
+  bundle: df31b52fbd0faada
 - kind: still
   path: experiments/sphere-space/results/scenetex6/frames/sk_013.png
-  title: sk_013
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
-- kind: still
-  path: experiments/sphere-space/results/scenetex6/frames/sk_019.png
-  title: sk_019
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
-- kind: still
-  path: experiments/sphere-space/results/scenetex6/frames/sk_010.png
-  title: sk_010
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
-- kind: still
-  path: experiments/sphere-space/results/scenetex6/frames/sk_014.png
-  title: sk_014
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
-- kind: still
-  path: experiments/sphere-space/results/scenetex6/frames/sk_021.png
-  title: sk_021
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
-- kind: still
-  path: experiments/sphere-space/results/scenetex6/frames/sk_020.png
-  title: sk_020
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
-- kind: still
-  path: experiments/sphere-space/results/scenetex6/frames/sk_012.png
-  title: sk_012
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
-- kind: still
-  path: experiments/sphere-space/results/scenetex6/frames/sk_015.png
-  title: sk_015
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
-- kind: still
-  path: experiments/sphere-space/results/scenetex6/frames/sk_017.png
-  title: sk_017
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
-- kind: still
-  path: experiments/sphere-space/results/scenetex6/frames/sk_008.png
-  title: sk_008
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
-- kind: still
-  path: experiments/sphere-space/results/scenetex6/frames/sk_023.png
-  title: sk_023
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
+  title: The classroom rebuilt from 28,112 spheres in 2.1 MB, seen from a head position it was never shown
+  produced_by: 'cd experiments/sphere-space && EXP_NAME=score-gpu $HOME/.local/bin/gpurun /home/manuel/weichseltree/world-engine/.venv/bin/python
+    scene.py --fits results/scenetex6 --objects results/scene2 --bake results/classroom --out $PWD/scene_scenetex6.json
+    --images results/scenetex6/frames  # reconstructed from scene.py''s arguments; the launch line was
+    not recorded'
+  commit: ad92cbb-dirty
+  sha256: aebfba51117c7355592aeec42f3de57c2ede717fda3bad83c6788fcd0ae4ef8a
+  approved: true
+  bundle: 8fd0f876cee6a54f
 producers:
   tape: ''
   render: ''
-  figure: ''
+  figure: cd experiments/sphere-space && uv run --with imageio python viz.py --bake results/classroom
+    --source {source} --out {out} --zoom 4
   lane: cpu
-  env: {}
-theses: []
+  env:
+    GPU_LOCK: $HOME/.cache/cpu0.lock
+theses:
+- id: lens-doorway
+  question: Can a doorway open onto a room larger than the wall it is set in, with the light bending honestly
+    at the threshold instead of cutting?
+  number: GPU milliseconds per frame that one lens doorway costs on a Quest 3 browser when it fills a
+    doorway's share of each eye; not measured, and nothing in this repo has run as a shader yet
+  picture: A doorway in the hall through which a room visibly bigger than its wall bends into view, a
+    sheet of light rays curving at the threshold and straightening inside
+  phenomena:
+  - wrong-distance-is-glass
+  - crescent-is-a-circle
+  stage: thesis
+  episode: Bigger on the inside
+  blocked_by: 'No 3D lens exists: bent-light is 2D (Node and canvas). Needs a WebGL2 fragment shader for
+    a spherically symmetric lens reading a baked cubemap of the far room, a Quest 3 to time it on, and
+    a client that exposes a per-portal shader material and a locomotion hook (M5).'
 budget:
   gpu_h: 0.0
-  cpu_h: 0.0
+  cpu_h: 2.0
   tts_chars: 0
   llm_usd: 0.0
-  disk_gb: 0.0
+  disk_gb: 0.5
   prio_cap: 10
-kill: ''
+kill: Prune if a spherically symmetric lens doorway, as a WebGL2 fragment shader over a baked cubemap,
+  costs more than 2 ms of GPU time per frame on a Quest 3 browser at the vr-quest tier when it fills a
+  doorway (about 15% of each eye), or if no one has started that measurement by the time M4 ships. Then
+  the lens is not a mechanism of the mansion and this tree is three stills and one page.
 potential: 0
-notes: 'last commit 2026-08-11 | media on disk: {''clip'': 0, ''still'': 115, ''tape'': 0}'
+notes: 'Last commit 2026-08-11. The founding question (a world of repeated objects held in one small network)
+  was answered no; the headbox line concluded that a seated viewer needs very little geometry and that
+  more baked views beat any clever inference; the one open engineering question (a fused sphere-mesh kernel,
+  somewhere between 4 and 130 ms at 2048 px on a 3070) is unstarted. Status is dormant: the tree lives
+  only if the lens becomes the M5 doorway. experiments/*/results/ is gitignored, so the stills live on
+  SirBase''s disk and in no commit; the .venv their commands name no longer exists (viz.py needs only
+  numpy and imageio). The classroom is the CC0 Blender demo scene; each classroom still carries a provenance
+  sidecar (<file>.json). bent-light.html (78.7 KB, one inline script, no external requests, no eval, 2D
+  canvas, pointer drag) has no artefact kind yet and is listed as evidence only.'

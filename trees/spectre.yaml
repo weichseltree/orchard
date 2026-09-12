@@ -1,84 +1,198 @@
+# generated from /home/manuel/weichseltree/spectre/orchard.yaml — edit that file, not this one
 name: spectre
 path: /home/manuel/weichseltree/spectre
 remote: ''
-question: Can a fine particle world be distilled into coarser dynamics that take a longer stable timestep,
-  and still measure like matter?
+question: How big and how long can a world built from nothing but particles be made to run, first by brute
+  force and then by distilling it into coarser rules, before it stops measuring like real matter?
 status: active
 stage: planted
-gpu: mitsuba
+gpu: torch
 phenomena:
 - id: planet_from_scratch
   title: Heavy things go to the middle and nobody told them to
-  hook: There is no rule in this simulation that says heavy things go to the middle. There are two forces
-    and a clock, and this is what came out.
-  evidence: results/m03_first_film/assembly-v6/ep03-assembly.mp4
+  hook: There is no rule in this simulation that says heavy things go to the middle. There are two forces,
+    a cold sky and a clock, and the ball started as an even mix. This is what came out.
+  evidence: results/m04_planet/sweep-verdict/VERDICT.md
   hero: true
+- id: same_seed_one_number
+  title: Same start, same forces, one number different
+  hook: These three worlds began as the same arrangement of the same half a million particles. The only
+    difference is how much the two kinds dislike each other, and at the same moment their middles read
+    53, 83 and 97 percent heavy.
+  evidence: lanes/m04_planet/README.md
+  hero: true
+- id: core_breathes
+  title: The middle swells when the two kinds start to unmix
+  hook: The moment the two kinds start sorting themselves, the heart of the ball heats up and swells until
+    it is a quarter emptier, then slowly settles. In the mix that does not care, it barely moves.
+  evidence: lanes/m04_planet/README.md
+  hero: false
 - id: surface_tension
   title: A world that measures like matter
   hook: That surface has a strength, the same property that lets insects stand on ponds. Our world measures
-    0.40. The published value is 0.42.
-  evidence: deliverables/first-film.mp4
-  hero: true
-- id: same_seed_one_number
-  title: Same seed, same forces, one number different
-  hook: The only difference between these three worlds is that one number.
-  evidence: lanes/m03_first_film/episodes/ep03/shots.py
+    0.40. Published measurements put it between 0.40 and 0.42.
+  evidence: results/m01_ground_truth/e02-eq400/T0.80/e02_T0.8.json
   hero: false
 artefacts:
-- kind: master
+- kind: clip
   path: deliverables/first-film.mp4
-  title: EP02 S5 excerpt, 42.8 s, 1080p60 HEVC, no audio stream
-  produced_by: python spectre.py run m03 gpu_render --compute gpu --name production-v2
+  title: 'EP02 S4 excerpt: the first film''s completed 2,568-frame prefix, 42.8 s, 1080p60 H.264, no audio
+    stream'
+  produced_by: .venv/bin/python -m lanes.m03_first_film.final_pass --source results/m03_first_film/sequences/ep02_s4/ship
+    --out results/m03_first_film/delivery-20260905-v2 --frames 2568  (driver at b8c5f00, before the lane
+    restructure; encode only, frames from the ep02_s4 CPU Mitsuba sequence of results/m01_ground_truth/v00-tape/T0.8).
+    The driver left spectre at 68239c4 and runs at tag film-final (9721bf8), not at HEAD
   commit: b0c50e0
   sha256: 87c2b279cf2d0fc82f5d2f86c3cf344f00bb47949780802f7b087799607044a7
-  approved: false
+  approved: true
   bundle: 0462efca96af7297
 - kind: clip
   path: results/m03_first_film/assembly-v6/ep03-assembly.mp4
-  title: EP03 review assembly v6, 640x360, 8:25, with VO
-  produced_by: python -m lanes.m03_first_film.assemble
+  title: EP03 review assembly v6, 640x360 24 fps, 8:25, voice on 71 % of it, no music bed; the cut judged
+    barely watchable on 2026-09-11
+  produced_by: .venv/bin/python -u -m lanes.m03_first_film.assemble --out results/m03_first_film/assembly-v6
+    --vo results/m03_first_film/vo --threads 8  (EXP_NAME film-cut-v6b, at 2e37614; the module left spectre
+    at 68239c4 and runs at tag film-final (9721bf8), not at HEAD)
   commit: b0c50e0
   sha256: c55e8831c81b9b4087a830212410093dfce4cbcac0f9186fc7e183d3e2784b69
   approved: false
   bundle: 2527c24bbbde0982
+- kind: tape
+  path: results/m04_planet/adiabat-chi0/tape
+  title: 'Planet ball, the two kinds indifferent (chi 0, the control): 508,744 particles, 1,129 frames
+    over 96 dynamical times'
+  produced_by: 12 chained chunks of .venv/bin/python -u -m lanes.m04_planet.ball --n 508744 --adiabatic
+    --species-masses 2,1 --species-fractions 0.5,0.5 --chi 0 --lambda-esc 10 --T0 0.80 --sky-T 0.65 --box-radii
+    6 --run-tdyn 8 --tape-every-tau 2 --sample-every-tau 1 --seed 20260907 --out results/m04_planet/adiabat-chi0
+    (chunk 1 with --relax-tdyn 1, chunks 2-12 with --relax-tdyn 0 --resume c<k-1>.pt --allow-existing;
+    EXP_SWEEP m04-ball-r55-adiabatic; GPU, about 2.4 h per chunk)
+  commit: b65701a
+  sha256: dec8cb4658726dffaf692ba4c4b72914d8290eccddae2e6d5f3808ad0fcd3b41
+  approved: true
+  bundle: a8ec9bed055fd471
+- kind: tape
+  path: results/m04_planet/adiabat-chi6/tape
+  title: 'Planet ball, the two kinds moderately averse (chi 6): 508,744 particles, 1,129 frames over 96
+    dynamical times'
+  produced_by: 12 chained chunks of .venv/bin/python -u -m lanes.m04_planet.ball --n 508744 --adiabatic
+    --species-masses 2,1 --species-fractions 0.5,0.5 --chi 6 --lambda-esc 10 --T0 0.80 --sky-T 0.65 --box-radii
+    6 --run-tdyn 8 --tape-every-tau 2 --sample-every-tau 1 --seed 20260907 --out results/m04_planet/adiabat-chi6
+    (chunk 1 with --relax-tdyn 1, chunks 2-12 with --relax-tdyn 0 --resume c<k-1>.pt --allow-existing;
+    EXP_SWEEP m04-ball-r55-adiabatic; GPU, about 2.4 h per chunk; last chunk m04-adiabat-chi6-c12-r2 completed
+    2026-09-12 19:40)
+  commit: b65701a
+  sha256: a77db4a5e066b8989cd92ade4ba9f7f3b220d4bfff8515d0fde13e464a10c487
+  approved: true
+  bundle: 8794241278d990fa
+- kind: tape
+  path: results/m04_planet/adiabat-chi12/tape
+  title: 'Planet ball, the two kinds strongly averse (chi 12): 508,744 particles, 1,129 frames over 96
+    dynamical times'
+  produced_by: 12 chained chunks of .venv/bin/python -u -m lanes.m04_planet.ball --n 508744 --adiabatic
+    --species-masses 2,1 --species-fractions 0.5,0.5 --chi 12 --lambda-esc 10 --T0 0.80 --sky-T 0.65 --box-radii
+    6 --run-tdyn 8 --tape-every-tau 2 --sample-every-tau 1 --seed 20260907 --out results/m04_planet/adiabat-chi12
+    (chunk 1 with --relax-tdyn 1, chunks 2-12 with --relax-tdyn 0 --resume c<k-1>.pt --allow-existing;
+    EXP_SWEEP m04-ball-r55-adiabatic; GPU, about 2.4 h per chunk)
+  commit: b65701a
+  sha256: 58e9afce161c2ee19c536b8cdd8c4eeeb086286206c042335ba51dc8e4ee19ce
+  approved: true
+  bundle: 64546061a0b52660
+- kind: still
+  path: results/m03_first_film/styleframes-v2/B_astro.png
+  title: 'Style B styleframe, the locked look: the chi 12 ball sliced through its middle, 97 % heavy inside
+    against 38 % outside'
+  produced_by: .venv/bin/python -u -m lanes.m03_first_film.episodes.ep03.styleframes --width 1280 --spp
+    48  (EXP_NAME film-sf6, CPU Mitsuba llvm_ad_rgb; the sidecar B_astro.json records 8c7b3cd because
+    the render ran a minute before d441e33 committed the script; the module left spectre at 68239c4 and
+    runs at tag film-final (9721bf8), not at HEAD)
+  commit: d441e33
+  sha256: 12341ce76356a02fb86ef91d0aab87a67ff28861fa365b8fa6c963ac4d97e5d2
+  approved: false
+  bundle: c03859520ba134ae
+- kind: still
+  path: results/m03_first_film/plates/8430cd06bcd65f87901a.png
+  title: 'Style B plate, EP3 shot 13 end pose: inside the slice at particle scale, no text'
+  produced_by: .venv/bin/python -u -m lanes.m03_first_film.episodes.ep03.smoke  (committed 626b6af; the
+    run was an uncommitted copy on b9ba7b9, see the plate's 8430cd06bcd65f87901a.json; plates are cached
+    by content, so a rerun is a cache hit; the module left spectre at 68239c4 and runs at tag film-final
+    (9721bf8), not at HEAD)
+  commit: 626b6af
+  sha256: c43077183f06cc9fc027fac45327ae5eef4a7496efd0c422c469953b9d60e497
+  approved: false
+  bundle: d4d724c30c31f38e
+- kind: still
+  path: results/m03_first_film/plates/fcd89756781b30692c84.png
+  title: 'Style B plate, EP3 shot 5 end pose: the whole body small in empty space, no text'
+  produced_by: .venv/bin/python -u -m lanes.m03_first_film.episodes.ep03.smoke  (committed 626b6af; the
+    run was an uncommitted copy on b9ba7b9, see the plate's fcd89756781b30692c84.json; plates are cached
+    by content, so a rerun is a cache hit; the module left spectre at 68239c4 and runs at tag film-final
+    (9721bf8), not at HEAD)
+  commit: 626b6af
+  sha256: e668d4b7b163e351848822bf8fde606bf5099daf3f09766be3dbbf2b72e53c5d
+  approved: false
+  bundle: 22883e6f89040d8d
 producers:
-  tape: python spectre.py run m03 dense_window --phase sim --tag {tag}
-  render: EXP_LANE=cpu python -m core.film.mts.sequence {shot}
+  tape: ''
+  render: ''
   figure: ''
-  lane: cpu
+  lane: none
   env: {}
 theses:
 - id: planet-from-scratch
-  question: If you drop two kinds of particles with two forces and a clock, why does a planet with a heavy
-    core appear, and how would you know it is not staged?
-  number: chi twelve, 97 percent heavy in the middle fifth of the ball against 38 outside
-  picture: three worlds from one seed differing in one number, the heavy core forming in only one
+  question: Fill a ball held together by its own gravity with an even mix of heavy and light particles.
+    Does the heavy kind find the middle on its own, and how would you know we did not put it there?
+  number: 97 % heavy inside the middle fifth of the particles (r < 30) against 38 % outside, at 24 dynamical
+    times, chi 12, while the whole ball stays at exactly 50 % in every frame
+  picture: three balls from one starting arrangement, differing only in how much the two kinds dislike
+    each other, sliced at the same moment; the middles read 53, 83 and 97 % heavy
   phenomena:
   - planet_from_scratch
   - same_seed_one_number
-  stage: animatic
-  episode: Planet from scratch
-  blocked_by: v6 judged barely watchable; 6 of 18 shots the same grey disc; captions read as debug overlay;
-    redesign to style B astrophotography requested 2026-09-11
-- id: measures-like-matter
-  question: Can a toy world be held to a number from a real lab and pass?
-  number: surface tension 0.40 against the published 0.42, error bars overlapping
-  picture: the droplet's surface with the measurement drawn on it
-  phenomena:
-  - surface_tension
   stage: styleframe
-  episode: This world measures like matter
-  blocked_by: ''
+  episode: Planet from scratch
+  blocked_by: Rendering and episodes left spectre on 2026-09-12 (68239c4, ruling); the orchard studio
+    makes this episode from spectre's tapes and spectre supplies the tapes and the measured numbers. The
+    episode's code is at tag film-final (9721bf8), lanes/m03_first_film/episodes/ep03. v6 animatic rejected
+    2026-09-11; the style B look is locked and the episode is redeclared as 18 shots (17 distinct pictures, 11 moving cameras, variety check clean), but only 4 of them have
+    plates (9 smoke plates, all of one tape frame), so the 18-shot contact sheet has never been rendered
+    or ruled on (LAWS 15). The v6 narration was written for a collapsing cloud and this world is built
+    as a ball, so the script needs a rewrite before new takes. The sweep's final verdict at 96 dynamical
+    times (df1f3f3, results/m04_planet/sweep-verdict/VERDICT.md) converged at its last row on a 1.2 % margin,
+    nothing degraded; by then the middles read 60, 97 and 99 % heavy. The rewrite must respect two limits
+    it recorded. Whether the unmixing or a shared cooling drives the core is not separable from this record
+    (the control check sits at 0.0494 against 0.05 and its plain-language condition is met), and the chi
+    6 and 12 cores carry real angular structure through 8-32 dynamical times, so a radial number there is
+    a mean over domains and must say so.
 budget:
   gpu_h: 0.0
-  cpu_h: 20.0
-  tts_chars: 15000
-  llm_usd: 5.0
-  disk_gb: 20.0
+  cpu_h: 2.0
+  tts_chars: 0
+  llm_usd: 0.0
+  disk_gb: 5.0
   prio_cap: 10
-kill: If the EP3 planet cannot be shown as a lit, moving, narrated 3 minutes by the second round, spectre
-  supplies renderers to the studio and stops making episodes itself.
+kill: 'The episode clause this criterion began with was enacted by ruling on 2026-09-12, not by failure:
+  rendering and episodes left spectre (68239c4), which now supplies tapes and measured numbers only. Prune
+  the tree from the slate if, by the end of round two, Planet from scratch made by the studio from these
+  tapes has no style B animatic with measured narration that passes the 18-shot contact sheet, or if the
+  studio needs a tape spectre cannot write inside its budget. The physics clause this criterion carried is spent:
+  the final verdict (2026-09-12) fired neither chemistry check, drop-the-chemistry at 0.232 against 0.5
+  and cooling-not-chemistry at 0.0494 against 0.05. Because the second sits on its line, no narration may
+  say the unmixing CAUSED the core until saturation and a shared cooling driver are separated; if that
+  bill is paid in cooling''s favour, the thesis is rewritten before any take is recorded. The flywheel
+  question stays open on its own clock; no coarse model has yet taken a longer stable step than the fine
+  engine, and no episode may claim one.'
 potential: 9
-notes: core/film is the de facto shared studio (Mitsuba 3, vo.py, pacing.py, markdown storyboards, encode.py).
-  ~190 film-* probe logs against one silent 43 s deliverable. GPU path-traced frame 43 s, CPU 262 s. 56
-  GB on disk; no git remote configured for this checkout.
+notes: 'Tapes are the stock-in-trade: video/tape/1 is written by core/video/tape.py and einstruct and
+  orchard both import it from this working tree, unpinned. The planet trio (chi 0, 6, 12) shares one frame
+  clock: identical (step, t) for all 1,129 frames, so frame index scrubs them in step. Probes, not exhibits:
+  opening-chi0/6/12 (114 frames, 1.2 dynamical times, the swelling of core_breathes), firststeps-chi0
+  and fine-chi0 (the lattice melt), adiabat-smoke (32,000 particles), v00-tape/T0.8 (12,288 particles
+  in a periodic slab, 43,750 frames; the first film''s source, would need a frame window to bundle). The
+  e10-mixture tapes are header and trailer only; their data was deleted. No stock sidecar exists on any
+  declared still; each carries a render sidecar <stem>.json. No git remote configured for this checkout.
+  The video pipeline (core/film, lanes/m03_first_film) left spectre at 68239c4; tag film-final (9721bf8)
+  holds it whole (git archive film-final core/film lanes/m03_first_film). core/film/pacing.py stays only
+  as a stub for einstruct''s sys.path import, to be deleted once einstruct carries its own copy. The tape
+  format''s wish list moved to core/video/TAPE_WISHLIST.md. Every results path above survived the removal.
+  The budget covers spectre''s own side only (harvests, verdict reruns); narration and render spend is
+  the studio''s.'

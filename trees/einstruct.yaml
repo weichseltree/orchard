@@ -1,8 +1,9 @@
+# generated from /home/manuel/weichseltree/einstruct/orchard.yaml — edit that file, not this one
 name: einstruct
 path: /home/manuel/weichseltree/einstruct
 remote: https://github.com/weichseltree/einstruct.git
-question: Throw away the axes. Describe a cloud of points only by the distances between them. Does that
-  buy you anything a coordinate method cannot?
+question: 'Describe a cloud of points only by the distances between them, with no axes: what can you still
+  know about it, and does any of it beat simply keeping the coordinates?'
 status: active
 stage: planted
 gpu: torch
@@ -13,23 +14,37 @@ phenomena:
     That is the whole rule. By the end, regions. Nobody drew them.
   evidence: results/film/renders/ab_d2-ep05/preview.png
   hero: true
+- id: ab_control
+  title: Shuffle the colours and the regions never come
+  hook: Same particles, same rule, but every few steps the colours are shuffled over the places. No regions
+    form, and by the end nine times fewer particles are left.
+  evidence: results/film/renders/ab_d2_stir/preview.png
+  hero: false
 - id: row_invariance
   title: A row does not know which way is up
   hook: Rotate the cloud, mirror it, renumber it. The bars do not move. Zoom it, and every bar grows.
-  evidence: results/film/anims/row
+  evidence: results/film/anims/row/preview.png
   hero: false
 - id: dimension_as_arrival
   title: A dimension is how fast neighbours arrive
   hook: Double the houses and the walk grows by 2 on a street, by root 2 in a town, by cube root 2 in
     a tower.
-  evidence: results/film/anims/walk
+  evidence: results/film/anims/walk/preview.png
   hero: false
 - id: droplet_closure
-  title: The relational state tears
-  hook: Carry only distances between pairs. Newton's law still works, until it does not, and the tear
-    is visible.
-  evidence: results/film/renders/lj_droplet/preview.png
-  hero: true
+  title: Newton's law without positions, and where it gives out
+  hook: Keep no positions at all, only a few numbers for every pair of particles, and Newton's law still
+    moves them for about one unit of time. Keep only the pairs within reach, and the error walks in from
+    the edge of your reach and ends the run five times sooner.
+  evidence: results/film/anims/front/preview.png
+  hero: false
+- id: short_list_reach
+  title: A short list misses neighbours and never invents one
+  hook: Give every particle of a fluid nothing but its 48 nearest distances, and its pressure comes out
+    the same as from the positions, to rounding. Squeeze the fluid until more than 48 neighbours crowd
+    into the range a particle feels, and the answer comes out low, never high.
+  evidence: results/exp32_fluid/fig1_eos.png
+  hero: false
 artefacts:
 - kind: clip
   path: results/film/renders/ab_d2-ep05/clip.mp4
@@ -50,59 +65,287 @@ artefacts:
 - kind: still
   path: results/film/renders/ab_d2-ep05/preview.png
   title: ab_d2 segregation, styleframe
-  produced_by: python -m film.render ab_d2 --tau-per-s 10 --seconds 40
+  produced_by: exprun uv run python film/render.py results/film/tapes/ab_d2 --seconds 40 --fps 30 --tag
+    ep05 --title "A + B → nothing, d = 2, N = 200 000"
   commit: b498778-dirty
   sha256: a297762de7b1db5792e00f3cf39e9921f2e29303f73f77de5ba9772cda11eb6e
   approved: false
   bundle: c59c7baa6fd15489
 - kind: master
   path: results/film/episodes/ep05_chemistry/ep05_chemistry.mp4
-  title: ep05 chemistry animatic, 4:30, voiced (Callum), ~100 s silent
-  produced_by: python -m film.assemble film/episodes/ep05_chemistry/STORYBOARD.md
+  title: ep05 chemistry animatic, 4:30, voiced (Callum); takes total 162 s, so 108 s of the 270 s is silent
+  produced_by: uv run python film/assemble.py film/episodes/ep05_chemistry/STORYBOARD.md --vo results/film/vo/ep05
+    --out results/film/episodes/ep05_chemistry
   commit: b498778-dirty
   sha256: 8f87c41a8b7244d4af655253c47b28243a6e27d6cb2232bfb29c336681fc3ec3
   approved: false
   bundle: e95baa0fa9f068fc
+- kind: tape
+  path: results/film/tapes/ab_d2_stir
+  title: 'ab_d2_stir tape: the control, colours shuffled every 20 steps, regions never form; 801 frames
+    over 400 tau, 200000 -> 292 particles, 2.1 GB, video/tape/1 (2-D, z zero-padded)'
+  produced_by: exprun uv run python film/scenes.py ab-d2 --stir-every 20
+  commit: 409c8b3-dirty
+  sha256: a621feb752aafea7136e9cfe985687669afc2bf74235c083d17b03997bee0125
+  approved: true
+  bundle: 903d0c5a939b0ba1
+- kind: tape
+  path: results/film/tapes/aa_d2
+  title: 'aa_d2 tape: one colour, any two that meet vanish, the case where the textbook is right; 801
+    frames over 400 tau, 200000 -> 230 particles, 2.1 GB, video/tape/1 (2-D, z zero-padded)'
+  produced_by: exprun uv run python film/scenes.py ab-d2 --like
+  commit: 409c8b3-dirty
+  sha256: b9a0468e5ce507c46be2ff141e9f29a91b8949b0f49c557c3984fd6fe5775fc3
+  approved: false
+  bundle: cb38382f032afa55
+- kind: tape
+  path: results/film/tapes/lj_droplet
+  title: 'lj_droplet tape: a 256-particle Lennard-Jones droplet drifting in empty space, the coordinate
+    reference the pair-number flow was checked against; 301 frames over 6 tau, 256 particles throughout,
+    2.3 MB, video/tape/1 (3-D, velocity and speed channels)'
+  produced_by: exprun uv run python film/scenes.py lj-droplet --t-max 6
+  commit: 409c8b3-dirty
+  sha256: 7a8cb5ce63b0b0d0f86202e43a1f4bb95f2c78ad56b8b148804a8a9b4242f586
+  approved: false
+  bundle: 28ac68436e5a6f9b
+- kind: tape
+  path: results/film/tapes/lj_liquid-open
+  title: 'lj_liquid-open tape: a 1728-particle Lennard-Jones cube released into empty space, melting into
+    a droplet and shedding particles; 201 frames over 20 tau, 1728 particles throughout, 10 MB, video/tape/1
+    (3-D, velocity and speed channels)'
+  produced_by: 'on Legion via lanepush, job film-lj-liquid-open2: uv run python film/scenes.py lj-liquid
+    --t-max 20 --tag open'
+  commit: 38fc0da-dirty
+  sha256: a518cc60f8c03ca79fdcbc178fb8e61ea786cdeac4550fbadc3aec2e08e3199b
+  approved: false
+  bundle: f1d65a35d70f4bb8
+- kind: tape
+  path: results/film/tapes/lj_liquid-dense
+  title: 'lj_liquid-dense tape: the same cube, its first 2 tau at fine cadence; 251 frames, 1728 particles
+    throughout, 13 MB, video/tape/1 (3-D, velocity and speed channels)'
+  produced_by: exprun uv run python film/scenes.py lj-liquid --t-max 2 --every 2 --tag dense
+  commit: 2294b7d-dirty
+  sha256: 71f097955bf9cc865cbf3214fb158f0799a41df05d0d40cdfd01750430ed7506
+  approved: false
+  bundle: 4723954a37acb6c6
+- kind: clip
+  path: results/film/renders/ab_d2_stir/clip.mp4
+  title: the stirred control, 20 s at 20 tau/s, flat render; clocks and A/B counter drawn on the particles
+  produced_by: 'exprun uv run python film/render.py results/film/tapes/ab_d2_stir --seconds 20 --fps 30
+    --title "A + B → nothing, labels shuffled every 20 steps: the control"'
+  commit: 2294b7d
+  sha256: f6e579a632981a93da4454169db8487970138d511fef2b223cd9f6d3e70a6a80
+  approved: false
+  bundle: 5c87a2329dbb838e
+- kind: clip
+  path: results/film/renders/aa_d2/clip.mp4
+  title: one colour, A + A -> nothing, 20 s at 20 tau/s, flat render; clocks and counter drawn on the
+    particles
+  produced_by: 'exprun uv run python film/render.py results/film/tapes/aa_d2 --seconds 20 --fps 30 --title
+    "A + A → nothing: mean field is the right answer"'
+  commit: 2294b7d
+  sha256: 938bd97f263be67d9205ab6051b74c4fd81be9967b934f1d7bb7d1d0e91c0897
+  approved: false
+  bundle: 23aa5e7de5f5e812
+- kind: clip
+  path: results/film/renders/lj_droplet/clip.mp4
+  title: the open droplet, 12 s at 0.5 tau/s, coloured by speed; caption on screen reads "(E31 P1)"
+  produced_by: exprun uv run python film/render.py results/film/tapes/lj_droplet --seconds 12 --fps 30
+    --colour speed --title "the open droplet, N = 256 (E31 P1)"
+  commit: 2294b7d
+  sha256: b67ed365af29f1526dfaf43430bf0d545bf6270167b29b4ac72b5ac48ec2077d
+  approved: false
+  bundle: cbbe016bfdb754fc
+- kind: clip
+  path: results/film/renders/lj_liquid-open/clip.mp4
+  title: the open cube melting over 20 tau, 12 s, coloured by speed; caption on screen names E31 P11-P14b
+  produced_by: exprun uv run python film/render.py results/film/tapes/lj_liquid-open --seconds 12 --fps
+    30 --colour speed --title "the open cube, N = 1 728, as E31 P11–P14b ran it"
+  commit: 38fc0da
+  sha256: e5d45aadae751dc49550225f599739ddb5a3805aa19652a72c55e79b437f74f1
+  approved: false
+  bundle: 638c427967448659
+- kind: clip
+  path: results/film/renders/lj_liquid-dense/clip.mp4
+  title: the open cube, its first 2 tau, 10 s, coloured by speed; caption on screen names E31 P11-P14b
+  produced_by: exprun uv run python film/render.py results/film/tapes/lj_liquid-dense --seconds 10 --fps
+    30 --colour speed --title "the open cube, N = 1 728, the first 2 τ (E31 P11–P14b)"
+  commit: 2294b7d
+  sha256: a53ddb57bf33b2d7a8d6405af40750fbb5b72eb2b1284a3d8dde0d32d5d5873d
+  approved: false
+  bundle: d177139f1cdf5f79
+- kind: clip
+  path: results/film/anims/row/clip.mp4
+  title: 'a row: one point''s sorted distances to its 8 nearest; rotate, mirror, renumber the cloud and
+    the bars stay, zoom and they grow; 16 s, nothing repo-specific on screen'
+  produced_by: uv run python film/anim.py row
+  commit: 2c461ac
+  sha256: 9ab3adc9bb0d9de1d701a4027a3c756462f9b2818645f4a8473d35af4134721d
+  approved: true
+  bundle: f0b3eba5f655c2a9
+- kind: clip
+  path: results/film/anims/walk/clip.mp4
+  title: 'houses within a walk on a street, in a town, in a tower block: how fast neighbours arrive is
+    the dimension; 14 s, caption ends "(E1)"'
+  produced_by: uv run python film/anim.py walk
+  commit: 2c461ac
+  sha256: ecf2a5121809fd4a4576992b82c82711ac81f628a9e8bf0984783a56a20e7a6b
+  approved: false
+  bundle: b732aa84fcb201b8
+- kind: clip
+  path: results/film/anims/slab/clip.mp4
+  title: 'a slab: three-dimensional up close, two-dimensional from far, read from rows against the exact
+    curve and its predicted turnover; 14 s, caption ends "(E1)"'
+  produced_by: uv run python film/anim.py slab
+  commit: 3d1e5bc
+  sha256: 71b623eb7460c46cb309967f2659bba085491565c20370fb0bea62c698cf7b65
+  approved: false
+  bundle: 1e88cda43a241513
+- kind: clip
+  path: results/film/anims/bag/clip.mp4
+  title: two clouds every distance histogram calls identical, told apart by their bags of rows; 16 s,
+    caption ends "(E3)"
+  produced_by: uv run python film/anim.py bag
+  commit: 3d1e5bc
+  sha256: e84b93e1e7ab5b8ac56e339b3fdc004e5af97c08d6b665546d2341a639a51012
+  approved: false
+  bundle: 0de5a1273fecddb8
+- kind: clip
+  path: results/film/anims/triangle/clip.mp4
+  title: three droplet particles and the four pair numbers a relational state carries about them; 14 s,
+    caption names E31
+  produced_by: uv run python film/anim.py triangle
+  commit: 9e1ba67
+  sha256: 45ff1a2307010a9b8eeebe295130e857cb2ed27a347649a868714baeda140e8f
+  approved: false
+  bundle: d9d8bb1250c9a7a3
+- kind: clip
+  path: results/film/anims/counter/clip.mp4
+  title: the particle count leaving the textbook 1/t line, with the stirred control on it; 16 s, caption
+    names "E33 P2"
+  produced_by: uv run python film/anim.py counter
+  commit: 2c461ac
+  sha256: 32fee66d47c7b8ff716eeb62304e62e7a94eea9af77a0c4f70bda928df0a1028
+  approved: false
+  bundle: 144003986a1f6bf3
+- kind: clip
+  path: results/film/anims/like/clip.mp4
+  title: the distance to the nearest particle of your own colour, growing as the fourth root of time;
+    14 s, "E33 P3" and "(registered)" on screen
+  produced_by: uv run python film/anim.py like
+  commit: 64a6caf
+  sha256: c3b7d448a841e0fac6ebaa1891d423d9a6d7e1226b165df315604dc2752505fa
+  approved: false
+  bundle: 3312296a8e4d06ab
+- kind: clip
+  path: results/film/anims/front/clip.mp4
+  title: keep only pairs within a radius and the error walks in from its edge; 12 s, a graph, title reads
+    "P14b" and the caption names a summary file
+  produced_by: uv run python film/anim.py front
+  commit: 2c461ac
+  sha256: beccf63e63d757e063df09764615328b0f7b75def2c07f498535b3fb7ba29a60
+  approved: false
+  bundle: e140c9345e537ac5
+- kind: clip
+  path: results/film/anims/mechanism/clip.mp4
+  title: 'network latent spaces: why sorted rows survive hundreds of dimensions, the dropped term shrinking
+    as dimension grows; 12 s, "post hoc, not registered" on screen'
+  produced_by: uv run python film/anim.py mechanism
+  commit: 3d1e5bc
+  sha256: 6895035ffa0142ea3835bf9e030ab75f1e139296354edd76ef0cb270fabdb9fd
+  approved: false
+  bundle: 10053301adda04e5
+- kind: clip
+  path: results/film/anims/dose/clip.mp4
+  title: 'network latent spaces: widening one network''s pooling, against published conv and MLP values;
+    10 s, "P4a", "P4b" and "registered" on screen'
+  produced_by: uv run python film/anim.py dose
+  commit: 3d1e5bc
+  sha256: 5a67d87fcdaa0c1b9c8fccc8d819e654e52381ef99fbd213f2f398de530c991b
+  approved: false
+  bundle: 633dac02868eaa35
+- kind: clip
+  path: results/film/anims/null/clip.mp4
+  title: 'network latent spaces: the accuracy extra features buy, against what shuffled columns buy by
+    capacity alone; 14 s, caption names E29'
+  produced_by: uv run python film/anim.py null
+  commit: 9e1ba67
+  sha256: 805a3393c909549f887ee1101a1081876d5f9559dd2c82615f06b1b238b3a137
+  approved: false
+  bundle: 88264695328bfe70
 producers:
-  tape: exprun python -m film.scenes {scene}
-  render: exprun python -m film.render {scene} --tau-per-s {tau_per_s} --seconds {seconds}
-  figure: ''
+  tape: exprun uv run python film/scenes.py {scene} {flags}
+  render: exprun uv run python film/render.py results/film/tapes/{tape} --seconds {seconds} --fps 30 {flags}
+  figure: uv run python film/anim.py {name}
   lane: cpu
   env:
     SPECTRE_ROOT: /home/manuel/weichseltree/spectre
 theses:
 - id: rows-read-chemistry
-  question: Can a rule that only says "meet and vanish" produce order nobody put in, and can you predict
-    how fast it slows from distances alone?
-  number: the decay exponent, -d/4, predicted from rows before it was measured
-  picture: the two-colour field sorting itself into regions while the counter leaves the textbook line
+  question: A rule that only says "meet and vanish" runs down at half the textbook rate in two dimensions.
+    Why, and can you see the reason in nothing but the distances between particles?
+  number: 'about 9: by the end, the typical distance to the nearest partner of the other colour is nine
+    times the typical distance to the nearest particle of your own colour (8.8, median over five runs,
+    experiments/exp33_chemistry.py -> results/exp33_chemistry/summary.json, exponents::AB_d2.segregation_end_mean);
+    stirred, it stays at 1.0 and the rate returns to the textbook''s'
+  picture: 'the same 200,000 particles twice, side by side: on the left the two colours sort themselves
+    into regions; on the right the colours are shuffled every few steps, no regions form, and nine times
+    fewer particles are left'
   phenomena:
   - ab_segregation
-  stage: animatic
-  episode: Rows read chemistry
-  blocked_by: narration still says "card", "registered", "P1"; ~100 s of silence; flat scatter with no
-    lighting or camera; no music, titles or thumbnail
-- id: throw-away-the-axes
-  question: What can you know about a shape if you are never allowed to see where anything is?
-  number: the slab whose dimension turns over at the predicted 0.889
-  picture: one point, its sorted neighbour distances as bars, the cloud spinning while the bars stand
-    still
-  phenomena:
+  - ab_control
   - row_invariance
   - dimension_as_arrival
-  stage: thesis
-  episode: Throw away the axes, then count neighbours
-  blocked_by: ''
+  stage: animatic
+  episode: Rows read chemistry
+  blocked_by: '(1) The claim. S6-S7 say the decay rate was predicted from rows. The same rows pipeline
+    reads -0.93 on the stirred run and -0.87 on one colour, so it tracks whatever the decay is; a particle
+    count gives the same exponent with no distances at all. What only distances give is the segregation
+    ratio, which is 8.8 unstirred and 1.0 stirred. S5-S7 need rewriting around that number, and the animatic
+    does not show it yet. (2) Vocabulary: "rows" and "a dimension read off the rows" are used in S6 and
+    introduced nowhere; the episode needs the row and walk clips (30 s) up front, or episode 1 first.
+    (3) Repo-speak: "registered" four times (S5, S6, S7, S10), "card" (S6), "seed" twice and "fourteen
+    point eight" (S10) in the voice; P-numbers and a registered column on the S6 and S10 cards; "E33 P2"/"E33
+    P3" on the counter and like clips. (4) Silence: takes total 162 s under 270 s of picture, so 108 s
+    is silent; the worst is S1 at 25 s, then S7, S2, S9, S12. Re-cut to the takes instead of adding words.
+    (5) S7 and S11 hold light-ground committed figures in a dark film; both need dark redraws. (6) Every
+    tape shot draws clocks, a scale bar and the A/B counter on the particles; that needs a ruling that
+    it is the style, or else the counter becomes its own insert. (7) Flat orthographic scatter with no
+    camera or light; a lit version needs a styleframe ruling before any lane time. (8) No music bed, ducking,
+    titles, chapters or thumbnail; the voice was a seeded random draw, not an audition. (9) Nothing ties
+    a spoken number to its command and file: film/assemble.py checks only take length.'
 budget:
   gpu_h: 0.0
-  cpu_h: 20.0
+  cpu_h: 6.0
   tts_chars: 15000
-  llm_usd: 5.0
-  disk_gb: 10.0
+  llm_usd: 0.0
+  disk_gb: 5.0
   prio_cap: 10
-kill: If no phenomenon in this tree can be shown as a moving picture a viewer follows without the word
-  "registered", the series takes only the segregation episode.
+kill: 'Prune to the one chemistry episode, and fund no second, if E34''s held-out-dimension check fails:
+  a rate law fitted on distance lists in two dimensions misses the one- and three-dimensional runs by
+  more than 25%. That is the line''s own stopping rule 5 (docs/RELATIONAL_DYNAMICS.md section 9), and
+  its sweep was queued on 2026-09-12. As of that date no result in this repo shows distances beating a
+  coordinate method, or a plain particle count, at anything: the invariances are properties, E32''s fluid
+  observables are identities, and E33''s rows read a rate that counting also gives. If E34 passes, the
+  second episode is the rate law, not "throw away the axes".'
 potential: 8
-notes: Film pipeline film/ (tape -> matplotlib renderer -> card -> assemble) imports spectre's tape writer
-  and ElevenLabs vo.py by absolute path. Series plan docs/SERIES.md (13 -> 6 episodes). Voice Callum was
-  chosen by a seeded random draw and is under review.
+notes: 'Film pipeline: film/scenes.py (tape through spectre''s TapeWriter, imported from SPECTRE_ROOT),
+  film/render.py (flat matplotlib, nearest tape frame, never interpolated), film/anim.py (figure animations,
+  each with a manifest naming its summary.json or tape header hash), film/card.py, film/assemble.py; voice
+  through spectre''s core/film/audio/vo.py. Series plan docs/SERIES.md (six episodes). Every committed
+  experiment figure under results/exp*/ is light-ground and must not hang as a still (LAWS 13); the anim
+  and render previews are dark. Of the eleven anims, only row carries nothing repo-specific on screen;
+  walk, slab, bag and triangle name an experiment in the footer; counter, like, front, mechanism, dose
+  and null show check ids or "registered". The fund''s produced_by on the ab_d2 clip row is not verbatim:
+  the command that ran was exprun uv run python film/render.py results/film/tapes/ab_d2 --seconds 40 --fps
+  30 --tag ep05 (row kept unchanged because its bundle is live); likewise the ab_d2 tape was exprun uv
+  run python film/scenes.py ab-d2 --n 200000 --t-max 400 --every 10. "Throw away the axes" is no longer
+  a separate thesis: its row and walk shots are the chemistry episode''s first minute. E32 gives it an
+  ending, since every scalar a fluid has is a function of the distance lists as far as they reach, and
+  a mirror twin has identical lists and different forces, but it has no number a viewer leans in for.
+  artefact/index.html is an untracked single-file companion page of 2026-09-07 on the retired coarse-simulation
+  line (E10-E18); its plate colours are the film''s palette. It is not a harvestable kind and should not
+  hang. Mechanism, a guess and untested: a point''s distances at the visitor''s scale say whether a cluster
+  reads as a line, a sheet or a volume from where they stand, a level-of-detail signal for point clouds
+  as premosaic''s is for meshes. The tape format is spectre''s; einstruct only writes through it. Voice
+  takes exist as audio (results/film/vo/ep05, 12 mp3).'

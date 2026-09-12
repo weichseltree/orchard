@@ -1,125 +1,127 @@
+# generated from /home/manuel/weichseltree/phototroph/orchard.yaml — edit that file, not this one
 name: phototroph
 path: /home/manuel/weichseltree/phototroph
 remote: https://github.com/weichseltree/phototroph.git
-question: '*A phototroph is an organism that feeds on light. Nothing in this engine is one. The point
-  is to find out whether matter, given only exact local physics and a spectral gradient, will become one
-  on its own.*'
+question: Given only exact local physics and a steady beam of one colour of light, will matter organize
+  itself into structures that absorb that colour?
 status: active
 stage: planted
 gpu: none
-phenomena: []
+phenomena:
+- id: ness-flux1000
+  title: A lit box that stops changing
+  hook: Under a steady beam, a soup of 432 atoms cools from hot to one temperature and then holds it for
+    as long as we watched, while energy keeps pouring through.
+  evidence: experiments/g1-gradient/pilots/horizon-flux1000-20260909.md
+  hero: true
+- id: light-starved
+  title: Bathed in light, catching almost none
+  hook: The atoms swallow three photons in every ten thousand that reach them; they trade energy by bumping
+    into each other a hundred to a thousand times faster than they can catch light.
+  evidence: experiments/g1-gradient/q77-starvation-20260909.md
+  hero: false
+- id: flux-window
+  title: More light breaks the clumps
+  hook: Turn the light up and the clumps come apart; at ten times the light nothing holds together long
+    enough to be called a structure.
+  evidence: experiments/g1-gradient/pilots/verdict-flux-20260909.md
+  hero: false
+- id: three-body-capture
+  title: Two atoms cannot catch each other
+  hook: Two atoms falling together fly apart exactly as fast as they came; they only stick when a third
+    arrives and carries the extra speed away.
+  evidence: studio/scenes/dimer-split/README.md
+  hero: true
 artefacts:
-- kind: clip
-  path: studio/library/films/e05/e05-animatic.mp4
-  title: e05-animatic
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
-- kind: clip
-  path: studio/library/films/e05/animatic/video.mp4
-  title: video
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
-- kind: clip
-  path: studio/library/films/e05/animatic/017_15.mp4
-  title: '017_15'
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
-- kind: clip
-  path: studio/library/films/e05/animatic/016_14.mp4
-  title: '016_14'
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
-- kind: clip
-  path: studio/library/films/e05/animatic/015_13.mp4
-  title: '015_13'
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
-- kind: still
-  path: studio/library/films/e05/animatic/015_13.png
-  title: '015_13'
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
-- kind: clip
-  path: studio/library/films/e05/animatic/014_12.mp4
-  title: '014_12'
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
-- kind: still
-  path: studio/library/films/e05/animatic/014_12.png
-  title: '014_12'
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
-- kind: clip
-  path: studio/library/films/e05/animatic/013_11.mp4
-  title: '013_11'
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
-- kind: still
-  path: studio/library/films/e05/animatic/013_11.png
-  title: '013_11'
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
-- kind: clip
-  path: studio/library/films/e05/animatic/012_10.mp4
-  title: '012_10'
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
-- kind: clip
-  path: studio/library/films/e05/animatic/011_9.mp4
-  title: 011_9
-  produced_by: ''
-  commit: ''
-  sha256: ''
-  approved: false
-  bundle: ''
+- kind: tape
+  path: results/tapes/dimer-split
+  title: Two atoms cannot catch each other
+  produced_by: EXP_PRIO=5 exprun -n phototroph-tape-dimer-split -l /home/manuel/weichseltree/phototroph/logs/phototroph-tape-dimer-split.log
+    python3 experiments/video/ptvf_to_tape.py --input studio/library/runs/dimer-split/frames.ptvf --expect-sha256
+    68b9ef8152a8e2c2d60d1fe168c583cd7df41a3aae7922b2324f29f47e8f3e6a --frames 1600:2401 --scalars species,alive,bond_count
+    --run-seed 16 --out results/tapes/dimer-split
+  commit: e0bd3c6
+  sha256: 8dc31ed3d117586c49178d6bb2bb3136be23a8a0479c0985bb54c7b169ce81da
+  approved: true
+  bundle: cecbb68e2d2274af
 producers:
-  tape: ''
+  tape: EXP_PRIO=5 exprun -n phototroph-tape-<name> -l <repo>/logs/phototroph-tape-<name>.log python3
+    experiments/video/ptvf_to_tape.py --input <dump>.ptvf --expect-sha256 <sha256 of the dump> --frames
+    <a>:<b> --scalars species,alive,bond_count --run-seed <seed> --out results/tapes/<name>
   render: ''
   figure: ''
   lane: cpu
   env: {}
-theses: []
+theses:
+- id: h1-pigment
+  question: If you shine one colour of light on a soup of atoms for long enough, do the clumps that form
+    start catching that colour?
+  number: The lit-minus-dark difference in pigment index (strength-weighted count of cluster modes inside
+    the lit line), mean over 8 seeds per arm, against an absolute threshold fixed in the H1 README before
+    any member runs (docs/14 section 4).
+  picture: The same box at the same instant, lit and dark, side by side. Either the lit box's clumps hold
+    the beam's colour and the dark box's do not, or the two cannot be told apart; the null is also the
+    picture.
+  phenomena:
+  - ness-flux1000
+  - light-starved
+  - flux-window
+  stage: thesis
+  episode: Does matter learn to eat light?
+  blocked_by: 'Authored physics, not compute. Collisional internal transfer runs at Gamma_ic = 10.26 per
+    t0 against radiative rates 0.011-0.33, so no cluster sees a photon within its lifetime and no flux
+    fixes it (docs/09 Q77, owner decision Q42). Order: H1 exploratory scan over Gamma_ic in {10.26, 1,
+    0.1} (selects nothing), owner decision with a derivation, goldens rebaseline, dt pair re-run, then
+    the pre-registered H1 confirmatory (3 arms x 8 seeds). The fund''s physics-review hold sits on the
+    same decision.'
 budget:
   gpu_h: 0.0
-  cpu_h: 0.0
+  cpu_h: 20.0
   tts_chars: 0
   llm_usd: 0.0
-  disk_gb: 0.0
-  prio_cap: 10
-kill: ''
+  disk_gb: 2.0
+  prio_cap: 5
+kill: Prune from the slate if either (a) the only Gamma_ic at which a cluster sees a photon within its
+  lifetime is one no physical derivation supports, so any effect would be authored rather than emerged,
+  or (b) H1's confirmatory run on the decided physics returns its pre-registered null (lit and dark arms
+  share one cluster census within across-seed scatter). If neither the Q77 decision nor H1 has landed
+  by 2026-10-12, go dormant.
 potential: 0
-notes: 'last commit 2026-09-11 | media on disk: {''clip'': 128, ''still'': 142, ''tape'': 0} | ledger:
-  0.6 gpu-h, 62.0 cpu-h, 8.5 h on video, 643 jobs, 177 failed'
+notes: 'Tree answers 2026-09-12 (phototroph-04). ONE ARTEFACT, the dimer-split tape (below); every clip
+  stays out. Of 126 clips on disk, two are simulation footage and neither hangs: experiments/video/out/the-gradient.mp4
+  (rendered 2026-09-01 from the working tree committed as 478a062) and phototroph-cinematic.mp4 (same
+  evening, engine at 531dca2). Both predate the physics fixes: Q66 radiative energy realization (2026-09-05),
+  Q76 vertex-impulse frame and Q77 dt-free transfer rate (2026-09-07), Q80 Boltzmann factor applied twice
+  (2026-09-08; the code is present at 478a062). the-gradient also ran at flux 25,000, which does not bind
+  even on the fixed engine (T_kin climbs 4.5 to 12, bonds fall to single digits), and both carry a counter
+  panel over the world (LAWS 7) with per-species hue (LAWS 12). Not footage, and not styleframes either.
+  The same verdict covers their six preview PNGs and the three post-q66 PNGs in experiments/validation/out/film-previews
+  (2026-09-06, still before Q76/Q77/Q80). Everything else is studio: 119 animatic clips and about 100
+  animatic cell PNGs (assembly tests with slate bars and placeholder cells), 5 Pexels stock clips with
+  provenance sidecars (real-world fillers, not this tree''s harvest), and optics/colour-map previews of
+  authored scenes. The only stills from corrected physics are studio/library/previews/e03/*.png, flat
+  854x480 CPU previews of the dimer-split bake (engine e0bd3c6, dark, 8 particles) that have had no ruling;
+  one frame cannot show a capture. TAPES: the engine writes PTVF (experiments/video/ptvf.py), not video/tape/1;
+  experiments/video/ptvf_to_tape.py converts a finished dump (record below). A tape carries matter only:
+  photon packets have no place in video/tape/1, so the light this tree is about is never in its tapes.
+  Candidates: the horizon stream out-horizon-flux1000/frames.ptvf (f2ea92f, every fix in, 2,500 frames
+  at 1 t0 each, a time-lapse, too coarse to read as motion) and studio/library/runs/dimer-split (motion-grade,
+  0.075 t0 per frame, pure mechanics, unaffected by the pending Gamma_ic decision). The 18 flux members
+  kept checkpoints only. | TAPE (funded by owner ruling 2026-09-12, run the same day): results/tapes/dimer-split,
+  converted by experiments/video/ptvf_to_tape.py (faf9e37) from the existing dimer-split dump (sha256
+  68b9ef81..., the dump meta records code 2281e20 dirty; its note says the engine side that produced the
+  bytes was committed at e0bd3c6). No checkpoint and no new run: a pure conversion, CPU seconds, exprun
+  exit 0 at EXP_PRIO 5. Frames 1600-2400 = steps 24,000-36,000 = t 120.0-180.0, 801 frames, 136 KB (data.bin
+  57,672 B = 801 x 72 B), 0 clamped positions, uint16 positions in box (20, 20, 1) periodic x/y, z = 0.
+  Channels species (all beta), alive (1 everywhere, count is fixed) and bond_count (exact degree from
+  each frame recorded bond list). Read back against the scene README: capture at t 134.10, the third body
+  bond breaks at t 134.325, a third joins at t 173.55, all as recorded. Not carried: photons (the dump
+  has none), levels (0 throughout). The orchard bundler reads only pos, species and alive, so bond_count
+  stays on the tape but does not reach the grove (same gap as the spectre ke channel, orchard BACKLOG
+  18); in the grove the capture reads as motion only. The tape header git field says faf9e37-dirty: the
+  dirt is another session uncommitted H1 engine edits plus the untracked results/ directory, neither of
+  which the conversion reads. CORRECTION to an earlier claim: a motion-grade window of a flux or horizon
+  member was said to cost minutes of CPU. That is unverified: it needs run-gradient --resume at f2ea92f
+  with [ptvf] steps_per_frame changed from 200 to 15, and whether a checkpoint accepts that config has
+  not been checked. | scout 2026-09-11: media on disk clip 128, still 142, tape 0; ledger 0.6 gpu-h, 62.0
+  cpu-h, 8.5 h on video, 643 jobs, 177 failed'

@@ -1,3 +1,4 @@
+# generated from /home/manuel/weichseltree/someotherlife/orchard.yaml — edit that file, not this one
 name: someotherlife
 path: /home/manuel/weichseltree/someotherlife
 remote: https://github.com/weichseltree/someotherlife.git
@@ -5,7 +6,7 @@ question: Photograph a room with one phone, then stand in it with a headset on. 
   it stops being a room?
 status: active
 stage: planted
-gpu: none
+gpu: torch
 phenomena: []
 artefacts: []
 producers:
@@ -25,9 +26,7 @@ theses:
   phenomena: []
   stage: thesis
   episode: ''
-  blocked_by: Spike C has not run. No room has been shot (about an hour of the owner's time with a phone),
-    no reconstruction toolchain is chosen, and the client has no splat render pass. The reconstruction
-    is the part the orchard could fund in kind, about 5 GPU-hours, unmeasured.
+  blocked_by: the shoot
 budget:
   gpu_h: 5.0
   cpu_h: 4.0
@@ -42,13 +41,17 @@ potential: 0
 notes: 'Donor tree, not an episode tree. Nothing on disk is a splat, still, clip or tape. Spike C (docs/milestones.md)
   has not run, so there is no captured room and no measured 6DoF budget. Every splat number from this
   tree is a prior until Spike C''s ADR lands; the repo keeps unmeasured numbers out of its docs (ADR 0006).
-  The budget above is the Spike C estimate (one phone shoot, structure from motion, about three reconstruction
-  attempts on an 8 GB card, compression, coverage analysis), not a measurement. Exists but deliberately
-  not listed as artefacts: a playable WebXR chest room of draft proxies (apps/client, `pnpm dev`; desktop
-  orbit fallback plus Enter VR; covered by apps/client/tests/play.spec.ts), 20 SVG wardmark glyphs (content/art/wardmarks/),
-  and 25 synthesized voice lines (content/audio/vo/00-the-cellar/, Opus with provenance.json). The splat
-  asset''s metadata already has a schema, SplatAssetSchema in packages/scene-schema/src/capture.ts (lods
-  of srcUrl + splatCount, boundsM, coverage.radiusM, captureId, consentRef). Splat rooms are station-bound
+  Spike C is funded (2026-09-12, the orchard grounds first). Its toolchain is committed on branch spike-c/capture-tooling
+  at 29d931d, not yet pushed: tools/capture (pycolmap SfM on the CPU lane, gsplat MCMC on the GPU lane,
+  a printed marker for metres and the station frame; ADR 0013), the shoot in docs/shoot.md. `capture job
+  <id>` pins the photos by hash and prints the lanepush and exp commands. The rasterizer and training
+  loop have never run: the first real capture is also their first run. The budget (5 GPU-h, 4 CPU-h, 15
+  GB) is still the estimate; SfM on a synthetic room extrapolates to 45-60 CPU-min for ~250 photos. Exists
+  but deliberately not listed as artefacts: a playable WebXR chest room of draft proxies (apps/client,
+  `pnpm dev`; desktop orbit fallback plus Enter VR; covered by apps/client/tests/play.spec.ts), 20 SVG
+  wardmark glyphs (content/art/wardmarks/), and 25 synthesized voice lines (content/audio/vo/00-the-cellar/,
+  Opus with provenance.json). The splat asset''s metadata already has a schema, SplatAssetSchema in packages/scene-schema/src/capture.ts
+  (lods of srcUrl + splatCount, boundsM, coverage.radiusM, captureId, consentRef). Splat rooms are station-bound
   by design (docs/vision.md constraint 12): the viewer leans inside a measured radius and never walks.
   The grove''s XR entry already follows this repo''s rule. What is left worth lifting is apps/client/src/input/dwell.ts
   + input/raycast.ts (pointing with a 300 ms dwell, mouse and controller rays; only three and two branded
