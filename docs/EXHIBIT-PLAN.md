@@ -5,7 +5,8 @@ get there. Filled in from the trees' answers to
 [BRIEF-FOR-TREES.md](BRIEF-FOR-TREES.md); the manifests
 (`<repo>/orchard.yaml`) stay the record, this page is the reading of them.
 Started 2026-09-12; the first slate is einstruct, spectre, world-engine,
-phototroph (premosaic skipped for now, its kill criterion fired 2026-08-18).
+phototroph and premosaic (whose kill criterion fired 2026-08-18; it answers
+whether anything survives).
 Each tree answers from a session in its own repo; the orchard session
 coordinates over SendMessage.
 
@@ -50,6 +51,13 @@ One block per tree, filled from the tree's answer. Empty until it answers.
 - needs:
 - room:
 
+### premosaic
+- shows this week (first word): premosaic-57 (2026-09-12): 13 small stills, the best 400 px matplotlib figures of adaptive tiles over Gray-Scott stripes and a lid-driven cavity; no tape, no clip. The engine runs 1.5 to 2x slower than the plain baseline, which is the kill.
+- mechanism of the mansion:
+- thesis:
+- needs:
+- room:
+
 ### phototroph
 - shows this week (first word): phototroph-04 (2026-09-12): at most two 1 Sep simulation clips (the-gradient, phototroph-cinematic) and their preview stills, pending whether they predate the physics fixes; the ~120 studio library clips are assembly tests, not footage.
 - mechanism of the mansion:
@@ -64,5 +72,5 @@ Collected here as the answers come in; each is one `orchard exhibit hang
 
 ## Second wave
 
-premosaic (if anything survives its kill), someotherlife (splats; the grove
+someotherlife (splats; the grove
 has no splat kind yet), event-atoms, mosaic, HNL.
