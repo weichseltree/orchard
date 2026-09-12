@@ -446,24 +446,23 @@ def test_alive_is_derived_when_the_tape_has_no_alive_channel(tmp_path):
     assert (alive[:, 2:] == 1).all()
 
 
-# --------------------------------------------------- the two reader back ends
+# ------------------------------------------------------------ the one reader
 
 
-def test_the_local_reader_agrees_with_spectre(tape, tmp_path, monkeypatch):
-    """`_MiniTapeReader` must produce the same bytes spectre's TapeReader does."""
+def test_the_bundle_names_the_tape_release_that_read_it(tape, tmp_path):
+    """One reader, `orchard_tape`, and `source.tape_reader` says which release.
+
+    There used to be two (spectre's module off `$SPECTRE_ROOT`, and a local
+    re-implementation when spectre was absent) and a test that they agreed.
+    The package removed the second, and with it the only reason the answer
+    could depend on what else was on the disk.
+    """
+    import orchard_tape
     tape_dir, *_ = tape
-    a = bundle_tape(tape_dir, "einstruct", "t", tmp_path / "a", verbose=False)
-    with_spectre = json.loads((a / "bundle.json").read_text())
-    if "_MiniTapeReader" in with_spectre["source"]["tape_reader"]:
-        pytest.skip("spectre is not on this machine; only one reader exists")
-
-    monkeypatch.setattr(bundle, "SPECTRE_ROOT", tmp_path / "no-such-repo")
-    b = bundle_tape(tape_dir, "einstruct", "t", tmp_path / "b", verbose=False)
-    without = json.loads((b / "bundle.json").read_text())
-    assert "_MiniTapeReader" in without["source"]["tape_reader"]
-    for name in ("vr-high", "vr-quest", "phone"):
-        assert ([c["sha256"] for c in with_spectre["variants"][name]["chunks"]]
-                == [c["sha256"] for c in without["variants"][name]["chunks"]])
+    out = bundle_tape(tape_dir, "einstruct", "t", tmp_path / "b", verbose=False)
+    doc = json.loads((out / "bundle.json").read_text())
+    assert doc["source"]["tape_reader"] == f"orchard-tape {orchard_tape.__version__}"
+    assert not hasattr(bundle, "SPECTRE_ROOT")
 
 
 # --------------------------------------------------------------- refusals
@@ -844,8 +843,8 @@ def test_a_zero_length_axis_is_coerced_to_one(tmp_path):
 # -------------------------------------------------------- the uint16 branch
 
 
-def test_a_uint16_tape_round_trips_through_both_readers(tmp_path, monkeypatch):
-    """The quantized-position branch of both readers, which nothing else runs."""
+def test_a_uint16_tape_round_trips_through_the_reader(tmp_path):
+    """The quantized-position branch of the reader, which nothing else runs."""
     frames, n = 3, 400
     rng = np.random.default_rng(41)
     pos = rng.random((frames, n, 3)) * np.array(BOX) * 0.99
@@ -863,16 +862,6 @@ def test_a_uint16_tape_round_trips_through_both_readers(tmp_path, monkeypatch):
     back = got["pos"].astype(np.float64) / 65535.0 * L
     assert np.abs(back - pos).max() <= 2 * (L / 65535.0).max()
     assert (got["species"] == species).all()
-
-    if "_MiniTapeReader" in da["source"]["tape_reader"]:
-        pytest.skip("spectre is not on this machine; only one reader exists")
-    monkeypatch.setattr(bundle, "SPECTRE_ROOT", tmp_path / "no-such-repo")
-    b = bundle_tape(tmp_path / "tape", "einstruct", "t", tmp_path / "b",
-                    verbose=False)
-    db = json.loads((b / "bundle.json").read_text())
-    assert "_MiniTapeReader" in db["source"]["tape_reader"]
-    assert ([c["sha256"] for c in da["variants"]["vr-high"]["chunks"]]
-            == [c["sha256"] for c in db["variants"]["vr-high"]["chunks"]])
 
 
 # ------------------------------------------------------- video with audio

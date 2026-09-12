@@ -13,16 +13,14 @@ may be a wall-clock timestamp or the id would move on every run; provenance
 that does move (the tree's git sha) is content, and moving the id is then the
 correct behaviour.
 
-READING TAPES. `core.video.tape.TapeReader` from the spectre repo is the
-authority on `video/tape/1` and is IMPORTED when it can be found
-(`$SPECTRE_ROOT`, default `~/weichseltree/spectre`) rather than re-implemented,
-so a tape written with a uint16 position channel decodes through the same
-`/65535*L` that wrote it and a torn final frame is dropped by the same rule.
-`_MiniTapeReader` below is a faithful re-implementation of only the read path,
-used when spectre is not on disk (a fresh clone of orchard, CI) so that the
-tests do not require a second repo. Which one ran is recorded in
-`bundle.json:source.tape_reader`, because the two are only as identical as
-this file is correct.
+READING TAPES. `orchard_tape.TapeReader` (packages/tape, a workspace member)
+is the authority on `video/tape/1` and the same code every producing repo
+writes with, so a tape written with a uint16 position channel decodes through
+the same `/65535*L` that wrote it and a torn final frame is dropped by the same
+rule. There is one reader and no fallback: the package ships with orchard, so
+the day spectre's checkout is absent is no longer a day a second
+implementation runs. Its release is recorded in
+`bundle.json:source.tape_reader`.
 """
 from __future__ import annotations
 
@@ -38,6 +36,8 @@ import time
 from pathlib import Path
 
 import numpy as np
+import orchard_tape
+from orchard_tape import TapeReader
 
 from . import RESULTS, WEICHSELTREE
 
@@ -62,96 +62,12 @@ PALETTE = ["#ff6f4d", "#4dc3ff", "#9be564", "#f2c14e", "#c792ea", "#ff8fb1",
 POSTER_BG = "#0b0d10"
 POSTER_PX = (1280, 720)
 
-SPECTRE_ROOT = Path(os.environ.get("SPECTRE_ROOT") or (WEICHSELTREE / "spectre"))
-
-
 # --------------------------------------------------------------- tape reading
 
 
-class _MiniTapeReader:
-    """The `video/tape/1` read path, re-implemented, for when spectre is absent.
-
-    Faithful to `core/video/tape.py` on the three things that decide whether
-    the bytes mean what they say: the index stops at the first torn line OR
-    the first record whose payload runs past `data.bin` (a killed writer
-    leaves both), channels are laid out one after another within a frame in
-    header order, and a `quantized` uint16 position channel decodes as
-    `a / 65535 * L` — an unquantized integer channel is the integer itself and
-    is NOT scaled. A width-1 channel comes back 1-D.
-    """
-
-    def __init__(self, path):
-        self.path = Path(path)
-        self.header = json.loads((self.path / "header.json").read_text())
-        if self.header.get("schema") != TAPE_SCHEMA:
-            raise ValueError(
-                f"tape schema {self.header.get('schema')!r} != {TAPE_SCHEMA!r}")
-        self.channels = self.header["channels"]
-        self.frames = self._read_index()
-        self._blob = (np.memmap(self.path / "data.bin", dtype=np.uint8, mode="r")
-                      if self.frames else None)
-        tp = self.path / "trailer.json"
-        self.trailer = json.loads(tp.read_text()) if tp.exists() else None
-
-    def _read_index(self):
-        out, path = [], self.path / "frames.jsonl"
-        if not path.exists():
-            return out
-        size = (self.path / "data.bin").stat().st_size
-        for line in path.read_text().splitlines():
-            try:
-                rec = json.loads(line)
-            except json.JSONDecodeError:
-                break
-            if rec["off"] + rec["len"] > size:
-                break
-            out.append(rec)
-        return out
-
-    def __len__(self):
-        return len(self.frames)
-
-    def frame(self, i: int) -> dict:
-        rec = self.frames[i]
-        raw = self._blob[rec["off"]: rec["off"] + rec["len"]]
-        n, at = rec["n"], 0
-        out = {"i": rec["i"], "step": rec["step"], "t": rec["t"], "n": n}
-        for c in self.channels:
-            dt = np.dtype(c["dtype"])
-            nbytes = n * dt.itemsize * c["width"]
-            a = np.frombuffer(raw[at: at + nbytes].tobytes(),
-                              dtype=dt).reshape(n, c["width"])
-            at += nbytes
-            if np.issubdtype(dt, np.integer) and not c["quantized"]:
-                v = a.copy()
-            elif c["quantized"]:
-                L = np.asarray(self.header["box"], dtype=np.float64)
-                v = (a.astype(np.float64) / 65535.0 * L).astype(np.float32)
-            else:
-                v = a.astype(np.float32)
-            out[c["name"]] = v.reshape(-1) if c["width"] == 1 else v
-        return out
-
-
-def tape_reader(tape_dir) -> tuple[object, str]:
-    """(reader, which). spectre's TapeReader when importable, else the local one."""
-    if SPECTRE_ROOT.is_dir():
-        added = str(SPECTRE_ROOT) not in sys.path
-        if added:
-            sys.path.insert(0, str(SPECTRE_ROOT))
-        try:
-            from core.video.tape import TapeReader  # noqa: PLC0415
-            git = _git_describe(SPECTRE_ROOT)
-            return TapeReader(tape_dir), f"spectre core.video.tape ({git})"
-        except Exception as exc:                                  # noqa: BLE001
-            why = f"{type(exc).__name__}: {exc}"
-        finally:
-            if added and str(SPECTRE_ROOT) in sys.path:
-                sys.path.remove(str(SPECTRE_ROOT))
-    else:
-        why = f"{SPECTRE_ROOT} is not a directory"
-    return (_MiniTapeReader(tape_dir),
-            f"orchard.bundle._MiniTapeReader (spectre unavailable: {why})")
+def tape_reader(tape_dir) -> tuple[TapeReader, str]:
+    """(reader, which): the package's TapeReader and the release that read."""
+    return TapeReader(tape_dir), f"orchard-tape {orchard_tape.__version__}"
 
 
 # ----------------------------------------------------------------- provenance

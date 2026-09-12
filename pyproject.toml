@@ -11,6 +11,7 @@ dependencies = [
     "uvicorn>=0.30",
     "numpy>=2.5.3",
     "matplotlib>=3.11.2",
+    "orchard-tape",
 ]
 
 [project.scripts]
@@ -28,3 +29,15 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["orchard"]
+
+# `video/tape/1` lives in packages/tape as its own distribution, so every other
+# repo can depend on the one tagged release (tape-vX.Y.Z) instead of putting
+# spectre's working tree on sys.path. Orchard takes it from the workspace.
+[tool.uv.workspace]
+members = ["packages/tape"]
+
+[tool.uv.sources]
+orchard-tape = { workspace = true }
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "packages/tape/tests"]
