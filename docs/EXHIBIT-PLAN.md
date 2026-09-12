@@ -32,11 +32,62 @@ coordinates over SendMessage.
 One block per tree, filled from the tree's answer. Empty until it answers.
 
 ### einstruct
-- shows this week (first word): einstruct-33 (2026-09-12): the ab_d2 tape and clip already hanging; four more tapes (aa_d2, ab_d2_stir, lj_droplet, lj_liquid); eleven finished explainer animations under results/film/anims. No lane time needed.
-- mechanism of the mansion:
-- thesis:
-- needs:
-- room:
+Answered 2026-09-12 by einstruct-33; manifest at einstruct a77bd40, 6
+phenomena, 25 artefacts, 1 thesis; every row resolves in a dry run, the four
+live ab_d2 rows unchanged. The 21 new rows were not harvested at first
+(4.3 GB of source, two 2.1 GB tapes); the orchard asked for the full
+harvest, expected output 0.3 to 0.4 GB.
+- shows this week: five more tapes, all video/tape/1 through spectre's
+  writer. ab_d2_stir (801 frames over 400 tau, 200,000 to 292 particles,
+  2.1 GB): the control, colours shuffled every 20 steps, regions never
+  form; the twin of the tape already hanging, and the pick. aa_d2 (one
+  colour, the case where the textbook is right, 2.1 GB). lj_droplet (301
+  frames, 256 particles, 3-D with velocity, 2.3 MB). lj_liquid-open (an
+  open cube melting into a droplet, 10 MB) and lj_liquid-dense (13 MB).
+  Each tape has a flat render clip of 10 to 20 s. Eleven explainer
+  animations: only `row` is clean; walk, slab and bag need a one-line
+  caption fix; counter, like, front, mechanism, dose and null show check
+  ids or "registered", and the last three belong to a retired line.
+- E32: not watchable yet; a static fixture with light-ground figures. The
+  one watchable limit (48 nearest distances give the pressure exactly until
+  the fluid is squeezed and the answer comes out low, never high) is listed
+  as the phenomenon short_list_reach; a 12 s anim would show it on CPU.
+  It gives "throw away the axes" an ending, not a number; that thesis is
+  folded into the chemistry episode's first minute (row + walk, 30 s).
+- what is left on Rows read chemistry: the claim is wrong. The decay
+  exponent tracks whatever the decay is (-0.93 stirred, -0.87 one colour)
+  and a particle count gives it without distances. What only distances
+  give is the segregation ratio: the nearest other-colour partner is 8.8x
+  as far as the nearest own-colour particle, against 1.0 when stirred. New
+  number; the picture is the two tapes side by side with nine times fewer
+  particles left in the stirred one. Then: "rows" never introduced;
+  repo-speak in the voice and P-numbers on screen; 108 s silent (162 s of
+  takes against 270 s of picture: re-cut to the takes, do not add words);
+  two light figures; clocks and counters drawn on the particles (a style
+  ruling); no camera or light; no music, titles, chapters, thumbnail; the
+  voice from a random draw; no gate tying spoken numbers to their command.
+  Stage animatic, blocked by all nine.
+- artefact/: an untracked 284 KB single-file companion page from
+  2026-09-07 on the retired coarse-simulation line; the film's palette
+  comes from it. Not a harvestable kind. Commit or delete: Manuel's call.
+- mechanism of the mansion, correcting PLATFORM: the tape format is
+  spectre's; einstruct's candidate is a point's distances at the visitor's
+  scale saying whether a cluster reads as a line, a sheet or a volume from
+  where they stand, a level-of-detail signal for point clouds as
+  premosaic's is for meshes. Untested. Otherwise einstruct is an exhibit.
+- needs: 0 GPU h; a lit hero shot (spectre's Mitsuba, about 14 lane-hours
+  per 40 s) only after a styleframe ruling; 6 CPU h for re-renders and dark
+  redraws; 15k TTS characters (re-voicing four shots plus an audition); 5
+  GB disk. Second node: E34's members, which are science, not film.
+- kill: E34's held-out-dimension check; a rate law fitted in 2-D that
+  misses 1-D and 3-D by more than 25% leaves the tree one episode. Nothing
+  yet shows distances beating coordinates; potential below the fund's 8.
+- room: the ab_d2 film as the floor, 632 sigma square, the stirred twin
+  beyond a glass wall; a mirror wall where the reflection's row is
+  identical and its forces are not; off the room, a street, a square and
+  a stairwell lit with lamps at unit spacing, so walking twice as far
+  passes 2x, 4x and 8x the lamps: "a dimension is how fast neighbours
+  arrive" as architecture.
 
 ### spectre
 - shows this week (first word): spectre-fe (2026-09-12): 13 tapes in video/tape/1 (the m04 planet worlds at chi 0/6/12, m01 mixture demixing, the v00 fluid tape); the two bundled videos; style-B styleframes on disk.
@@ -162,6 +213,21 @@ artefacts, one thesis, resolves on the board and the harvest bundles nothing.
 Collected here as the answers come in; each is one `orchard exhibit hang
 <dir> --approve` or a verdict in the flat dashboard.
 
+- **einstruct, hang the stirred twin.** ab_d2_stir beside the ab_d2 tape
+  already in the room, the segregation-versus-stirred pair that is the new
+  thesis picture. One `orchard exhibit hang` with `--approve` once the
+  harvest lands. Recommended yes. The `row` animation as a clip likewise;
+  walk, slab and bag after their caption fix.
+- **einstruct, the thesis number changes.** "Predicted from rows" was
+  wrong; the segregation ratio (8.8x against 1.0 stirred) replaces the
+  decay exponent. Rule that the animatic is re-cut to the takes on the new
+  number before any narration or music spend.
+- **einstruct, clocks and counters on the particles.** A style ruling
+  (LAWS 7): overlays off the tape, or a plaque beside it.
+- **einstruct, the styleframe.** `c59c7baa6fd15489` is bundled and waits;
+  the tree now says a lit hero shot comes only after a styleframe ruling,
+  so this is the still to rule on.
+- **einstruct, artefact/.** Commit the companion page or delete it.
 - **phototroph, the rate decision (Q77/Q42).** Owner picks the collisional
   rate with the derivation Q77 asks for, informed by H1's scan; then
   goldens rebaselined, the Bose-Einstein gate green over 8 seeds, the dt
