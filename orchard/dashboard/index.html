@@ -13,6 +13,9 @@
   .bar { height:6px; background:#243026; border-radius:3px; overflow:hidden; } .bar i { display:block; height:100%; background:var(--leaf); }
   .bar i.warn { background:var(--warn); } .bar i.bad { background:var(--bad); }
   .stage { color:var(--leaf); } .muted { color:var(--dim); }
+  form.row { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; } input, select, button { background:#0e1310; color:var(--ink); border:1px solid #2a352c; border-radius:4px; padding:3px 6px; font:inherit; }
+  button { cursor:pointer; } button.verdict { padding:1px 6px; font-size:12px; } button.ok { border-color:var(--leaf); } button.bad { border-color:var(--bad); }
+  td.wrap { white-space:normal; max-width:420px; }
 </style>
 <h1>orchard <span>· the fund and the studio · weichseltree</span></h1>
 <div class="muted" id="meta">loading…</div>
@@ -22,6 +25,22 @@
   <div><h2>Quota and credit</h2><div class="panel" id="cards"></div></div>
   <div><h2>GPU queue wait by tier</h2><div class="panel"><table id="wait"></table></div></div>
   <div><h2>Running now</h2><div class="panel"><table id="running"></table></div></div>
+</div>
+<h2>Greenhouse · review queue</h2>
+<div class="panel">
+  <table id="reviews"></table>
+  <form id="review-form" class="row">
+    <input name="tree" placeholder="tree" required size="10"><input name="thesis" placeholder="thesis id" required size="18">
+    <select name="kind"><option>styleframe</option><option>animatic</option><option>cut</option><option>still</option><option>master</option></select>
+    <input name="title" placeholder="title" required size="28"><input name="url" placeholder="url (optional)" size="28">
+    <button>submit for review</button>
+  </form>
+</div>
+<div class="grid">
+  <div><h2>Rulings</h2><div class="panel"><table id="rulings"></table></div></div>
+  <div><h2>Directives</h2><div class="panel"><table id="directives"></table>
+    <form id="directive-form" class="row"><input name="text" placeholder="a standing instruction every session reads" size="48" required><button>set</button></form></div></div>
+  <div><h2>Hanging in the grove</h2><div class="panel"><table id="exhibits"></table></div></div>
 </div>
 <script>
 const $ = s => document.querySelector(s);
@@ -44,5 +63,22 @@ async function main(){
   $('#running').innerHTML = head(['name','repo','box','lane','status','prio']) + (led.running.map(j=>row([esc(j.name),esc(j.repo),esc(j.box),j.lane,j.status,j.prio??''])).join('') || row(['<span class="muted">nothing on the lanes</span>']));
 }
 const STAGES=['scouted','planted','thesis','styleframe','animatic','greenlit','rendering','mastered','published','exhibited'];
+const when = s => s ? new Date(s*1000).toLocaleString() : '';
+async function post(url, body){ const r = await fetch(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}); if(!r.ok){ alert((await r.json()).detail||r.statusText); } await greenhouse(); }
+async function rule(id, verdict){ const note = verdict==='approved'||verdict==='greenlit' ? (prompt('note (optional)')??'') : (prompt('what must change?')??''); if(note===null) return; await post('/api/rule',{review_id:id,verdict,note}); }
+async function greenhouse(){
+  const g = await fetch('/api/greenhouse').then(r=>r.json());
+  if(g.error){ $('#reviews').innerHTML = row([`<span class="muted">greenhouse unreachable: ${esc(g.error)}</span>`]); return; }
+  const verdicts = it => it.status!=='open' ? `<span class="stage">${esc(it.status)}</span>` :
+    ['approved','greenlit','changes','rejected'].map(v=>`<button class="verdict ${v==='changes'||v==='rejected'?'bad':'ok'}" onclick="rule(${it.id},'${v}')">${v}</button>`).join(' ');
+  $('#reviews').innerHTML = head(['#','tree','thesis','kind','title','note','submitted','ruling']) +
+    (g.review_items.map(it=>row([it.id,esc(it.tree),esc(it.thesis),esc(it.kind),it.url?`<a href="${esc(it.url)}" target="_blank">${esc(it.title)}</a>`:esc(it.title),esc(it.note),when(it.created_at),verdicts(it)],['num','','','','','wrap','muted',''])).join('') || row(['<span class="muted">nothing waiting for a ruling</span>']));
+  $('#rulings').innerHTML = head(['when','review','verdict','note']) + (g.rulings.map(r=>row([when(r.at),'#'+r.review_id,`<span class="stage">${esc(r.verdict)}</span>`,esc(r.note)],['muted','num','','wrap'])).join('') || row(['<span class="muted">no rulings yet</span>']));
+  $('#directives').innerHTML = head(['when','directive','']) + (g.directives.map(d=>row([when(d.at),d.active?esc(d.text):`<s class="muted">${esc(d.text)}</s>`,d.active?`<button class="verdict" onclick="post('/api/directive/${d.id}/retire',{})">retire</button>`:''],['muted','wrap',''])).join('') || row(['<span class="muted">no directives</span>']));
+  $('#exhibits').innerHTML = head(['#','tree','kind','title','hung']) + (g.exhibits.map(e=>row([e.id,esc(e.tree),esc(e.kind),`<a href="${esc(e.url)}" target="_blank">${esc(e.title)}</a>`,when(e.hung_at)],['num','','','','muted'])).join('') || row(['<span class="muted">nothing hangs yet</span>']));
+}
+$('#review-form').addEventListener('submit', async ev => { ev.preventDefault(); const f = new FormData(ev.target); await post('/api/review', Object.fromEntries(f.entries())); ev.target.reset(); });
+$('#directive-form').addEventListener('submit', async ev => { ev.preventDefault(); const f = new FormData(ev.target); await post('/api/directive', {text:f.get('text')}); ev.target.reset(); });
 main().catch(e=>{$('#meta').textContent='error: '+e;});
+greenhouse().catch(e=>{$('#reviews').innerHTML=row(['<span class="muted">greenhouse: '+esc(e)+'</span>']);});
 </script>

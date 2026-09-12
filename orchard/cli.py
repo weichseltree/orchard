@@ -1,5 +1,5 @@
 """orchard <verb>. Verbs are the orchard's: scout, plant, board, bundle, harvest,
-push, exhibit, r2, ledger, doctor, serve."""
+push, exhibit, sync, r2, ledger, doctor, serve."""
 from __future__ import annotations
 
 import argparse
@@ -173,6 +173,11 @@ def cmd_exhibit_take_down(a):
     print(f"took down exhibit {a.id}")
 
 
+def cmd_sync(a):
+    from .sync import main as sync_main
+    sync_main([a.what])
+
+
 def cmd_push(a):
     from .push import R2NotEnabled, cors_preflight, push, wait_public
     try:
@@ -261,6 +266,10 @@ def main(argv=None):
     e = esub.add_parser("list", help="the exhibit table"); e.set_defaults(fn=cmd_exhibit_list)
     e = esub.add_parser("take-down", help="remove an exhibit by id")
     e.add_argument("id", type=int); e.set_defaults(fn=cmd_exhibit_take_down)
+
+    s = sub.add_parser("sync", help="the live database: push trees and the ledger, pull rulings")
+    s.add_argument("what", choices=["trees", "snapshot", "rulings", "all", "install"])
+    s.set_defaults(fn=cmd_sync)
 
     s = sub.add_parser("push", help="upload a bundle to R2")
     s.add_argument("bundle_dir")

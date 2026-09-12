@@ -90,3 +90,12 @@ Append-only. A decision names the day, the ruling, and the alternative it beat.
   clip**, approved by Manuel and hung the day R2 went on. The einstruct
   master, the spectre master and assembly, and the styleframe are bundled
   and not hung; each waits on its own ruling.
+- **2026-09-12 · Rulings flow back through `orchard sync`**, a systemd user
+  timer every 15 minutes, into the thesis's `stage` in the manifest: an
+  approved styleframe or still is `styleframe`, an approved animatic or cut
+  `animatic`, `greenlit` is greenlit, an approved master `mastered`; stages
+  only ever advance, and `changes` writes the note into `blocked_by`. The
+  flat dashboard is the first greenhouse: it reads the private tables and
+  writes rulings and directives through the CLI's admin identity, and only
+  listens on the loopback. Beat a browser admin identity first, which needs
+  a token flow the grove does not have yet.

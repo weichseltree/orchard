@@ -48,11 +48,18 @@ Ordered. Items with a name in brackets wait on that person.
 
 7. Spatial voice through Cloudflare Realtime (needs CLOUDFLARE_REALTIME_*
    in secrets and the CSP's `microphone` and `connect-src` widened).
-8. The greenhouse: admin identity in the browser, review queue and rulings
-   read from the private tables, a directives panel; the flat dashboard gains
-   the same three panels.
-9. `orchard sync` as a service: push trees and the ledger snapshot on a timer
-   (systemd user unit, like expdash), pull rulings back into `trees/*.yaml`.
+8. The greenhouse. ~~The flat dashboard gains the three panels~~: done
+   2026-09-12, `orchard serve` shows the review queue with verdict buttons,
+   the rulings, the directives (set and retire) and what hangs in the grove,
+   all through the CLI's admin identity, local only. Left: the admin identity
+   in the browser and the greenhouse room in the grove.
+9. ~~`orchard sync` as a service~~ Done 2026-09-12: `orchard sync all`
+   pushes the planted trees and the ledger snapshot and pulls rulings back
+   into the manifests (a ruling's verdict and the review item's kind imply a
+   stage; stages only move forward; `changes` writes `blocked_by`);
+   `orchard sync install` puts `deploy/systemd/orchard-sync.{service,timer}`
+   into the user's systemd, every 15 minutes, enabled and running on
+   SirBase. `journalctl --user -u orchard-sync` is the log.
 
 ## Platform
 

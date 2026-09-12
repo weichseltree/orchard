@@ -1,0 +1,15 @@
+[Unit]
+Description=orchard sync — trees and the ledger up to SpacetimeDB, rulings back into trees/
+After=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=@ROOT@
+ExecStart=@HOME@/.local/bin/uv run orchard sync all
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=orchard-sync
+Environment=PYTHONUNBUFFERED=1
+# The systemd user manager's PATH has neither ~/.local/bin (spacetime, uv) nor
+# the WSL nvidia shim the ledger's expdash calls expect (see expdash.service).
+Environment=PATH=@HOME@/.local/bin:/usr/lib/wsl/lib:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin

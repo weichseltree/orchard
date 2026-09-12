@@ -51,7 +51,10 @@ sheet), renderer plugins behind spectre's tape format, and channel-wide
 finishing: palette, ident, music, titles, thumbnails, one voice.
 
 **The greenhouse** is where you rule: a flat dashboard while you work and an
-admin room in the grove. Rulings become law that every portfolio session reads.
+admin room in the grove. The dashboard's greenhouse panels read the review
+queue, rulings, directives and exhibits from the live database and write
+rulings and directives back; `orchard sync` carries a ruling into the thesis's
+stage in the manifest. Rulings become law that every portfolio session reads.
 
 **The grove** is public: each tree hangs its approved harvest in its room,
 visitors join from a link with no login, hear each other spatially, and can
@@ -68,6 +71,7 @@ notes/              operator-private, gitignored: audits of private repos and se
 studio/             storyboard schema and checks (extracted from phototroph's ptstudio next)
 grove/              WebXR client, Cloudflare Pages
 spacetime/          SpacetimeDB module: presence, rooms, exhibits, review queue, rulings, directives
+deploy/systemd/     the orchard-sync user timer
 results/            gitignored outputs
 ```
 
@@ -86,6 +90,8 @@ uv run orchard bundle verify <dir>          # id and every digest, no token need
 uv run orchard push <dir>                   # upload a bundle to R2
 uv run orchard exhibit hang <dir> --approve # push, then hang it in the grove (a ruling)
 uv run orchard exhibit list | take-down <id>
+uv run orchard sync all          # trees and the ledger up to the database, rulings back down
+uv run orchard sync install      # ...every 15 minutes, as a systemd user timer
 ```
 
 ## Integrating a repo's results
