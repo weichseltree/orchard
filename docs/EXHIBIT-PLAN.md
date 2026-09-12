@@ -6,7 +6,8 @@ get there. Filled in from the trees' answers to
 (`<repo>/orchard.yaml`) stay the record, this page is the reading of them.
 Started 2026-09-12; the first slate is einstruct, spectre, world-engine,
 phototroph and premosaic (whose kill criterion fired 2026-08-18; it answers
-whether anything survives).
+whether anything survives), with someotherlife answering as a mechanism
+donor rather than an exhibit tree.
 Each tree answers from a session in its own repo; the orchard session
 coordinates over SendMessage.
 
@@ -65,6 +66,13 @@ One block per tree, filled from the tree's answer. Empty until it answers.
 - needs:
 - room:
 
+### someotherlife
+- shows this week (first word): someotherlife-c6 (2026-09-12): nothing on disk as splat, still, clip or tape; Spike C has not run, so no captured room and no measured 6DoF budget. What exists is a playable WebXR room of draft proxies with a desktop fallback, 21 SVG glyphs and synthesized voice lines. Asked for the splat bundle spec it would design, the lift-ready client modules, and Spike C in budget terms.
+- mechanism of the mansion:
+- thesis:
+- needs:
+- room:
+
 ## Rulings this plan asks of Manuel
 
 Collected here as the answers come in; each is one `orchard exhibit hang
@@ -72,5 +80,5 @@ Collected here as the answers come in; each is one `orchard exhibit hang
 
 ## Second wave
 
-someotherlife (splats; the grove
-has no splat kind yet), event-atoms, mosaic, HNL.
+event-atoms, mosaic, HNL. Not trees: stratum (a design document with no
+implementation) and autora (a product app, not research).
