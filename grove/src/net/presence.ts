@@ -54,6 +54,8 @@ export interface Peer {
   name: string;
   /** An admin of the orchard. Only the server can set this; names can be anything. */
   host: boolean;
+  /** Muted by a host: their chat is refused. */
+  muted: boolean;
   x: number;
   y: number;
   z: number;
@@ -70,6 +72,7 @@ interface VisitorRow {
   room: string;
   online: boolean;
   isAdmin: boolean;
+  muted: boolean;
 }
 
 interface PoseRow {
@@ -109,10 +112,25 @@ export interface PresenceConnection {
     move(params: { x: number; y: number; z: number; yaw: number }): Promise<void>;
     leave(params: Record<string, never>): Promise<void>;
     reportVisitor(params: { who: Identityish; reason: string }): Promise<void>;
+    mute(params: { who: Identityish; muted: boolean }): Promise<void>;
+    kick(params: { who: Identityish }): Promise<void>;
+    banVisitor(params: { who: Identityish; minutes: number; reason: string; network: boolean }): Promise<void>;
   };
   subscriptionBuilder(): SubscriptionBuilderish;
   disconnect(): void;
 }
+
+/** Who we are, as the server has it: the cleaned name and whether we are a host. */
+export interface Me {
+  name: string;
+  host: boolean;
+}
+
+/** What a host can do to someone. The server refuses all of it from anyone else. */
+export type Moderation =
+  | { kind: "mute"; muted: boolean }
+  | { kind: "kick" }
+  | { kind: "ban"; minutes: number; network: boolean; reason: string };
 
 export interface TransportHandlers {
   onConnect(connection: PresenceConnection, identityHex: string, token: string): void;
@@ -167,6 +185,8 @@ export const defaultTransport: PresenceTransport = (handlers, token) => {
 
 export class Presence {
   readonly peers = new Map<string, Peer>();
+  /** Ourselves, from our own row in the room's view; null until it arrives. */
+  me: Me | null = null;
   status: PresenceStatus = "offline";
   /** The room the server thinks we are in; null while disconnected. */
   joinedRoom: string | null = null;
@@ -299,14 +319,29 @@ export class Presence {
       for (const visitor of connection.db.peopleHere.iter()) {
         if (visitor.room !== room || !visitor.online) continue;
         const hex = visitor.identity.toHexString();
-        if (hex === this.#identityHex) continue;
+        if (hex === this.#identityHex) {
+          if (this.me?.name !== visitor.name || this.me?.host !== visitor.isAdmin) {
+            this.me = { name: visitor.name, host: visitor.isAdmin };
+          }
+          continue;
+        }
         seen.add(hex);
         const existing = this.peers.get(hex);
         if (existing) {
           existing.name = visitor.name;
           existing.host = visitor.isAdmin;
+          existing.muted = visitor.muted;
         } else {
-          this.peers.set(hex, { identity: hex, name: visitor.name, host: visitor.isAdmin, x: 0, y: 0, z: 0, yaw: 0 });
+          this.peers.set(hex, {
+            identity: hex,
+            name: visitor.name,
+            host: visitor.isAdmin,
+            muted: visitor.muted,
+            x: 0,
+            y: 0,
+            z: 0,
+            yaw: 0,
+          });
         }
       }
       for (const pose of connection.db.posesHere.iter()) {
@@ -337,6 +372,37 @@ export class Presence {
     const row = [...connection.db.peopleHere.iter()].find((v) => v.identity.toHexString() === identityHex);
     if (!row) return Promise.reject(new Error("they are not here any more"));
     return connection.reducers.reportVisitor({ who: row.identity, reason });
+  }
+
+  /**
+   * Takes a new name. It is kept for the next visit, and when we are in a
+   * room it goes to the server now (joining the room we are in is how a name
+   * changes); the server cleans it, and `me` shows what it made of it.
+   */
+  rename(name: string): Promise<void> {
+    try {
+      this.name = name;
+    } catch {
+      // Not kept for next time; still sent below.
+    }
+    const connection = this.#connection;
+    const room = this.joinedRoom;
+    if (!connection || this.status !== "online" || !room) return Promise.resolve();
+    return connection.reducers.join({ name, room }).then(() => {
+      this.#dirty = true;
+    });
+  }
+
+  /** A host's mute, kick or ban of someone in our room. */
+  moderate(identityHex: string, action: Moderation): Promise<void> {
+    const connection = this.#connection;
+    if (!connection || this.status !== "online") return Promise.reject(new Error("not connected"));
+    const row = [...connection.db.peopleHere.iter()].find((v) => v.identity.toHexString() === identityHex);
+    if (!row) return Promise.reject(new Error("they are not here any more"));
+    const who = row.identity;
+    if (action.kind === "mute") return connection.reducers.mute({ who, muted: action.muted });
+    if (action.kind === "kick") return connection.reducers.kick({ who });
+    return connection.reducers.banVisitor({ who, minutes: action.minutes, reason: action.reason, network: action.network });
   }
 
   /** What hangs where, as the server has it now; empty while single-player. */
@@ -466,6 +532,7 @@ export class Presence {
   /** One place for "the socket is gone": forget it, say so, retry on backoff. */
   #dropped(detail: string): void {
     this.#connection = null;
+    this.me = null;
     this.#subscription = null;
     this.#exhibitSubscription = null;
     this.#exhibitsApplied = false;

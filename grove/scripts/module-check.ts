@@ -218,6 +218,12 @@ async function main(): Promise<void> {
     .includes("30 seconds"));
   check("reports are private", !cli("sql", "-s", "local", "--anonymous", DB, "SELECT * FROM report").ok);
 
+  // --- joining is renaming, and it is rate-limited like poses ---
+  const joins: string[] = [];
+  for (let i = 0; i < 14; i++) joins.push(await refusal(cat.conn.reducers.join({ name: `cat${i}`, room: "grove" })));
+  check("a burst of joins and renames goes through", joins.slice(0, 8).every((a) => a === ""), joins.slice(0, 8).filter(Boolean).join(","));
+  check("...a flood of them is cut off", joins.some((a) => a.includes("slow down")), `${joins.filter((a) => a.includes("slow down")).length} of 14 refused`);
+
   // --- kick and ban ---
   admin("kick", JSON.stringify(`0x${cat.hex}`));
   await sleep(200);

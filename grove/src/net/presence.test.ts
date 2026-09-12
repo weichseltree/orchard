@@ -18,6 +18,7 @@ interface StubVisitor {
   name: string;
   room: string;
   isAdmin?: boolean;
+  muted?: boolean;
 }
 
 interface StubPose {
@@ -35,8 +36,17 @@ function stubConnection(options: {
   refuse?: (room: string) => string | null;
   people?: StubVisitor[];
   poses?: StubPose[];
-}): PresenceConnection & { joins: string[]; moves: number; queries: string[][]; reports: Array<[string, string]> } {
+}): PresenceConnection & {
+  joins: string[];
+  names: string[];
+  moves: number;
+  queries: string[][];
+  reports: Array<[string, string]>;
+  moderation: string[];
+} {
   const joins: string[] = [];
+  const names: string[] = [];
+  const moderation: string[] = [];
   const queries: string[][] = [];
   const reports: Array<[string, string]> = [];
   let moves = 0;
@@ -49,6 +59,8 @@ function stubConnection(options: {
   });
   const connection = {
     joins,
+    names,
+    moderation,
     queries,
     reports,
     get moves() {
@@ -56,15 +68,23 @@ function stubConnection(options: {
     },
     db: {
       peopleHere: table(() =>
-        (options.people ?? []).map((v) => ({ identity: id(v.hex), name: v.name, room: v.room, online: true, isAdmin: v.isAdmin ?? false })),
+        (options.people ?? []).map((v) => ({
+          identity: id(v.hex),
+          name: v.name,
+          room: v.room,
+          online: true,
+          isAdmin: v.isAdmin ?? false,
+          muted: v.muted ?? false,
+        })),
       ),
       posesHere: table(() => (options.poses ?? []).map((p) => ({ ...p, identity: id(p.hex) }))),
       room: { iter: () => (options.rooms ?? ["grove", "einstruct"]).map((name) => ({ name })) },
       exhibit: { iter: () => options.exhibits ?? [] },
     },
     reducers: {
-      join: async ({ room }: { room: string }) => {
+      join: async ({ room, name }: { room: string; name: string }) => {
         joins.push(room);
+        names.push(name);
         const refusal = options.refuse?.(room);
         if (refusal) throw new Error(refusal);
       },
@@ -74,6 +94,15 @@ function stubConnection(options: {
       leave: async () => undefined,
       reportVisitor: async ({ who, reason }: { who: { toHexString(): string }; reason: string }) => {
         reports.push([who.toHexString(), reason]);
+      },
+      mute: async ({ who, muted }: { who: { toHexString(): string }; muted: boolean }) => {
+        moderation.push(`mute ${who.toHexString()} ${muted}`);
+      },
+      kick: async ({ who }: { who: { toHexString(): string } }) => {
+        moderation.push(`kick ${who.toHexString()}`);
+      },
+      banVisitor: async (p: { who: { toHexString(): string }; minutes: number; network: boolean; reason: string }) => {
+        moderation.push(`ban ${p.who.toHexString()} ${p.minutes} ${p.network} ${p.reason}`);
       },
     },
     subscriptionBuilder: () => {
@@ -96,9 +125,11 @@ function stubConnection(options: {
   };
   return connection as unknown as PresenceConnection & {
     joins: string[];
+    names: string[];
     moves: number;
     queries: string[][];
     reports: Array<[string, string]>;
+    moderation: string[];
   };
 }
 
@@ -500,5 +531,53 @@ describe("the token service", () => {
     expect(presence.status).toBe("failed");
     expect(opened).toBe(0);
     expect(timers).toEqual([expect.any(Number)]);
+  });
+});
+
+describe("who we are, and what a host can do", () => {
+  const connected = async (people: StubVisitor[]) => {
+    const connection = stubConnection({ people });
+    let handlers!: TransportHandlers;
+    const storage = memoryStorage();
+    const presence = new Presence({}, { transport: (h) => (handlers = h), storage });
+    presence.connect("grove");
+    handlers.onConnect(connection, "me", "token");
+    await settle(20);
+    presence.sync();
+    return { presence, connection, storage };
+  };
+
+  it("takes our own name and host flag from our row, and leaves us out of the peers", async () => {
+    const { presence } = await connected([
+      { hex: "me", name: "Manuel", room: "grove", isAdmin: true },
+      { hex: "p1", name: "ann", room: "grove", muted: true },
+    ]);
+    expect(presence.me).toEqual({ name: "Manuel", host: true });
+    expect([...presence.peers.keys()]).toEqual(["p1"]);
+    expect(presence.peers.get("p1")?.muted).toBe(true);
+  });
+
+  it("renames by joining the room we are in, and keeps the name for next time", async () => {
+    const { presence, connection, storage } = await connected([{ hex: "me", name: "visitor-1", room: "grove" }]);
+    await presence.rename("Manuel");
+    expect(connection.joins.at(-1)).toBe("grove");
+    expect(connection.names.at(-1)).toBe("Manuel");
+    expect(storage.getItem("orchard.grove.name")).toBe("Manuel");
+  });
+
+  it("keeps a name given while offline for when it connects", async () => {
+    const storage = memoryStorage();
+    const presence = new Presence({}, { transport: () => undefined, storage });
+    await presence.rename("Manuel");
+    expect(storage.getItem("orchard.grove.name")).toBe("Manuel");
+  });
+
+  it("sends mute, kick and ban with the identity the server gave", async () => {
+    const { presence, connection } = await connected([{ hex: "p1", name: "ann", room: "grove" }]);
+    await presence.moderate("p1", { kind: "mute", muted: true });
+    await presence.moderate("p1", { kind: "kick" });
+    await presence.moderate("p1", { kind: "ban", minutes: 0, network: true, reason: "spam" });
+    expect(connection.moderation).toEqual(["mute p1 true", "kick p1", "ban p1 0 true spam"]);
+    await expect(presence.moderate("gone", { kind: "kick" })).rejects.toThrow("not here");
   });
 });

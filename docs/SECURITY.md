@@ -45,6 +45,7 @@ checks every rule here against a local server; run it after touching the module.
 | people per room | the room's `capacity` (24, greenhouse 4) | `join` |
 | poses | 20 a second sustained, bursts of 10; others never see the excess | `move` |
 | a pose must be finite and inside a ±500 m box, 50 m down to 100 m up | | `move` |
+| joins, which are also renames | bursts of 10, then one every 2 s | `join` |
 | chat | one line per 0.7 s, 280 characters, no control or invisible formatting characters | `say` |
 | reports | one per 30 s per visitor; carries the subject's last five lines of chat in that room | `report_visitor` |
 | kick | out now, and a 10-minute ban | `kick` |
@@ -73,6 +74,7 @@ after a day. The owner reads the private tables directly; nobody else can.
 
 ## Running it
 
+    the grove itself                     # hosts: "N here" lists everyone with Mute, Kick and Ban
     uv run orchard serve                 # the dashboard: people, reports, bans, the gate
     uv run orchard auth status           # what the live token service answers, and the gate
     uv run orchard auth gate on|off      # turn anonymous visitors away, or let them in

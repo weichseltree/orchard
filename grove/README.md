@@ -31,9 +31,9 @@ panel on a room's poster marker).
 Guardrails: no guest uploads; names cleaned and capped; a visitor sees only
 the people, poses and chat of the room they stand in (the module's
 `people_here`, `poses_here` and `chat_here` views); poses rate-limited and
-bounded server-side; "N here" opens who is here, with a Report button; hosts
-carry a green tag no name can fake; mute, kick and ban from the flat
-dashboard. The token service in `functions/auth` (logic in `auth/issuer.ts`)
+bounded server-side; "N here" opens who is here, with a Report button and a
+field for your own name; hosts carry a green tag no name can fake and get
+Mute, Kick and Ban next to each person there, as on the flat dashboard. The token service in `functions/auth` (logic in `auth/issuer.ts`)
 gives each visitor a token after Cloudflare's human check; see
 [docs/SECURITY.md](../docs/SECURITY.md). One screen plays at a time (the
 decoder budget is enforced in `src/media/videowall.ts`).

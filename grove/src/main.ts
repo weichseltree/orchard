@@ -85,6 +85,30 @@ const hud = new Hud(hudRoot, {
         throw error;
       },
     ),
+  onRename: (name) =>
+    presence.rename(name).then(
+      () => notice(presence.online ? "Name changed" : "Name kept for when you are connected"),
+      (error: unknown) => {
+        notice(`Name not changed: ${message(error)}`);
+        throw error;
+      },
+    ),
+  onModerate: (identity, action) => {
+    const who = presence.peers.get(identity)?.name ?? "them";
+    const done =
+      action.kind === "mute"
+        ? `${who} ${action.muted ? "muted" : "unmuted"}`
+        : action.kind === "kick"
+          ? `${who} kicked for ten minutes`
+          : `${who} banned${action.minutes === 0 ? " for good" : ""}${action.network ? ", with their network" : ""}`;
+    return presence.moderate(identity, action).then(
+      () => notice(done),
+      (error: unknown) => {
+        notice(`Not done: ${message(error)}`);
+        throw error;
+      },
+    );
+  },
 });
 const provenance = new Provenance(hud.provenancePanel);
 view.scene.add(provenance.panel);
@@ -100,6 +124,7 @@ function notice(text: string, sticky = false): void {
 const presence = new Presence(
   {
     onStatus: (status, detail) => {
+      hud.setMe(presence.me, presence.name);
       if (status === "online") hud.setLink("connected");
       else if (status === "connecting") hud.setLink("connecting...");
       else {
@@ -362,7 +387,10 @@ view.start((dt) => {
 
   view.camera.getWorldPosition(headWorld);
   presence.sendPose(headWorld.x, 0, headWorld.z, wrapAngle(headingFromCamera()));
-  if (presence.sync()) hud.setPeople(presence.peers.values());
+  if (presence.sync()) {
+    hud.setPeople(presence.peers.values());
+    hud.setMe(presence.me, presence.name);
+  }
   avatars.update(presence.peers, dt);
   hud.setHere(presence.here);
 

@@ -9,7 +9,22 @@ export interface HudPerson {
   identity: string;
   name: string;
   host: boolean;
+  muted: boolean;
 }
+
+/** What a host can do to someone from the people panel (presence.Moderation). */
+export type HudModeration =
+  | { kind: "mute"; muted: boolean }
+  | { kind: "kick" }
+  | { kind: "ban"; minutes: number; network: boolean; reason: string };
+
+/** How long a ban from the panel lasts; 0 is for good, as the server has it. */
+const BAN_CHOICES: Array<[string, number]> = [
+  ["1 hour", 60],
+  ["1 day", 1440],
+  ["30 days", 43200],
+  ["for good", 0],
+];
 
 export interface HudCallbacks {
   onEnterVr(): void;
@@ -21,6 +36,10 @@ export interface HudCallbacks {
   onProvenance(): void;
   /** Resolves when the server took the report; rejects with its reason. */
   onReport(identity: string, reason: string): Promise<void>;
+  /** Resolves when the server took the new name. */
+  onRename(name: string): Promise<void>;
+  /** A host's mute, kick or ban; the server refuses it from anyone else. */
+  onModerate(identity: string, action: HudModeration): Promise<void>;
 }
 
 export class Hud {
@@ -32,7 +51,13 @@ export class Hud {
   #people: HTMLElement;
   #peopleList: HTMLElement;
   #peopleKey = "";
-  #reporting: string | null = null;
+  #peopleNow: HudPerson[] = [];
+  /** An open form in the list (a report, a ban): re-renders wait until it closes. */
+  #form: { identity: string; kind: "report" | "ban" } | null = null;
+  #me: HTMLElement;
+  #meHost: HTMLElement;
+  #nameInput: HTMLInputElement;
+  #amHost = false;
   #callbacks: HudCallbacks;
   #link: HTMLElement;
   #notices: HTMLElement;
@@ -54,17 +79,48 @@ export class Hud {
 
     const topLeft = div("top-left");
     this.#status = div("status panel");
+    this.#me = span("me");
+    this.#meHost = span("host-tag");
+    this.#meHost.textContent = "host";
+    this.#meHost.hidden = true;
     this.#here = button("1 here", "here", () => this.#togglePeople());
     this.#here.setAttribute("aria-expanded", "false");
     this.#here.title = "Who is here";
     this.#link = span("link");
-    this.#status.append(this.#here, document.createTextNode(" "), this.#link);
+    this.#status.append(this.#me, this.#meHost, this.#here, document.createTextNode(" "), this.#link);
     topLeft.append(this.#status);
 
-    // Who is here, with a way to flag someone to the host. Everything in it
-    // is textContent: names come from other people.
+    // Who is here, with a way to flag someone to the host, and for a host the
+    // means to act on it. Everything in it is textContent: names come from
+    // other people.
     this.#people = div("people panel");
     this.#people.hidden = true;
+    const you = document.createElement("form");
+    you.className = "you-form";
+    const youLabel = span("you-label");
+    youLabel.textContent = "Your name";
+    this.#nameInput = document.createElement("input");
+    this.#nameInput.type = "text";
+    this.#nameInput.maxLength = 24;
+    this.#nameInput.setAttribute("aria-label", "Your name");
+    const save = document.createElement("button");
+    save.type = "submit";
+    save.className = "btn small";
+    save.textContent = "Save";
+    you.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const name = this.#nameInput.value.trim();
+      if (!name) return;
+      save.disabled = true;
+      this.#callbacks
+        .onRename(name)
+        .catch(() => undefined) // the reason is on the notice board
+        .finally(() => {
+          save.disabled = false;
+          this.#nameInput.blur();
+        });
+    });
+    you.append(youLabel, this.#nameInput, save);
     const heading = document.createElement("h2");
     heading.textContent = "Here with you";
     this.#peopleList = div("people-list");
@@ -82,7 +138,7 @@ export class Hud {
     impressum.rel = "noopener";
     impressum.textContent = "Impressum";
     footer.append(privacy, " · ", impressum);
-    this.#people.append(heading, this.#peopleList, footer);
+    this.#people.append(you, heading, this.#peopleList, footer);
     topLeft.append(this.#people);
     root.append(topLeft);
 
@@ -156,24 +212,36 @@ export class Hud {
     if (this.#here.textContent !== text) this.#here.textContent = text;
   }
 
+  /** Ourselves: the name the server kept, and whether we are a host. */
+  setMe(me: { name: string; host: boolean } | null, fallbackName: string): void {
+    const name = me?.name || fallbackName;
+    if (this.#me.textContent !== name) this.#me.textContent = name;
+    this.#me.hidden = !name;
+    if (document.activeElement !== this.#nameInput && this.#nameInput.value !== name) this.#nameInput.value = name;
+    const host = me?.host ?? false;
+    this.#meHost.hidden = !host;
+    if (host !== this.#amHost) {
+      this.#amHost = host;
+      if (!this.#people.hidden && this.#form === null) this.#renderPeople();
+    }
+  }
+
   /** The people in the room besides the visitor. Cheap to call on every change. */
   setPeople(people: Iterable<HudPerson>): void {
     const list = [...people].sort((a, b) => a.name.localeCompare(b.name));
-    const key = list.map((p) => `${p.identity}:${p.name}:${p.host ? 1 : 0}`).join("|");
+    const key = list.map((p) => `${p.identity}:${p.name}:${p.host ? 1 : 0}:${p.muted ? 1 : 0}`).join("|");
     if (key === this.#peopleKey) return;
     this.#peopleKey = key;
     this.#peopleNow = list;
-    // Never pull a half-typed report out from under the visitor.
-    if (!this.#people.hidden && this.#reporting === null) this.#renderPeople();
+    // Never pull a half-typed report or ban out from under the visitor.
+    if (!this.#people.hidden && this.#form === null) this.#renderPeople();
   }
-
-  #peopleNow: HudPerson[] = [];
 
   #togglePeople(): void {
     this.#people.hidden = !this.#people.hidden;
     this.#here.setAttribute("aria-expanded", String(!this.#people.hidden));
     if (!this.#people.hidden) {
-      this.#reporting = null;
+      this.#form = null;
       this.#renderPeople();
     }
   }
@@ -191,21 +259,42 @@ export class Hud {
       name.textContent = person.name || "visitor";
       row.append(name);
       if (person.host) {
-        const tag = span("person-host");
-        tag.textContent = "host";
-        row.append(tag);
-      } else if (this.#reporting === person.identity) {
-        row.append(this.#reportForm(person));
+        row.append(tag("host", "person-host"));
       } else {
-        row.append(button("Report", "btn small", () => {
-          this.#reporting = person.identity;
-          this.#renderPeople();
-        }));
+        if (person.muted && this.#amHost) row.append(tag("muted", "person-muted"));
+        const open = this.#form?.identity === person.identity ? this.#form.kind : null;
+        if (open === "report") row.append(this.#reportForm(person));
+        else if (open === "ban") row.append(this.#banForm(person));
+        else row.append(...this.#actions(person));
       }
       rows.push(row);
     }
     this.#peopleList.replaceChildren(...rows);
-    this.#peopleList.querySelector<HTMLInputElement>("input")?.focus();
+    this.#peopleList.querySelector<HTMLInputElement>("form input[type=text]")?.focus();
+  }
+
+  #actions(person: HudPerson): HTMLElement[] {
+    const openForm = (kind: "report" | "ban") => () => {
+      this.#form = { identity: person.identity, kind };
+      this.#renderPeople();
+    };
+    const buttons = [button("Report", "btn small", openForm("report"))];
+    if (!this.#amHost) return buttons;
+    const act = (label: string, action: HudModeration, cls = "btn small") =>
+      button(label, cls, () => {
+        void this.#callbacks.onModerate(person.identity, action).catch(() => undefined);
+      });
+    return [
+      act(person.muted ? "Unmute" : "Mute", { kind: "mute", muted: !person.muted }),
+      act("Kick", { kind: "kick" }, "btn small danger"),
+      button("Ban…", "btn small danger", openForm("ban")),
+      ...buttons,
+    ];
+  }
+
+  #closeForm(): void {
+    this.#form = null;
+    this.#renderPeople();
   }
 
   #reportForm(person: HudPerson): HTMLElement {
@@ -220,24 +309,64 @@ export class Hud {
     send.type = "submit";
     send.className = "btn small accent";
     send.textContent = "Send";
-    const cancel = button("Cancel", "btn small", () => {
-      this.#reporting = null;
-      this.#renderPeople();
-    });
     form.addEventListener("submit", (event) => {
       event.preventDefault();
       send.disabled = true;
       this.#callbacks
         .onReport(person.identity, reason.value.trim())
-        .then(() => {
-          this.#reporting = null;
-          this.#renderPeople();
-        })
+        .then(() => this.#closeForm())
         .catch(() => {
           send.disabled = false; // the reason is on the notice board; let them try again
         });
     });
-    form.append(reason, send, cancel);
+    form.append(reason, send, button("Cancel", "btn small", () => this.#closeForm()));
+    return form;
+  }
+
+  /** How long, whether the whole network, and a reason only hosts will read. */
+  #banForm(person: HudPerson): HTMLElement {
+    const form = document.createElement("form");
+    form.className = "report-form ban-form";
+    const length = document.createElement("select");
+    length.setAttribute("aria-label", `How long to ban ${person.name}`);
+    for (const [label, minutes] of BAN_CHOICES) {
+      const option = document.createElement("option");
+      option.value = String(minutes);
+      option.textContent = label;
+      length.append(option);
+    }
+    length.value = "1440";
+    const network = document.createElement("label");
+    network.className = "ban-network";
+    const box = document.createElement("input");
+    box.type = "checkbox";
+    network.append(box, " their whole network");
+    const reason = document.createElement("input");
+    reason.type = "text";
+    reason.maxLength = 280;
+    reason.placeholder = "Reason (hosts only)";
+    reason.setAttribute("aria-label", "Reason for the ban");
+    const confirm = document.createElement("button");
+    confirm.type = "submit";
+    confirm.className = "btn small danger";
+    confirm.textContent = "Ban";
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      confirm.disabled = true;
+      const action: HudModeration = {
+        kind: "ban",
+        minutes: Number(length.value),
+        network: box.checked,
+        reason: reason.value.trim(),
+      };
+      this.#callbacks
+        .onModerate(person.identity, action)
+        .then(() => this.#closeForm())
+        .catch(() => {
+          confirm.disabled = false;
+        });
+    });
+    form.append(reason, length, network, confirm, button("Cancel", "btn small", () => this.#closeForm()));
     return form;
   }
 
@@ -317,5 +446,11 @@ function button(label: string, className: string, onClick: () => void): HTMLButt
   element.type = "button";
   element.textContent = label;
   element.addEventListener("click", onClick);
+  return element;
+}
+
+function tag(text: string, className: string): HTMLElement {
+  const element = span(className);
+  element.textContent = text;
   return element;
 }

@@ -57,6 +57,11 @@ const SWEEP_EVERY = 10n * MINUTE;
 // is dropped silently, never written and never broadcast.
 const MOVE_RATE = 20;
 const MOVE_BURST = 10;
+// Joining is also how a visitor renames themselves, and every join is sent to
+// everyone in the room: a burst of 10, then one every two seconds. Walking
+// through doorways and fixing a typo in a name never come close.
+const JOIN_RATE = 0.5;
+const JOIN_BURST = 10;
 // Every room of the mansion sits well inside this box; a pose outside it is
 // not a visitor walking.
 const WORLD_HALF_EXTENT_M = 500;
@@ -254,6 +259,12 @@ const throttle = table(
   }
 );
 
+// Its own table rather than columns on `throttle`, so the upgrade only adds.
+const join_throttle = table(
+  { name: 'join_throttle' },
+  { identity: t.identity().primaryKey(), tokens: t.f64(), at: t.timestamp() }
+);
+
 const report = table(
   { name: 'report' },
   {
@@ -282,7 +293,7 @@ const sweep_timer = table(
 
 const spacetimedb = schema({
   admin, room, visitor, pose, chat, tree, exhibit, review_item, ruling, directive, snapshot,
-  ban, whereabouts, connection, guest, throttle, report, setting, sweep_timer,
+  ban, whereabouts, connection, guest, throttle, join_throttle, report, setting, sweep_timer,
 });
 export default spacetimedb;
 
@@ -443,6 +454,17 @@ function spendMove(ctx: Ctx): boolean {
   return true;
 }
 
+/** Takes a token from the caller's join bucket; false when it is empty. */
+function spendJoin(ctx: Ctx): boolean {
+  const row = ctx.db.join_throttle.identity.find(ctx.sender);
+  const elapsed = row ? Number(micros(ctx.timestamp) - micros(row.at)) / 1e6 : 0;
+  const tokens = row ? Math.min(JOIN_BURST, row.tokens + Math.max(0, elapsed) * JOIN_RATE) : JOIN_BURST;
+  if (tokens < 1) return false;
+  const next = { identity: ctx.sender, tokens: tokens - 1, at: ctx.timestamp };
+  if (row) ctx.db.join_throttle.identity.update(next); else ctx.db.join_throttle.insert(next);
+  return true;
+}
+
 function wrapAngle(a: number): number {
   const w = a % (Math.PI * 2);
   return w > Math.PI ? w - Math.PI * 2 : w < -Math.PI ? w + Math.PI * 2 : w;
@@ -487,6 +509,9 @@ function sweepNowImpl(ctx: Ctx) {
   }
   for (const th of [...ctx.db.throttle.iter()]) {
     if (!ctx.db.visitor.identity.find(th.identity)) ctx.db.throttle.identity.delete(th.identity);
+  }
+  for (const j of [...ctx.db.join_throttle.iter()]) {
+    if (!ctx.db.visitor.identity.find(j.identity)?.online) ctx.db.join_throttle.identity.delete(j.identity);
   }
 }
 
@@ -537,6 +562,7 @@ export const join = spacetimedb.reducer(
     const admin = isAdmin(ctx);
     if (!admin) {
       if (activeBan(ctx, ctx.sender)) throw new SenderError('banned');
+      if (!spendJoin(ctx)) throw new SenderError('slow down');
       const network = ctx.db.guest.identity.find(ctx.sender)?.network;
       if (network && onlineFromNetwork(ctx, network) >= PER_NETWORK_ONLINE) {
         throw new SenderError('too many visitors from your network');
