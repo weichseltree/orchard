@@ -228,3 +228,12 @@ reviewed. What each asks next:
 30. **brand/**: the package exists (tokens, voice, names); the hero still,
     the 20 s clip, the favicon and the sound cues are listed as missing and
     are made once, from the grove, after the palace's first look ruling.
+31. **The studio's first task: take spectre's film code before it goes.**
+    spectre-79 is removing core/film and lanes/m03_first_film on Manuel's
+    ruling and tags the last pre-removal commit `film-final`. einstruct's
+    film/assemble.py imports `core.film.pacing` from spectre's working
+    tree and expects vo.py's take layout, so it breaks the moment the
+    removal lands. Extract pacing, vo, encode, scene, render/plate,
+    check/variety, the generic mts and measure.py into `studio/` from
+    that tag (`git archive film-final`), and point einstruct at the
+    package; until then einstruct pins a copy.
