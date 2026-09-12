@@ -39,6 +39,18 @@ export interface RoomMarkers {
   spawn?: { position: [number, number, number]; yawDeg: number; eyeHeight?: number };
   /** Keyed by the room the doorway leads to. */
   doors: Map<string, { at: number; center: number; width: number; height: number }>;
+  /**
+   * Poster panels, keyed by node name. The facing is the node's local -Z,
+   * the panel's normal pointing into the room; `position` is the panel's centre.
+   */
+  posters: Map<string, PosterMarker>;
+}
+
+export interface PosterMarker {
+  position: [number, number, number];
+  quaternion: [number, number, number, number];
+  width: number;
+  height: number;
 }
 
 export interface RoomShell {
@@ -74,7 +86,7 @@ export async function buildRoom(options: BuildRoomOptions): Promise<RoomShell> {
     group: proceduralRoom(room),
     provenance: fallbackProvenance(room),
     lightmap: null,
-    markers: { doors: new Map() },
+    markers: { doors: new Map(), posters: new Map() },
   };
 }
 
@@ -117,12 +129,23 @@ async function loadRoomGlb(room: Room, base: string, renderer: WebGLRenderer): P
  * mansion.json's business, because they are the room graph, not the geometry.
  */
 export function readMarkers(scene: Object3D, room: Room): RoomMarkers {
-  const markers: RoomMarkers = { doors: new Map() };
+  const markers: RoomMarkers = { doors: new Map(), posters: new Map() };
   scene.traverse((node) => {
     const role = (node.userData as { role?: string }).role;
     if (!role) return;
     node.updateWorldMatrix(true, false);
     node.getWorldPosition(_position);
+    if (role === "poster") {
+      node.getWorldQuaternion(_quaternion);
+      const data = node.userData as { width_m?: number; height_m?: number };
+      markers.posters.set(node.name, {
+        position: [_position.x, _position.y, _position.z],
+        quaternion: [_quaternion.x, _quaternion.y, _quaternion.z, _quaternion.w],
+        width: data.width_m ?? 1,
+        height: data.height_m ?? 1,
+      });
+      return;
+    }
     if (role === "spawn") {
       node.getWorldQuaternion(_quaternion);
       _forward.set(0, 0, -1).applyQuaternion(_quaternion);

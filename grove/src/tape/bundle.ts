@@ -59,6 +59,47 @@ export const VideoBundleSchema = z.looseObject({
   poster: z.string().default("poster.jpg"),
 });
 
+export const StillTierSchema = z.looseObject({
+  name: z.string(),
+  width: z.number().int().positive(),
+  height: z.number().int().positive(),
+  jpg: z.string(),
+  avif: z.string().optional(),
+});
+
+export const StillBundleSchema = z.looseObject({
+  schema: z.literal("orchard/bundle/1"),
+  kind: z.literal("still"),
+  id: z.string(),
+  tree: z.string().default(""),
+  title: z.string().default(""),
+  produced_by: z.string().default(""),
+  source: z.looseObject({}).default({}),
+  width: z.number().int().positive(),
+  height: z.number().int().positive(),
+  tiers: z.array(StillTierSchema).min(1),
+  poster: z.string().default("thumb.jpg"),
+});
+
+export type StillTier = z.infer<typeof StillTierSchema>;
+export type StillBundle = z.infer<typeof StillBundleSchema>;
+
+/** Which still tier a device downloads: the phone its own, everything else the full one. */
+export const STILL_TIER_PREFERENCE = {
+  "vr-high": ["full", "phone", "thumb"],
+  "vr-quest": ["full", "phone", "thumb"],
+  phone: ["phone", "full", "thumb"],
+  desktop: ["full", "phone", "thumb"],
+} as const satisfies Record<string, readonly string[]>;
+
+export function pickStillTier(bundle: StillBundle, tier: DeviceTier): StillTier {
+  for (const name of STILL_TIER_PREFERENCE[tier]) {
+    const found = bundle.tiers.find((t) => t.name === name);
+    if (found) return found;
+  }
+  return bundle.tiers[0]!;
+}
+
 export type ChunkRef = z.infer<typeof ChunkRefSchema>;
 export type TapeVariant = z.infer<typeof TapeVariantSchema>;
 export type TapeBundle = z.infer<typeof TapeBundleSchema>;

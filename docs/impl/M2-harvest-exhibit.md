@@ -48,9 +48,10 @@ the spectre master exercised HEVC input. All six pass `bundle verify`.
 (`84b67b5a0d22eeab`, `2dc8ca525724aefd`) were superseded by the harvest
 because einstruct's commit moved, and deleted; nothing had been pushed.
 
-Tests: 60 python (13 new: stills, harvest, exhibit) and 105 client (16 new:
+Tests: 60 python (13 new: stills, harvest, exhibit) and 114 client (25 new:
 exhibits, presence exhibit subscription and timeout, bundle precedence,
-schema).
+schema, the still bundle and tier, panel fit and placement, the poster
+marker).
 
 ## Not done, and why
 
@@ -61,8 +62,13 @@ schema).
 2. **Approval is per artefact in the manifest, by hand or `--approve`.** The
    greenhouse (M1) is where rulings should come from; until then the manifest
    is the record.
-3. **`kind: still` has no hanging.** The exhibit table can hold one; the
-   grove's poster wall does not read it yet.
+3. ~~**`kind: still` has no hanging.**~~ Done the same day: a `still`
+   hanging (`grove/src/media/still.ts`, `StillHangingSchema`) sits on the
+   room's poster marker (`role: "poster"`, read like the spawn and the
+   doorway), AVIF first and the JPEG on a decode failure, the phone taking
+   the 1600 px tier. `mansion.json` hangs einstruct's styleframe on the
+   hall's `poster_wall`, from the exhibit table with the harvested id
+   pinned. Verified in headless Chromium against the local bundle.
 4. **`dump` rewrites the manifest with every default field.** `trees/*.yaml`
    grew `approved: false`, `commit`, `figure: ''` on every artefact. Honest,
    verbose; a `exclude_defaults` dump would lose `approved: false` as a

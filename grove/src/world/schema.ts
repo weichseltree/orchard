@@ -41,7 +41,7 @@ export const DoorwaySchema = z.looseObject({
  */
 export const ExhibitRefSchema = z.looseObject({
   tree: z.string().min(1),
-  kind: z.enum(["tape", "video"]),
+  kind: z.enum(["tape", "video", "still"]),
 });
 
 export const BundleRefSchema = z
@@ -78,9 +78,24 @@ export const VideoHangingSchema = z.looseObject({
   widthMeters: z.number().positive().default(6),
 });
 
+/**
+ * A still on a wall. `marker` names a poster marker in the room's glb
+ * (`role: "poster"`, e.g. the hall's `poster_wall`) whose position, facing
+ * and size then override `position`, `rotationDeg` and the metres here; the
+ * literal values are the fallback for the grey shell.
+ */
+export const StillHangingSchema = z.looseObject({
+  ...HangingCommon,
+  kind: z.literal("still"),
+  marker: z.string().default(""),
+  widthMeters: z.number().positive().default(6),
+  heightMeters: z.number().positive().default(3.4),
+});
+
 export const HangingSchema = z.discriminatedUnion("kind", [
   TapeHangingSchema,
   VideoHangingSchema,
+  StillHangingSchema,
 ]);
 
 export const RoomSchema = z.looseObject({
@@ -164,6 +179,7 @@ export type BundleRef = z.infer<typeof BundleRefSchema>;
 export type ExhibitRef = z.infer<typeof ExhibitRefSchema>;
 export type TapeHanging = z.infer<typeof TapeHangingSchema>;
 export type VideoHanging = z.infer<typeof VideoHangingSchema>;
+export type StillHanging = z.infer<typeof StillHangingSchema>;
 export type Hanging = z.infer<typeof HangingSchema>;
 export type Room = z.infer<typeof RoomSchema>;
 export type Sky = z.infer<typeof SkySchema>;

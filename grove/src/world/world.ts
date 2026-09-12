@@ -1,14 +1,16 @@
-import { Box3, Group, MathUtils, Vector3, type WebGLRenderer } from "three";
+import { Box3, Euler, Group, MathUtils, Quaternion, Vector3, type WebGLRenderer } from "three";
 import { MEDIA_BASE } from "../config";
 import type { DeviceProfile } from "../device";
+import type { DeviceTier } from "../tape/bundle";
+import { StillPanel } from "../media/still";
 import { VideoWall } from "../media/videowall";
-import { VideoBundleSchema } from "../tape/bundle";
+import { StillBundleSchema, VideoBundleSchema } from "../tape/bundle";
 import type { Provenance } from "../ui/provenance";
 import { bundleBaseOf, pickExhibit, type ExhibitRow } from "./exhibits";
-import { buildRoom, type RoomShell } from "./rooms";
+import { buildRoom, type PosterMarker, type RoomShell } from "./rooms";
 import { buildSky, sunFromAsset, type SkyDome } from "./sky";
 import { TapeExhibit } from "./tape-exhibit";
-import type { BundleRef, Mansion, Room } from "./schema";
+import type { BundleRef, Mansion, Room, StillHanging } from "./schema";
 
 // Builds the whole mansion out of mansion.json. Rooms first, because they are
 // the thing that must exist; hangings after, each allowed to fail on its own —
@@ -37,6 +39,7 @@ export interface BuiltWorld {
   group: Group;
   tape: TapeExhibit | null;
   video: VideoWall | null;
+  stills: StillPanel[];
   /** Streams the mansion in. Resolves when everything that can load has. */
   load(): Promise<void>;
   dispose(): void;
@@ -72,13 +75,16 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
   const sky: SkyDome | null = mansion.sky ? buildSky(mansion.sky) : null;
   if (sky) group.add(sky.mesh);
 
+  const shells = new Map<string, RoomShell>();
   const world: BuiltWorld = {
     group,
     tape: null,
     video: null,
+    stills: [],
     load: async () => {
       for (const room of mansion.rooms) {
         const shell = await buildRoom({ room, renderer, onNotice });
+        shells.set(room.id, shell);
         group.add(shell.group);
         applyMarkers(room, shell);
         // A baked room knows where its sun was; the dome follows the asset.
@@ -131,6 +137,21 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
             } catch (error) {
               onNotice(`tape ${hanging.id}: ${message(error)}`);
             }
+          } else if (hanging.kind === "still") {
+            try {
+              const still = await buildStill(
+                hanging,
+                base,
+                device.tier,
+                shells.get(room.id)?.markers.posters.get(hanging.marker) ?? null,
+                provenance,
+                onNotice,
+              );
+              world.stills.push(still);
+              group.add(still.mesh);
+            } catch (error) {
+              onNotice(`still ${hanging.id}: ${message(error)}`);
+            }
           } else {
             try {
               const video = await buildVideo(
@@ -156,6 +177,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
       sky?.dispose();
       world.tape?.dispose();
       world.video?.dispose();
+      for (const still of world.stills) still.dispose();
     },
   };
   return world;
@@ -229,6 +251,85 @@ async function buildVideo(
     }),
   });
   return wall;
+}
+
+/** The plane's +Z must be the marker's -Z (the panel normal): a half turn about Y. */
+const FLIP_Y = /* @__PURE__ */ new Quaternion(0, 1, 0, 0);
+/** How far in front of the panel surface the still sits, so it does not z-fight. */
+const STILL_STANDOFF_M = 0.01;
+
+/**
+ * Where a still goes: on the room's poster marker when the hanging names one
+ * the asset has, else where mansion.json says. The marker is the asset's
+ * business, exactly as the spawn and the doorway are.
+ */
+export function placeStill(
+  hanging: Pick<StillHanging, "position" | "rotationDeg" | "widthMeters" | "heightMeters">,
+  marker: PosterMarker | null,
+): { position: Vector3; quaternion: Quaternion; maxWidth: number; maxHeight: number } {
+  if (marker) {
+    const quaternion = new Quaternion(...marker.quaternion).multiply(FLIP_Y);
+    const normal = new Vector3(0, 0, 1).applyQuaternion(quaternion);
+    const position = new Vector3(...marker.position).addScaledVector(normal, STILL_STANDOFF_M);
+    return { position, quaternion, maxWidth: marker.width, maxHeight: marker.height };
+  }
+  const quaternion = new Quaternion().setFromEuler(
+    new Euler(
+      MathUtils.degToRad(hanging.rotationDeg[0]),
+      MathUtils.degToRad(hanging.rotationDeg[1]),
+      MathUtils.degToRad(hanging.rotationDeg[2]),
+    ),
+  );
+  return {
+    position: new Vector3(...hanging.position),
+    quaternion,
+    maxWidth: hanging.widthMeters,
+    maxHeight: hanging.heightMeters,
+  };
+}
+
+async function buildStill(
+  hanging: StillHanging,
+  base: string,
+  tier: DeviceTier,
+  marker: PosterMarker | null,
+  provenance: Provenance,
+  onNotice: (message: string) => void,
+): Promise<StillPanel> {
+  const response = await fetch(`${base}bundle.json`);
+  if (!response.ok) throw new Error(`bundle.json: HTTP ${response.status}`);
+  const bundle = StillBundleSchema.parse(await response.json());
+  const place = placeStill(hanging, marker);
+  const still = await StillPanel.create({
+    base,
+    bundle,
+    tier,
+    maxWidthMeters: place.maxWidth,
+    maxHeightMeters: place.maxHeight,
+    onNotice,
+  });
+  still.mesh.position.copy(place.position);
+  still.mesh.quaternion.copy(place.quaternion);
+  provenance.register({
+    id: `still:${hanging.id}`,
+    title: hanging.title || bundle.title || "Still",
+    bounds: new Box3().setFromCenterAndSize(
+      place.position,
+      new Vector3(still.widthMeters, still.heightMeters, 0.3),
+    ),
+    read: () => ({
+      title: bundle.title,
+      tree: bundle.tree,
+      bundle_id: bundle.id,
+      tier: still.tier,
+      format: still.format,
+      resolution: `${bundle.width}x${bundle.height}`,
+      placed_by: marker ? `the asset's ${hanging.marker} marker` : "mansion.json",
+      produced_by: bundle.produced_by,
+      source: bundle.source,
+    }),
+  });
+  return still;
 }
 
 export function roomBox(room: Room): Box3 {

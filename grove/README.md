@@ -24,7 +24,9 @@ pnpm build         # -> dist/index.html and dist/grove/index.html
 their doorways, what hangs where, and the sky outside the windows. No room is
 hard-coded; adding one is a change to that file. A hanging's `bundle` may name
 an `exhibit` (a tree and a kind) and take whatever `orchard exhibit hang` put
-there last, with a pinned `id` for when the database is unreachable.
+there last, with a pinned `id` for when the database is unreachable. Hangings
+are `tape` (a volume you walk into), `video` (an HLS wall) and `still` (a
+panel on a room's poster marker).
 
 Guardrails from day one: random guest names, no guest uploads, mute, kick,
 personal-space bubble, rate-limited chat, presence visible on the flat

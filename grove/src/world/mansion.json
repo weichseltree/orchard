@@ -24,7 +24,19 @@
       "doorways": [
         { "to": "einstruct", "axis": "z", "at": -10, "center": 0, "width": 2.4, "height": 3.2 }
       ],
-      "hangings": []
+      "hangings": [
+        {
+          "id": "hall-poster",
+          "kind": "still",
+          "title": "ab_d2 segregation, styleframe",
+          "bundle": { "exhibit": { "tree": "einstruct", "kind": "still" }, "id": "c59c7baa6fd15489" },
+          "marker": "poster_wall",
+          "position": [6.98, 3.1, 0],
+          "rotationDeg": [0, -90, 0],
+          "widthMeters": 6,
+          "heightMeters": 3.4
+        }
+      ]
     },
     {
       "id": "einstruct",

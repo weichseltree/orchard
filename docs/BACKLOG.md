@@ -59,8 +59,8 @@ Ordered. Items with a name in brackets wait on that person.
 
 10. ~~`orchard bundle` for stills; `orchard exhibit` calling `hang`;
     provenance sidecars~~ — done 2026-09-12 (docs/impl/M2-harvest-exhibit.md).
-    Left: splats, and the exhibit row's `kind: still` has no hanging in the
-    grove yet (the poster wall is the place).
+    A `still` hanging on the hall's poster wall followed the same day.
+    Left: splats.
 11. The spacetimedb SDK's `Function()` codegen forces `unsafe-eval` in the
     CSP; open an upstream issue asking for a non-JIT path.
 12. Second node on Legion and the first portal (M3).

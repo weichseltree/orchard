@@ -19,6 +19,7 @@ export interface ExhibitRow {
 export const EXHIBIT_KINDS_FOR = {
   tape: ["tape"],
   video: ["clip", "master"],
+  still: ["still"],
 } as const;
 
 /** The most recently hung row for the tree, of a kind the hanging can show. */

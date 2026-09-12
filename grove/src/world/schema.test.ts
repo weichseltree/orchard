@@ -29,6 +29,17 @@ describe("mansion.json", () => {
     expect(hall!.doorways[0]).toMatchObject({ to: "einstruct", width: 2.4, height: 3.2 });
   });
 
+  it("hangs a still on the hall's poster wall, taken from the exhibit table", () => {
+    const hall = roomById(parseMansion(mansionDocument), "hall")!;
+    expect(hall.hangings).toHaveLength(1);
+    const still = hall.hangings[0]!;
+    expect(still.kind).toBe("still");
+    if (still.kind !== "still") return;
+    expect(still.marker).toBe("poster_wall");
+    expect(still.bundle.exhibit).toEqual({ tree: "einstruct", kind: "still" });
+    expect([still.widthMeters, still.heightMeters]).toEqual([6, 3.4]);
+  });
+
   it("describes einstruct as 10 x 10 x 5 m with a tape and a video wall", () => {
     const room = roomById(parseMansion(mansionDocument), "einstruct");
     const { min, max } = room!.bounds;
@@ -124,7 +135,7 @@ describe("BundleRefSchema", () => {
     const ref = BundleRefSchema.parse({ exhibit: { tree: "einstruct", kind: "tape" } });
     expect(ref.exhibit).toEqual({ tree: "einstruct", kind: "tape" });
     expect(ref.id).toBe("");
-    expect(() => BundleRefSchema.parse({ exhibit: { tree: "einstruct", kind: "still" } })).toThrow();
+    expect(() => BundleRefSchema.parse({ exhibit: { tree: "einstruct", kind: "splat" } })).toThrow();
     expect(() => BundleRefSchema.parse({ exhibit: { tree: "", kind: "tape" } })).toThrow();
   });
 
