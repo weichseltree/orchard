@@ -29,7 +29,7 @@ Ordered. Items with a name in brackets wait on that person.
    2026-09-12 in the client: a gradient sky dome outside the mansion with the
    sun where the bake put it (`grove/src/world/sky.ts`, `sky` in
    `mansion.json`; DECISIONS). Deployed 2026-09-12 with the exhibit-table
-   client (`cd grove && pnpm run deploy`; `pnpm run deploy` without `run` is
+   client (`cd grove && pnpm run deploy`; `pnpm deploy` without `run` is
    pnpm's own workspace command and fails). The dome's colours are a first
    guess and belong to item 6.
 5. Lightmap ships as a 2.2 MB PNG; produce KTX2 (UASTC) when `toktx` is
