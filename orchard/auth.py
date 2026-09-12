@@ -100,7 +100,10 @@ def push() -> list[str]:
 
 
 def _fetch(url: str, *, data: bytes | None = None, headers: dict | None = None) -> tuple[int, dict]:
-    req = urllib.request.Request(url, data=data, headers=headers or {}, method="POST" if data else "GET")
+    # Cloudflare's signature check refuses Python's default user agent outright
+    # (error 1010), which would read as the service being down.
+    headers = {"User-Agent": "orchard-auth-status", **(headers or {})}
+    req = urllib.request.Request(url, data=data, headers=headers, method="POST" if data else "GET")
     try:
         with urllib.request.urlopen(req, timeout=20) as r:
             return r.status, json.loads(r.read() or b"{}")

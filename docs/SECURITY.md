@@ -89,6 +89,11 @@ Turning the token service on, once (order matters):
 4. `uv run orchard auth status` should say the discovery document and one key
    are served and that a token without a human check is refused (403).
 5. Open the grove, check the HUD says connected, then `orchard auth gate on`.
+   If the grove cannot connect once tokens flow, check that SpacetimeDB can
+   fetch `/auth/jwks.json`: Cloudflare's signature check refuses some user
+   agents with error 1010 (Python's default is one; SpacetimeDB's Rust
+   client and curl pass, measured 2026-09-12). A WAF skip rule for `/auth/*`
+   is the fix if it ever bites.
 
 Until step 3 the token service answers 503 and the grove keeps its anonymous
 identities, so the rest of the rules still hold except the per-network ones.
