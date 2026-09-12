@@ -122,9 +122,10 @@ def canonical(doc: dict) -> str:
     """The exact bytes the id is taken over: `id` emptied, compact, sorted.
 
     Content addressing only holds if `bundle.json` names a digest of EVERY
-    file the bundle serves. It does: `sha256` per chunk and per segment,
-    `playlist_sha256`, `master_sha256`, `poster_sha256`. Redraw the poster and
-    the id must move, or two different bundles collide on one address.
+    file the bundle serves. It does: a tape names `sha256` per chunk and
+    `poster_sha256`; a video or a still names every file it ships in `files`
+    (`{relpath: {sha256, bytes}}`). Redraw the poster or re-encode a segment
+    and the id must move, or two different bundles collide on one address.
     """
     d = dict(doc)
     d["id"] = ""
@@ -142,8 +143,41 @@ def verify_id(bundle_dir) -> tuple[bool, str, str]:
     return doc["id"] == got, doc["id"], got
 
 
+def file_digests(root: Path, exclude=("bundle.json",)) -> dict[str, dict]:
+    """`{relpath: {sha256, bytes}}` for every file under `root`, sorted.
+
+    What a video or still bundle puts in `bundle.json:files`, so its id covers
+    the bytes it ships and not only the recipe that made them.
+    """
+    root = Path(root)
+    return {str(p.relative_to(root)).replace(os.sep, "/"):
+            {"sha256": sha256_file(p), "bytes": p.stat().st_size}
+            for p in sorted(root.rglob("*"))
+            if p.is_file() and str(p.relative_to(root)) not in exclude}
+
+
+def _intact(bundle_dir: Path, bid: str) -> bool:
+    """True when `bundle_dir` is the bundle `bid` and its bytes match its claims."""
+    from .push import verify_local                              # noqa: PLC0415
+    try:
+        ok, on_disk, _ = verify_id(bundle_dir)
+    except (OSError, ValueError, KeyError):
+        return False
+    if not ok or on_disk != bid:
+        return False
+    rep = verify_local(bundle_dir)
+    return not rep["mismatched"] and not rep["missing"]
+
+
 def _finalize(doc: dict, staging: Path, out_root: Path) -> Path:
-    """Name the directory after the bytes, then move it into place."""
+    """Name the directory after the bytes, then move it into place.
+
+    Every bundle's id covers the digest of every file it ships, so an existing
+    directory with the same id holds the same bytes by definition and this is
+    a no-op. The one exception is a directory that no longer matches its own
+    `bundle.json` (a truncated chunk, a hand edit): that one is replaced from
+    the fresh staging copy, which does, and it says so.
+    """
     bid = compute_id(doc)
     doc["id"] = bid
     (staging / "bundle.json").write_text(json.dumps(doc, indent=1) + "\n")
@@ -151,11 +185,10 @@ def _finalize(doc: dict, staging: Path, out_root: Path) -> Path:
     out_root.mkdir(parents=True, exist_ok=True)
     dest = out_root / bid
     if dest.exists():
-        # A video bundle is addressed by its recipe, so a re-encode legitimately
-        # lands on an id that already exists with DIFFERENT bytes. That is the
-        # point, but it is not something to do silently: whatever is already in
-        # R2 under this id is now stale.
-        print(f"  replacing the existing bundle at {dest} (same id, new bytes)",
+        if _intact(dest, bid):
+            shutil.rmtree(staging)
+            return dest
+        print(f"  replacing {dest}: it does not match its own bundle.json",
               flush=True)
         shutil.rmtree(dest)
     shutil.move(str(staging), str(dest))
@@ -760,20 +793,20 @@ def bundle_video(mp4, tree: str, title: str, out_root=None, *,
              "-vf", "scale='min(1280,iw)':-2", str(staging / "poster.jpg")],
             check=True)
 
-        # THE ENCODER IS NOT DETERMINISTIC, so its output bytes cannot be in
-        # `bundle.json`: x264's VBV rate control reads the state of frames in
-        # flight on other threads, and re-encoding this clip on this box gave
-        # 22.08 MB and then 22.07 MB of 1080p. Hashing that into the id minted
-        # a NEW ADDRESS on every run — orphaning the objects already in R2 and
-        # invalidating whatever names the bundle. So `bundle.json` carries the
-        # RECIPE (source hash, ladder, cadence, encoder version), which is what
-        # the spec lists, and every per-file digest goes in `media.json`, which
-        # nothing hashes. A tape bundle has the opposite property and keeps its
-        # digests in `bundle.json`, where the spec puts them.
-        ladder, media = [], []
+        # THE ID COVERS THE ENCODER'S BYTES. x264's VBV rate control reads the
+        # state of frames in flight on other threads, so a re-encode of the
+        # same clip can differ by a few kB (22.08 MB, then 22.07 MB of 1080p on
+        # this box). WP1 answered that by addressing a video by its RECIPE and
+        # parking the digests in an unhashed `media.json`, which let two
+        # different sets of bytes share one address and replaced the first
+        # silently. Ruled since: every bundle's id covers every file it ships,
+        # so a re-encode that differs is a NEW bundle beside the old one, and
+        # `orchard bundle gc` removes whichever nothing references. Harvest
+        # only re-encodes when the source bytes change or on `--force`, so
+        # addresses do not churn in practice. The recipe stays, as provenance.
+        ladder = []
         for i, (name, h, bitrate, _m) in enumerate(rungs):
             segs = sorted((staging / name).glob("s*.ts"))
-            pl = staging / name / "index.m3u8"
             ladder.append({
                 "name": name, "height": h,
                 "width": int(round(src_w * h / src_h)) // 2 * 2,
@@ -783,13 +816,7 @@ def bundle_video(mp4, tree: str, title: str, out_root=None, *,
                 "segment_seconds": SEGMENT_SECONDS,
                 "keyint_frames": keyint,
             })
-            for f in [pl, *segs]:
-                media.append({"file": f"{name}/{f.name}",
-                              "bytes": f.stat().st_size,
-                              "sha256": sha256_file(f)})
-        for f in (staging / "master.m3u8", staging / "poster.jpg"):
-            media.append({"file": f.name, "bytes": f.stat().st_size,
-                          "sha256": sha256_file(f)})
+        files = file_digests(staging)
 
         file_rel = _rel_to_tree(mp4, tree)
         prov = provenance_sidecar(mp4)
@@ -816,20 +843,12 @@ def bundle_video(mp4, tree: str, title: str, out_root=None, *,
             "has_audio": a is not None,
             "master": "master.m3u8",
             "ladder": ladder,
-            "media": "media.json",
             "skipped_rungs": skipped,
             "poster": "poster.jpg",
             "poster_at_s": poster_at,
             "ffmpeg": _ffmpeg_banner(),
+            "files": files,
         }
-        # media.json is written before the move but AFTER the id is known,
-        # and is deliberately not named by bundle.json: see the note above.
-        (staging / "media.json").write_text(json.dumps(
-            {"schema": "orchard/bundle-media/1",
-             "bundle_id": compute_id(doc),
-             "note": ("per-file digests for a kind of bundle whose encoder is "
-                      "not reproducible; NOT hashed into the bundle id"),
-             "files": media}, indent=1) + "\n")
         dest = _finalize(doc, staging, out_root)
     except BaseException:
         shutil.rmtree(staging, ignore_errors=True)
@@ -838,8 +857,8 @@ def bundle_video(mp4, tree: str, title: str, out_root=None, *,
         total = time.perf_counter() - t_start
         print(f"bundle {dest.name}  encode {t_encode:.1f}s  total {total:.1f}s",
               flush=True)
-        by_rung = {r["name"]: sum(m["bytes"] for m in media
-                                  if m["file"].startswith(r["name"] + "/"))
+        by_rung = {r["name"]: sum(m["bytes"] for rel, m in files.items()
+                                  if rel.startswith(r["name"] + "/"))
                    for r in ladder}
         for r in ladder:
             print(f"  {r['name']:6s} {r['width']}x{r['height']} "
@@ -898,9 +917,10 @@ def bundle_still(image, tree: str, title: str, out_root=None, *,
                  verbose: bool = True) -> Path:
     """Write `<out_root>/<id>/` holding a still at three widths. Returns the directory.
 
-    Like a video bundle the id covers the RECIPE and `media.json` the bytes:
+    Like every bundle the id covers the bytes (`files`) as well as the recipe.
     libaom is not promised to be bit-stable across versions or thread counts,
-    and a still that re-encodes to a new address would orphan its exhibit.
+    so a re-encode that differs lands at a new address beside the old one;
+    harvest only re-encodes when the source changes.
     """
     image = Path(image).resolve()
     out_root = Path(out_root) if out_root else RESULTS / "bundles"
@@ -939,8 +959,7 @@ def bundle_still(image, tree: str, title: str, out_root=None, *,
                 print(f"  {name:6s} {tier['width']}x{tier['height']}"
                       f"{'  +avif' if 'avif' in tier else ''}", flush=True)
 
-        media = [{"file": f.name, "bytes": f.stat().st_size, "sha256": sha256_file(f)}
-                 for f in sorted(staging.iterdir()) if f.is_file()]
+        files = file_digests(staging)
         file_rel = _rel_to_tree(image, tree)
         prov = provenance_sidecar(image)
         doc = {
@@ -966,10 +985,8 @@ def bundle_still(image, tree: str, title: str, out_root=None, *,
             "avif_crf": AVIF_CRF if avif else None,
             "encoder": _ffmpeg_banner(),
             "poster": "thumb.jpg",
-            "media": "media.json",
+            "files": files,
         }
-        (staging / "media.json").write_text(
-            json.dumps({"schema": "orchard/media/1", "files": media}, indent=1) + "\n")
         dest = _finalize(doc, staging, out_root)
     except BaseException:
         shutil.rmtree(staging, ignore_errors=True)

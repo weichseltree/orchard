@@ -407,11 +407,17 @@ def bundle_files(bundle_dir) -> list[tuple[str, Path]]:
 def expected_digests(bundle_dir) -> dict[str, str]:
     """The sha256 the bundle ITSELF claims for each file it serves.
 
-    A tape bundle names them in `bundle.json` (`chunks[*].sha256`,
-    `poster_sha256`) because its id covers them; a video bundle names them in
-    `media.json`, which the id deliberately does not cover. `bundle.json` and
-    `media.json` are not in the map — nothing names their digests, and the
-    id covers `bundle.json` itself.
+    Three spellings, all read, because bundles already written keep theirs:
+
+    - a tape names them in `bundle.json` (`chunks[*].sha256`, `poster_sha256`);
+    - a video or still written since 2026-09-13 names every file in
+      `bundle.json:files` (`{relpath: {sha256, bytes}}`), so its id covers them;
+    - a video or still written before that names them in `media.json`
+      (`files: [{file, sha256, bytes}]`), which its id does not cover. Those
+      ids were computed over their own `bundle.json`, so they still verify.
+
+    `bundle.json` and `media.json` are not in the map: nothing names their
+    digests, and the id covers `bundle.json` itself.
     """
     root = Path(bundle_dir)
     doc = json.loads((root / "bundle.json").read_text())
@@ -421,6 +427,9 @@ def expected_digests(bundle_dir) -> dict[str, str]:
     for v in (doc.get("variants") or {}).values():
         for c in v.get("chunks") or []:
             out[c["file"]] = c["sha256"]
+    if isinstance(doc.get("files"), dict):
+        for rel, f in doc["files"].items():
+            out[rel] = f["sha256"]
     media = doc.get("media")
     if media and (root / media).exists():
         for f in json.loads((root / media).read_text()).get("files") or []:

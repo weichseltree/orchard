@@ -568,44 +568,105 @@ def test_video_ladder_skips_rungs_it_would_have_to_upscale(tmp_path):
     assert doc["ladder"][0]["keyint_frames"] == 180        # 6 s at 30 fps
     assert doc["ladder"][0]["segments"] == 3
 
-    # per-file digests live in media.json, not in bundle.json: see below
+    # every file the bundle ships is named, with its digest, in bundle.json
+    # itself, so the id covers the encoder's bytes and not only the recipe
     from orchard.bundle import sha256_file
-    media = json.loads((out / "media.json").read_text())
-    assert media["bundle_id"] == doc["id"]
-    listed = {m["file"] for m in media["files"]}
-    assert listed == {str(p.relative_to(out)) for p in out.rglob("*")
-                      if p.is_file() and p.name not in ("bundle.json",
-                                                        "media.json")}
-    for m in media["files"]:
-        assert sha256_file(out / m["file"]) == m["sha256"]
-        assert (out / m["file"]).stat().st_size == m["bytes"]
-    assert sum(1 for m in media["files"] if m["file"].endswith(".ts")) == 3
-    assert all(m["file"].split("/")[-1] in pl for m in media["files"]
-               if m["file"].endswith(".ts"))
-    # the SOURCE's hash belongs in bundle.json; the encoder's OUTPUT hashes
-    # must not be there, or the id moves on every re-encode
+    files = doc["files"]
+    assert set(files) == {str(p.relative_to(out)) for p in out.rglob("*")
+                          if p.is_file() and p.name != "bundle.json"}
+    for rel, m in files.items():
+        assert sha256_file(out / rel) == m["sha256"]
+        assert (out / rel).stat().st_size == m["bytes"]
+    assert sum(1 for rel in files if rel.endswith(".ts")) == 3
+    assert all(rel.split("/")[-1] in pl for rel in files if rel.endswith(".ts"))
+    assert not (out / "media.json").exists() and "media" not in doc
     assert doc["source"]["file_sha256"]
-    assert "sha256" not in json.dumps(doc["ladder"])
-    assert not any(k.endswith("sha256") for k in doc)
+    assert bundle.verify_bundle(out)["ok"]
 
 
 @ffmpeg_missing
-def test_the_video_id_survives_a_re_encode(tmp_path):
-    """x264 under VBV is not bit-reproducible; the address must be anyway.
+def test_a_video_id_follows_the_bytes_of_a_re_encode(tmp_path):
+    """x264 under VBV is not bit-reproducible, so the address follows the bytes.
 
     Measured on the real 40 s 1080p clip: two runs of the same command gave
-    22.08 MB and 22.07 MB of 1080p and two different ids. A bundle that mints
-    a new address every time it is built orphans everything already pushed.
+    22.08 MB and 22.07 MB of 1080p. WP1 kept one address for both by leaving
+    the output out of the id, which let one id stand for two sets of bytes.
+    Now the same bytes share an address and different bytes do not.
     """
     from orchard.bundle import bundle_video
     clip = make_clip(tmp_path / "in.mp4", 640, 480, seconds=7)
-    a = bundle_video(clip, "einstruct", "twice", tmp_path / "a", verbose=False)
-    b = bundle_video(clip, "einstruct", "twice", tmp_path / "b", verbose=False)
-    assert a.name == b.name
+    out = tmp_path / "b"
+    a = bundle_video(clip, "einstruct", "twice", out, verbose=False)
+    b = bundle_video(clip, "einstruct", "twice", out, verbose=False)
     da = json.loads((a / "bundle.json").read_text())
     db = json.loads((b / "bundle.json").read_text())
-    assert da == db
+    assert (a.name == b.name) == (da["files"] == db["files"])
+    assert bundle.verify_bundle(a)["ok"] and bundle.verify_bundle(b)["ok"]
     assert da["source"]["file_sha256"] and da["ffmpeg"].startswith("ffmpeg")
+    assert not list(out.glob(".bundle-*")), "a no-op finalize leaves no staging"
+
+
+def _staged(root: Path, payload: bytes) -> tuple[dict, Path]:
+    """A minimal still-shaped bundle in a staging directory, for `_finalize`."""
+    from orchard.bundle import file_digests
+    staging = root / f".bundle-{payload.hex()[:8]}"
+    staging.mkdir(parents=True)
+    (staging / "thumb.jpg").write_bytes(payload)
+    doc = {"schema": "orchard/bundle/1", "kind": "still", "id": "", "tree": "t",
+           "title": "t", "poster": "thumb.jpg", "files": file_digests(staging)}
+    return doc, staging
+
+
+def test_different_bytes_from_one_recipe_are_two_bundles(tmp_path):
+    """A re-encode that differs is a new directory, never a silent replacement."""
+    from orchard.bundle import _finalize
+    out = tmp_path / "bundles"
+    a = _finalize(*_staged(tmp_path / "s1", b"first encode"), out)
+    b = _finalize(*_staged(tmp_path / "s2", b"second encode"), out)
+    assert a != b and a.is_dir() and b.is_dir()
+    assert (a / "thumb.jpg").read_bytes() == b"first encode"
+    assert bundle.verify_bundle(a)["ok"] and bundle.verify_bundle(b)["ok"]
+
+
+def test_finalize_onto_an_existing_id_is_a_no_op(tmp_path):
+    from orchard.bundle import _finalize
+    out = tmp_path / "bundles"
+    a = _finalize(*_staged(tmp_path / "s1", b"same bytes"), out)
+    mtime = (a / "thumb.jpg").stat().st_mtime_ns
+    doc, staging = _staged(tmp_path / "s2", b"same bytes")
+    b = _finalize(doc, staging, out)
+    assert b == a and (a / "thumb.jpg").stat().st_mtime_ns == mtime
+    assert not staging.exists(), "the redundant staging copy is removed"
+    # ...unless the existing directory no longer matches its own bundle.json,
+    # in which case the fresh copy, which does, replaces it
+    (a / "thumb.jpg").write_bytes(b"same bytez")
+    doc, staging = _staged(tmp_path / "s3", b"same bytes")
+    assert _finalize(doc, staging, out) == a
+    assert (a / "thumb.jpg").read_bytes() == b"same bytes"
+    assert bundle.verify_bundle(a)["ok"]
+
+
+def test_a_bundle_with_the_old_media_json_still_verifies(tmp_path):
+    """Video and still bundles written before 2026-09-13 keep their ids."""
+    from orchard.bundle import compute_id
+    from orchard.push import expected_digests
+    d = tmp_path / "staging"
+    (d / "360p").mkdir(parents=True)
+    (d / "360p/s0000.ts").write_bytes(b"segment")
+    (d / "poster.jpg").write_bytes(b"poster")
+    doc = {"schema": "orchard/bundle/1", "kind": "video", "id": "", "tree": "t",
+           "title": "t", "master": "master.m3u8", "poster": "poster.jpg",
+           "media": "media.json"}
+    doc["id"] = compute_id(doc)
+    (d / "bundle.json").write_text(json.dumps(doc, indent=1))
+    (d / "media.json").write_text(json.dumps({"schema": "orchard/bundle-media/1", "files": [
+        {"file": "360p/s0000.ts", "bytes": 7, "sha256": sha256_file(d / "360p/s0000.ts")},
+        {"file": "poster.jpg", "bytes": 6, "sha256": sha256_file(d / "poster.jpg")}]}))
+    old = d.rename(tmp_path / doc["id"])
+    assert set(expected_digests(old)) == {"360p/s0000.ts", "poster.jpg"}
+    assert bundle.verify_bundle(old)["ok"]
+    (old / "poster.jpg").write_bytes(b"other")
+    assert bundle.verify_bundle(old)["mismatched"] == ["poster.jpg"]
 
 
 @ffmpeg_missing

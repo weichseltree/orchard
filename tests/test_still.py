@@ -43,14 +43,18 @@ def test_a_still_bundles_at_three_widths_with_a_jpeg_at_each(tmp_path):
 
 
 @ffmpeg_missing
-def test_every_served_file_is_named_in_media_json_and_the_id_is_the_recipe(tmp_path):
+def test_every_served_file_is_named_in_bundle_json_and_the_id_covers_it(tmp_path):
     png = make_png(tmp_path / "frame.png", 640, 400)
     out = bundle_still(png, "einstruct", "a frame", tmp_path / "b", verbose=False)
     rep = verify_local(out)
     assert not rep["mismatched"] and not rep["missing"] and not rep["unclaimed"]
     assert verify_bundle(out)["ok"]
+    doc = json.loads((out / "bundle.json").read_text())
+    assert set(doc["files"]) == {p.name for p in out.iterdir()} - {"bundle.json"}
+    assert not (out / "media.json").exists()
     again = bundle_still(png, "einstruct", "a frame", tmp_path / "b2", verbose=False)
-    assert again.name == out.name, "same source, same recipe, same address"
+    same = json.loads((again / "bundle.json").read_text())["files"] == doc["files"]
+    assert (again.name == out.name) == same, "the address follows the bytes"
 
 
 @ffmpeg_missing
