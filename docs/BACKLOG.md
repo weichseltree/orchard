@@ -42,13 +42,11 @@ Ordered. Items with a name in brackets wait on that person.
    2048 KTX2 through the Basis transcoder and the hall reads as before; the
    phone tier is unit-tested only (the headless shell does not emulate touch).
 6. Windows' blown highlights and the plain grey palette; a first pass of
-   material and colour design for the hall (LAWS 12, 13). **[Manuel] Rule
-   on a palette** (LAWS 14): `bake_hall.py --palette {stone,warm,gallery,
-   moss}` renders each; the four 96-sample previews are side by side in
-   `docs/img/hall-palettes-2026-09-12.png` (stone is the M0 bake). Say
-   which, or what to change, and the 1024-sample bake (21 min CPU) plus
-   the KTX2 step and a deploy follow. The blown windows are the preview's
-   exposure, not the palette: the client has the sky dome in them now.
+   material and colour design for the hall (LAWS 12, 13). **Ruled 2026-09-12:
+   gallery** (charcoal walls, near-black polished floor), from the four
+   previews in `docs/img/hall-palettes-2026-09-12.png`; the 1024-sample bake,
+   the KTX2 step and a deploy follow in the same session. The blown windows
+   are the preview's exposure; the client has the sky dome in them.
 
 ## M1 (company)
 
@@ -78,3 +76,12 @@ Ordered. Items with a name in brackets wait on that person.
     numbers in `docs/upstream/spacetimedb-unsafe-eval.md`; filing is under
     your GitHub account.
 12. Second node on Legion and the first portal (M3).
+13. **The palace and its orchard** (Manuel, 2026-09-12): the hall becomes
+    the first room of a palace, Austrian in character, and the grounds
+    outside the windows an actual orchard: terrain, trees, a garden the sky
+    dome stands in for today. Needs a look ruling (stills first, LAWS 14)
+    and a bake pipeline for exteriors; instanced trees for the Quest budget.
+14. **Talk to the trees.** `docs/BRIEF-FOR-TREES.md` is what a session in
+    each research repo reads; the answers land in `<repo>/orchard.yaml`
+    via `orchard plant` and in the theses. Start with the first slate
+    (einstruct, spectre, world-engine, premosaic).

@@ -10,7 +10,8 @@ preprocessing on its owner's GPU, funds that tree in kind.
 
 Start small. The first mansion has one hall, one room, one streamed particle
 tape, one video on a wall, and presence. Everything below is the direction
-that first room is built to grow in.
+that first room is built to grow in: a palace, Austrian in character, with an
+actual orchard on its grounds outside the windows (DECISIONS 2026-09-12).
 
 ## The repos are the features
 

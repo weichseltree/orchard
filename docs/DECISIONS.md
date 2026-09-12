@@ -99,3 +99,14 @@ Append-only. A decision names the day, the ruling, and the alternative it beat.
   writes rulings and directives through the CLI's admin identity, and only
   listens on the loopback. Beat a browser admin identity first, which needs
   a token flow the grove does not have yet.
+- **2026-09-12 · Hall palette: gallery** (charcoal walls, near-black polished
+  floor; LAWS 13), chosen by Manuel from four 96-sample previews; the
+  1024-sample bake follows. Beat stone (the M0 grey), warm and moss.
+- **2026-09-12 · The mansion grows into a palace with an actual orchard.**
+  Manuel's direction: the hall is the first room of a palace, Austrian in
+  character, and the grounds outside its windows are a real orchard, the
+  namesake made visible. The sky dome is the placeholder for those grounds.
+- **2026-09-12 · Next: the trees speak.** With harvest, exhibit, sync and the
+  greenhouse panels in place, the next sessions run inside the research
+  repos against `docs/BRIEF-FOR-TREES.md`: what each can show now, which of
+  its ideas is a mechanism of the mansion, one thesis, and what it needs.
