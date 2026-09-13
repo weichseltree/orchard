@@ -1349,12 +1349,19 @@ def unlit_tree_materials(doc):
     doc["extensionsUsed"] = sorted(used)
 
 
-def ktx_tiers(png, out_dir):
+# The full tier ships to desktops and headsets on room entry; 4096 px bakes
+# (gallery, orangery) came out at 10 MB each as UASTC, so the tier is capped
+# and the bake's extra resolution serves the PNG and the denoiser only.
+FULL_TIER_PX = 2048
+
+
+def ktx_tiers(png, out_dir, res=None):
     toktx = shutil.which("toktx") or "/home/manuel/tools/ktx/KTX-Software-4.4.2-Linux-x86_64/bin/toktx"
     if not os.path.exists(toktx):
         return {}
     out = {}
-    for name, resize in (("lightmap.ktx2", None), ("lightmap-1024.ktx2", "1024x1024")):
+    full = "%dx%d" % (FULL_TIER_PX, FULL_TIER_PX) if res and res > FULL_TIER_PX else None
+    for name, resize in (("lightmap.ktx2", full), ("lightmap-1024.ktx2", "1024x1024")):
         path = os.path.join(out_dir, name)
         cmd = [toktx, "--t2", "--encode", "uastc", "--uastc_quality", "2", "--zcmp", "18",
                "--assign_oetf", "srgb", "--genmipmap"]
@@ -1514,7 +1521,7 @@ def main():
         denoise_how = "OpenImageDenoise via the compositor Denoise node"
     png = os.path.join(out_dir, "lightmap.png")
     stats = hb.write_lightmap_png(buf, args.res, png)
-    tiers = ktx_tiers(png, out_dir)
+    tiers = ktx_tiers(png, out_dir, args.res)
     log("lightmap: coverage %.1f%%, scale %.3f, tiers %s" % (100 * stats["coverage"], stats["scale"], tiers))
 
     marker_objs = add_room_markers(scene, plan, markers)
@@ -1548,6 +1555,7 @@ def main():
         "lightmap": {
             "file": "lightmap.png", "ktx2": "lightmap.ktx2" if tiers else None,
             "ktx2_phone": "lightmap-1024.ktx2" if tiers else None,
+            "ktx2_px": min(args.res, FULL_TIER_PX), "ktx2_phone_px": 1024,
             "scale": stats["scale"], "three_light_map_intensity": round(stats["scale"] * math.pi, 6),
             "coverage": stats["coverage"], "clipped_fraction": stats["clipped_fraction"],
             "binding": "texture.colorSpace = SRGBColorSpace, flipY = false, channel = 1, "

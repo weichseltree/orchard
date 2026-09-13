@@ -40,7 +40,9 @@
     "three_light_map_intensity": 8.493968,
     "coverage": 0.7922,
     "clipped_fraction": 0.00054,
-    "binding": "texture.colorSpace = SRGBColorSpace, flipY = false, channel = 1, material.lightMapIntensity = three_light_map_intensity"
+    "binding": "texture.colorSpace = SRGBColorSpace, flipY = false, channel = 1, material.lightMapIntensity = three_light_map_intensity",
+    "ktx2_px": 2048,
+    "ktx2_phone_px": 1024
   },
   "geometry": {
     "units": "metres",
