@@ -111,6 +111,11 @@ TYPE_DEFAULTS = {
 }
 
 WAINSCOT_P, CORNICE_P = 0.06, 0.12
+# Walls run this far past the floor and the ceiling planes: the long wall edge
+# meets the ceiling's coffer vertices and the floor's corners in T-junctions,
+# and the hairline cracks the rasterizer leaves there showed the sky dome
+# and the void. Behind the crack there is now wall.
+WALL_LAP = 0.05
 # Each room's wall faces stand WALL_HALF inside its bounds, so two rooms
 # sharing a plane have their faces 2 * WALL_HALF apart (a wall that thick)
 # and every room's geometry lies within its own bounds: coplanar faces
@@ -446,12 +451,16 @@ def build_wall(b, plan, wall, holes):
     c0, c1 = plan.style["cornice"]
     strips = []
     if wh > 0:
-        strips.append((0.0, wh, WAINSCOT_P, P_WAINSCOT))
+        strips.append((-WALL_LAP, wh, WAINSCOT_P, P_WAINSCOT))
         strips.append((wh, c0, 0.0, P_WALL))
     else:
-        strips.append((0.0, c0, 0.0, P_WALL))
+        strips.append((-WALL_LAP, c0, 0.0, P_WALL))
     strips.append((c0, c1, CORNICE_P, P_TRIM))
-    strips.append((c1, H, 0.0, P_WALL))
+    strips.append((c1, H + WALL_LAP, 0.0, P_WALL))
+    # A moulding that stands proud starts its own thickness past the corner
+    # and runs to the far corner: the previous wall's moulding fills the
+    # corner square, so no corner cap is needed (a cap was a tiny island
+    # that baked black) and nothing overlaps.
     for z0, z1, inset, mat in strips:
         s = inset
         origin = a + uh * s + n * inset + Z * z0
@@ -460,7 +469,7 @@ def build_wall(b, plan, wall, holes):
             if hz1 <= z0 + EPS or hz0 >= z1 - EPS:
                 continue
             loc.append((hu0 - s, max(hz0, z0) - z0, hu1 - s, min(hz1, z1) - z0))
-        b.rect_holes(origin, uh * (L - 2 * s), Z * (z1 - z0), loc, mat, want=n)
+        b.rect_holes(origin, uh * (L - s), Z * (z1 - z0), loc, mat, want=n)
     caps = []
     if wh > 0:
         caps.append((wh, WAINSCOT_P, 0.0, P_WAINSCOT))
@@ -471,7 +480,7 @@ def build_wall(b, plan, wall, holes):
         up = Z if i1 < i0 else -Z
         origin = a + uh * s + n * min(i0, i1) + Z * z
         loc = [(hu0 - s, 0.0, hu1 - s, abs(i1 - i0)) for hu0, hu1, hz0, hz1 in holes if hz0 < z - EPS < hz1]
-        b.rect_holes(origin, uh * (L - 2 * s), n * abs(i1 - i0), loc, mat, want=up)
+        b.rect_holes(origin, uh * (L - s), n * abs(i1 - i0), loc, mat, want=up)
 
 
 def build_corner_caps(b, plan):
@@ -607,7 +616,6 @@ def build_room(plan):
 
     for wall in ("+x", "+y", "-x", "-y"):
         build_wall(b, plan, wall, holes_by_wall[wall])
-    build_corner_caps(b, plan)
 
     for wall, hole, depth, sides, mat, kind in reveals:
         plan.extends[wall] = max(plan.extends.get(wall, 0.0), depth - WALL_HALF)
@@ -1366,8 +1374,8 @@ def check_bounds(objects, plans):
         plan = plans[rid]
         if isinstance(plan, CellPlan):
             continue
-        lo = (plan.bx0 - plan.extends.get("-x", 0.0), plan.by0 - plan.extends.get("-y", 0.0), -EPS)
-        hi = (plan.bx1 + plan.extends.get("+x", 0.0), plan.by1 + plan.extends.get("+y", 0.0), plan.h + COFFER_D + EPS)
+        lo = (plan.bx0 - plan.extends.get("-x", 0.0), plan.by0 - plan.extends.get("-y", 0.0), -WALL_LAP - EPS)
+        hi = (plan.bx1 + plan.extends.get("+x", 0.0), plan.by1 + plan.extends.get("+y", 0.0), plan.h + COFFER_D + WALL_LAP + EPS)
         co = np.empty(len(ob.data.vertices) * 3, dtype=np.float32)
         ob.data.vertices.foreach_get("co", co)
         co = co.reshape(-1, 3)
