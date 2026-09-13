@@ -7,7 +7,10 @@ window.setTimeout(() => {
   status.querySelector("p")!.textContent = "The first room is taking longer to arrive. You can keep waiting, reload, or return to the website.";
 }, 12_000);
 
-void import("./main").catch((error: unknown) => {
+// Only the startup side effects are needed. Discarding the module namespace
+// keeps Rolldown's interop helper from making the deferred presence SDK a
+// static dependency of main; quality:build measures the emitted import graph.
+void import("./main").then(() => undefined).catch((error: unknown) => {
   console.error("[grove] startup failed", error);
   startupFailed();
 });

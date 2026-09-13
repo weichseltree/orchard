@@ -19,12 +19,31 @@ export const TapeVariantSchema = z.looseObject({
   n: z.number().int().positive().optional(),
   frame_stride: z.number().int().positive(),
   slot_stride: z.number().int().positive(),
-  dt_tau: z.number(),
+  dt_tau: z.number().nonnegative(),
   /** Tape time of the variant's frame 0. */
   t0_tau: z.number().default(0),
+  /** Exact source clock for each retained frame; optional for existing OTC1 bundles. */
+  times_tau: z.array(z.number()).optional(),
+  /** Mean cadence before frame thinning: 1x has the same source-time rate on every tier. */
+  source_dt_tau: z.number().nonnegative().optional(),
   chunk_frames: z.number().int().positive(),
   bytes: z.number().int().nonnegative().default(0),
   chunks: z.array(ChunkRefSchema).min(1),
+}).superRefine((variant, ctx) => {
+  const times = variant.times_tau;
+  if (times) {
+    if (times.length !== variant.frames) {
+      ctx.addIssue({ code: "custom", path: ["times_tau"], message: "one exact time is required for every frame" });
+    } else if (times[0] !== variant.t0_tau || times.some((t, i) => i > 0 && t <= times[i - 1]!)) {
+      ctx.addIssue({ code: "custom", path: ["times_tau"], message: "frame times must increase strictly from t0_tau" });
+    }
+  }
+  if (variant.frames > 1 && variant.dt_tau <= 0) {
+    ctx.addIssue({ code: "custom", path: ["dt_tau"], message: "a multi-frame tape needs positive cadence" });
+  }
+  if (variant.frames > 1 && variant.source_dt_tau === 0) {
+    ctx.addIssue({ code: "custom", path: ["source_dt_tau"], message: "a multi-frame source needs positive cadence" });
+  }
 });
 
 export const TapeBundleSchema = z.looseObject({
@@ -38,6 +57,7 @@ export const TapeBundleSchema = z.looseObject({
   box: Vec3,
   periodic: z.tuple([z.boolean(), z.boolean(), z.boolean()]).default([false, false, false]),
   units: z.string().default(""),
+  time_unit: z.string().trim().min(1).optional(),
   n_slots: z.number().int().positive(),
   species_names: z.array(z.string()).default([]),
   variants: z.record(z.string(), TapeVariantSchema),
@@ -141,4 +161,12 @@ export function pickVariant(bundle: TapeBundle, tier: DeviceTier): PickedVariant
  */
 export function variantSlots(bundle: TapeBundle, variant: TapeVariant): number {
   return variant.n ?? Math.ceil(bundle.n_slots / Math.max(1, variant.slot_stride));
+}
+
+/** Existing field names ending in _tau do not establish a producer's units. */
+export function tapeTimeUnit(bundle: Pick<TapeBundle, "units" | "time_unit">): string {
+  if (bundle.time_unit) return bundle.time_unit;
+  if (bundle.units === "reduced (sigma, tau)") return "tau";
+  if (bundle.units === "reduced (sigma, t0)") return "t0";
+  return "source time";
 }

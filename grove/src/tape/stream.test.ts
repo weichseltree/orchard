@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { TapeVariant } from "./bundle";
 import { syntheticTape } from "./devtape";
 import { encodeChunk } from "./encode";
@@ -88,6 +88,26 @@ function streamOf(
 const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
 
 describe("TapeStream", () => {
+  it.each(["frames", "slots", "clock"])("refuses a chunk with mismatched %s metadata", async (field) => {
+    const { variant, files } = build();
+    const errors: string[] = [];
+    if (field === "frames") variant.chunks[0]!.frames -= 1;
+    else if (field === "slots") variant.n = SLOTS + 1;
+    else variant.times_tau = Array.from({ length: variant.frames }, (_, i) => i * 0.5 + 100);
+    const stream = new TapeStream({ baseUrl: "https://media.test/", variant,
+      onError: (error) => errors.push(error.message),
+      fetchImpl: (async () => {
+        const bytes = files.values().next().value!;
+        return { ok: true, arrayBuffer: async () => bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) } as Response;
+      }) as typeof fetch });
+    stream.request(0);
+    await settle();
+    expect(stream.residentCount).toBe(0);
+    expect(stream.stats.failed).toBe(1);
+    expect(errors[0]).toMatch(/does not match/);
+    stream.dispose();
+  });
+
   it("maps a frame to its chunk from the chunk list", () => {
     const { stream } = streamOf();
     expect(stream.chunkIndexOf(0)).toBe(0);
@@ -176,16 +196,15 @@ describe("TapeStream", () => {
     expect(calls).toBe(1);
   });
 
-  // Hashing is a Web Crypto promise, a few macrotasks in node.
-  const landed = async () => {
-    for (let i = 0; i < 5; i++) await settle();
-  };
+  // Web Crypto completion depends on the worker pool, not a fixed number of
+  // timer turns. Wait for the request to settle before asserting its result.
+  const landed = (stream: TapeStream) => vi.waitFor(() => expect(stream.inflightCount).toBe(0));
 
   it("decodes a chunk whose sha256 matches bundle.json", async () => {
     const errors: string[] = [];
     const { stream } = streamOf({ digests: true, errors });
     stream.frame(0);
-    await landed();
+    await landed(stream);
     expect(stream.frame(0)).not.toBeNull();
     expect(errors).toEqual([]);
   });
@@ -194,7 +213,7 @@ describe("TapeStream", () => {
     const errors: string[] = [];
     const { stream } = streamOf({ digests: true, corrupt: "vr-high/c0000.bin", errors });
     stream.frame(0);
-    await landed();
+    await landed(stream);
     expect(stream.frame(0)).toBeNull();
     expect(errors[0]).toMatch(/c0000\.bin: sha256 does not match/);
     expect(stream.stats.failed).toBe(1);
@@ -204,7 +223,7 @@ describe("TapeStream", () => {
     const errors: string[] = [];
     const { stream } = streamOf({ digests: true, corrupt: "vr-high/c0000.bin", transportVerifies: true, errors });
     stream.frame(0);
-    await landed();
+    await landed(stream);
     // The worker would have refused these bytes; the stream does not hash twice.
     expect(errors).toEqual([]);
     expect(stream.stats.fetched).toBe(1);

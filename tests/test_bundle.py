@@ -190,6 +190,79 @@ def test_poster_is_1280x720(tape, tmp_path):
         assert im.size == (1280, 720)
 
 
+def test_irregular_source_times_and_origin_survive_every_variant(tmp_path):
+    times = np.array([10.0, 10.1, 11.9, 12.0, 14.0])
+    pos, species, alive = synthetic(np.random.default_rng(4), frames=len(times), n=8)
+    tape_dir = write_tape(tmp_path / "clock", pos, species, alive, times=times)
+    header = json.loads((tape_dir / "header.json").read_text())
+    header.update(units="reduced (sigma, t0)", t0_origin="end of relaxation",
+                  t0_offset_tau=250.0)
+    (tape_dir / "header.json").write_text(json.dumps(header))
+    out = bundle_tape(tape_dir, "clock", "irregular clock", tmp_path / "bundles",
+                      chunk_frames=2, verbose=False)
+    doc = json.loads((out / "bundle.json").read_text())
+    assert doc["time_unit"] == doc["poster_info"]["time_unit"] == "t0"
+    assert doc["source"]["t0_origin"] == "end of relaxation"
+    assert doc["source"]["t0_offset_tau"] == 250.0
+    for variant in doc["variants"].values():
+        assert variant["times_tau"] == times[::variant["frame_stride"]].tolist()
+        assert variant["source_dt_tau"] == 1.0
+        assert variant["timing"]["source_frames"] == len(times)
+        assert variant["payload_bytes"] == variant["frames"] * variant["n"] * 8
+    assert doc["variants"]["vr-high"]["timing"]["max_uniform_error_tau"] == 1.0
+    # The sidecar correction leaves the deployed OTC1 binary layout intact.
+    first = read_chunk((out / doc["variants"]["vr-high"]["chunks"][0]["file"]).read_bytes())
+    assert first["reserved"] == b"\x00" * 8
+    assert first["t0"] == 10.0
+    assert verify_id(out)[0]
+
+
+@pytest.mark.parametrize("times", [[0.0, 0.0], [1.0, 0.0], [0.0, float("nan")],
+                                   [0.0, float("inf")]])
+def test_bundle_rejects_ambiguous_source_clocks(tmp_path, times):
+    pos, species, alive = synthetic(np.random.default_rng(2), frames=2, n=8)
+    tape_dir = write_tape(tmp_path / "invalid-clock", pos, species, alive, times=times)
+    with pytest.raises(ValueError, match="finite and strictly increasing"):
+        bundle_tape(tape_dir, "clock", "invalid", tmp_path / "bundles", verbose=False)
+    assert not (tmp_path / "bundles").exists(), "invalid source timing must not publish a bundle"
+
+
+@pytest.mark.parametrize("header,expected", [
+    ({"units": "reduced (sigma, tau)"}, "tau"),
+    ({"units": "reduced (sigma, t0)"}, "t0"),
+    ({"units": "SI", "time_unit": "s"}, "s"),
+    ({"units": "unknown producer convention"}, None),
+    ({}, None),
+])
+def test_time_units_are_stated_or_known_not_guessed(header, expected):
+    assert bundle.tape_time_unit(header) == expected
+
+
+def test_unknown_units_and_omitted_channels_are_explicit(tmp_path):
+    from orchard_tape import TapeWriter
+    tape_dir = tmp_path / "with-heat"
+    writer = TapeWriter(tape_dir, box=tuple(BOX), n_total=2, run_seed=0, units="producer clock",
+                        scalars=("ke",), git_sha="test")
+    writer.append(0, 17.0, np.array([[1, 1, 0], [2, 2, 0]]), ke=np.array([2, 3]))
+    writer.close()
+    out = bundle_tape(tape_dir, "clock", "heat", tmp_path / "bundles", verbose=False)
+    doc = json.loads((out / "bundle.json").read_text())
+    assert "time_unit" not in doc
+    assert doc["poster_info"]["time_unit"] is None
+    assert doc["source"]["omitted_channels"] == ["ke"]
+    assert doc["source"]["channels"] == json.loads((tape_dir / "header.json").read_text())["channels"]
+    assert doc["variants"]["vr-high"]["times_tau"] == [17.0]
+
+
+def test_empty_poster_reports_zero_drawn_particles(tmp_path):
+    pos, species, alive = synthetic(np.random.default_rng(2), frames=3, n=8)
+    alive[:] = 0
+    tape_dir = write_tape(tmp_path / "empty-frame", pos, species, alive)
+    out = bundle_tape(tape_dir, "clock", "no survivors", tmp_path / "bundles", verbose=False)
+    doc = json.loads((out / "bundle.json").read_text())
+    assert doc["poster_info"]["drawn"] == 0
+
+
 # --------------------------------------------------------------- chunk header
 
 

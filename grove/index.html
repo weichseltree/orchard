@@ -45,7 +45,7 @@
     .skip { position: absolute; top: 12px; left: 24px; padding: 12px 18px; z-index: 10; background: var(--bg); transform: translateY(-200%); }
     .skip:focus { transform: translateY(0); }
     .site-header { display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 96px; border-bottom: 1px solid var(--rule); }
-    .wordmark { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 600; letter-spacing: 0.02em; white-space: nowrap; }
+    .wordmark { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; text-decoration: none; font-weight: 600; letter-spacing: 0.02em; white-space: nowrap; }
     .seed { width: 0.6rem; height: 0.6rem; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px #7fc97f88; }
     .site-nav { display: flex; align-items: center; gap: 28px; font-size: 0.875rem; color: var(--body); }
     .site-nav a { padding-block: 12px; text-decoration: none; }
@@ -96,10 +96,10 @@
     .about h2 { font-size: 1.55rem; }
     .about p { margin-top: 14px; max-width: 36rem; font-size: 0.9rem; }
     .follow-links { display: flex; align-content: center; justify-content: end; align-items: center; flex-wrap: wrap; gap: 12px 24px; }
-    .follow-links a { padding-block: 10px; font-size: 0.875rem; }
+    .follow-links a { display: inline-flex; align-items: center; min-height: 44px; padding-block: 10px; font-size: 0.875rem; }
     .site-footer { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding-block: 28px 36px; color: var(--dim); font-size: 0.8rem; }
     .site-footer nav { display: flex; flex-wrap: wrap; gap: 24px; }
-    .site-footer a { display: inline-block; padding-block: 10px; }
+    .site-footer a { display: inline-flex; align-items: center; min-height: 44px; padding-block: 10px; }
     @media (max-width: 900px) {
       .hero { gap: 24px; padding-top: 56px; }
       .hero h1 { font-size: clamp(2.7rem, 6vw, 3.7rem); }
@@ -147,7 +147,7 @@
       <a class="source" href="https://github.com/weichseltree/orchard">Source <span aria-hidden="true">↗</span></a>
     </nav>
   </header>
-  <main id="main" class="wrap">
+  <main id="main" class="wrap" tabindex="-1">
     <section class="hero" aria-labelledby="hero-title">
       <div>
         <p class="eyebrow">The grove · research you can walk into</p>
@@ -166,11 +166,11 @@
       </figure>
     </section>
 
-    <div class="ways" aria-label="What you can do in the grove">
+    <section class="ways" aria-label="What you can do in the grove">
       <div><h2>Stand among the points</h2><p>Move around the recorded simulation and see its structure from your own position.</p></div>
       <div><h2>Take your time</h2><p>Pause a tape, move through its frames, and change the playback speed.</p></div>
       <div><h2>See where it came from</h2><p>Open About this view in the grove to inspect the source behind an exhibit.</p></div>
-    </div>
+    </section>
 
     <section id="inside" class="section" aria-labelledby="inside-title">
       <div class="section-heading">
@@ -207,7 +207,7 @@
 
     <section class="section palace" aria-labelledby="palace-title">
       <figure>
-        <img src="/site/hall.png" width="1280" height="720" loading="lazy" decoding="async" alt="Sunlight crosses a marble floor in the hall, with tall windows to the left and open doorways ahead.">
+        <img src="/site/hall.webp" width="1280" height="720" loading="lazy" decoding="async" alt="Sunlight crosses a marble floor in the hall, with tall windows to the left and open doorways ahead.">
         <figcaption>The hall. An architectural render of the grove’s room model; the browser view differs. <a href="/site/imagery.json">Image source</a></figcaption>
       </figure>
       <div>

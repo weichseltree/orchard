@@ -11,14 +11,14 @@ import {
 import { MEDIA_BASE } from "../config";
 import type { DeviceProfile } from "../device";
 import type { DeviceTier } from "../tape/bundle";
-import { StillPanel } from "../media/still";
-import { VideoWall } from "../media/videowall";
+import type { StillPanel } from "../media/still";
+import type { VideoWall } from "../media/videowall";
 import { StillBundleSchema, VideoBundleSchema } from "../tape/bundle";
 import type { Provenance } from "../ui/provenance";
 import { bundleBaseOf, pickExhibit, type ExhibitRow } from "./exhibits";
-import { buildRoom, type PosterMarker, type RoomShell } from "./rooms";
+import type { PosterMarker, RoomShell } from "./rooms";
 import { buildSky, sunFromAsset, type SkyDome } from "./sky";
-import { TapeExhibit } from "./tape-exhibit";
+import type { TapeExhibit } from "./tape-exhibit";
 import type { BundleRef, Mansion, Room, StillHanging } from "./schema";
 
 // Builds the whole mansion out of mansion.json. Rooms first, because they are
@@ -151,12 +151,20 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
   if (sky) group.add(sky.mesh);
 
   const shells = new Map<string, RoomShell>();
-  const requested = new Set<string>();
+  const shellLoads = new Map<string, Promise<void>>();
+  const hangingLoads = new Map<string, Promise<void>>();
   let exhibitsPromise: Promise<ExhibitRow[] | null> | null = null;
   const exhibitsOnce = () =>
-    (exhibitsPromise ??= options.exhibits ? options.exhibits() : Promise.resolve(null));
+    (exhibitsPromise ??= Promise.resolve()
+      .then(() => options.exhibits?.() ?? null)
+      .catch((error: unknown) => {
+        onNotice(`Live exhibits could not be checked (${message(error)}); using the scene's saved references.`);
+        return null;
+      }));
 
   async function loadShell(room: Room): Promise<void> {
+    // The initial page can render before the GLTF/KTX2 loader code arrives.
+    const { buildRoom } = await import("./rooms");
     const shell = await buildRoom({ room, renderer, tier: device.tier, onNotice });
     shells.set(room.id, shell);
     group.add(shell.group);
@@ -174,6 +182,17 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
     options.onRoomReady?.(room, shell);
   }
 
+  function ensureShell(room: Room): Promise<void> {
+    const pending = shellLoads.get(room.id);
+    if (pending) return pending;
+    const loading = loadShell(room).catch((error: unknown) => {
+      shellLoads.delete(room.id);
+      throw error;
+    });
+    shellLoads.set(room.id, loading);
+    return loading;
+  }
+
   function loadHangings(room: Room, exhibits: ExhibitRow[] | null): Promise<void>[] {
     const pending: Promise<void>[] = [];
     for (const hanging of room.hangings) {
@@ -185,13 +204,13 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
       }
       if (hanging.kind === "tape") {
         pending.push(
-          TapeExhibit.load({
+          import("./tape-exhibit").then(({ TapeExhibit }) => TapeExhibit.load({
             hanging,
             baseUrl: base,
             tier: device.tier,
             pixelRatio: Math.min(window.devicePixelRatio, device.maxPixelRatio),
             onNotice,
-          })
+          }))
             .then((tape) => {
               world.tapes.push(tape);
               roomOf.set(tape, room.id);
@@ -239,25 +258,28 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
   }
 
   /**
-   * Loads the rooms named that are not loaded yet: shells one after another
-   * (cheap, and each appears as it lands), then every hanging of those rooms
-   * at once. Idempotent; a room is never loaded twice.
+   * Keep the full neighbourhood for windows and open doorways. A room's
+   * hangings start as soon as its shell lands, while the next shell loads:
+   * the visitor's first tape never waits for the rest of the palace.
+   * Concurrent calls share in-flight work and wait for it to settle.
    */
   async function ensureRooms(ids: readonly string[]): Promise<void> {
-    const rooms: Room[] = [];
+    const pending: Promise<void>[] = [];
     for (const id of ids) {
-      if (requested.has(id)) continue;
       const room = mansion.rooms.find((r) => r.id === id);
       if (!room) continue;
-      requested.add(id);
-      rooms.push(room);
+      await ensureShell(room);
+      let hangings = hangingLoads.get(id);
+      if (!hangings) {
+        const wantsExhibits = room.hangings.some((hanging) => hanging.bundle.exhibit !== undefined);
+        hangings = (wantsExhibits ? exhibitsOnce() : Promise.resolve(null))
+          .then((exhibits) => Promise.all(loadHangings(room, exhibits)))
+          .then(() => undefined);
+        hangingLoads.set(id, hangings);
+      }
+      pending.push(hangings);
     }
-    for (const room of rooms) await loadShell(room);
-    const wantsExhibits = rooms.some((room) =>
-      room.hangings.some((hanging) => hanging.bundle.exhibit !== undefined),
-    );
-    const exhibits = wantsExhibits ? await exhibitsOnce() : null;
-    await Promise.all(rooms.flatMap((room) => loadHangings(room, exhibits)));
+    await Promise.all(pending);
   }
 
   const world: BuiltWorld = {
@@ -314,6 +336,7 @@ async function buildVideo(
   provenance: Provenance,
   onNotice: (message: string) => void,
 ): Promise<VideoWall | null> {
+  const { VideoWall } = await import("../media/videowall");
   const response = await fetch(`${base}bundle.json`);
   if (!response.ok) throw new Error(`bundle.json: HTTP ${response.status}`);
   const bundle = VideoBundleSchema.parse(await response.json());
@@ -396,6 +419,7 @@ async function buildStill(
   provenance: Provenance,
   onNotice: (message: string) => void,
 ): Promise<StillPanel> {
+  const { StillPanel } = await import("../media/still");
   const response = await fetch(`${base}bundle.json`);
   if (!response.ok) throw new Error(`bundle.json: HTTP ${response.status}`);
   const bundle = StillBundleSchema.parse(await response.json());

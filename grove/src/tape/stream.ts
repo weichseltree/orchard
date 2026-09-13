@@ -163,6 +163,13 @@ export class TapeStream {
           `chunk ${ref.file} says frame0=${chunk.frame0}, bundle.json says ${ref.frame0}`,
         );
       }
+      if (chunk.frames !== ref.frames || (this.variant.n !== undefined && chunk.n !== this.variant.n)) {
+        throw new Error(`chunk ${ref.file}: frame or slot count does not match bundle.json; not shown`);
+      }
+      const exactOrigin = this.variant.times_tau?.[ref.frame0];
+      if (exactOrigin !== undefined && chunk.t0 !== Math.fround(exactOrigin)) {
+        throw new Error(`chunk ${ref.file}: clock origin does not match recorded frame times; not shown`);
+      }
       this.#resident.set(index, { chunk, used: ++this.#tick });
       this.#retry.delete(index);
       this.#fetched++;

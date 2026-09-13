@@ -412,6 +412,20 @@ def _species_names(meta: dict, n_species: int) -> tuple[list[str], str]:
     return [f"S{i}" for i in range(n_species)], "derived (S<i>)"
 
 
+def tape_time_unit(header: dict) -> str | None:
+    """A stated time unit, or the two established legacy unit spellings.
+
+    The format's ``*_tau`` keys are historical names, not evidence that an
+    arbitrary producer uses tau. Keep unfamiliar unit descriptions verbatim
+    in ``units`` and label their clocks as source time instead of guessing.
+    """
+    explicit = header.get("time_unit")
+    if isinstance(explicit, str) and explicit.strip():
+        return explicit.strip()
+    return {"reduced (sigma, tau)": "tau", "reduced (sigma, t0)": "t0"}.get(
+        header.get("units"))
+
+
 def read_tape_base(reader, keep: np.ndarray, box: np.ndarray, *, progress=None):
     """One pass over the tape, keeping the slots `keep` names.
 
@@ -428,19 +442,21 @@ def read_tape_base(reader, keep: np.ndarray, box: np.ndarray, *, progress=None):
             "this tape's particle count changes between frames (an `roi` tape); "
             "a bundle is a fixed slot grid and there is no correspondence to "
             "carry across frames")
+    times = np.asarray([frame["t"] for frame in reader.frames], dtype=np.float64)
+    if not np.isfinite(times).all() or np.any(np.diff(times) <= 0):
+        raise ValueError("tape frame times must be finite and strictly increasing; "
+                         "the source clock cannot be reconstructed otherwise")
     keep = np.asarray(keep)
     if keep.size and (keep.min() < 0 or keep.max() >= n_slots):
         raise ValueError("slot indices fall outside the tape's slot range")
     n = keep.size
     pos_q = np.empty((nframes, n, 3), dtype=np.uint16)
-    times = np.empty(nframes, dtype=np.float64)
     species = np.zeros((nframes, n), dtype=np.uint8)
     have_species = have_alive = False
     alive = np.ones((nframes, n), dtype=np.uint8)
     clamped = 0
     for i in range(nframes):
         f = reader.frame(i)
-        times[i] = f["t"]
         q, c = _quantize(np.asarray(f["pos"])[keep], box)
         pos_q[i] = q
         clamped += c
@@ -503,11 +519,13 @@ def _write_variant(out: Path, name: str, pos_q, species, alive, times,
     p, s, a = pos_q[fsel, ssel], species[fsel, ssel], alive[fsel, ssel]
     t = times[fsel]
     frames, n = p.shape[0], p.shape[1]
-    # One dt for the variant. Uniform cadence is what a fixed-stride chunk can
-    # express; each chunk still carries its own exact t0, so a tape whose
-    # cadence wobbles loses the wobble inside a chunk but never accumulates
-    # drift across the timeline.
+    # OTC1 retains its fixed layout for old readers. Its f32 t0/dt values are
+    # only an approximation; new readers use times_tau from this manifest.
+    # The source's mean cadence is shared by all tiers, so frame thinning
+    # changes temporal resolution without doubling playback speed.
     dt = float(np.mean(np.diff(t))) if frames > 1 else 0.0
+    source_dt = float(np.mean(np.diff(times))) if len(times) > 1 else 0.0
+    uniform_times = float(t[0]) + np.arange(frames) * dt
     d = out / name
     d.mkdir(parents=True, exist_ok=True)
     chunks, total = [], 0
@@ -526,6 +544,14 @@ def _write_variant(out: Path, name: str, pos_q, species, alive, times,
         "frame_stride": frame_stride,
         "slot_stride": slot_stride,
         "dt_tau": dt,
+        "source_dt_tau": source_dt,
+        "times_tau": t.tolist(),
+        "timing": {
+            "source": "frames.jsonl per-frame t",
+            "max_uniform_error_tau": float(np.max(np.abs(t - uniform_times))),
+            "retained_frames": frames,
+            "source_frames": len(times),
+        },
         "chunk_frames": chunk_frames,
         "slot_selection": selection,
         # How many of this variant's slots are actually visible over the
@@ -568,7 +594,7 @@ def variant_plan(n_slots: int, slot_budget: int = SLOT_BUDGET) -> dict:
 
 
 def _poster(png: Path, pos_q, species, alive, times, box, *, title,
-            tree) -> dict:
+            tree, time_unit: str | None = None) -> dict:
     """The middle frame of the BUNDLED slots, species colours on dark, 1280x720.
 
     Drawn from what the bundle ships, not from the tape. The first version
@@ -605,20 +631,21 @@ def _poster(png: Path, pos_q, species, alive, times, box, *, title,
     span_x = max(Lx * 1.04, span_y * w / h)
     ax.set_xlim(Lx / 2 - span_x / 2, Lx / 2 + span_x / 2)
     ax.set_ylim(-pad_bottom, Ly + pad_top)
-    n_draw = max(1, int(al.sum()))
-    size = float(np.clip(9000.0 / np.sqrt(n_draw), 0.12, 6.0))
+    n_draw = int(al.sum())
+    size = float(np.clip(9000.0 / np.sqrt(max(1, n_draw)), 0.12, 6.0))
     for v in np.unique(sp[al]) if al.any() else []:
         m = al & (sp == v)
         ax.plot(pos[m, 0], pos[m, 1], linestyle="none", marker=".",
                 markersize=size, markeredgewidth=0,
                 color=PALETTE[int(v) % len(PALETTE)], rasterized=True)
-    label = (f"{title}   ·   {tree}   ·   t = {times[i]:.3g} tau   ·   "
+    label = (f"{title}   ·   {tree}   ·   t = {times[i]:.3g} {time_unit or 'source time'}   ·   "
              f"frame {i} of the bundle")
     ax.text(0.5, 0.022, label, transform=ax.transAxes, ha="center", va="bottom",
             color="#8b96a3", fontsize=9, family="monospace")
     fig.savefig(png, dpi=dpi, facecolor=POSTER_BG)
     plt.close(fig)
     return {"variant_frame": i, "t_tau": float(times[i]), "drawn": n_draw,
+            "time_unit": time_unit,
             "of_slots": int(pos_q.shape[1]), "width": w, "height": h,
             "source": f"the {BASE_VARIANT} slots, not the whole tape"}
 
@@ -640,6 +667,7 @@ def bundle_tape(tape_dir, tree: str, title: str, out_root=None, *,
     # and not the format's promise, so coerce and record what was on the tape.
     box = np.where(box_raw > 0, box_raw, 1.0)
     meta = header.get("meta") or {}
+    time_unit = tape_time_unit(header)
 
     n_slots = reader.frames[0]["n"] if reader.frames else 0
     plan = variant_plan(n_slots, slot_budget)
@@ -674,7 +702,7 @@ def bundle_tape(tape_dir, tree: str, title: str, out_root=None, *,
             for name, (fstride, sstride) in plan.items()}
         t_chunks = time.perf_counter() - t_start
         poster = _poster(staging / "poster.png", pos_q, species, alive, times,
-                         box, title=title, tree=tree)
+                         box, title=title, tree=tree, time_unit=time_unit)
         t_poster = time.perf_counter() - t_start
         doc = {
             "schema": SCHEMA,
@@ -695,6 +723,11 @@ def bundle_tape(tape_dir, tree: str, title: str, out_root=None, *,
                 "tape_frames": len(reader.frames),
                 "tape_quantize": header.get("quantize"),
                 "tape_reader": which,
+                "t0_origin": header.get("t0_origin", "unspecified"),
+                "t0_offset_tau": header.get("t0_offset_tau"),
+                "channels": header.get("channels", []),
+                "omitted_channels": [channel["name"] for channel in header.get("channels", [])
+                                     if channel["name"] not in {"pos", "species", "alive"}],
                 "alive_source": info["alive_source"],
                 "species_source": info["species_source"],
                 "species_names_from": sp_src,
@@ -705,7 +738,8 @@ def bundle_tape(tape_dir, tree: str, title: str, out_root=None, *,
             "box": [float(x) for x in box],
             "periodic": [bool(x) for x
                          in (header.get("periodic") or [True, True, True])],
-            "units": header.get("units", "reduced (sigma, tau)"),
+            "units": header.get("units", ""),
+            **({"time_unit": time_unit} if time_unit else {}),
             "n_slots": int(n_slots),
             "slot_budget": int(slot_budget),
             "species_names": names,

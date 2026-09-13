@@ -97,7 +97,9 @@ checks (LAWS 5); on everything else it is enforced by reading.
 
 `tokens.json` `asset.*` says. The landing page now uses an unchanged poster
 from einstruct's simulation tape (`grove/public/site/particle-tape.png`) and
-an explicitly labelled architectural render (`grove/public/site/hall.png`).
+an explicitly labelled architectural render (`grove/public/site/hall.webp`).
+The hall uses lossless WebP with verified identical decoded pixels; the
+original PNG and the encoding provenance remain in the repository.
 `grove/public/site/imagery.json` records their source paths, dimensions and
 sha256 digests; the tape record also names its sampled variant and frame.
 The tape poster is the share image. The architectural render must never be

@@ -46,18 +46,24 @@ pnpm demo
 In a second terminal, from `grove/`:
 
 ```bash
-pnpm test
-pnpm typecheck
-pnpm build
+pnpm quality
+# Also check desktop/touch interaction, accessibility and production loading:
+pnpm exec playwright install chromium
+pnpm quality:all
 ```
 
 The [Checks workflow](.github/workflows/checks.yml) runs the Python suite
-(including dashboard interactions), grove tests, TypeScript checks and the
-production build on pull requests and pushes to `main`. It uses locked
+(including dashboard interactions), grove tests, TypeScript checks, the
+production build, byte budgets and browser checks on pull requests and pushes
+to `main`. JSON quality reports are kept even when a check fails. It uses locked
 dependencies and does not publish. Tests against locally harvested research
 bundles report a skip when those gitignored files are absent; synthetic
 playback tests still run. Database integration and physical-device checks
 remain separate.
+
+[QUALITY.md](docs/QUALITY.md) defines the measurements, baseline comparisons,
+browser installation and hardware limits. Preserve both improvements and
+regressions when reporting performance; compare the same routes and assets.
 
 Choose tests that exercise the changed behavior. For controls and layout,
 also visit the page, navigate by keyboard and inspect a narrow viewport.

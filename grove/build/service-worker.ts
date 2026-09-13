@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import { join, relative, resolve, sep } from "node:path";
 import { build, type Plugin, type ResolvedConfig } from "vite";
-import { buildStamp } from "./version";
+import { buildStamp } from "./version.ts";
 
 /**
  * Builds src/sw/sw.ts to `dist/sw.js`: one classic script at the site root,

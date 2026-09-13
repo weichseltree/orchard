@@ -8,7 +8,6 @@ import {
   SPACETIME_URI,
   TOKEN_KEY,
 } from "../config";
-import { DbConnection } from "../module_bindings";
 import type { ExhibitRow } from "../world/exhibits";
 
 // Presence over SpacetimeDB. Five rules shape this file:
@@ -133,6 +132,8 @@ export type Moderation =
   | { kind: "ban"; minutes: number; network: boolean; reason: string };
 
 export interface TransportHandlers {
+  /** A deferred transport must not open a socket for an abandoned attempt. */
+  isCurrent?(): boolean;
   onConnect(connection: PresenceConnection, identityHex: string, token: string): void;
   onConnectError(error: Error): void;
   onDisconnect(error?: Error): void;
@@ -167,20 +168,29 @@ export interface PresenceCallbacks {
 }
 
 export const defaultTransport: PresenceTransport = (handlers, token) => {
-  const builder = DbConnection.builder()
-    .withUri(SPACETIME_URI)
-    .withDatabaseName(SPACETIME_DB)
-    .onConnect((connection, identity, newToken) => {
-      handlers.onConnect(
-        connection as unknown as PresenceConnection,
-        identity.toHexString(),
-        newToken,
-      );
-    })
-    .onConnectError((_ctx, error) => handlers.onConnectError(error))
-    .onDisconnect((_ctx, error) => handlers.onDisconnect(error));
-  if (token) builder.withToken(token);
-  builder.build();
+  // The single-player demo never needs the network SDK. Production starts
+  // loading it at the same connection request, alongside room/media loading.
+  void import("../module_bindings").then(({ DbConnection }) => {
+    if (handlers.isCurrent?.() === false) return;
+    const builder = DbConnection.builder()
+      .withUri(SPACETIME_URI)
+      .withDatabaseName(SPACETIME_DB)
+      .onConnect((connection, identity, newToken) => {
+        handlers.onConnect(
+          connection as unknown as PresenceConnection,
+          identity.toHexString(),
+          newToken,
+        );
+      })
+      .onConnectError((_ctx, error) => handlers.onConnectError(error))
+      .onDisconnect((_ctx, error) => handlers.onDisconnect(error));
+    if (token) builder.withToken(token);
+    builder.build();
+  }).catch((error: unknown) => {
+    if (handlers.isCurrent?.() !== false) {
+      handlers.onConnectError(error instanceof Error ? error : new Error(String(error)));
+    }
+  });
 };
 
 export class Presence {
@@ -215,8 +225,9 @@ export class Presence {
   #clearTimer: (handle: ReturnType<typeof setTimeout>) => void;
   #storage: Pick<Storage, "getItem" | "setItem"> | null;
   #tokenSource: TokenSource | null;
-  /** A token is being fetched; the connection opens when it arrives. */
+  /** A token, transport module or socket is still opening. */
   #opening = false;
+  #connectionGeneration = 0;
   /** This connection runs on an anonymous identity whose token is ours to keep. */
   #anonymous = true;
 
@@ -443,6 +454,8 @@ export class Presence {
 
   dispose(): void {
     this.#disposed = true;
+    ++this.#connectionGeneration;
+    this.#opening = false;
     if (this.#retryTimer !== null) this.#clearTimer(this.#retryTimer);
     this.#retryTimer = null;
     const connection = this.#connection;
@@ -460,6 +473,8 @@ export class Presence {
 
   #open(): void {
     if (this.#connection || this.#disposed || this.#opening) return;
+    this.#opening = true;
+    const generation = ++this.#connectionGeneration;
     if (this.#retryTimer !== null) {
       this.#clearTimer(this.#retryTimer);
       this.#retryTimer = null;
@@ -467,41 +482,52 @@ export class Presence {
     this.#setStatus("connecting");
     const source = this.#tokenSource;
     if (source) {
-      this.#opening = true;
-      source(this.#attempt > 0).then(
+      let pending: Promise<string | null>;
+      try {
+        pending = source(this.#attempt > 0);
+      } catch (error) {
+        this.#dropped(message(error));
+        return;
+      }
+      pending.then(
         (token) => {
-          this.#opening = false;
-          if (this.#disposed || this.#connection) return;
-          if (token === null) this.#openAnonymous();
-          else this.#openWith(token, false);
+          if (this.#disposed || generation !== this.#connectionGeneration) return;
+          if (token === null) this.#openAnonymous(generation);
+          else this.#openWith(token, false, generation);
         },
         (error: unknown) => {
-          this.#opening = false;
-          this.#dropped(message(error));
+          if (!this.#disposed && generation === this.#connectionGeneration) this.#dropped(message(error));
         },
       );
       return;
     }
-    this.#openAnonymous();
+    this.#openAnonymous(generation);
   }
 
   /** The anonymous identity SpacetimeDB handed out last time, or a new one. */
-  #openAnonymous(): void {
+  #openAnonymous(generation: number): void {
     let token: string | null = null;
     try {
       token = this.#storage?.getItem(TOKEN_KEY) ?? null;
     } catch {
       // A locked-down browser: a fresh anonymous identity each visit is fine.
     }
-    this.#openWith(token, true);
+    this.#openWith(token, true, generation);
   }
 
-  #openWith(token: string | null, anonymous: boolean): void {
+  #openWith(token: string | null, anonymous: boolean, generation: number): void {
     this.#anonymous = anonymous;
+    const isCurrent = () => !this.#disposed && generation === this.#connectionGeneration;
     try {
       this.#transport(
         {
+          isCurrent,
           onConnect: (connection, identityHex, newToken) => {
+            if (!isCurrent()) {
+              connection.disconnect();
+              return;
+            }
+            this.#opening = false;
             this.#connection = connection;
             this.#identityHex = identityHex;
             this.#attempt = 0;
@@ -520,18 +546,20 @@ export class Presence {
             this.#resetPose();
             this.#pump();
           },
-          onConnectError: (error) => this.#dropped(error.message),
-          onDisconnect: (error) => this.#dropped(error?.message ?? "the connection closed"),
+          onConnectError: (error) => { if (isCurrent()) this.#dropped(error.message); },
+          onDisconnect: (error) => { if (isCurrent()) this.#dropped(error?.message ?? "the connection closed"); },
         },
         token,
       );
     } catch (error) {
-      this.#dropped(error instanceof Error ? error.message : String(error));
+      if (isCurrent()) this.#dropped(message(error));
     }
   }
 
   /** One place for "the socket is gone": forget it, say so, retry on backoff. */
   #dropped(detail: string): void {
+    ++this.#connectionGeneration;
+    this.#opening = false;
     this.#connection = null;
     this.me = null;
     this.#subscription = null;

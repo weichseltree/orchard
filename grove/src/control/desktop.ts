@@ -140,5 +140,5 @@ export function attachDesktopControls(
 
 export function ownsKeyboard(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
-  return target.isContentEditable || target.closest("input, textarea, select, button, a, dialog, [contenteditable]") !== null;
+  return target.isContentEditable || target.closest("input, textarea, select, button, a, dialog, .perf, [contenteditable]") !== null;
 }

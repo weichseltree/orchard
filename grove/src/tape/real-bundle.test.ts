@@ -4,7 +4,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { TapeBundleSchema, pickVariant, variantSlots, type TapeBundle } from "./bundle";
 import { TapeChunk } from "./decode";
 import { chunkByteLength, dequantize } from "./format";
-import { advance, frameAt, timeline } from "./time";
+import { advance, frameAt, variantTimeline } from "./time";
 
 // Every other decoder test runs on `devtape.ts`, which the dev generator also
 // writes: a shared misreading of the spec would be invisible in both. These
@@ -118,7 +118,7 @@ when(`WP1 bundle ${BUNDLE_ID}`, () => {
 
   it("never leaves the tape, however long it plays at 4x", () => {
     for (const [name, variant] of Object.entries(bundle.variants)) {
-      const tl = timeline(variant.frames, variant.dt_tau, variant.t0_tau);
+      const tl = variantTimeline(variant);
       let tau = tl.t0Tau;
       for (let i = 0; i < 20000; i++) {
         tau = advance(tl, tau, 1 / 72, 4, true);

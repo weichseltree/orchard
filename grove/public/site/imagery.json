@@ -1,5 +1,5 @@
 {
-  "description": "Source records for the landing page images. Both files are copied without alteration.",
+  "description": "Source records for the landing page images. The simulation poster is copied unchanged; the architectural hall is encoded as lossless WebP with identical decoded RGBA pixels.",
   "images": [
     {
       "file": "particle-tape.png",
@@ -18,13 +18,24 @@
       "note": "The poster shows the sampled browser variant, not all particles in the original simulation. Its source caption is preserved."
     },
     {
-      "file": "hall.png",
+      "file": "hall.webp",
       "kind": "architectural render",
       "source": "docs/img/palace-still-hall.png",
-      "sha256": "9a29f32e94c1b0b7a907c1e26c54d786a9cdd332052a341e0ed7c18bd346f3b2",
+      "sha256": "6ba6885ded3806220ba9bc0ab25906fd0950ab5b94a2a18f8f0c62924954c4f5",
       "width": 1280,
       "height": 720,
-      "note": "A repository render of the hall's architecture. This is not a browser screenshot or evidence of headset rendering quality."
+      "note": "A repository render of the hall's architecture. This is not a browser screenshot or evidence of headset rendering quality.",
+      "source_sha256": "9a29f32e94c1b0b7a907c1e26c54d786a9cdd332052a341e0ed7c18bd346f3b2",
+      "encoding": {
+        "format": "WebP",
+        "lossless": true,
+        "source_bytes": 966594,
+        "encoded_bytes": 572830,
+        "decoded_rgba_sha256": "548bc77472e991bd6f641af80de07891a121ef5789b6c30f3db0ac945f2c2f96",
+        "pixel_verification": "Source and encoded image have identical decoded RGBA bytes.",
+        "tool": "Pillow 12.3.0",
+        "command": "uv run python -c \"from PIL import Image; source = Image.open('docs/img/palace-still-hall.png'); source.save('grove/public/site/hall.webp', format='WEBP', lossless=True, method=6, exact=True); encoded = Image.open('grove/public/site/hall.webp'); assert source.convert('RGBA').tobytes() == encoded.convert('RGBA').tobytes()\""
+      }
     }
   ]
 }

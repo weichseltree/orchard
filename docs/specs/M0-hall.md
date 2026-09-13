@@ -127,6 +127,60 @@ position (that is how einstruct tapes already behave). Species is the tape's
 computes offsets, never parses per frame. Each chunk is independently
 fetchable and decodable; the client keeps at most 3 chunks resident.
 
+### Compatible source-clock extension (2026-09-13)
+
+New tape bundles keep exact recorded frame times in the manifest. `OTC1`,
+its 32-byte header, its reserved zero bytes and its particle payload stay
+unchanged. The legacy `*_tau` field names remain for compatibility; their
+numeric values use the producer's stated time unit, which is not always tau.
+
+| Field | Meaning |
+| --- | --- |
+| `variants[*].times_tau` | Optional array with one finite source timestamp per retained frame, copied from `frames.jsonl` after that variant's frame stride. Values must increase strictly; the first equals `t0_tau`. |
+| `variants[*].source_dt_tau` | Optional mean cadence of the original tape before frame thinning. New bundles give every variant the same value. |
+| `variants[*].timing.source` | `frames.jsonl per-frame t` for the current writer. |
+| `variants[*].timing.max_uniform_error_tau` | Maximum absolute difference between retained source timestamps and `t0_tau + frame_index * dt_tau`. This measures the error an older nominal clock would introduce, in the source time unit. |
+| `variants[*].timing.retained_frames` / `source_frames` | Retained and original frame counts, so time sampling remains visible. |
+| `time_unit` | Optional explicit time-unit label. The writer uses a nonempty header `time_unit`, otherwise recognizes the established `reduced (sigma, tau)` and `reduced (sigma, t0)` spellings. Unfamiliar units are labelled **source time**, not guessed. |
+| `source.t0_origin` / `t0_offset_tau` | The producer's time-origin description and offset, preserved from the tape header. Missing values remain unspecified/null. |
+| `source.channels` / `omitted_channels` | The source channel declarations and the names omitted from the fixed `pos`, `species`, `alive` payload. This discloses loss of channels such as heat or bond count; it does not transport their values. |
+| `poster_info.time_unit` | The unit used by the poster caption, or null for a caption labelled source time. |
+
+The exact array is authoritative for frame selection, stepping and the time
+shown for a selected frame. Lookup chooses the nearest recorded sample;
+ties choose the later one. The viewer does not interpolate particle data.
+Recorded times remain on the tape's own clock: the origin offset explains
+that clock and is not silently added to every timestamp.
+
+The HUD uses a compact time label with rounding error at most one-thousandth
+of the nearest adjacent frame interval. Precision increases when necessary
+to distinguish large-origin or tiny-cadence samples; provenance keeps the
+numeric source timestamp. This display formatting does not change the clock.
+
+At 1×, playback advances `30 * source_dt_tau` source-time units per real
+second. Thinning frames therefore reduces temporal resolution without
+making the same simulation run faster on a phone. For a legacy bundle with
+neither new field, the viewer uses its nominal `t0_tau`/`dt_tau` clock and
+uses `dt_tau / frame_stride` as the original cadence. It labels the clock
+as nominal in About this view; exact irregular times cannot be recovered
+from an old bundle. Striding can omit the final original frame, so variants
+can still end one source frame apart.
+
+The writer refuses nonfinite, duplicate or backwards source times. The
+client rejects malformed exact arrays and checks a loaded chunk's declared
+frame/slot counts. When exact times exist, its chunk origin must equal the
+first corresponding manifest timestamp rounded to f32. This preserves the
+old header's precision while keeping the displayed clock in f64. All added
+manifest fields participate in the content hash; rebundling produces a new
+address, and existing published bundles remain unchanged.
+
+The regression fixture `[10, 10.1, 11.9, 12, 14]` previously displayed
+`[10, 11, 12, 13, 14]`, with a maximum error of 1 source-time unit. The new
+writer/client pair round-trips all five timestamps exactly. The fixture's
+Quest/desktop playback-rate ratio changes from 2 to 1 while its combined
+particle payload stays at 704 bytes. These are format/clock checks on
+synthetic data, not scientific or hardware acceptance.
+
 ## Video bundle (`kind: video`)
 
 `master.m3u8` with an H.264 ladder 360p / 720p / 1080p (6 s segments, keyint

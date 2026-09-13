@@ -287,6 +287,47 @@ describe("exhibits", () => {
 });
 
 describe("reconnection", () => {
+  it("opens one pending connection while repeated requests update the desired room", async () => {
+    let handlers!: TransportHandlers;
+    const transport = vi.fn((h: TransportHandlers) => { handlers = h; });
+    const presence = new Presence({}, { transport, storage: memoryStorage() });
+    presence.connect("einstruct");
+    presence.connect("spectre");
+    expect(transport).toHaveBeenCalledOnce();
+    const connection = stubConnection({ rooms: ["grove", "einstruct", "spectre"] });
+    handlers.onConnect(connection, "abc", "token");
+    await settle();
+    expect(connection.joins).toEqual(["spectre"]);
+    presence.dispose();
+  });
+
+  it("rejects a stale connection after a retry and ignores its later errors", async () => {
+    const attempts: TransportHandlers[] = [];
+    const timers: Array<() => void> = [];
+    const storage = memoryStorage();
+    const presence = new Presence({}, {
+      transport: (handlers) => { attempts.push(handlers); }, storage,
+      setTimer: (fn) => { timers.push(fn); return 1 as unknown as ReturnType<typeof setTimeout>; },
+      clearTimer() {},
+    });
+    presence.connect("grove");
+    attempts[0]!.onConnectError(new Error("offline"));
+    timers[0]!();
+    const stale = stubConnection({});
+    const disconnect = vi.spyOn(stale, "disconnect");
+    attempts[0]!.onConnect(stale, "old", "old-token");
+    expect(disconnect).toHaveBeenCalledOnce();
+    expect(stale.queries).toEqual([]);
+    const current = stubConnection({});
+    attempts[1]!.onConnect(current, "new", "new-token");
+    await settle();
+    attempts[0]!.onDisconnect(new Error("late close"));
+    expect(presence.online).toBe(true);
+    expect(storage.getItem("orchard.grove.token")).toBe("new-token");
+    expect(timers).toHaveLength(1);
+    presence.dispose();
+  });
+
   it("retries on backoff after a drop and re-joins the room it was in", async () => {
     const timers: Array<{ fn: () => void; ms: number }> = [];
     const connection = stubConnection({});
@@ -399,6 +440,27 @@ describe("move", () => {
 });
 
 describe("dispose", () => {
+  it("closes a late connection without joining, storing its token or becoming online", () => {
+    let handlers!: TransportHandlers;
+    const storage = memoryStorage();
+    const status = vi.fn();
+    const presence = new Presence({ onStatus: status }, {
+      transport: (h) => { handlers = h; }, storage,
+    });
+    presence.connect("grove");
+    presence.dispose();
+    expect(handlers.isCurrent?.()).toBe(false);
+    const connection = stubConnection({});
+    const disconnect = vi.spyOn(connection, "disconnect");
+    handlers.onConnect(connection, "late", "late-token");
+    handlers.onConnectError(new Error("late error"));
+    expect(disconnect).toHaveBeenCalledOnce();
+    expect(connection.queries).toEqual([]);
+    expect(storage.getItem("orchard.grove.token")).toBeNull();
+    expect(presence.online).toBe(false);
+    expect(status).toHaveBeenCalledTimes(1);
+  });
+
   it("stops the retry timer", () => {
     const cleared = vi.fn();
     let handlers!: TransportHandlers;
@@ -458,6 +520,18 @@ describe("what arrives from other visitors", () => {
 });
 
 describe("the token service", () => {
+  it("retries a token source that throws before returning a promise", () => {
+    const timer = vi.fn(() => 0 as unknown as ReturnType<typeof setTimeout>);
+    const presence = new Presence({}, {
+      token: () => { throw new Error("token unavailable"); },
+      storage: memoryStorage(), setTimer: timer, clearTimer() {},
+    });
+    expect(() => presence.connect("grove")).not.toThrow();
+    expect(presence.status).toBe("failed");
+    expect(timer).toHaveBeenCalledOnce();
+    presence.dispose();
+  });
+
   it("connects with the token it hands over and does not store the echo", async () => {
     const storage = memoryStorage();
     const connection = stubConnection({});

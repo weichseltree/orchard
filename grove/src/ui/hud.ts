@@ -207,6 +207,9 @@ export class Hud {
     root.append(this.provenancePanel);
 
     this.#perf = div("perf panel");
+    this.#perf.setAttribute("role", "region");
+    this.#perf.setAttribute("aria-label", "Rendering performance");
+    this.#perf.tabIndex = 0;
     this.#perf.hidden = true;
     root.append(this.#perf);
   }

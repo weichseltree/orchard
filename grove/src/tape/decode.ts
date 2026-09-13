@@ -133,7 +133,7 @@ export class TapeChunk {
     return view;
   }
 
-  /** Tape time of a frame local to this chunk, in tau. */
+  /** Legacy nominal f32 clock; exact source times, when present, live in bundle.json. */
   timeOf(i: number): number {
     return this.t0 + i * this.dt;
   }

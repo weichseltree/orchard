@@ -15,7 +15,16 @@ import {
 // mansion with several walls plays the one the visitor is nearest and the
 // others stay pictures.
 
-let decoderInUse = false;
+let decoderOwner: VideoWall | null = null;
+let hlsModule: Promise<typeof import("hls.js")> | null = null;
+
+function loadHls(): Promise<typeof import("hls.js")> {
+  // Doorway crossings share an in-flight download; a failed download can retry.
+  return hlsModule ??= import("hls.js").catch((error: unknown) => {
+    hlsModule = null;
+    throw error;
+  });
+}
 
 export interface VideoWallOptions {
   /** URL of the HLS master playlist. */
@@ -41,6 +50,8 @@ export class VideoWall {
   #poster: Texture | null;
   #hls: { destroy(): void } | null = null;
   #disposed = false;
+  #attachment = 0;
+  #attaching: Promise<boolean> | null = null;
   #onNotice: ((message: string) => void) | undefined;
 
   private constructor(
@@ -115,50 +126,76 @@ export class VideoWall {
    * Take the decoder and play. False when another wall holds it or this
    * browser has no HLS path; the wall then keeps its poster.
    */
-  async attach(): Promise<boolean> {
-    if (this.#disposed || this.#mode !== "poster") return this.#mode !== "poster";
-    if (decoderInUse) return false;
+  attach(): Promise<boolean> {
+    if (this.#disposed || this.#mode !== "poster") return Promise.resolve(this.#mode !== "poster");
+    if (this.#attaching) return this.#attaching;
+    if (decoderOwner !== null) return Promise.resolve(false);
+    decoderOwner = this;
+    const attachment = ++this.#attachment;
+    const pending = this.#start(attachment).finally(() => {
+      if (attachment === this.#attachment) this.#attaching = null;
+    });
+    if (attachment === this.#attachment) this.#attaching = pending;
+    return pending;
+  }
+
+  async #start(attachment: number): Promise<boolean> {
     // MSE first, native second. Chromium answers "maybe" to
     // canPlayType("application/vnd.apple.mpegurl") on some builds while
     // having no HLS demuxer at all, so asking it first picks a path that
     // silently plays nothing. hls.js is the honest test: it either supports
-    // this browser or it does not. Safari has no MSE for HLS and falls
-    // through to the native player, which is also the only path that gets
-    // hardware decode on an iPhone.
-    decoderInUse = true;
-    const { default: Hls } = await import("hls.js");
-    if (this.#disposed) {
-      decoderInUse = false;
+    // this browser or it does not. Devices that expose only native HLS
+    // fall through without downloading the decoder library.
+    try {
+      // No MSE means hls.js cannot help. Native-only browsers avoid downloading
+      // the decoder library entirely; Chromium still uses Hls.isSupported().
+      const platform = globalThis as { MediaSource?: unknown; ManagedMediaSource?: unknown };
+      if (platform.MediaSource || platform.ManagedMediaSource) {
+        const { default: Hls } = await loadHls();
+        // A doorway crossing may have released this wall while its code loaded.
+        // Never let that late completion take the next room's decoder.
+        if (this.#disposed || attachment !== this.#attachment || decoderOwner !== this) return false;
+        if (Hls.isSupported()) {
+          const instance = new Hls({ enableWorker: true, lowLatencyMode: false });
+          this.#hls = instance;
+          instance.loadSource(this.master);
+          instance.attachMedia(this.video);
+          this.#mode = "hls.js";
+        }
+      }
+      if (this.#mode === "poster") {
+        if (!this.video.canPlayType("application/vnd.apple.mpegurl")) {
+          this.release();
+          this.#onNotice?.("this browser has neither MSE nor native HLS; showing the poster");
+          return false;
+        }
+        this.video.src = this.master;
+        this.#mode = "native";
+      }
+      this.#texture = new VideoTexture(this.video);
+      this.#texture.colorSpace = SRGBColorSpace;
+      const material = this.mesh.material as MeshBasicMaterial;
+      material.map = this.#texture;
+      material.color.set(0xffffff);
+      material.needsUpdate = true;
+      // A rejected play() is normal before any interaction; the HUD button retries.
+      void this.video.play().catch(() => undefined);
+      return true;
+    } catch (error) {
+      if (attachment !== this.#attachment || decoderOwner !== this) return false;
+      this.release();
+      const detail = error instanceof Error ? error.message : String(error);
+      this.#onNotice?.(`The video could not start (${detail}); showing the poster.`);
       return false;
     }
-    if (Hls.isSupported()) {
-      const instance = new Hls({ enableWorker: true, lowLatencyMode: false });
-      instance.loadSource(this.master);
-      instance.attachMedia(this.video);
-      this.#hls = instance;
-      this.#mode = "hls.js";
-    } else if (this.video.canPlayType("application/vnd.apple.mpegurl")) {
-      this.video.src = this.master;
-      this.#mode = "native";
-    } else {
-      decoderInUse = false;
-      this.#onNotice?.("this browser has neither MSE nor native HLS; showing the poster");
-      return false;
-    }
-    this.#texture = new VideoTexture(this.video);
-    this.#texture.colorSpace = SRGBColorSpace;
-    const material = this.mesh.material as MeshBasicMaterial;
-    material.map = this.#texture;
-    material.color.set(0xffffff);
-    material.needsUpdate = true;
-    // A rejected play() is normal before any interaction; the HUD button retries.
-    void this.video.play().catch(() => undefined);
-    return true;
   }
 
   /** Hand the decoder back and show the poster frame again. */
   release(): void {
-    if (this.#mode === "poster") return;
+    ++this.#attachment;
+    this.#attaching = null;
+    if (decoderOwner === this) decoderOwner = null;
+    if (this.#mode === "poster" && !this.#hls) return;
     this.#hls?.destroy();
     this.#hls = null;
     this.video.pause();
@@ -172,7 +209,6 @@ export class VideoWall {
     material.color.set(this.#poster ? 0xffffff : POSTER_FALLBACK);
     material.needsUpdate = true;
     this.#mode = "poster";
-    decoderInUse = false;
   }
 
   get muted(): boolean {

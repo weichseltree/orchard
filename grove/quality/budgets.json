@@ -1,0 +1,12 @@
+{
+  "description": "Artifact regression limits. Lower startup JS from the 268 KB gzip baseline; preserve every authored room. Browser transfer and device frame targets are measured separately.",
+  "maximum": {
+    "deferredModuleViolations": 0,
+    "startupJsGzipBytes": 215000,
+    "allJsGzipBytes": 520000,
+    "largestJsGzipBytes": 240000,
+    "cssGzipBytes": 10000,
+    "siteImageBytes": 700000,
+    "totalBytes": 125000000
+  }
+}

@@ -1,0 +1,751 @@
+{
+  "schema": "orchard/rebuild-comparison/1",
+  "baseline_source_commit": "062bb1e7e8cd7f8429bca4420ed21222e746b519",
+  "after_source": "The working-tree implementation committed alongside this record; local build stamp retained below.",
+  "build": {
+    "before": {
+      "version": {
+        "commit": "unknown",
+        "builtAt": "2026-09-13T20:20:13.668Z",
+        "sw": true
+      },
+      "metrics": {
+        "deferredModuleViolations": 1,
+        "totalBytes": 114063519,
+        "totalFiles": 72,
+        "startupJsBytes": 985155,
+        "startupJsGzipBytes": 267564,
+        "startupJsRequests": 2,
+        "allJsGzipBytes": 480232,
+        "largestJsGzipBytes": 266234,
+        "cssGzipBytes": 2458,
+        "siteImageBytes": 1034859
+      }
+    },
+    "after": {
+      "version": {
+        "commit": "062bb1e-dirty",
+        "builtAt": "2026-09-13T20:38:58.065Z",
+        "sw": true
+      },
+      "metrics": {
+        "deferredModuleViolations": 0,
+        "totalBytes": 113682707,
+        "totalFiles": 77,
+        "startupJsBytes": 763667,
+        "startupJsGzipBytes": 199417,
+        "startupJsRequests": 2,
+        "allJsGzipBytes": 486310,
+        "largestJsGzipBytes": 198081,
+        "cssGzipBytes": 2505,
+        "siteImageBytes": 641095
+      }
+    },
+    "change": {
+      "deferredModuleViolations": {
+        "before": 1,
+        "after": 0,
+        "changePercent": -100
+      },
+      "totalBytes": {
+        "before": 114063519,
+        "after": 113682707,
+        "changePercent": -0.3338595927414794
+      },
+      "totalFiles": {
+        "before": 72,
+        "after": 77,
+        "changePercent": 6.944444444444445
+      },
+      "startupJsBytes": {
+        "before": 985155,
+        "after": 763667,
+        "changePercent": -22.482553506808575
+      },
+      "startupJsGzipBytes": {
+        "before": 267564,
+        "after": 199417,
+        "changePercent": -25.469420400352814
+      },
+      "startupJsRequests": {
+        "before": 2,
+        "after": 2,
+        "changePercent": 0
+      },
+      "allJsGzipBytes": {
+        "before": 480232,
+        "after": 486310,
+        "changePercent": 1.2656382748338304
+      },
+      "largestJsGzipBytes": {
+        "before": 266234,
+        "after": 198081,
+        "changePercent": -25.59890923022604
+      },
+      "cssGzipBytes": {
+        "before": 2458,
+        "after": 2505,
+        "changePercent": 1.9121236777868185
+      },
+      "siteImageBytes": {
+        "before": 1034859,
+        "after": 641095,
+        "changePercent": -38.05001454304403
+      }
+    },
+    "loading_contracts": [
+      {
+        "module": "presence SDK",
+        "files": [
+          "assets/module_bindings-DGpCQBAE.js"
+        ],
+        "status": "deferred"
+      },
+      {
+        "module": "HLS decoder",
+        "files": [
+          "assets/hls-BJ2QhqcY.js"
+        ],
+        "status": "deferred"
+      }
+    ]
+  },
+  "hall_image": {
+    "format": "WebP",
+    "lossless": true,
+    "source_bytes": 966594,
+    "encoded_bytes": 572830,
+    "decoded_rgba_sha256": "548bc77472e991bd6f641af80de07891a121ef5789b6c30f3db0ac945f2c2f96",
+    "pixel_verification": "Source and encoded image have identical decoded RGBA bytes.",
+    "tool": "Pillow 12.3.0",
+    "command": "uv run python -c \"from PIL import Image; source = Image.open('docs/img/palace-still-hall.png'); source.save('grove/public/site/hall.webp', format='WEBP', lossless=True, method=6, exact=True); encoded = Image.open('grove/public/site/hall.webp'); assert source.convert('RGBA').tobytes() == encoded.convert('RGBA').tobytes()\""
+  },
+  "tape_fidelity": {
+    "before": {
+      "source_times": [
+        10.0,
+        10.1,
+        11.9,
+        12.0,
+        14.0
+      ],
+      "source_time_unit": "t0",
+      "max_time_error": 1.0,
+      "exact_timestamp_roundtrips": 2,
+      "frames": 5,
+      "desktop_source_time_per_second_at_1x": 30.0,
+      "quest_source_time_per_second_at_1x": 60.0,
+      "quest_desktop_speed_ratio": 2.0,
+      "time_origin_present": false,
+      "poster_time_unit": "tau (hardcoded in poster writer)",
+      "chunk_payload_bytes": 704,
+      "reconstructed_frame_times": [
+        10.0,
+        11.0,
+        12.0,
+        13.0,
+        14.0
+      ],
+      "note": "Synthetic fault fixture measured before the clock changes. Frame times are reconstructed numeric values from the old nominal clock, not a DOM/HUD text measurement. Not a research result."
+    },
+    "after": {
+      "source_times": [
+        10,
+        10.1,
+        11.9,
+        12,
+        14
+      ],
+      "source_time_unit": "t0",
+      "reconstructed_frame_times": [
+        10,
+        10.1,
+        11.9,
+        12,
+        14
+      ],
+      "max_time_error": 0,
+      "exact_timestamp_roundtrips": 5,
+      "frames": 5,
+      "desktop_source_time_per_second_at_1x": 30.00000000000007,
+      "quest_source_time_per_second_at_1x": 30.00000000000007,
+      "quest_desktop_speed_ratio": 1,
+      "time_origin_present": true,
+      "poster_time_unit": "t0",
+      "chunk_payload_bytes": 704,
+      "note": "Synthetic fault fixture, Python bundler output parsed by the actual TypeScript schema and timeline. Frame times are reconstructed numeric values, not a DOM/HUD text measurement. Not a research result."
+    },
+    "meaning": "Synthetic source times reconstructed by Python bundler plus TypeScript reader; not DOM text or a scientific acceptance claim."
+  },
+  "browser": {
+    "environment_before": {
+      "browser": "153.0.8010.12",
+      "mode": "production-build",
+      "transport": "local gzip model for text and WASM",
+      "landingSha256": "42bccdf1c451dfe9a41b85f6034243be8caf38f0cec3ad3460468769789aab1e",
+      "landingFingerprint": "Decoded HTML response served by the audited origin",
+      "serviceWorkers": "blocked",
+      "samples": 3
+    },
+    "environment_after": {
+      "browser": "153.0.8010.12",
+      "node": "v22.17.1",
+      "platform": "linux/x64",
+      "mode": "production-build",
+      "transport": "local gzip model for text and WASM",
+      "landingSha256": "a758e0060cc27a7ad52f35986d94e3e007983bc666b74d18860a818f47f0ab70",
+      "landingFingerprint": "Decoded HTML response served by the audited origin",
+      "serviceWorkers": "blocked",
+      "samples": 3
+    },
+    "comparisons": [
+      {
+        "profile": "desktop",
+        "route": "/",
+        "cache": "cold",
+        "stages": {
+          "before": {
+            "samples": 3,
+            "transferBytes": {
+              "median": 1040753,
+              "min": 1040753,
+              "max": 1040753
+            },
+            "encodedBodyBytes": {
+              "median": 1039853,
+              "min": 1039853,
+              "max": 1039853
+            },
+            "decodedBodyBytes": {
+              "median": 1051198,
+              "min": 1051198,
+              "max": 1051198
+            },
+            "firstRoomReadyMs": null,
+            "loadedRoomCount": null,
+            "completedRequests": {
+              "median": 3,
+              "min": 3,
+              "max": 3
+            }
+          },
+          "after": {
+            "samples": 3,
+            "transferBytes": {
+              "median": 647006,
+              "min": 647006,
+              "max": 647006
+            },
+            "encodedBodyBytes": {
+              "median": 646106,
+              "min": 646106,
+              "max": 646106
+            },
+            "decodedBodyBytes": {
+              "median": 657562,
+              "min": 657562,
+              "max": 657562
+            },
+            "firstRoomReadyMs": null,
+            "loadedRoomCount": null,
+            "completedRequests": {
+              "median": 3,
+              "min": 3,
+              "max": 3
+            }
+          }
+        }
+      },
+      {
+        "profile": "desktop",
+        "route": "/",
+        "cache": "warm",
+        "stages": {
+          "before": {
+            "samples": 3,
+            "transferBytes": {
+              "median": 1040753,
+              "min": 1040753,
+              "max": 1040753
+            },
+            "encodedBodyBytes": {
+              "median": 1039853,
+              "min": 1039853,
+              "max": 1039853
+            },
+            "decodedBodyBytes": {
+              "median": 1051198,
+              "min": 1051198,
+              "max": 1051198
+            },
+            "firstRoomReadyMs": null,
+            "loadedRoomCount": null,
+            "completedRequests": {
+              "median": 3,
+              "min": 3,
+              "max": 3
+            }
+          },
+          "after": {
+            "samples": 3,
+            "transferBytes": {
+              "median": 647006,
+              "min": 647006,
+              "max": 647006
+            },
+            "encodedBodyBytes": {
+              "median": 646106,
+              "min": 646106,
+              "max": 646106
+            },
+            "decodedBodyBytes": {
+              "median": 657562,
+              "min": 657562,
+              "max": 657562
+            },
+            "firstRoomReadyMs": null,
+            "loadedRoomCount": null,
+            "completedRequests": {
+              "median": 3,
+              "min": 3,
+              "max": 3
+            }
+          }
+        }
+      },
+      {
+        "profile": "desktop",
+        "route": "/grove/?nosw",
+        "cache": "cold",
+        "stages": {
+          "before": {
+            "samples": 3,
+            "transferBytes": {
+              "median": 12851828,
+              "min": 11762222,
+              "max": 12851828
+            },
+            "encodedBodyBytes": {
+              "median": 12847328,
+              "min": 11758022,
+              "max": 12847328
+            },
+            "decodedBodyBytes": {
+              "median": 13892826,
+              "min": 12803520,
+              "max": 13892826
+            },
+            "firstRoomReadyMs": {
+              "median": 941.7000000029802,
+              "min": 886.9000000059605,
+              "max": 1061.1000000089407
+            },
+            "loadedRoomCount": {
+              "median": 3,
+              "min": 3,
+              "max": 3
+            },
+            "completedRequests": {
+              "median": 15,
+              "min": 14,
+              "max": 15
+            }
+          },
+          "after": {
+            "samples": 3,
+            "transferBytes": {
+              "median": 11734250,
+              "min": 11734250,
+              "max": 12823856
+            },
+            "encodedBodyBytes": {
+              "median": 11729750,
+              "min": 11729750,
+              "max": 12819056
+            },
+            "decodedBodyBytes": {
+              "median": 12692126,
+              "min": 12692126,
+              "max": 13781432
+            },
+            "firstRoomReadyMs": {
+              "median": 968.7000000029802,
+              "min": 911.3999999910593,
+              "max": 1278
+            },
+            "loadedRoomCount": {
+              "median": 3,
+              "min": 3,
+              "max": 3
+            },
+            "completedRequests": {
+              "median": 15,
+              "min": 15,
+              "max": 16
+            }
+          }
+        }
+      },
+      {
+        "profile": "desktop",
+        "route": "/grove/?nosw",
+        "cache": "warm",
+        "stages": {
+          "before": {
+            "samples": 3,
+            "transferBytes": {
+              "median": 1374,
+              "min": 1374,
+              "max": 1374
+            },
+            "encodedBodyBytes": {
+              "median": 7748827,
+              "min": 4612418,
+              "max": 7748827
+            },
+            "decodedBodyBytes": {
+              "median": 8794325,
+              "min": 5657916,
+              "max": 8794325
+            },
+            "firstRoomReadyMs": {
+              "median": 4645.79999999702,
+              "min": 4085.4000000059605,
+              "max": 4886.4000000059605
+            },
+            "loadedRoomCount": {
+              "median": 2,
+              "min": 1,
+              "max": 2
+            },
+            "completedRequests": {
+              "median": 11,
+              "min": 10,
+              "max": 11
+            }
+          },
+          "after": {
+            "samples": 3,
+            "transferBytes": {
+              "median": 1380,
+              "min": 1380,
+              "max": 1380
+            },
+            "encodedBodyBytes": {
+              "median": 4584146,
+              "min": 4584146,
+              "max": 4584146
+            },
+            "decodedBodyBytes": {
+              "median": 5546522,
+              "min": 5546522,
+              "max": 5546522
+            },
+            "firstRoomReadyMs": {
+              "median": 5137.20000000298,
+              "min": 4793.5,
+              "max": 6311
+            },
+            "loadedRoomCount": {
+              "median": 1,
+              "min": 1,
+              "max": 1
+            },
+            "completedRequests": {
+              "median": 11,
+              "min": 11,
+              "max": 11
+            }
+          }
+        }
+      },
+      {
+        "profile": "phone",
+        "route": "/",
+        "cache": "cold",
+        "stages": {
+          "before": {
+            "samples": 3,
+            "transferBytes": {
+              "median": 1040753,
+              "min": 1040753,
+              "max": 1040753
+            },
+            "encodedBodyBytes": {
+              "median": 1039853,
+              "min": 1039853,
+              "max": 1039853
+            },
+            "decodedBodyBytes": {
+              "median": 1051198,
+              "min": 1051198,
+              "max": 1051198
+            },
+            "firstRoomReadyMs": null,
+            "loadedRoomCount": null,
+            "completedRequests": {
+              "median": 3,
+              "min": 3,
+              "max": 3
+            }
+          },
+          "after": {
+            "samples": 3,
+            "transferBytes": {
+              "median": 647006,
+              "min": 647006,
+              "max": 647006
+            },
+            "encodedBodyBytes": {
+              "median": 646106,
+              "min": 646106,
+              "max": 646106
+            },
+            "decodedBodyBytes": {
+              "median": 657562,
+              "min": 657562,
+              "max": 657562
+            },
+            "firstRoomReadyMs": null,
+            "loadedRoomCount": null,
+            "completedRequests": {
+              "median": 3,
+              "min": 3,
+              "max": 3
+            }
+          }
+        }
+      },
+      {
+        "profile": "phone",
+        "route": "/",
+        "cache": "warm",
+        "stages": {
+          "before": {
+            "samples": 3,
+            "transferBytes": {
+              "median": 1040753,
+              "min": 1040753,
+              "max": 1040753
+            },
+            "encodedBodyBytes": {
+              "median": 1039853,
+              "min": 1039853,
+              "max": 1039853
+            },
+            "decodedBodyBytes": {
+              "median": 1051198,
+              "min": 1051198,
+              "max": 1051198
+            },
+            "firstRoomReadyMs": null,
+            "loadedRoomCount": null,
+            "completedRequests": {
+              "median": 3,
+              "min": 3,
+              "max": 3
+            }
+          },
+          "after": {
+            "samples": 3,
+            "transferBytes": {
+              "median": 647006,
+              "min": 647006,
+              "max": 647006
+            },
+            "encodedBodyBytes": {
+              "median": 646106,
+              "min": 646106,
+              "max": 646106
+            },
+            "decodedBodyBytes": {
+              "median": 657562,
+              "min": 657562,
+              "max": 657562
+            },
+            "firstRoomReadyMs": null,
+            "loadedRoomCount": null,
+            "completedRequests": {
+              "median": 3,
+              "min": 3,
+              "max": 3
+            }
+          }
+        }
+      },
+      {
+        "profile": "phone",
+        "route": "/grove/?nosw",
+        "cache": "cold",
+        "stages": {
+          "before": {
+            "samples": 3,
+            "transferBytes": {
+              "median": 12683848,
+              "min": 11831353,
+              "max": 13826116
+            },
+            "encodedBodyBytes": {
+              "median": 12675148,
+              "min": 11822953,
+              "max": 13816816
+            },
+            "decodedBodyBytes": {
+              "median": 13720646,
+              "min": 12868451,
+              "max": 14862314
+            },
+            "firstRoomReadyMs": {
+              "median": 550.7999999970198,
+              "min": 534.6999999880791,
+              "max": 664.5
+            },
+            "loadedRoomCount": {
+              "median": 10,
+              "min": 10,
+              "max": 11
+            },
+            "completedRequests": {
+              "median": 29,
+              "min": 28,
+              "max": 31
+            }
+          },
+          "after": {
+            "samples": 3,
+            "transferBytes": {
+              "median": 9905353,
+              "min": 7792920,
+              "max": 12655876
+            },
+            "encodedBodyBytes": {
+              "median": 9897853,
+              "min": 7786620,
+              "max": 12646876
+            },
+            "decodedBodyBytes": {
+              "median": 10860229,
+              "min": 8748996,
+              "max": 13609252
+            },
+            "firstRoomReadyMs": {
+              "median": 837.5,
+              "min": 646.5,
+              "max": 1164.5
+            },
+            "loadedRoomCount": {
+              "median": 8,
+              "min": 6,
+              "max": 11
+            },
+            "completedRequests": {
+              "median": 25,
+              "min": 21,
+              "max": 30
+            }
+          }
+        }
+      },
+      {
+        "profile": "phone",
+        "route": "/grove/?nosw",
+        "cache": "warm",
+        "stages": {
+          "before": {
+            "samples": 3,
+            "transferBytes": {
+              "median": 1374,
+              "min": 1374,
+              "max": 1374
+            },
+            "encodedBodyBytes": {
+              "median": 7814892,
+              "min": 5528182,
+              "max": 8703008
+            },
+            "decodedBodyBytes": {
+              "median": 8860390,
+              "min": 6573680,
+              "max": 9748506
+            },
+            "firstRoomReadyMs": {
+              "median": 3016.4000000059605,
+              "min": 2996.4000000059605,
+              "max": 3730.7999999970198
+            },
+            "loadedRoomCount": {
+              "median": 6,
+              "min": 4,
+              "max": 6
+            },
+            "completedRequests": {
+              "median": 20,
+              "min": 16,
+              "max": 21
+            }
+          },
+          "after": {
+            "samples": 3,
+            "transferBytes": {
+              "median": 1380,
+              "min": 1380,
+              "max": 1380
+            },
+            "encodedBodyBytes": {
+              "median": 5191582,
+              "min": 4900883,
+              "max": 5499910
+            },
+            "decodedBodyBytes": {
+              "median": 6153958,
+              "min": 5863259,
+              "max": 6462286
+            },
+            "firstRoomReadyMs": {
+              "median": 3723.4000000059605,
+              "min": 3255.7000000029802,
+              "max": 4345
+            },
+            "loadedRoomCount": {
+              "median": 4,
+              "min": 3,
+              "max": 4
+            },
+            "completedRequests": {
+              "median": 16,
+              "min": 15,
+              "max": 17
+            }
+          }
+        }
+      }
+    ],
+    "validation": {
+      "demo": {
+        "checks": 97,
+        "passed": 97,
+        "failed": 0,
+        "errors": 0,
+        "automaticAxeViolations": 0,
+        "manualReviewFindings": 4
+      },
+      "production": {
+        "checks": 47,
+        "passed": 47,
+        "failed": 0,
+        "errors": 0,
+        "automaticAxeViolations": 0,
+        "manualReviewFindings": 3
+      }
+    }
+  },
+  "limitations": [
+    "Gzip artifact estimates and local gzip HTTP responses do not measure the production CDN.",
+    "Browser visits use headless Chromium/SwiftShader and emulated touch; no hardware performance acceptance.",
+    "Grove transfer is measured 1.5 seconds after first observed starting geometry, with different room counts; not eventual palace transfer or the under-20 MB phone acceptance witness.",
+    "First-room readiness medians are slower in the after sample; ranges and regressions are retained.",
+    "All-JS gzip and CSS gzip increase slightly; exact tape times add manifest bytes.",
+    "Axe zero violations is not full accessibility; four demo manual-review findings remain.",
+    "The same local room assets, including ignored PNG fallback bakes, are used in both local builds; clean CI omits optional fallback inputs."
+  ]
+}

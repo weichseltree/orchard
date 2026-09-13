@@ -117,7 +117,7 @@ export class Provenance {
     this.#current = target;
     this.open = true;
     const entries = target ? flatten(target.read()) : [["", "nothing in view"] as const];
-    const title = target?.title ?? "Provenance";
+    const title = target?.title ?? "About this view";
     this.#renderDom(title, entries);
     this.#renderCanvas(title, entries);
     this.#dom.hidden = false;
@@ -173,7 +173,7 @@ export class Provenance {
     ctx.lineWidth = 3;
     ctx.strokeRect(1.5, 1.5, width - 3, height - 3);
     ctx.font = "600 34px system-ui, sans-serif";
-    ctx.fillStyle = PALETTE.accent;
+    ctx.fillStyle = PALETTE.text;
     ctx.fillText(title.slice(0, 42), 28, 56);
     let y = 112;
     ctx.font = "24px system-ui, sans-serif";
@@ -203,7 +203,9 @@ function flatten(
     if (entry && typeof entry === "object" && !Array.isArray(entry)) {
       flatten(entry as Record<string, unknown>, path, out);
     } else {
-      out.push([path, Array.isArray(entry) ? entry.join(", ") : String(entry)]);
+      out.push([path, Array.isArray(entry)
+        ? entry.map((item) => item && typeof item === "object" ? JSON.stringify(item) : String(item)).join(", ")
+        : String(entry)]);
     }
   }
   return out;

@@ -13,17 +13,19 @@ import {
 } from "three";
 import { PALETTE } from "../config";
 import type { DeviceTier } from "../tape/bundle";
-import { TapeBundleSchema, pickVariant, variantSlots, type TapeBundle } from "../tape/bundle";
+import { TapeBundleSchema, pickVariant, tapeTimeUnit, variantSlots, type TapeBundle } from "../tape/bundle";
 import { TapeStream } from "../tape/stream";
 import {
   advance,
   clampTau,
   frameAt,
+  formatFrameTime,
   fractionOf,
   nextSpeed,
   stepFrames,
   tauOfFraction,
-  timeline,
+  tauOfFrame,
+  variantTimeline,
   type Speed,
   type Timeline,
 } from "../tape/time";
@@ -179,13 +181,26 @@ export class TapeExhibit {
       pointSize: options.hanging.pointSize,
       palette: options.hanging.palette,
     });
-    const tl = timeline(picked.variant.frames, picked.variant.dt_tau, picked.variant.t0_tau);
+    const tl = variantTimeline(picked.variant);
     stream.request(0);
     return new TapeExhibit(options, bundle, picked.name, stream, volume, tl);
   }
 
   get frame(): number {
     return frameAt(this.timeline, this.tau);
+  }
+
+  /** Source time of the frame requested by the playhead, without cadence interpolation. */
+  get frameTime(): number {
+    return tauOfFrame(this.timeline, this.frame);
+  }
+
+  get frameTimeLabel(): string {
+    return formatFrameTime(this.timeline, this.frame);
+  }
+
+  get timeUnit(): string {
+    return tapeTimeUnit(this.bundle);
   }
 
   get fraction(): number {
@@ -253,7 +268,7 @@ export class TapeExhibit {
   scrubBySeconds(seconds: number): void {
     this.tau = clampTau(
       this.timeline,
-      this.tau + seconds * this.timeline.dtTau * 30,
+      this.tau + seconds * this.timeline.playbackDtTau * 30,
     );
   }
 
@@ -271,9 +286,15 @@ export class TapeExhibit {
       title: this.bundle.title,
       tree: this.bundle.tree,
       bundle_id: this.bundle.id,
-      variant: `${this.variantName} (${this.timeline.frames} frames, dt ${this.timeline.dtTau} tau)`,
+      variant: `${this.variantName} (${this.timeline.frames} frames)`,
+      time_unit: this.timeUnit,
+      frame_time: this.frameTime,
+      clock: this.timeline.frameTimesTau ? "exact recorded frame times" : "nominal cadence (legacy bundle)",
+      source_time_per_second_at_1x: this.timeline.playbackDtTau * 30,
       slots: `${this.volume.slots} of ${this.bundle.n_slots}`,
       box: `${this.bundle.box.join(" x ")} ${this.bundle.units}`,
+      channels_shown: "position, species, alive",
+      omitted_channels: this.bundle.source["omitted_channels"] ?? "not recorded by this bundle",
       produced_by: this.bundle.produced_by,
       source: this.bundle.source,
       resident_chunks: `${this.stream.residentCount} of at most ${this.stream.maxResident}`,

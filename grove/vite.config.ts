@@ -3,10 +3,10 @@ import { fileURLToPath } from "node:url";
 import type { Plugin } from "vite";
 import { defineConfig } from "vitest/config";
 import sirv from "sirv";
-import { fingerprintAssets } from "./build/fingerprint";
-import { groveServiceWorker } from "./build/service-worker";
-import { groveVersion } from "./build/version";
-import { checkDist } from "./build/check-dist";
+import { fingerprintAssets } from "./build/fingerprint.ts";
+import { groveServiceWorker } from "./build/service-worker.ts";
+import { groveVersion } from "./build/version.ts";
+import { checkDist } from "./build/check-dist.ts";
 
 const root = fileURLToPath(new URL(".", import.meta.url));
 const threeVersion = (
@@ -99,9 +99,10 @@ export default defineConfig(({ command }) => ({
     ),
   },
   build: {
+    manifest: true,
     target: "es2022",
     assetsInlineLimit: 4096,
-    rollupOptions: {
+    rolldownOptions: {
       input: {
         home: fileURLToPath(new URL("index.html", import.meta.url)),
         grove: fileURLToPath(new URL("grove/index.html", import.meta.url)),

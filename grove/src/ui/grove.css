@@ -57,7 +57,7 @@ html, body {
   min-height: 40px;
   text-decoration: none;
 }
-.btn:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible, canvas:focus-visible {
+.btn:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible, canvas:focus-visible, .perf:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 4px;
 }
@@ -161,11 +161,18 @@ html, body {
 
 .perf {
   position: absolute;
-  right: 14px; bottom: 18px;
+  right: 14px; bottom: 96px;
+  max-width: calc(100vw - 28px);
+  max-height: calc(100dvh - 210px);
   padding: 8px 10px;
   font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
   color: var(--dim);
-  white-space: pre;
+  background: var(--bg);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  overflow: auto;
+  pointer-events: auto;
+  touch-action: pan-y;
 }
 .perf[hidden] { display: none; }
 
@@ -184,6 +191,7 @@ html, body {
   .btn { padding: 6px 9px; font-size: 13px; min-height: 44px; }
   .stick { bottom: 144px; left: 18px; width: 116px; height: 116px; }
   .provenance { top: 190px; max-height: calc(100dvh - 280px); }
+  .perf { bottom: 144px; max-height: 116px; max-width: calc(100vw - 164px); }
   .hint { display: none; }
 }
 
@@ -243,7 +251,7 @@ html, body {
 .location { text-align: left; font-size: 12px; color: var(--text); background: var(--panel); }
 .visitor-guide {
   color: var(--text);
-  background: var(--panel);
+  background: var(--bg);
   width: min(36rem, calc(100vw - 28px));
   max-height: calc(100dvh - 40px);
   padding: clamp(18px, 4vw, 30px);
@@ -268,7 +276,7 @@ html, body {
   top: 50%; left: 50%; transform: translate(-50%, -50%);
   width: min(32rem, calc(100vw - 32px));
   padding: 24px;
-  background: var(--panel);
+  background: var(--bg);
 }
 .boot-status p { color: var(--body); }
 noscript { position: fixed; inset: auto 16px 16px; padding: 16px; background: var(--bg); z-index: 4; }
@@ -280,6 +288,7 @@ noscript a { color: var(--accent); }
 @media (min-width: 641px) {
   .touch .scrubber { left: auto; right: 14px; width: min(calc(100vw - 200px), 40rem); transform: none; }
   .touch .notices { left: 26px; bottom: 184px; max-width: calc(100vw - 52px); }
+  .touch .perf { max-height: 80px; max-width: calc(100vw - 200px); }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; }

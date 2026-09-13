@@ -4,9 +4,9 @@ import { createInput, type Commands } from "./input";
 
 class ElementStub extends EventTarget {
   isContentEditable = false;
-  constructor(readonly tagName: string) { super(); }
+  constructor(readonly tagName: string, readonly className = "") { super(); }
   closest(selector: string): ElementStub | null {
-    return selector.split(", ").includes(this.tagName) ? this : null;
+    return selector.split(", ").some((part) => part === this.tagName || part === `.${this.className}`) ? this : null;
   }
 }
 
@@ -65,6 +65,24 @@ describe("desktop controls and the visitor interface", () => {
     expect(input.forward).toBe(0);
     key("KeyW");
     expect(input.forward).toBe(0);
+  });
+
+  it("lets the focused performance region scroll without moving or toggling playback", () => {
+    const input = createInput();
+    const controls = attachDesktopControls(canvas as unknown as HTMLCanvasElement, input, commands, vi.fn());
+    key("KeyW");
+    const panel = new ElementStub("div", "perf");
+    const focus = new Event("focusin");
+    Object.defineProperty(focus, "target", { value: panel });
+    doc.dispatchEvent(focus);
+    expect(input.forward).toBe(0);
+    for (const code of ["ArrowDown", "ArrowRight", "Space"]) {
+      expect(key(code, panel).defaultPrevented).toBe(false);
+    }
+    expect(input.forward).toBe(0);
+    expect(input.strafe).toBe(0);
+    expect(commands.togglePlay).not.toHaveBeenCalled();
+    controls.dispose();
   });
 
   it("stops walking when a visitor opens a field or leaves the window", () => {

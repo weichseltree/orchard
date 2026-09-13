@@ -87,9 +87,7 @@ when the database cannot answer. To inspect a room directly, open
 ## Check and build
 
 ```bash
-pnpm test
-pnpm typecheck
-pnpm build
+pnpm quality
 pnpm preview
 ```
 
@@ -97,6 +95,14 @@ The build writes `dist/index.html` and `dist/grove/index.html`, checks
 immutable asset names, and includes the production service worker.
 Preview serves that build at [localhost:4173](http://localhost:4173), using
 its build-time media and database settings. It does not serve demo fixtures.
+
+For automated browser checks, run `pnpm exec playwright install chromium`
+once, then `pnpm quality:all`. This adds desktop/touch layout, keyboard,
+accessibility and cold/warm production loading checks with local fixtures.
+[Quality measurements](../docs/QUALITY.md) defines each metric and the JSON
+reports under `../results/quality/`. Press **F** while the world has focus
+to see frame percentiles; `window.grove.metrics()` returns a local diagnostic
+snapshot from browser developer tools.
 
 `pnpm check:bindings` checks generated database bindings and requires the
 SpacetimeDB CLI. Before changing the database module, read

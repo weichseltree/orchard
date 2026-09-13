@@ -15,6 +15,7 @@ import { showOverdraw } from "./render/overdraw";
 import { EYE_HEIGHT, createView } from "./render/view";
 import { Hud } from "./ui/hud";
 import { PerfMeter } from "./ui/perf";
+import { VisitMetrics } from "./ui/diagnostics";
 import { Provenance } from "./ui/provenance";
 import { startGroveUpdates } from "./ui/update";
 import { WorldNotices } from "./ui/worldnotice";
@@ -45,6 +46,7 @@ const device = detectDevice();
 hudRoot.classList.toggle("touch", device.touch);
 const input = createInput();
 const perf = new PerfMeter();
+const visitMetrics = new VisitMetrics();
 const avatars = new Avatars();
 const worldNotices = new WorldNotices();
 
@@ -177,6 +179,7 @@ const presence = new Presence(
 let lastLinkDetail = "";
 
 let perfOpen = false;
+let nextPerfReport = 0;
 let scrubbingUntil = 0;
 
 const commands: Commands = {
@@ -251,6 +254,7 @@ function boot(): void {
     exhibits: demo ? undefined : () => presence.whenExhibits(EXHIBIT_WAIT_MS),
     onRoomReady: (room, shell) => {
       if (room.id === startRoom.id) {
+        visitMetrics.roomReady();
         startupReady();
         guide.welcome();
       }
@@ -331,7 +335,7 @@ function handOverVideo(force = false): void {
   });
 }
 
-// The HUD's readout (frame, tau) follows the tape nearest the visitor; the
+// The HUD's frame and source-time readout follows the tape nearest the visitor; the
 // transport still drives every tape in step.
 let nearestTapeCached: TapeExhibit | null = null;
 let nextTapeCheck = 0;
@@ -367,6 +371,7 @@ async function toggleAudio(): Promise<void> {
 }
 
 let lastLabelFrame = -1;
+let lastLabelWaiting = false;
 let lastHudTape: TapeExhibit | null = null;
 
 /** The eye adapts toward the room's exposure, most of the way in a second. */
@@ -377,9 +382,10 @@ function adaptExposure(dt: number): void {
   view.renderer.toneMappingExposure = Math.abs(target - now) < 1e-3 ? target : now + (target - now) * k;
 }
 
-view.start((dt) => {
-  perf.sample(dt);
+view.start((dt, time, rawDt) => {
   const presenting = view.renderer.xr.isPresenting;
+  perf.setTargetHz(presenting ? 72 : 60);
+  perf.sample(rawDt);
 
   if (presenting) xr.update();
   // In XR you walk where you look; on a desktop the body's yaw is the heading.
@@ -428,15 +434,17 @@ view.start((dt) => {
       // tapes that share a clock stay in step when the visitor comes back.
       if (exhibitRoom(each) === body.room) each.update(dt);
     }
+    if (!tape.waiting) visitMetrics.tapeReady();
     if (performance.now() > scrubbingUntil) {
       const frame = frameAt(tape.timeline, tape.tau);
       // Building the label every frame is a string per frame for nothing: the
       // readout only changes when the frame index does.
-      if (frame !== lastLabelFrame) {
+      if (frame !== lastLabelFrame || tape.waiting !== lastLabelWaiting) {
         lastLabelFrame = frame;
+        lastLabelWaiting = tape.waiting;
         hud.setProgress(
           tape.fraction,
-          `${frame}/${tape.timeline.frames - 1}  ${tape.tau.toFixed(1)} tau${tape.waiting ? "  (loading)" : ""}`,
+          `${frame}/${tape.timeline.frames - 1}  ${tape.frameTimeLabel} ${tape.timeUnit}${tape.waiting ? "  (loading)" : ""}`,
         );
       } else {
         hud.setProgress(tape.fraction, null);
@@ -465,7 +473,8 @@ view.start((dt) => {
   provenance.update(view.camera, presenting);
   worldNotices.update(view.camera, presenting);
 
-  if (perfOpen) {
+  if (perfOpen && time >= nextPerfReport) {
+    nextPerfReport = time + 500;
     hud.setPerf(
       perf.report(view.renderer, {
         room: body.room,
@@ -508,6 +517,22 @@ Object.defineProperty(window, "grove", {
     body,
     presence,
     perf,
+    metrics: () => ({
+      schema: "grove-visit-metrics/1",
+      build: import.meta.env.VITE_COMMIT ?? "development",
+      builtAt: import.meta.env.VITE_BUILT_AT ?? null,
+      demo,
+      room: body.room,
+      device: { ...device },
+      viewport: { width: window.innerWidth, height: window.innerHeight, dpr: view.renderer.getPixelRatio() },
+      visit: visitMetrics.snapshot(),
+      frames: perf.snapshot(),
+      rendering: { ...view.renderer.info.render, ...view.renderer.info.memory, programs: view.renderer.info.programs?.length ?? 0 },
+      tapes: (world?.tapes ?? []).filter((tape) => tape !== null).map((tape) => ({
+        room: exhibitRoom(tape), residentChunks: tape.stream.residentCount,
+        residentBytes: tape.stream.residentBytes, waiting: tape.waiting,
+      })),
+    }),
     provenance,
     get world() {
       return world;
@@ -515,7 +540,10 @@ Object.defineProperty(window, "grove", {
   },
 });
 
-window.addEventListener("pagehide", () => presence.dispose());
+window.addEventListener("pagehide", (event) => {
+  presence.dispose();
+  if (!event.persisted) visitMetrics.dispose();
+});
 
 boot();
 // The service worker (cache, offline hall, media integrity) and the reload

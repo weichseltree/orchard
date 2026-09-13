@@ -60,6 +60,11 @@ video. Stop the server with **Ctrl+C**.
 For touch controls, development settings, build checks and troubleshooting,
 see [grove/README.md](grove/README.md).
 
+For repeatable checks, run `pnpm quality` from `grove/`. It tests playback,
+checks types, builds the site and enforces size budgets.
+[Quality measurements](docs/QUALITY.md) adds automated browser checks and
+explains the local performance reports.
+
 ## Use the local tools
 
 The Python tools require **Python 3.12 or later** and **uv**. From the

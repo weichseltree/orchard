@@ -9,6 +9,7 @@ import {
 } from "three";
 import { PALETTE } from "../config";
 import type { DeviceProfile } from "../device";
+import { FrameClock } from "./frame-clock";
 
 // The renderer, its canvas, the scene, the camera and the rig the camera
 // hangs off. The rig is the body: locomotion moves the rig, the head moves the
@@ -27,7 +28,7 @@ export interface View {
   /** Everything the world builder owns; cleared on a room rebuild. */
   world: Group;
   setPixelRatio(ratio: number): void;
-  start(onFrame: (dt: number, time: number) => void): void;
+  start(onFrame: (dt: number, time: number, rawDt: number) => void): void;
   dispose(): void;
 }
 
@@ -109,7 +110,9 @@ export function createView(
   canvas.addEventListener("webglcontextlost", onLost, false);
   canvas.addEventListener("webglcontextrestored", onRestored, false);
 
-  let previous = 0;
+  const clock = new FrameClock();
+  const onVisibility = (): void => clock.reset();
+  document.addEventListener("visibilitychange", onVisibility);
   return {
     renderer,
     scene,
@@ -121,9 +124,12 @@ export function createView(
     },
     start(onFrame) {
       renderer.setAnimationLoop((time) => {
-        const dt = previous === 0 ? 0 : Math.min(0.1, (time - previous) / 1000);
-        previous = time;
-        onFrame(dt, time);
+        if (document.hidden && !renderer.xr.isPresenting) {
+          clock.reset();
+          return;
+        }
+        const { dt, rawDt } = clock.tick(time);
+        onFrame(dt, time, rawDt);
         // Drawing into a lost context throws on some drivers; the world keeps
         // ticking so nothing jumps when it comes back.
         if (!lost) renderer.render(scene, camera);
@@ -131,6 +137,7 @@ export function createView(
     },
     dispose() {
       window.removeEventListener("resize", onResize);
+      document.removeEventListener("visibilitychange", onVisibility);
       canvas.removeEventListener("webglcontextlost", onLost);
       canvas.removeEventListener("webglcontextrestored", onRestored);
       renderer.setAnimationLoop(null);

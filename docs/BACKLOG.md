@@ -2,6 +2,24 @@
 
 Ordered. Items with a name in brackets wait on that person.
 
+## Measured rebuild (2026-09-13)
+
+The next pass improves loading order, defers loader code, fixes cross-tier
+playback speed and preserves exact source timestamps. Keyboard skip focus,
+phone link targets and readable diagnostic panels are checked automatically.
+The architectural hall image is smaller with identical decoded pixels.
+[The rebuild review](reviews/2026-09-13-rebuild.md) records the evidence and
+tradeoffs; [QUALITY.md](QUALITY.md) defines the new build budgets, browser
+checks and local frame/visit reports. These checks are part of CI and can
+be rerun with `pnpm quality:all` after browser installation.
+
+For priority 3 below, use the recorded startup-code and cold/warm transfer
+comparisons. Geometry seen through doors/windows is retained, so total
+palace bytes and hardware acceptance remain separate. For item 18, exact
+time and unit handling are now implemented for new bundles; extra-channel
+transport remains open and omissions are disclosed. Earlier evidence and
+decisions below are retained as historical records.
+
 ## Current priorities after the first-visit pass (2026-09-13)
 
 **Completed locally:** the public page and image source records, the
