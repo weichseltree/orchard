@@ -1,0 +1,164 @@
+{
+  "schema": "orchard/room/1",
+  "asset": "orchard-east",
+  "generated_by": "grove/tools/palace/palace.py",
+  "script_sha256": "14464d45fa441d8e1f7e6c54c81c1ba3595a99635fdd21d87d711542e31420f4",
+  "blender": "4.2.1 LTS",
+  "git": {
+    "commit": "8f534c8fba8fea1d82361328726a2e93de865de1",
+    "dirty": true
+  },
+  "generated_at_utc": "2026-09-13T02:22:42Z",
+  "look": "white, gold and marble (Naturhistorisches Museum), ruled 2026-09-12",
+  "bake": {
+    "engine": "cycles",
+    "type": "DIFFUSE",
+    "passes": [
+      "direct",
+      "indirect"
+    ],
+    "colour_pass": false,
+    "samples": 128,
+    "resolution": 2048,
+    "margin_px": 8,
+    "uv_layer": "uv2",
+    "device": "CPU",
+    "threads": 16,
+    "denoise": "OpenImageDenoise via the compositor Denoise node",
+    "seconds_bake": 242.71,
+    "seconds_denoise": 3.25,
+    "noise_metric": 0.311582,
+    "skipped": false,
+    "seconds_preview": 14.43,
+    "seconds_wall_clock": 271.41
+  },
+  "lightmap": {
+    "file": "lightmap.png",
+    "ktx2": "lightmap.ktx2",
+    "ktx2_phone": "lightmap-1024.ktx2",
+    "scale": 3.25693,
+    "three_light_map_intensity": 10.231947,
+    "coverage": 0.6104,
+    "clipped_fraction": 0.0,
+    "binding": "texture.colorSpace = SRGBColorSpace, flipY = false, channel = 1, material.lightMapIntensity = three_light_map_intensity"
+  },
+  "geometry": {
+    "units": "metres",
+    "type": "cell",
+    "bounds_gltf": {
+      "min": [
+        -130,
+        0,
+        40
+      ],
+      "max": [
+        -15,
+        8,
+        110
+      ]
+    },
+    "height": 8.0,
+    "faces": 77,
+    "surface_area_m2": 8050.0,
+    "doorways": [
+      {
+        "to": "parterre",
+        "axis": "z",
+        "at": 40,
+        "center": -35,
+        "width": 40,
+        "height": 8
+      },
+      {
+        "to": "orchard-south",
+        "axis": "z",
+        "at": 40,
+        "center": -92.5,
+        "width": 75,
+        "height": 8
+      }
+    ],
+    "windows": [],
+    "posters": [],
+    "style": {
+      "h": 8.0,
+      "wainscot": 0.0,
+      "cornice": [
+        7.0,
+        7.2
+      ],
+      "coffer": 8.0,
+      "floor": "grass",
+      "wall": "facade"
+    },
+    "floor": "grass",
+    "wall": "facade",
+    "materials": [
+      "orchard-east_ground",
+      "orchard-east_hedge",
+      "orchard-east_water",
+      "orchard-east_facade",
+      "orchard-east_slate",
+      "orchard-east_stone",
+      "orchard-east_trunk",
+      "orchard-east_leaf"
+    ]
+  },
+  "lighting": {
+    "sun_direction_blender": [
+      0.7796,
+      0.2999,
+      -0.5498
+    ],
+    "sun_strength": 3.6,
+    "world": "Nishita sky",
+    "world_strength": 0.85,
+    "fill": {
+      "lamps": 19,
+      "watts_each": 400.0,
+      "colour": [
+        1.0,
+        0.86,
+        0.68
+      ],
+      "placement": "one per 8 m along each interior room's long axis at 0.55 h"
+    },
+    "occluders": [
+      "einstruct",
+      "gallery",
+      "greenhouse",
+      "hall",
+      "orangery",
+      "orchard-east",
+      "orchard-south",
+      "orchard-west",
+      "parterre",
+      "phototroph",
+      "spectre",
+      "terrace",
+      "world-engine"
+    ]
+  },
+  "files": {
+    "orchard-east.glb": {
+      "bytes": 513500,
+      "sha256": "12a38bb9c046e17483f3838f47d8a9bb405dceadf3676f9f2cde92a105531d72"
+    },
+    "lightmap.png": {
+      "bytes": 2541478,
+      "sha256": "354b142adefe50fbd4b65e4d78ecb7e249d04aa3e88f0069d6492b82e88bde79"
+    },
+    "lightmap.ktx2": {
+      "bytes": 2092094,
+      "sha256": "9fe7ee06dfe2933b0b81fefbdd806d8c1b103342c42f657e4aaa925c6667935e"
+    },
+    "lightmap-1024.ktx2": {
+      "bytes": 628104,
+      "sha256": "f90f336882f970c2b7671b296924d9311dbf47a9c224d969fbe6588badc04d23"
+    },
+    "preview.png": {
+      "bytes": 982584,
+      "sha256": "b9efaca8ce59937c7b36f125ce6c9d50559d229dddee5f5777c7a4988cd0021f"
+    }
+  }
+}
