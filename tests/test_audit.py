@@ -328,16 +328,28 @@ def consumer(tag: str) -> str:
                                 f'subdirectory = "packages/tape", tag = "{tag}" }}\n')
 
 
+def github_origin(repo: Path, slug: str, bare: Path) -> str:
+    """origin spelled as on this box (`git@github.com-weichseltree:<slug>.git`); `insteadOf`
+    sends every fetch and push to the local `bare` repo, so no test ever reaches GitHub."""
+    subprocess.run([*GIT, "init", "-q", "--bare", str(bare)], check=True)
+    url = f"git@github.com-weichseltree:{slug}.git"
+    git(repo, "remote", "add", "origin", url)
+    git(repo, "config", f"url.{bare}.insteadOf", url)
+    return url
+
+
+def repo_with_tags(tree, root: Path, name: str, slug: str, pushed: str, unpushed: str) -> Path:
+    repo = make_repo(root, name, {"README.md": "x"})
+    github_origin(repo, slug, tree.home / f"{name}-origin.git")
+    git(repo, "tag", pushed)
+    git(repo, "push", "-q", "origin", "main", pushed)
+    git(repo, "tag", unpushed)                        # made here, never pushed
+    return repo
+
+
 @pytest.fixture
 def orchard_with_origin(tree):
-    origin = tree.home / "origin.git"
-    subprocess.run([*GIT, "init", "-q", "--bare", str(origin)], check=True)
-    orchard = make_repo(tree.root, "orchard", {"README.md": "x"})
-    git(orchard, "remote", "add", "origin", str(origin))
-    git(orchard, "tag", "tape-v1.0.0")
-    git(orchard, "push", "-q", "origin", "main", "tape-v1.0.0")
-    git(orchard, "tag", "tape-v1.1.0")                 # made here, never pushed
-    return orchard
+    return repo_with_tags(tree, tree.root, "orchard", "weichseltree/orchard", "tape-v1.0.0", "tape-v1.1.0")
 
 
 def test_a_tag_pin_must_exist_here_and_on_origin(tree, orchard_with_origin):
@@ -359,10 +371,91 @@ def test_a_tag_pin_must_exist_here_and_on_origin(tree, orchard_with_origin):
 
 
 def test_an_unreachable_origin_is_a_skip_not_a_fail(tree, orchard_with_origin):
-    git(orchard_with_origin, "remote", "set-url", "origin", str(tree.home / "nowhere.git"))
+    url = git(orchard_with_origin, "config", "--get", "remote.origin.url").strip()
+    git(orchard_with_origin, "config", "--remove-section", f"url.{tree.home / 'orchard-origin.git'}")
+    git(orchard_with_origin, "config", f"url.{tree.home / 'nowhere.git'}.insteadOf", url)
     make_repo(tree.root, "pushed", {"pyproject.toml": consumer("tape-v1.0.0")})
     [f] = findings(tree(), "pushed", "pinned-tags")
     assert f["status"] == "skip" and "origin could not be checked" in f["detail"]
+
+
+def private_pin(name: str, slug: str, subdir: str, tag: str) -> str:
+    return (f'{name} = {{ git = "ssh://git@github.com-weichseltree/{slug}.git", '
+            f'subdirectory = "{subdir}", tag = "{tag}" }}\n')
+
+
+def test_a_pin_on_any_audited_repo_is_checked_against_that_repo_and_its_origin(tree):
+    """arcagi2026 pins event-atoms and (archived) agivity over SSH with the host alias; each
+    tag is looked up in the checkout whose origin names that repo, not in orchard."""
+    repo_with_tags(tree, tree.root, "event-atoms", "weichseltree/event-atoms",
+                   "gridevents-v1.0.0", "gridevents-v1.1.0")
+    repo_with_tags(tree, tree.root, "agivity", "weichseltree/agivity", "ihwm-v1.0.0", "ihwm-v1.1.0")
+    sources = ("\n[tool.uv.sources]\n"
+               + private_pin("gridevents", "weichseltree/event-atoms", "packages/gridevents", "gridevents-v1.0.0")
+               + private_pin("agivity-ihwm", "weichseltree/agivity", "packages/ihwm", "ihwm-v1.1.0")
+               + private_pin("ghost", "Weichseltree/Event-Atoms", "packages/ghost", "ghost-v9.0.0")
+               + 'other = { git = "https://github.com/someone/else", tag = "v1.0.0" }\n')
+    group = ('\n[dependency-groups]\nexperiments = ["direct @ git+ssh://git@github.com-weichseltree/'
+             'weichseltree/agivity.git@ihwm-v1.0.0#subdirectory=packages/ihwm"]\n')
+    kaggle = make_repo(tree.home / "kaggle", "arcagi2026", {"pyproject.toml": pyproject("a", extra=group + sources)})
+    rep = tree(archived=["agivity"], extra_roots=[kaggle])
+    got = {f["detail"].split(",")[0]: f["status"] for f in findings(rep, "arcagi2026", "pinned-tags")}
+    assert got == {
+        "gridevents pins tag gridevents-v1.0.0": "ok",           # in event-atoms and on its origin
+        "agivity-ihwm pins tag ihwm-v1.1.0": "fail",             # tagged in agivity, never pushed
+        "ghost pins tag ghost-v9.0.0": "fail",                   # owner/name match regardless of case
+        "direct pins tag ihwm-v1.0.0": "ok",                     # a PEP 508 direct reference
+    }                                                            # someone/else: not audited, not checked
+    [f] = [f for f in findings(rep, "arcagi2026", "pinned-tags") if f["status"] == "fail" and "ihwm" in f["detail"]]
+    assert "not on origin" in f["detail"] and "agivity" in f["detail"]
+
+
+def test_each_pinned_repo_s_origin_is_asked_once_per_run(tree, monkeypatch):
+    repo_with_tags(tree, tree.root, "event-atoms", "weichseltree/event-atoms", "g-v1.0.0", "g-v1.1.0")
+    pin = private_pin("gridevents", "weichseltree/event-atoms", "packages/gridevents", "g-v1.0.0")
+    for name in ("one", "two", "three"):
+        make_repo(tree.root, name, {"pyproject.toml": pyproject(name, extra="\n[tool.uv.sources]\n" + pin)})
+    asked, real = [], A.run
+    monkeypatch.setattr(A, "run", lambda cmd, cwd, timeout: (asked.append(cmd) if "ls-remote" in cmd else None)
+                        or real(cmd, cwd, timeout))
+    rep = tree()
+    assert [statuses(rep, n, "pinned-tags") for n in ("one", "two", "three")] == [["ok"]] * 3
+    assert len(asked) == 1 and asked[0][-3:] == ["ls-remote", "--tags", "origin"]
+
+
+def test_direct_refs_keep_slashes_in_branches_and_tags(tree, orchard_with_origin):
+    tag = "release/tape-v1.0.0"
+    git(orchard_with_origin, "tag", tag)
+    git(orchard_with_origin, "push", "-q", "origin", tag)
+    make_repo(tree.root, "consumer", {"pyproject.toml":
+        '[project]\nname = "consumer"\nversion = "0.1.0"\nrequires-python = ">=3.12"\n'
+        'dependencies = [\n'
+        '  "branch-pin @ git+https://github.com/weichseltree/orchard.git@feature/fix",\n'
+        '  "tag-pin @ git+ssh://git@github.com-weichseltree/weichseltree/orchard.git@release/tape-v1.0.0#subdirectory=packages/tape",\n'
+        '  "no-ref @ git+ssh://git@github.com-weichseltree/weichseltree/orchard.git",\n'
+        ']\n'})
+    got = findings(tree(), "consumer", "pinned-tags")
+    assert len(got) == 3
+    assert any(f["status"] == "warn" and "feature/fix" in f["detail"] for f in got)
+    assert any(f["status"] == "ok" and tag in f["detail"] for f in got)
+    assert any(f["status"] == "warn" and "no-ref" in f["detail"] and "by nothing" in f["detail"] for f in got)
+
+
+@pytest.mark.parametrize("url, slug", [
+    ("https://github.com/weichseltree/orchard", "weichseltree/orchard"),
+    ("https://github.com/weichseltree/orchard.git/", "weichseltree/orchard"),
+    ("git+https://github.com/weichseltree/orchard", "weichseltree/orchard"),
+    ("ssh://git@github.com-weichseltree/weichseltree/event-atoms.git", "weichseltree/event-atoms"),
+    ("git@github.com-weichseltree:Weichseltree-OU/arcagi2026.git", "weichseltree-ou/arcagi2026"),
+    ("git@github.com:weichseltree/agivity.git", "weichseltree/agivity"),
+    ("ssh://git@work/weichseltree/agivity.git", "weichseltree/agivity"),      # an ssh config alias
+    ("https://gitlab.com/weichseltree/orchard", None),
+    ("/home/manuel/weichseltree/orchard", None),
+])
+def test_github_urls_in_every_spelling_name_one_repo(tmp_path, url, slug):
+    (tmp_path / ".ssh").mkdir()
+    (tmp_path / ".ssh" / "config").write_text("Host work other-*\n    HostName github.com\nHost box\n  HostName 10.0.0.3\n")
+    assert A.github_slug(url, A.github_host_re(tmp_path)) == slug
 
 
 # --- orchard's own -------------------------------------------------------------------

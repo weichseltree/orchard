@@ -73,6 +73,16 @@ The rule: **shared code is a versioned package, depended on by git tag.**
 - `expmetrics.py` stays a copy (CLAUDE.md says why: guarded import, no-op
   outside gpurun); the seven copies were byte-identical on 2026-09-13.
 
+**Private shared packages.** The same rule applies to code shared between
+private repos. Keep the package in its producing repo under `packages/<name>/`,
+release tags named `<name>-vX.Y.Z`, and pin both the tag and package subdirectory
+in each consumer. Choose an import name that does not collide with a module the
+consumer already uses. Each machine installing the package needs access to its
+repo. If the dependency URL uses an SSH host alias, such as `github.com-work`,
+that alias must be configured on every machine that installs it. The audit
+matches GitHub URLs by owner and repo name, so HTTPS, SSH and configured GitHub
+host aliases can refer to the same checkout.
+
 ## 3. Artefacts: bundles
 
 A bundle's id is the first 16 hex of the sha256 of its `bundle.json`
@@ -249,7 +259,7 @@ blocks nothing; it names the repo, the rule and the file within 15 minutes.
 | sibling-import | a `.py` (outside `archive/`) that names another audited repo's checkout (`~/weichseltree/<repo>`, `/home/<user>/…`, `Path.home() / "weichseltree"`, `<REPO>_ROOT`, or `~/kaggle/arcagi2026`) and puts a path not derived from `__file__` on `sys.path`. A repo inserting its own root while reading a sibling's data does not count |
 | manifest-dirty | an artefact `commit` ending in `-dirty` in `<repo>/orchard.yaml` (warn) |
 | fund-copies | each `trees/<name>.yaml` whose repo is on the box is byte-equal to what `orchard trees refresh` writes |
-| pinned-tags | a git pin on weichseltree/orchard (`[tool.uv.sources]`, a PEP 723 header, or a direct `git+…@ref`) names a tag that exists in orchard and on origin (one `git ls-remote`, 10 s; unreachable is a skip). A branch or rev pin warns |
+| pinned-tags | a git pin (`[tool.uv.sources]`, a PEP 723 header, or a direct `git+…@ref`) on a repo the audit knows names a tag that exists in that checkout and on its origin. The pin's URL (github.com, a `github.com-*` alias, or an ssh config Host whose HostName is github.com; https, `ssh://` or `git@host:` form) is matched by owner/name, ignoring case, to a checkout's `remote.origin.url`, archived repos included. One `git ls-remote --tags origin` per pinned repo per run, 10 s; unreachable is a skip. A branch or rev pin warns; a pin on a repo not on this box is not checked |
 | toolchain | `orchard doctor`'s tools: a mismatch fails, a missing tool warns |
 | bindings | `pnpm -C grove run check:bindings` |
 

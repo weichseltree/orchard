@@ -30,8 +30,8 @@ Every result is ok / fail / warn / skip, with a detail and path[:line]:
     sibling-import  a .py that names a sibling repo's path and edits sys.path
     manifest-dirty  an artefact commit ending in -dirty in <repo>/orchard.yaml (warn)
     fund-copies     trees/*.yaml equal to what `orchard trees refresh` writes (orchard)
-    pinned-tags     a git pin on weichseltree/orchard names a tag that exists in
-                    orchard and on origin
+    pinned-tags     a git pin on a repo the audit knows (its checkout's GitHub
+                    origin) names a tag that exists in that checkout and on origin
     toolchain       orchard doctor's tools: a mismatch fails, a missing tool warns (orchard)
     bindings        `pnpm -C grove run check:bindings`, when grove has it (orchard)
 
@@ -54,6 +54,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
+from urllib.parse import urlsplit
 
 import yaml
 
@@ -234,7 +235,7 @@ def _short(text: str, n: int = 220) -> str:
 # --- one run's shared state ---------------------------------------------------------
 
 class Context:
-    """What checks of different repos share: the repo set, orchard, and origin's tags."""
+    """What checks of different repos share: the repo set, orchard, and each pinned repo's tags."""
 
     def __init__(self, cfg: Config, repos: list[Repo], home: Path | None = None):
         self.cfg = cfg
@@ -242,35 +243,58 @@ class Context:
         self.home = home or Path.home()
         self.orchard = next((r for r in repos if r.name == "orchard"), None)
         self._lock = threading.Lock()
-        self._local_tags: set[str] | None = None
-        self._remote: tuple[set[str] | None, str] | None = None
+        self._repo_locks: dict[str, threading.Lock] = {}
+        self._by_origin: dict[str, Repo] | None = None
+        self._local_tags: dict[str, set[str]] = {}
+        self._remote: dict[str, tuple[set[str] | None, str]] = {}
         self.sibling_patterns = self._sibling_patterns()
+        self.github = github_host_re(self.home)
 
-    # tags ------------------------------------------------------------------------------
-    def local_tags(self) -> set[str]:
-        with self._lock:
-            if self._local_tags is None:
-                r = run(["git", "-C", str(self.orchard.path), "tag", "-l"], self.orchard.path, GIT_TIMEOUT) \
-                    if self.orchard else Ran(None)
-                self._local_tags = set(r.out.split()) if r.rc == 0 else set()
-            return self._local_tags
+    # pinned repos and their tags --------------------------------------------------------
+    def by_origin(self) -> dict[str, Repo]:
+        """`owner/name` (lower case) of each checkout's GitHub origin -> the checkout.
 
-    def remote_tags(self) -> tuple[set[str] | None, str]:
-        """origin's tags, from ONE `git ls-remote` per run; (None, why) when it cannot answer."""
+        Every repo on the report counts, archived ones included: a pin on an archived
+        repo still has to name a tag that exists. Worktrees share an origin (and their
+        tags); the checkout named after the repo wins, else the first by name.
+        """
         with self._lock:
-            if self._remote is None:
-                if self.orchard is None:
-                    self._remote = (None, "orchard is not on this box")
+            if self._by_origin is None:
+                found: dict[str, Repo] = {}
+                for r in sorted(self.repos, key=lambda r: r.name):
+                    got = run(["git", "-C", str(r.path), "config", "--get", "remote.origin.url"],
+                              r.path, GIT_TIMEOUT)
+                    slug = github_slug(got.out.strip(), self.github) if got.rc == 0 else None
+                    if slug and (slug not in found or r.name.lower() == slug.split("/")[1]):
+                        found[slug] = r
+                self._by_origin = found
+            return self._by_origin
+
+    def _repo_lock(self, key: str) -> threading.Lock:
+        with self._lock:
+            return self._repo_locks.setdefault(key, threading.Lock())
+
+    def local_tags(self, repo: Repo) -> set[str]:
+        key = str(repo.path)
+        with self._repo_lock(key):
+            if key not in self._local_tags:
+                r = run(["git", "-C", key, "tag", "-l"], repo.path, GIT_TIMEOUT)
+                self._local_tags[key] = set(r.out.split()) if r.rc == 0 else set()
+            return self._local_tags[key]
+
+    def remote_tags(self, repo: Repo) -> tuple[set[str] | None, str]:
+        """origin's tags, from ONE `git ls-remote` per repo per run; (None, why) when it cannot answer."""
+        key = str(repo.path)
+        with self._repo_lock(key):
+            if key not in self._remote:
+                r = run(["git", "-C", key, "ls-remote", "--tags", "origin"], repo.path, LS_REMOTE_TIMEOUT)
+                if r.rc == 0:
+                    tags = {ln.split("refs/tags/", 1)[1].removesuffix("^{}")
+                            for ln in r.out.splitlines() if "refs/tags/" in ln}
+                    self._remote[key] = (tags, "")
                 else:
-                    r = run(["git", "-C", str(self.orchard.path), "ls-remote", "--tags", "origin"],
-                            self.orchard.path, LS_REMOTE_TIMEOUT)
-                    if r.rc == 0:
-                        tags = {ln.split("refs/tags/", 1)[1].removesuffix("^{}")
-                                for ln in r.out.splitlines() if "refs/tags/" in ln}
-                        self._remote = (tags, "")
-                    else:
-                        self._remote = (None, r.why or _first_error(r.text))
-            return self._remote
+                    self._remote[key] = (None, r.why or _first_error(r.text))
+            return self._remote[key]
 
     # sibling paths -----------------------------------------------------------------------
     def _sibling_patterns(self) -> list[tuple[re.Pattern, str | None]]:
@@ -793,33 +817,75 @@ def check_fund_copies(ctx: Context, repo: Repo) -> list[Finding]:
 
 # tags ----------------------------------------------------------------------------
 
-ORCHARD_GIT = re.compile(r"github\.com[:/]weichseltree/orchard(?:\.git)?/?$", re.I)
-DIRECT_REF = re.compile(r"git\+\S*github\.com[:/]weichseltree/orchard(?:\.git)?@([^#\s;]+)", re.I)
+def github_host_re(home: Path) -> str:
+    """github.com, a `github.com-<name>` host alias, or any ssh config Host whose HostName is github.com."""
+    hosts = [r"github\.com(?:-[\w.-]+)?"]
+    try:
+        text = (home / ".ssh" / "config").read_text(errors="replace")
+    except OSError:
+        text = ""
+    current: list[str] = []
+    for ln in text.splitlines():
+        words = ln.split("#", 1)[0].split()
+        if len(words) < 2:
+            continue
+        key = words[0].lower()
+        if key == "host":
+            current = [h for h in words[1:] if not any(c in h for c in "*?!")]
+        elif key == "hostname" and words[1].lower() == "github.com":
+            hosts += [re.escape(h) for h in current]
+    return "(?:" + "|".join(hosts) + ")"
 
 
-def _pins(doc: dict) -> list[tuple[str, str, str]]:
-    """(dependency, kind, ref) for each git pin on weichseltree/orchard in a TOML document."""
+def github_slug(url: str, host: str) -> str | None:
+    """`owner/name` (lower case) of a GitHub repo URL, in any spelling git and uv accept:
+    https://github.com/o/n, ssh://git@<alias>/o/n.git, git@<alias>:o/n.git (a `git+` prefix allowed)."""
+    tail = r"/(?P<o>[\w.-]+)/(?P<n>[\w.-]+?)(?:\.git)?/?$"
+    m = (re.match(r"(?:git\+)?(?:https?|ssh|git)://(?:[^@/]+@)?" + host + r"(?::\d+)?" + tail, url, re.I)
+         or re.match(r"(?:[\w.-]+@)?" + host + r":" + tail[1:], url, re.I))
+    return f"{m['o']}/{m['n']}".lower() if m else None
+
+
+DIRECT_URL = re.compile(r"git\+[^\s;]+")
+VERSIONISH = re.compile(r"(?:^|[-_])v?\d+(?:\.\d+)+$")
+
+
+def _pins(doc: dict, host: str) -> list[tuple[str, str, str, str]]:
+    """(dependency, kind, ref, owner/name) for each git pin on a GitHub repo in a TOML document."""
     pins = []
     sources = ((doc.get("tool") or {}).get("uv") or {}).get("sources") or {}
     for dep, spec in sources.items():
         for s in spec if isinstance(spec, list) else [spec]:
-            if isinstance(s, dict) and ORCHARD_GIT.search(str(s.get("git", ""))):
+            slug = github_slug(str(s.get("git", "")), host) if isinstance(s, dict) else None
+            if slug:
                 kind = next((k for k in ("tag", "rev", "branch") if s.get(k)), "")
-                pins.append((dep, kind, str(s.get(kind, "")) if kind else ""))
+                pins.append((dep, kind, str(s.get(kind, "")) if kind else "", slug))
     proj = doc.get("project") or {}
     reqs = list(doc.get("dependencies") or []) + list(proj.get("dependencies") or [])
     for group in list((proj.get("optional-dependencies") or {}).values()) + \
             list((doc.get("dependency-groups") or {}).values()):
         reqs += [r for r in group if isinstance(r, str)]
     for r in reqs:
-        m = DIRECT_REF.search(str(r))
-        if m:
-            ref = m.group(1)
-            pins.append((str(r).split("@")[0].strip(), "tag" if re.search(r"-v?\d", ref) else "ref", ref))
+        m = DIRECT_URL.search(str(r))
+        if not m:
+            continue
+        url = m.group(0).split("#", 1)[0]
+        try:
+            parsed = urlsplit(url.removeprefix("git+"))
+        except ValueError:
+            continue
+        # Split inside the path: SSH's user@host is not a revision separator,
+        # and the ref itself may contain slashes (feature/fix, release/v1.0.0).
+        path, _, ref = parsed.path.partition("@")
+        slug = github_slug(parsed._replace(path=path).geturl(), host)
+        if slug:
+            dep = str(r).split("@")[0].strip()
+            pins.append((dep, "tag" if VERSIONISH.search(ref) else "ref" if ref else "", ref, slug))
     return pins
 
 
 def check_pinned_tags(ctx: Context, repo: Repo, tracked: list[str], sources: dict[str, str]) -> list[Finding]:
+    """A git pin on a repo the audit knows (by its checkout's origin) names a tag it has, here and on origin."""
     rule, out = "pinned-tags", []
     docs = []
     for rel in (f for f in tracked if PurePosixPath(f).name == "pyproject.toml"):
@@ -833,24 +899,28 @@ def check_pinned_tags(ctx: Context, repo: Repo, tracked: list[str], sources: dic
                 docs.append((rel, doc, text))
     for rel, doc, text in docs:
         text = text if text is not None else (repo.path / rel).read_text(errors="replace")
-        for dep, kind, ref in _pins(doc):
+        for dep, kind, ref, slug in _pins(doc, ctx.github):
+            target = ctx.by_origin().get(slug)
+            if target is None:
+                continue                     # not a repo this box audits: nothing to compare against
             line = _line_of(text, ref) if ref else None
             if kind != "tag":
-                out.append(warn(rule, f"{dep} pins weichseltree/orchard by {kind or 'nothing'}"
+                out.append(warn(rule, f"{dep} pins {slug} by {kind or 'nothing'}"
                                       f"{' ' + ref if ref else ''}, not by a tag", rel, line))
                 continue
-            here = ref in ctx.local_tags()
-            remote, why = ctx.remote_tags()
-            if not here:
-                out.append(fail(rule, f"{dep} pins tag {ref}, which orchard does not have", rel, line))
-            elif remote is None:
-                out.append(skip(rule, f"{dep} pins tag {ref}: in orchard; origin could not be checked ({why})",
+            name = target.name
+            if ref not in ctx.local_tags(target):
+                out.append(fail(rule, f"{dep} pins tag {ref}, which {name} does not have", rel, line))
+                continue
+            remote, why = ctx.remote_tags(target)
+            if remote is None:
+                out.append(skip(rule, f"{dep} pins tag {ref}: in {name}; origin could not be checked ({why})",
                                 rel, line))
             elif ref not in remote:
-                out.append(fail(rule, f"{dep} pins tag {ref}, which is not on origin (git push origin {ref})",
-                                rel, line))
+                out.append(fail(rule, f"{dep} pins tag {ref}, which {name} has but is not on origin "
+                                      f"(git -C {target.path} push origin {ref})", rel, line))
             else:
-                out.append(ok(rule, f"{dep} pins tag {ref}, in orchard and on origin", rel, line))
+                out.append(ok(rule, f"{dep} pins tag {ref}, in {name} and on its origin", rel, line))
     return out
 
 
