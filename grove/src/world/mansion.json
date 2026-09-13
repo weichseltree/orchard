@@ -605,7 +605,8 @@
           }
         ]
       },
-      "hangings": []
+      "hangings": [],
+      "exposure": 0.6
     },
     {
       "id": "phototroph",
@@ -1228,7 +1229,8 @@
             "#ebe6de"
           ]
         }
-      ]
+      ],
+      "exposure": 0.2
     },
     {
       "id": "parterre",
@@ -1328,7 +1330,8 @@
           "radius": 5
         }
       },
-      "hangings": []
+      "hangings": [],
+      "exposure": 0.2
     },
     {
       "id": "orchard-west",
@@ -1391,7 +1394,8 @@
         "trees": true,
         "seed": 11
       },
-      "hangings": []
+      "hangings": [],
+      "exposure": 0.2
     },
     {
       "id": "orchard-south",
@@ -1462,7 +1466,8 @@
         "trees": true,
         "seed": 12
       },
-      "hangings": []
+      "hangings": [],
+      "exposure": 0.2
     },
     {
       "id": "orchard-east",
@@ -1525,7 +1530,8 @@
         "trees": true,
         "seed": 13
       },
-      "hangings": []
+      "hangings": [],
+      "exposure": 0.2
     }
   ]
 }

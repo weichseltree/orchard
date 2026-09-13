@@ -181,3 +181,11 @@ describe("BundleRefSchema", () => {
     }
   });
 });
+
+describe("exposure", () => {
+  it("defaults to the hall's and is a fifth on the grounds", () => {
+    const m = parseMansion(mansionDocument);
+    expect(m.rooms.find((r) => r.id === "hall")?.exposure).toBe(1);
+    for (const r of m.rooms.filter((r) => r.fallback.kind === "ground")) expect(r.exposure).toBeLessThan(0.5);
+  });
+});

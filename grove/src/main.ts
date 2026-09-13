@@ -57,6 +57,7 @@ const query = new URLSearchParams(location.search);
 const startRoom = roomById(mansion, query.get("room") || mansion.start);
 if (!startRoom) throw new Error(`mansion.json start room "${mansion.start}" is missing`);
 const startYaw = query.has("yaw") ? Number(query.get("yaw")) : startRoom.spawn.yawDeg;
+view.renderer.toneMappingExposure = startRoom.exposure;
 const body = createBody(
   startRoom.spawn.position[0],
   startRoom.spawn.position[2],
@@ -330,6 +331,14 @@ async function toggleAudio(): Promise<void> {
 
 let lastLabelFrame = -1;
 
+/** The eye adapts toward the room's exposure, most of the way in a second. */
+function adaptExposure(dt: number): void {
+  const target = roomById(mansion, body.room)?.exposure ?? 1;
+  const now = view.renderer.toneMappingExposure;
+  const k = Math.min(1, dt * 3);
+  view.renderer.toneMappingExposure = Math.abs(target - now) < 1e-3 ? target : now + (target - now) * k;
+}
+
 view.start((dt) => {
   perf.sample(dt);
   const presenting = view.renderer.xr.isPresenting;
@@ -343,6 +352,7 @@ view.start((dt) => {
   consumeDeltas(input);
 
   view.rig.position.set(body.x, 0, body.z);
+  adaptExposure(dt);
   handOverVideo();
   if (presenting) {
     // Room-scale walking can take the head through a wall the rig never met.

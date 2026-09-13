@@ -130,6 +130,13 @@ export const RoomSchema = z.looseObject({
   spawn: SpawnSchema,
   doorways: z.array(DoorwaySchema).default([]),
   hangings: z.array(HangingSchema).default([]),
+  /**
+   * Tone-mapping exposure while the visitor is in this room; the eye adapts
+   * over about a second on crossing. The bakes are one sun for the whole
+   * palace, so the grounds carry about six times the interiors' light and
+   * would clip to white at the hall's exposure.
+   */
+  exposure: z.number().positive().default(1),
 });
 
 /**
