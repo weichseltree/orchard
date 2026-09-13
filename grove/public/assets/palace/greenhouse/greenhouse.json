@@ -2,13 +2,13 @@
   "schema": "orchard/room/1",
   "asset": "greenhouse",
   "generated_by": "grove/tools/palace/palace.py",
-  "script_sha256": "c344de516ce4d6079952a216cd5becdb2e9fee92dc24118d916515a47d1bd3d9",
+  "script_sha256": "b6407037c5f1c0100c666175a325cee31f9601cb22d3513180505b4143ff6c80",
   "blender": "4.2.1 LTS",
   "git": {
-    "commit": "080bb292eba75ad0c41da24db5e9e65dbcc7e0c6",
+    "commit": "cbc5d68c199f5cab5015fc2760fcfd521dcde61b",
     "dirty": true
   },
-  "generated_at_utc": "2026-09-13T00:26:16Z",
+  "generated_at_utc": "2026-09-13T04:58:47Z",
   "look": "white, gold and marble (Naturhistorisches Museum), ruled 2026-09-12",
   "bake": {
     "engine": "cycles",
@@ -25,21 +25,21 @@
     "device": "CPU",
     "threads": 16,
     "denoise": "OpenImageDenoise via the compositor Denoise node",
-    "seconds_bake": 379.48,
-    "seconds_denoise": 0.97,
-    "noise_metric": 0.129855,
+    "seconds_bake": 347.28,
+    "seconds_denoise": 0.68,
+    "noise_metric": 0.130704,
     "skipped": false,
-    "seconds_preview": 10.78,
-    "seconds_wall_clock": 395.77
+    "seconds_preview": 7.46,
+    "seconds_wall_clock": 359.3
   },
   "lightmap": {
     "file": "lightmap.png",
     "ktx2": "lightmap.ktx2",
     "ktx2_phone": "lightmap-1024.ktx2",
-    "scale": 1.745521,
-    "three_light_map_intensity": 5.483716,
-    "coverage": 0.7129,
-    "clipped_fraction": 3e-06,
+    "scale": 1.744343,
+    "three_light_map_intensity": 5.480015,
+    "coverage": 0.8504,
+    "clipped_fraction": 0.0,
     "binding": "texture.colorSpace = SRGBColorSpace, flipY = false, channel = 1, material.lightMapIntensity = three_light_map_intensity"
   },
   "geometry": {
@@ -58,8 +58,8 @@
       ]
     },
     "height": 5.0,
-    "faces": 180,
-    "surface_area_m2": 306.0,
+    "faces": 175,
+    "surface_area_m2": 309.2,
     "doorways": [
       {
         "to": "hall",
@@ -151,24 +151,24 @@
   },
   "files": {
     "greenhouse.glb": {
-      "bytes": 199616,
-      "sha256": "c253654ed0f04ab18685eeaf92ddcadf489458c24aeee055e73750c1b69540ed"
+      "bytes": 199752,
+      "sha256": "c2fcf88187f1a17291cd608fc53ce6f3ff125fffaf21df7f6fe82931a2908ce9"
     },
     "lightmap.png": {
-      "bytes": 875145,
-      "sha256": "b2af98dc45a18399bd1dadf81e751c2a50d551361f466694a92ce2238630803b"
+      "bytes": 1009746,
+      "sha256": "97620774019233d860659a9681b01dfa5075ea1c99ed8a321e9acf715bfb6bca"
     },
     "lightmap.ktx2": {
-      "bytes": 752792,
-      "sha256": "a41a9a84a0c4b6db3835e23f063d805646e0a150649822fd60c1d786d16358a5"
+      "bytes": 863678,
+      "sha256": "d12baed6cedc4daa89a01e1c693d3d82dc2d698ed4218bd9ae043cbf2d8b6012"
     },
     "lightmap-1024.ktx2": {
-      "bytes": 752792,
-      "sha256": "a41a9a84a0c4b6db3835e23f063d805646e0a150649822fd60c1d786d16358a5"
+      "bytes": 863678,
+      "sha256": "d12baed6cedc4daa89a01e1c693d3d82dc2d698ed4218bd9ae043cbf2d8b6012"
     },
     "preview.png": {
-      "bytes": 739196,
-      "sha256": "13bde55347196a76a26561a1dd2c6d901655ab7534485634d15e33b80bc781c5"
+      "bytes": 739298,
+      "sha256": "f9151c71bc8aad84d8fdafea32ca3fb228048704e207a329fa5b0061349b3647"
     }
   }
 }
