@@ -224,7 +224,9 @@ function boot(): void {
       if (room.id !== body.room || bodyPlaced) return;
       body.x = room.spawn.position[0];
       body.z = room.spawn.position[2];
-      body.yaw = MathUtils.degToRad(room.spawn.yawDeg);
+      // ...except the heading when the link asked for one: `?yaw=` is for
+      // looking at a particular wall, and the marker must not turn it away.
+      if (!query.has("yaw")) body.yaw = MathUtils.degToRad(room.spawn.yawDeg);
     },
   });
   world = built;
