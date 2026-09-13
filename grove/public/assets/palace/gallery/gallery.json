@@ -1,0 +1,230 @@
+{
+  "schema": "orchard/room/1",
+  "asset": "gallery",
+  "generated_by": "grove/tools/palace/palace.py",
+  "script_sha256": "b6407037c5f1c0100c666175a325cee31f9601cb22d3513180505b4143ff6c80",
+  "blender": "4.2.1 LTS",
+  "git": {
+    "commit": "4f0f4dc7b44e04b52c1597c07fcda3e42dea0c82",
+    "dirty": true
+  },
+  "generated_at_utc": "2026-09-13T04:44:56Z",
+  "look": "white, gold and marble (Naturhistorisches Museum), ruled 2026-09-12",
+  "bake": {
+    "engine": "cycles",
+    "type": "DIFFUSE",
+    "passes": [
+      "direct",
+      "indirect"
+    ],
+    "colour_pass": false,
+    "samples": 256,
+    "resolution": 4096,
+    "margin_px": 8,
+    "uv_layer": "uv2",
+    "device": "CPU",
+    "threads": 16,
+    "denoise": "OpenImageDenoise via the compositor Denoise node",
+    "seconds_bake": 2877.27,
+    "seconds_denoise": 11.77,
+    "noise_metric": 0.144075,
+    "skipped": false,
+    "seconds_preview": 9.54,
+    "seconds_wall_clock": 2936.44
+  },
+  "lightmap": {
+    "file": "lightmap.png",
+    "ktx2": "lightmap.ktx2",
+    "ktx2_phone": "lightmap-1024.ktx2",
+    "scale": 3.143231,
+    "three_light_map_intensity": 9.874751,
+    "coverage": 0.7842,
+    "clipped_fraction": 2.9e-05,
+    "binding": "texture.colorSpace = SRGBColorSpace, flipY = false, channel = 1, material.lightMapIntensity = three_light_map_intensity"
+  },
+  "geometry": {
+    "units": "metres",
+    "type": "gallery",
+    "bounds_gltf": {
+      "min": [
+        -7,
+        0,
+        22
+      ],
+      "max": [
+        7,
+        7,
+        58
+      ]
+    },
+    "height": 7.0,
+    "faces": 976,
+    "surface_area_m2": 2019.2,
+    "doorways": [
+      {
+        "to": "phototroph",
+        "axis": "z",
+        "at": 22,
+        "center": 0,
+        "width": 2.4,
+        "height": 3.2
+      },
+      {
+        "to": "event-atoms",
+        "axis": "x",
+        "at": 7,
+        "center": 28,
+        "width": 2.4,
+        "height": 3.2,
+        "closed": true
+      },
+      {
+        "to": "mosaic",
+        "axis": "x",
+        "at": 7,
+        "center": 40,
+        "width": 2.4,
+        "height": 3.2,
+        "closed": true
+      },
+      {
+        "to": "HNL",
+        "axis": "x",
+        "at": 7,
+        "center": 52,
+        "width": 2.4,
+        "height": 3.2,
+        "closed": true
+      },
+      {
+        "to": "someotherlife",
+        "axis": "z",
+        "at": 58,
+        "center": -3.5,
+        "width": 2.4,
+        "height": 3.2,
+        "closed": true
+      }
+    ],
+    "windows": [
+      {
+        "wall": "-x",
+        "bays": 9,
+        "width": 1.6,
+        "sill": 1.6,
+        "head": 5.6
+      }
+    ],
+    "posters": [
+      {
+        "wall": "+x",
+        "center": 25,
+        "width": 4.5,
+        "height": 3.0,
+        "z0": 1.5
+      },
+      {
+        "wall": "+x",
+        "center": 34,
+        "width": 4.5,
+        "height": 3.0,
+        "z0": 1.5
+      },
+      {
+        "wall": "+x",
+        "center": 46,
+        "width": 4.5,
+        "height": 3.0,
+        "z0": 1.5
+      },
+      {
+        "wall": "+x",
+        "center": 55,
+        "width": 4.5,
+        "height": 3.0,
+        "z0": 1.5
+      }
+    ],
+    "style": {
+      "h": 7.0,
+      "wainscot": 1.1,
+      "cornice": [
+        6.55,
+        6.85
+      ],
+      "coffer": 3.6,
+      "floor": "floor_marble",
+      "wall": "wall_stucco"
+    },
+    "floor": "floor_marble",
+    "wall": "wall_stucco",
+    "materials": [
+      "gallery_floor",
+      "gallery_wall",
+      "gallery_ceiling",
+      "gallery_trim",
+      "gallery_wainscot",
+      "gallery_pilaster",
+      "gallery_gilt",
+      "gallery_panel",
+      "gallery_leaf"
+    ]
+  },
+  "lighting": {
+    "sun_direction_blender": [
+      0.7796,
+      0.2999,
+      -0.5498
+    ],
+    "sun_strength": 3.6,
+    "world": "Nishita sky",
+    "world_strength": 0.85,
+    "fill": {
+      "lamps": 19,
+      "watts_each": 400.0,
+      "colour": [
+        1.0,
+        0.86,
+        0.68
+      ],
+      "placement": "one per 8 m along each interior room's long axis at 0.55 h"
+    },
+    "occluders": [
+      "einstruct",
+      "gallery",
+      "greenhouse",
+      "hall",
+      "orangery",
+      "orchard-east",
+      "orchard-south",
+      "orchard-west",
+      "parterre",
+      "phototroph",
+      "spectre",
+      "terrace",
+      "world-engine"
+    ]
+  },
+  "files": {
+    "gallery.glb": {
+      "bytes": 546564,
+      "sha256": "b27febe3dc1f8f810671a4ce300207a6c24e94c34b84da45a3cfbace30d24723"
+    },
+    "lightmap.png": {
+      "bytes": 13003840,
+      "sha256": "6ec4b52044629a43e1cce90c62e175a96f071917fa2949fcd0c605550dd6179b"
+    },
+    "lightmap.ktx2": {
+      "bytes": 10558876,
+      "sha256": "01e08d38f9c0286699806f15cac579ea7b6ed90d68195a0dd39f13b933c428bf"
+    },
+    "lightmap-1024.ktx2": {
+      "bytes": 893289,
+      "sha256": "37b966e48a80d9a0acd194e2a5cd8aab4bca9d33379a2131a691b86dd98dbc6a"
+    },
+    "preview.png": {
+      "bytes": 1055024,
+      "sha256": "7f51281df7a6cf651b85ac6c9f8d0ca758acecb7e2077cbabea202823190880b"
+    }
+  }
+}
