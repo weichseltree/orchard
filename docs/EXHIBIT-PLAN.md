@@ -425,6 +425,21 @@ housekeeping commits.
   the tree now says a lit hero shot comes only after a styleframe ruling,
   so this is the still to rule on.
 - **einstruct, artefact/.** Commit the companion page or delete it.
+- **einstruct, one episode or two (2026-09-13).** The tree's registered
+  kill criterion fired: E34's held-out-dimension check failed (3.46 at
+  d = 1 and 1.0 at d = 3 against 0.25; the hazard table transfers across
+  density and mixing, not across dimension), and the criterion says prune
+  to the one chemistry episode and fund no second. Recorded in einstruct's
+  orchard.yaml at 7f56594. The complication is E34b, registered after that
+  failure and before its runs (091b012): reading the table at the pair's
+  capture probability with the dimension taken from the run's own rows, it
+  transfers (median |log ratio| 0.197 and 0.163 against 0.22) at the cost
+  of a registered in-sample check that fails (+0.09 on all four held-in
+  cases). That is distances recovering what coordinates have, not beating
+  them. Rule: the one episode by the criterion, or does a registered
+  follow-up to a failure reopen a second? Recommended: the one episode;
+  E34b goes into that episode's own telling as the honest coda, and no
+  second is funded on it.
 - **spectre, a private remote.** After a secrets scan; the harvest stamps
   commits that otherwise live on one disk, and in-kind jobs need a pinned
   commit. Recommended yes, before its harvest.
