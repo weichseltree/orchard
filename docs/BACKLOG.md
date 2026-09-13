@@ -179,6 +179,11 @@ Ordered. Items with a name in brackets wait on that person.
    after every build and diffed against the last accepted set, with a
    z-fight probe (the same station 2 mm apart). The checker finds geometry;
    this finds what the checker cannot (texture shimmer, a light gone wrong).
+38. **The facade wall behind its plinth band bakes black.** The wall is cut
+   only at the openings, so the cells whose centres fall behind the 1.1 m
+   band (z 0 to 1.6 between windows) are enclosed and the terrace's
+   lightmap statistics flag `facade` DARK at p10. Hidden, so harmless; cut
+   the band's footprint out of the wall next round and the flag goes.
 37. **AO strength is a recomposition.** `ao.png` is kept beside every
    lightmap; a `--recompose` that divides the old mix out of lightmap.png
    and multiplies a new one in would let the strength be re-ruled without
