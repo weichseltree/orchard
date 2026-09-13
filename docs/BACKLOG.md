@@ -302,3 +302,23 @@ PACKAGES.md is the rule set; `orchard audit` checks it every 15 minutes.
    rather than the dimer-split mechanism; phototroph-04 brings a proposal
    and its lane cost for a ruling.
 
+## Packages and enforcement (2026-09-13)
+
+PACKAGES.md is the rule set; `orchard audit` checks it every 15 minutes.
+
+1. **logswarm is archived until its next job** (Manuel, 2026-09-13). It
+   comes back to stream monitoring data from the live platforms and the
+   simulations, and to give every active repo and live product an audio
+   stream, so a visitor can hear the compute. Nothing is designed yet; the
+   sources it would read already exist (`~/.exp_status`, expdash's
+   `/api/status`, orchard's ledger), and the grove's spatial voice path
+   (item 7) is where the sound would play. Until then audit.yaml lists it as
+   archived, and its failing pins and lockfile are not fixed.
+2. **The shared research packages.** event-atoms' `gridevents` and agivity's
+   `agivity-ihwm`, consumed by arcagi2026 by tag, replace the last cross-repo
+   `sys.path` imports outside the studio extraction (item 31 above).
+3. **phototroph's exhibit** is to show what the repo asks (does matter,
+   given one colour of light, organise into something that feeds on it)
+   rather than the dimer-split mechanism; phototroph-04 brings a proposal
+   and its lane cost for a ruling.
+

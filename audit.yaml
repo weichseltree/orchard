@@ -22,6 +22,10 @@ archived:
   - sudo-community
   - stratum
   - mosaic
+  # Archived by Manuel's ruling (2026-09-13) until it has its next job:
+  # streaming monitoring data from live platforms and simulations, and an audio
+  # stream per active repo or live product ("hear the compute"). BACKLOG.md.
+  - logswarm
 
 # The stai-social organisation's repos.
 out_of_scope:
