@@ -51,7 +51,9 @@ sys.path.insert(0, TOOLS)
 import bake_hall as hb  # noqa: E402  (Build, reveal, uvs, bake, denoise, export helpers)
 
 REPO = os.path.dirname(os.path.dirname(TOOLS))
-MANSION = os.path.join(REPO, "grove", "src", "world", "mansion.json")
+# Historical palace tooling: the live scene now uses runtime Observatory
+# geometry. Preserve reproducibility of the retired bakes against their plan.
+MANSION = os.path.join(REPO, "docs", "specs", "archive", "palace-2026-09-12.json")
 Z = Vector((0.0, 0.0, 1.0))
 EPS = 1e-6
 

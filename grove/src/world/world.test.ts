@@ -84,7 +84,7 @@ describe("placeStill", () => {
 });
 
 describe("buildWorld", () => {
-  it("carries exactly one runtime light, a hemisphere, and never a directional", () => {
+  it("uses one hemisphere and one shadowless key for Observatory objects", () => {
     // Nothing is loaded: the renderer is never touched before load().
     const world = buildWorld({
       mansion: parseMansion(mansionDocument),
@@ -97,10 +97,11 @@ describe("buildWorld", () => {
     world.group.traverse((node) => {
       if (node instanceof Light) lights.push(node);
     });
-    expect(lights).toHaveLength(1);
+    expect(lights).toHaveLength(2);
     expect(lights[0]).toBeInstanceOf(HemisphereLight);
-    expect(lights.some((l) => l instanceof DirectionalLight)).toBe(false);
-    expect((lights[0] as HemisphereLight).intensity).toBeCloseTo(0.35);
+    expect(lights[1]).toBeInstanceOf(DirectionalLight);
+    expect(lights.every((light) => !light.castShadow)).toBe(true);
+    expect((lights[0] as HemisphereLight).intensity).toBeCloseTo(0.6);
   });
 });
 

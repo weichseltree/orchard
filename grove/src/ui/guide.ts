@@ -1,5 +1,8 @@
+import "./guide.css";
 import type { DeviceProfile } from "../device";
+import { demoEnabled } from "../demo";
 import { roomById, type Mansion, type Room } from "../world/schema";
+import { evidenceUrl, exhibitContent, RESEARCH_ORDER, researchRooms, roomHref } from "./exhibit-content";
 
 const SEEN_KEY = "orchard.grove.guide-seen";
 
@@ -9,18 +12,32 @@ export function destinations(mansion: Mansion, room: Room): Room[] {
   return mansion.rooms.filter((candidate) => ids.has(candidate.id));
 }
 
-/** A native dialog supplies focus containment, Escape, and a scrollable phone guide. */
+/** A native dialog keeps focus, Escape and touch scrolling in the browser's hands. */
 export class VisitorGuide {
   #dialog = document.createElement("dialog");
   #location = document.createElement("button");
-  #roomHeading = document.createElement("h2");
+  #title = document.createElement("h1");
+  #kicker = document.createElement("p");
+  #intro = document.createElement("p");
+  #look = document.createElement("section");
+  #observations = document.createElement("ul");
+  #limitation = document.createElement("p");
+  #evidence = document.createElement("details");
+  #evidenceSummary = document.createElement("summary");
+  #species = document.createElement("p");
+  #source = document.createElement("a");
+  #rooms = document.createElement("details");
+  #roomLinks = document.createElement("div");
   #doors = document.createElement("nav");
+  #doorSection = document.createElement("section");
   #mansion: Mansion;
   #search: string;
+  #demo: boolean;
 
   constructor(root: HTMLElement, mansion: Mansion, device: DeviceProfile, onExplore: () => void) {
     this.#mansion = mansion;
     this.#search = location.search;
+    this.#demo = demoEnabled(import.meta.env.DEV, this.#search);
     this.#location.className = "location btn panel";
     this.#location.type = "button";
     this.#location.addEventListener("click", () => this.show());
@@ -35,16 +52,75 @@ export class VisitorGuide {
     help.addEventListener("click", () => this.show());
     root.querySelector(".top-right")?.prepend(help);
 
-    this.#dialog.className = "visitor-guide panel";
+    this.#dialog.className = "visitor-guide observatory-guide panel";
     this.#dialog.setAttribute("aria-labelledby", "guide-title");
-    const title = document.createElement("h1");
-    title.id = "guide-title";
-    title.tabIndex = -1;
-    title.setAttribute("autofocus", "");
-    title.textContent = "Find your way in the grove";
-    const intro = document.createElement("p");
-    intro.textContent = "Walk into a room, find a simulation, and move through its time. You can reopen this guide whenever you need it.";
-    const controls = document.createElement("dl");
+    this.#dialog.setAttribute("aria-describedby", "guide-intro");
+    this.#title.id = "guide-title";
+    this.#title.tabIndex = -1;
+    this.#title.setAttribute("autofocus", "");
+    this.#kicker.className = "guide-kicker";
+    this.#intro.id = "guide-intro";
+    this.#intro.className = "guide-intro";
+
+    const mode = document.createElement("p");
+    mode.className = "guide-mode";
+    mode.textContent = "Local demo · synthetic particles";
+    mode.hidden = !this.#demo;
+
+    const actions = document.createElement("div");
+    actions.className = "guide-actions";
+    const explore = document.createElement("button");
+    explore.type = "button";
+    explore.className = "btn accent";
+    explore.textContent = device.headset ? "Return to the view" : "Start exploring";
+    explore.addEventListener("click", () => {
+      this.#dialog.close();
+      onExplore();
+    });
+    const home = document.createElement("a");
+    home.href = "/";
+    home.className = "btn";
+    home.textContent = "Back to the website";
+    const quickControl = document.createElement("p");
+    quickControl.className = "guide-quick-control";
+    quickControl.textContent = device.headset
+      ? "Choose Enter VR in the view; use the left stick to walk."
+      : device.touch ? "Drag to look around. Use the round stick to walk."
+        : "Click the view to look around. Use W A S D to walk.";
+    actions.append(explore, home, quickControl);
+
+    const lookHeading = document.createElement("h2");
+    lookHeading.textContent = "Look for";
+    this.#look.className = "guide-looking";
+    this.#look.append(lookHeading, this.#observations);
+    this.#limitation.className = "guide-limitation";
+    this.#evidence.className = "guide-disclosure";
+    this.#source.className = "guide-source";
+    this.#evidence.append(this.#evidenceSummary, this.#species, this.#source);
+
+    const roomSummary = document.createElement("summary");
+    roomSummary.textContent = "Choose a research chamber";
+    const directHint = document.createElement("p");
+    directHint.className = "guide-note";
+    directHint.textContent = "Follow this order, or begin with the question that draws you in. Each link opens that room directly.";
+    this.#rooms.className = "guide-disclosure guide-rooms";
+    this.#roomLinks.className = "guide-room-links";
+    this.#rooms.append(roomSummary, directHint, this.#roomLinks);
+
+    const doorHeading = document.createElement("h2");
+    doorHeading.textContent = "Open doorways from here";
+    const doorHint = document.createElement("p");
+    doorHint.className = "guide-note";
+    doorHint.textContent = "Neighbouring rooms. Links open them directly.";
+    this.#doors.setAttribute("aria-label", "Open doorways");
+    this.#doors.className = "guide-doors";
+    this.#doorSection.className = "guide-door-section";
+    this.#doorSection.append(doorHeading, doorHint, this.#doors);
+
+    const controls = document.createElement("details");
+    controls.className = "guide-disclosure guide-controls";
+    const controlSummary = document.createElement("summary");
+    controlSummary.textContent = "How to move and use a tape";
     const rows = device.headset
       ? [
           ["Look and walk", "Enter VR from the top bar. Look around and use the left stick to walk."],
@@ -65,33 +141,17 @@ export class VisitorGuide {
             ["Follow a tape", "Space plays or pauses; [ and ] move one frame. You can also use the time slider below."],
             ["Read or listen", "P shows where the view came from. M turns the room's video sound on or off. X changes tape speed."],
           ];
+    const controlList = document.createElement("dl");
     for (const [action, instruction] of rows) {
       const term = document.createElement("dt");
       term.textContent = action!;
       const description = document.createElement("dd");
       description.textContent = instruction!;
-      controls.append(term, description);
+      controlList.append(term, description);
     }
-    this.#doors.setAttribute("aria-label", "Open doorways");
-    const doorHint = document.createElement("p");
-    doorHint.className = "guide-note";
-    doorHint.textContent = "Walk through a doorway, or open a room directly below.";
-    const actions = document.createElement("div");
-    actions.className = "guide-actions";
-    const explore = document.createElement("button");
-    explore.type = "button";
-    explore.className = "btn accent";
-    explore.textContent = device.headset ? "Return to the view" : "Start exploring";
-    explore.addEventListener("click", () => {
-      this.#dialog.close();
-      onExplore();
-    });
-    const home = document.createElement("a");
-    home.href = "/";
-    home.className = "btn";
-    home.textContent = "Back to the website";
-    actions.append(explore, home);
-    this.#dialog.append(title, intro, controls, this.#roomHeading, doorHint, this.#doors, actions);
+    controls.append(controlSummary, controlList);
+    this.#dialog.append(this.#kicker, this.#title, mode, this.#intro, actions, this.#look,
+      this.#limitation, this.#evidence, this.#rooms, this.#doorSection, controls);
     this.#dialog.addEventListener("close", () => {
       try { localStorage.setItem(SEEN_KEY, "1"); } catch { /* Visiting does not need storage. */ }
     });
@@ -102,17 +162,53 @@ export class VisitorGuide {
     const room = roomById(this.#mansion, id);
     if (!room) return;
     const title = room.title || room.id;
+    const exhibit = exhibitContent(room, this.#demo);
     this.#location.textContent = `You are in ${title.replace(/^The /, "the ")} · Guide`;
-    this.#roomHeading.textContent = `Open doorways from ${title.replace(/^The /, "the ")}`;
+    this.#kicker.textContent = exhibit.source ? `${title} / ${exhibit.source}` : title;
+    this.#title.textContent = exhibit.question;
+    this.#intro.textContent = exhibit.introduction;
+    this.#look.hidden = exhibit.lookFor.length === 0;
+    this.#observations.replaceChildren(...exhibit.lookFor.map((observation) => {
+      const item = document.createElement("li");
+      item.textContent = observation;
+      return item;
+    }));
+    this.#limitation.textContent = exhibit.limitation ?? "";
+    this.#limitation.hidden = !exhibit.limitation;
+    this.#species.textContent = exhibit.species ?? "";
+    this.#species.hidden = !exhibit.species;
+    const source = evidenceUrl(exhibit);
+    this.#source.hidden = !source;
+    if (source) this.#source.href = source;
+    else this.#source.removeAttribute("href");
+    this.#source.textContent = this.#demo ? "Notes for the research exhibit" : "Read the research notes";
+    this.#evidenceSummary.textContent = exhibit.species ? "Particle meaning and evidence" : "Research notes";
+    this.#evidence.hidden = !source && !exhibit.species;
+    this.#evidence.open = false;
+
+    const research = researchRooms(this.#mansion).filter((candidate) => candidate.id !== id);
+    this.#rooms.hidden = research.length === 0;
+    this.#rooms.open = id === "hall";
+    this.#roomLinks.replaceChildren(...research.map((destination) => {
+      const link = document.createElement("a");
+      link.className = "guide-room-link";
+      link.href = roomHref(this.#search, destination.id);
+      const ordinal = document.createElement("span");
+      ordinal.className = "guide-route-number";
+      ordinal.textContent = String(RESEARCH_ORDER.findIndex((stop) => stop === destination.id) + 1).padStart(2, "0");
+      const name = document.createElement("strong");
+      name.textContent = destination.title || destination.id;
+      const question = document.createElement("span");
+      question.textContent = exhibitContent(destination).question;
+      link.append(ordinal, name, question);
+      return link;
+    }));
     const rooms = destinations(this.#mansion, room);
+    this.#doorSection.hidden = rooms.length === 0;
     this.#doors.replaceChildren(...rooms.map((destination) => {
       const link = document.createElement("a");
       link.className = "btn";
-      // Keep mode flags such as the local demo, but leave the previous view coordinates behind.
-      const search = new URLSearchParams(this.#search);
-      for (const key of ["yaw", "pitch", "x", "z"]) search.delete(key);
-      search.set("room", destination.id);
-      link.href = `/grove/?${search}`;
+      link.href = roomHref(this.#search, destination.id);
       link.textContent = destination.title || destination.id;
       return link;
     }));

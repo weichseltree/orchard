@@ -4,6 +4,11 @@ Walk through particle tapes, watch the result beside them, and inspect their
 sources. The grove is the orchard's browser world: Three.js, strict
 TypeScript and Vite, with desktop, touch and WebXR controls.
 
+The current world is [the Observatory](../docs/specs/OBSERVATORY.md):
+illuminated vaults, dark research chambers and open gardens, built directly
+in the browser. The former palace scene and bake tools are archived for
+reproduction; their GLBs and lightmaps are not shipped by this scene.
+
 ## First run
 
 Requirements: **Node.js 22** and **pnpm 10.29.2**. From this directory:
@@ -15,7 +20,7 @@ pnpm demo
 
 Open [localhost:5173/grove/?demo](http://localhost:5173/grove/?demo).
 The command writes synthetic fixtures, prepares the texture decoder and
-starts Vite. You land in the einstruct room beside a particle tape, with a
+starts Vite. You land in the Mixing Chamber beside a particle tape, with a
 visible local-demo label. No API keys, cloud account, Python environment or
 SpacetimeDB server is needed. Dependency installation needs a network
 connection; the running demo reads its world and media locally.

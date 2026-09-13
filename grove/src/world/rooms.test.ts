@@ -1,7 +1,7 @@
 import { DirectionalLight, Group, HemisphereLight, Light, Object3D, Quaternion, Vector3, type WebGLRenderer } from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import mansionDocument from "./mansion.json";
+import mansionDocument from "../../../docs/specs/archive/palace-2026-09-12.json";
 import { buildRoom, lightmapCandidates, proceduralRoom, readMarkers, shellLights } from "./rooms";
 import * as lightmaps from "../render/lightmap";
 import { parseMansion, roomById } from "./schema";

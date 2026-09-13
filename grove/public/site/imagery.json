@@ -1,5 +1,5 @@
 {
-  "description": "Source records for the landing page images. The simulation poster is copied unchanged; the architectural hall is encoded as lossless WebP with identical decoded RGBA pixels.",
+  "description": "Source records for the Observatory landing page. The research poster is unchanged. The architecture image is a lossless encoding of a native browser capture of the local synthetic demo.",
   "images": [
     {
       "file": "particle-tape.png",
@@ -18,23 +18,39 @@
       "note": "The poster shows the sampled browser variant, not all particles in the original simulation. Its source caption is preserved."
     },
     {
-      "file": "hall.webp",
-      "kind": "architectural render",
-      "source": "docs/img/palace-still-hall.png",
-      "sha256": "6ba6885ded3806220ba9bc0ab25906fd0950ab5b94a2a18f8f0c62924954c4f5",
-      "width": 1280,
-      "height": 720,
-      "note": "A repository render of the hall's architecture. This is not a browser screenshot or evidence of headset rendering quality.",
-      "source_sha256": "9a29f32e94c1b0b7a907c1e26c54d786a9cdd332052a341e0ed7c18bd346f3b2",
+      "file": "observatory.webp",
+      "kind": "local-demo browser architecture capture",
+      "source": "docs/img/observatory/hall.png",
+      "source_sha256": "410b1c89b1ef1b878bf58abe9a6938047fa4a1adf57d92ef0c3d1680de84ba3b",
+      "sha256": "e0462b83f8fcfe0081f4df6ffcd1c0946e0fc24128eb5e7d5af5300cd3e78c18",
+      "width": 1600,
+      "height": 900,
+      "camera": {
+        "room": "hall",
+        "x": 0,
+        "z": 8,
+        "eyeHeight": 1.6,
+        "yawDeg": 0,
+        "pitchDeg": 12
+      },
+      "note": "Actual Chromium/SwiftShader browser view. HTML controls are hidden; distant particles are synthetic local playback fixtures. This is not scientific evidence or physical-device validation.",
+      "capture_command": "cd grove && pnpm quality:world --screenshots --out ../results/observatory/world-final.json",
+      "code_sha256": {
+        "grove/src/world/observatory.ts": "ce4277ceafc1c9afcc3d029795359e4fa52f61089789c8dab610d377d29d4f51",
+        "grove/src/world/mansion.json": "2eb98dbba0adc2180f9c7f59a2744c0dbe8ec28a69144bf5353bd265295db7c4",
+        "grove/src/world/sky.ts": "4426b85eb485aa83beb6b139c174a2072696fd7cb96a208240f27713e011ad03",
+        "grove/src/world/world.ts": "4d59de0dbabe070637f9caa9e6b4e0b8d93a17c56cdb2a571de490a7d7c3fec1",
+        "grove/src/render/view.ts": "95884823f80be175f5e72c20ff4307d4ec2d1b5f57235f89d51f10c9f5d90969"
+      },
       "encoding": {
         "format": "WebP",
         "lossless": true,
-        "source_bytes": 966594,
-        "encoded_bytes": 572830,
-        "decoded_rgba_sha256": "548bc77472e991bd6f641af80de07891a121ef5789b6c30f3db0ac945f2c2f96",
-        "pixel_verification": "Source and encoded image have identical decoded RGBA bytes.",
-        "tool": "Pillow 12.3.0",
-        "command": "uv run python -c \"from PIL import Image; source = Image.open('docs/img/palace-still-hall.png'); source.save('grove/public/site/hall.webp', format='WEBP', lossless=True, method=6, exact=True); encoded = Image.open('grove/public/site/hall.webp'); assert source.convert('RGBA').tobytes() == encoded.convert('RGBA').tobytes()\""
+        "source_bytes": 762850,
+        "encoded_bytes": 536094,
+        "decoded_rgba_sha256": "c54eb1eb937359121910e1296a80eba69a1d8b0e8b38a6fefd5b5dfb8fa67beb",
+        "pixel_verification": "Source PNG and encoded WebP have identical decoded RGBA bytes.",
+        "tool": "FFmpeg libwebp",
+        "command": "ffmpeg -i docs/img/observatory/hall.png -c:v libwebp -lossless 1 grove/public/site/observatory.webp"
       }
     }
   ]

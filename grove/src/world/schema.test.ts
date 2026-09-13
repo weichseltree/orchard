@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { z } from "zod";
 import mansionDocument from "./mansion.json";
 import { BundleRefSchema, MansionSchema, parseMansion, roomById, type Doorway, type Room } from "./schema";
 
@@ -18,7 +17,7 @@ describe("mansion.json", () => {
     expect(mansion.start).toBe("hall");
   });
 
-  it("describes the hall the spec asks for: 14 x 20 x 7 m with a 2.4 x 3.2 m doorway", () => {
+  it("opens the 14 x 20 x 7 m Observatory hall with a generous axial portal", () => {
     const hall = roomById(parseMansion(mansionDocument), "hall");
     expect(hall).toBeDefined();
     const { min, max } = hall!.bounds;
@@ -29,7 +28,7 @@ describe("mansion.json", () => {
     // The palace: the einstruct door, the phototroph door in the once-blank back
     // wall, and the greenhouse door, closed to visitors.
     expect(hall!.doorways).toHaveLength(5);
-    expect(hall!.doorways[0]).toMatchObject({ to: "einstruct", width: 2.4, height: 3.2 });
+    expect(hall!.doorways[0]).toMatchObject({ to: "einstruct", width: 4.8, height: 4.6 });
     expect(hall!.doorways.find((d) => d.to === "greenhouse")).toMatchObject({ closed: true });
   });
 
@@ -39,7 +38,7 @@ describe("mansion.json", () => {
     const still = hall.hangings[0]!;
     expect(still.kind).toBe("still");
     if (still.kind !== "still") return;
-    expect(still.marker).toBe("poster_wall");
+    expect(still.marker).toBe("");
     expect(still.bundle.exhibit).toEqual({ tree: "einstruct", kind: "still", bundle: "" });
     expect([still.widthMeters, still.heightMeters]).toEqual([6, 3.4]);
   });
@@ -164,22 +163,11 @@ describe("BundleRefSchema", () => {
 
 });
 
-// The walls, in glTF: "-x" is x = bounds.min[0], "+x" x = bounds.max[0],
-// "-z" z = bounds.min[2], "+z" z = bounds.max[2]. The generator (tools/palace)
-// works in Blender's Z-up and calls the z walls by Blender's y, which runs the
-// other way: its "+y" is glTF "-z" and its "-y" is glTF "+z". A poster's
-// `center` is a glTF z on the x walls and a glTF x on the others.
+// Check the actual media panels, not retired baker decoration metadata.
 type Wall = "-x" | "+x" | "-z" | "+z";
-const GENERATOR_WALL: Record<string, Wall> = { "+x": "+x", "-x": "-x", "+y": "-z", "-y": "+z" };
 
 /** How far a door's surround reaches past the opening; a poster may not sit on it. */
 const DOOR_SURROUND_M = 0.3;
-
-const PosterSchema = z.looseObject({
-  wall: z.enum(["+x", "-x", "+y", "-y"]),
-  center: z.number(),
-  width: z.number().positive(),
-});
 
 function wallOf(room: Room, door: Doorway): Wall {
   const axis = door.axis === "x" ? 0 : 2;
@@ -189,9 +177,17 @@ function wallOf(room: Room, door: Doorway): Wall {
   throw new Error(`${room.id}: doorway to ${door.to} at ${door.at} is on no wall`);
 }
 
-function postersOf(room: Room): Array<z.infer<typeof PosterSchema>> {
-  const palace = (room as { palace?: { posters?: unknown } }).palace;
-  return z.array(PosterSchema).parse(palace?.posters ?? []);
+function postersOf(room: Room): Array<{ wall: Wall; center: number; width: number }> {
+  return room.hangings.flatMap((hanging) => {
+    if (hanging.kind === "tape") return [];
+    const [x, , z] = hanging.position;
+    const candidates: Array<[Wall, number, number]> = [
+      ["-x", Math.abs(x - room.bounds.min[0]), z], ["+x", Math.abs(x - room.bounds.max[0]), z],
+      ["-z", Math.abs(z - room.bounds.min[2]), x], ["+z", Math.abs(z - room.bounds.max[2]), x],
+    ];
+    const [wall, distance, center] = candidates.sort((a, b) => a[1] - b[1])[0]!;
+    return distance < 0.5 ? [{ wall, center, width: hanging.widthMeters }] : [];
+  });
 }
 
 describe("the walls", () => {
@@ -224,12 +220,9 @@ describe("the walls", () => {
     }
   });
 
-  // Fails today: the gallery's posters at 25 and 55 on "+x" (4.5 m wide) run
-  // 0.45 m into the closed doors at 28 and 52, and 0.75 m into their
-  // surrounds. Those two posters are being moved in mansion.json; when that
-  // lands this passes, vitest reports it as such, and `.fails` comes off.
   it("no poster sits on a doorway or its surround", () => {
     const overlaps: string[] = [];
+    expect(mansion.rooms.flatMap(postersOf).length).toBeGreaterThan(0);
     for (const room of mansion.rooms) {
       const posters = postersOf(room);
       if (posters.length === 0) continue;
@@ -238,7 +231,7 @@ describe("the walls", () => {
         const d0 = door.center - door.width / 2 - DOOR_SURROUND_M;
         const d1 = door.center + door.width / 2 + DOOR_SURROUND_M;
         for (const poster of posters) {
-          if (GENERATOR_WALL[poster.wall] !== wall) continue;
+          if (poster.wall !== wall) continue;
           const p0 = poster.center - poster.width / 2;
           const p1 = poster.center + poster.width / 2;
           if (p0 < d1 && d0 < p1) {
@@ -254,9 +247,9 @@ describe("the walls", () => {
 });
 
 describe("exposure", () => {
-  it("defaults to the hall's and is a fifth on the grounds", () => {
+  it("keeps one exposure across the Observatory and its grounds", () => {
     const m = parseMansion(mansionDocument);
     expect(m.rooms.find((r) => r.id === "hall")?.exposure).toBe(1);
-    for (const r of m.rooms.filter((r) => r.fallback.kind === "ground")) expect(r.exposure).toBeLessThan(0.5);
+    for (const r of m.rooms) expect(r.exposure).toBe(1);
   });
 });

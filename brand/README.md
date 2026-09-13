@@ -1,119 +1,143 @@
-# The weichseltree brand package
+# The Observatory visual identity
 
-What weichseltree looks and sounds like, in three files, so that a page, a
-thumbnail, a HUD panel or a title card made by anyone in any session comes
-out as one thing. Written 2026-09-12 against the shipped grove and the
-gallery ruling (DECISIONS 2026-09-12).
+The Observatory is the current place you enter in **the grove**, the
+orchard's browser world. Its public presentation uses dark mineral colours,
+warm ivory type, brass entrances and a cool nocturnal atmosphere. This
+inventory follows the implemented Observatory rebuild, dated 2026-09-14.
 
-| file | what it is | who reads it |
-|---|---|---|
-| `tokens.json` | colours, type, spacing, radii, motion, sound cues, and which assets exist; machine-readable | code, build scripts, a session making a page |
-| `VOICE.md` | how weichseltree writes and speaks; names; what is never said | anyone writing a README line, a tweet, a narration take, a HUD notice |
-| this file | what the package is and how to use it | you, first |
+weichseltree remains Manuel Weichselbaum's research channel. The orchard is
+the open source platform behind the grove. The Observatory names the museum
+and its first room; it does not rename the research trees.
 
-## What weichseltree is, in one line each
+## Where the current design lives
 
-- **weichseltree** is a person's research channel: simulations, emergence,
-  the mathematics of structure. It is not a company and does not talk like
-  one.
-- **The orchard** is the repo and the platform: trees, a fund, a studio, a
-  grove. `orchard` is the name of the software; "the orchard" is the thing
-  weichseltree runs.
-- **The grove** is the public world at weichseltree.com/grove/. The current
-  world has a hall and the einstruct, spectre, world-engine and phototroph
-  exhibit rooms, plus a gallery, orangery, terrace, garden and orchard grounds.
-- **A tree** is a research repo that registered. **A harvest** is what it
-  hangs. **The greenhouse** is where rulings are made.
-- **The palace** connects those rooms: Austrian in character, with orchard
-  trees on the grounds outside the windows. Some rooms remain unfurnished;
-  room models and local browser checks do not establish headset performance.
+| Surface | Implementation | Character |
+| --- | --- | --- |
+| Public landing page | [grove/index.html](../grove/index.html) | Large serif titles, fine brass rules, three research chapters and a browser architecture capture |
+| Browser controls and guide | [grove.css](../grove/src/ui/grove.css), [config.ts](../grove/src/config.ts) | Mineral panels, ivory text, brass actions, system sans-serif type |
+| Museum architecture | [observatory.ts](../grove/src/world/observatory.ts), [mansion.json](../grove/src/world/mansion.json) | Thick portal reveals, stone surfaces, luminous fixtures and long views through connected rooms |
+| Scientific exhibits | [mansion.json](../grove/src/world/mansion.json), [exhibit-content.ts](../grove/src/ui/exhibit-content.ts) | Each tape keeps its recorded positions and has a stated interpretation and limit |
+| Legal pages and local dashboard | [privacy](../grove/public/privacy/index.html), [impressum](../grove/public/impressum/index.html), [dashboard](../orchard/dashboard/index.html) | The earlier dark green weichseltree identity remains in use |
 
-## The look, in four rules
+[tokens.json](tokens.json) records selected values from the current landing
+and browser controls. It is documentation, not an imported stylesheet or a
+runtime dependency. The linked implementation is authoritative. Update the
+catalog when changing those values; do not add speculative tokens for
+components or media that have not been built.
 
-1. **Dark, everywhere** (LAWS 13). Ground `#0e1310`, text `#d9e2da`. There is
-   no light theme; a light figure is never letterboxed into it.
-2. **Grey by default, one hue for meaning** (LAWS 12). The accent `#7fc97f`
-   marks exactly four things: the way in (Enter, Enter VR), the host tag,
-   playing, and the seed. `#c98a7f` marks failure and nothing else. Every
-   other colour on a page is a grey from `tokens.json`.
-3. **The world carries the light; the chrome stays out of it** (LAWS 7).
-   Panels are translucent near-black with a hairline edge and a 6 px blur, no
-   shadows, no counters on the world. The HUD shows numbers the visitor asked
-   for or failures they need to know about.
-4. **System type, one weight of bold.** `system-ui` at 14 px in the grove,
-   16 px on pages; 600 for emphasis, never 700; tabular numerals on anything
-   that ticks. No web fonts, because the client loads nothing from anywhere
-   but itself (`grove/public/_headers`).
+## Colour and material
 
-The materials of the hall itself are the gallery palette: charcoal walls,
-near-black polished floor, the exhibits carry the light. Their linear albedos
-are in `tokens.json` under `color.world`, copied from `grove/tools/bake_hall.py`.
-They are not screen colours; do not paint a button with them.
+| Role | Landing | Browser controls |
+| --- | --- | --- |
+| Background | `#080d14` | `#09111c` |
+| Main text | `#f0eadf` | `#eee9df` |
+| Body text | `#bec5cf` | `#c3c9cf` |
+| Secondary text | `#96a1b2` | `#a1afbd` |
+| Brass emphasis | `#d6bb87` | `#e1bd82` |
 
-## The mark
+The two surfaces are related but do not use identical values. The landing
+has square entrance buttons and generous editorial spacing. Browser panels
+are compact; the visitor guide and recovery screen use opaque backgrounds
+so their text does not depend on the world behind them. Destructive controls
+retain a separate muted red treatment.
 
-The wordmark is the word `weichseltree`, lower-case always, weight 600,
-letter-spacing 0.02 em, with the seed before it: a 0.6 rem disc of the accent
-with a 12 px glow. That is the whole identity today. There is no logo file, no
-icon set, no pattern. If a platform needs a square avatar, it is the seed on
-the ground colour (`asset.favicon` in `tokens.json` says the sizes). Do not
-draw a tree.
+Architecture has its own palette in `OBSERVATORY_PALETTE` and room-specific
+finishes in `observatory.ts`. The Gravity Chamber is darker, the Binding
+Chamber warmer, and the Lantern Walk cooler. Surface shading, grain and
+light pools are authored architectural effects. They are not measured
+illumination from a research simulation or a claim of a physically baked
+scene.
 
-## How to use the tokens
+Brass and blue in the architecture carry no scientific meaning. Particle
+colours are separate: the current hanging can supply an explicit palette.
+Its guide must explain that palette consistently with the tape's species
+indices. Do not recolour a scientific picture to match the page, imply that
+kind means temperature, or claim the browser automatically transports a
+source palette that it does not read.
 
-- **In the grove.** `grove/src/ui/grove.css` declares `--bg --text --dim
-  --accent --panel --edge` on `:root` and `grove/src/config.ts` exports
-  `PALETTE` with the same four hex values for Three.js materials. Those are
-  the tokens' `color.ui.*`; change them in one place and copy the hex into
-  the other. A token that is not yet in the CSS (`body`, `rule`, `faint`,
-  `bad`) is inlined where used today; lift it into `:root` when you touch
-  that file.
-- **On a page.** Copy the `:root` block from `grove/index.html`. Body copy
-  stays within 36 rem, page padding is 24 px, headings are 600. The landing
-  page places its text and real imagery in a responsive layout up to 1160 px
-  wide; the legal pages keep their reading columns. Green marks a way into
-  the grove, never a follow or funding link.
-- **In the flat dashboard** (`orchard serve`). Same ground, same greys, same
-  one accent. It is admin-only and may show every number; it still uses no
-  other hue, so a ruling button that means "approve" is accent-bordered and
-  "reject" is plain, never red and green.
-- **In video** (titles, thumbnails, inserts). Black ground, the same greys,
-  the accent for the seed only. Particle colours come from the tape header's
-  species palette (BACKLOG 17), never from the brand.
-- **Adding a token.** Add it to `tokens.json` with a `$description` saying
-  what it is for and where it is used, then use it. Do not add a second
-  accent; if something needs a colour to mean something, that is a ruling
-  (DECISIONS), not a token.
+## Type, marks and movement
 
-## How to use the voice
+The landing's display stack is **Iowan Old Style, Palatino Linotype, Book
+Antiqua, Georgia, serif**. These are locally available fonts with a serif
+fallback; no font file is requested. Body copy uses `system-ui, sans-serif`.
+The page base is 16 px with a 1.65 line height; display headings are weight
+400 and emphasis is 600. Its content width is at most 1440 px, with smaller
+gutters and a single column on phones. Heading sizes respond to the viewport
+and text can reflow when enlarged.
 
-Read `VOICE.md` before writing anything a visitor, viewer or contributor
-reads. The short form: plain words, numbers, no hype, no repo-speak, first
-person past tense when it is Manuel speaking, and the names in the table
-there. The banned list in `VOICE.md` is enforced on narration by the studio's
-checks (LAWS 5); on everything else it is enforced by reading.
+The HUD uses `14px/1.45 system-ui, sans-serif`. The current guide uses weight
+500 for headings and 600 for emphasis; changing readouts use tabular
+numerals. The timing panel uses a system monospace stack. Follow the actual
+CSS for component sizes and breakpoints rather than applying the landing's
+large typography inside the world.
 
-## What exists and what is missing
+The landing wordmark is **grove**, with **by the orchard** underneath and a
+small inline SVG made of three portal outlines. This architectural mark is
+part of the page source. The existing green seed remains the
+[favicon](../grove/public/favicon.svg) and appears on the older legal pages;
+it has not been replaced with an invented app-icon family.
 
-`tokens.json` `asset.*` says. The landing page now uses an unchanged poster
-from einstruct's simulation tape (`grove/public/site/particle-tape.png`) and
-an explicitly labelled architectural render (`grove/public/site/hall.webp`).
-The hall uses lossless WebP with verified identical decoded pixels; the
-original PNG and the encoding provenance remain in the repository.
-`grove/public/site/imagery.json` records their source paths, dimensions and
-sha256 digests; the tape record also names its sampled variant and frame.
-The tape poster is the share image. The architectural render must never be
-captioned as a browser screenshot or as evidence of headset rendering quality.
+The page does not animate its architecture capture or simulation poster.
+Chapter hover feedback lasts 180 ms and is disabled for reduced motion.
+Keep visible keyboard focus, the working Skip to content link, 44 px discrete
+touch targets and narrow-screen text reflow. Inline prose links are distinct
+from the discrete touch-target product requirement.
 
-The SVG favicon is the seed (`grove/public/favicon.svg`). The four palette
-previews remain in `docs/img/hall-palettes-2026-09-12.png`. A live browser hero
-still with loaded exhibits and the 20-second clip are still missing; those
-remain separate from the landing page's existing source imagery. PNG app
-icons at 32 and 180 px remain to be made.
+## Names and research story
 
-## Where the sound is
+[VOICE.md](VOICE.md) and [LAWS.md](../docs/LAWS.md) still govern plain language,
+scientific honesty and the personal identity behind the work. The current
+visitor names below supersede the older room descriptions in the archived
+package. Internal room identifiers stay stable for links and provenance.
 
-Nothing yet. `tokens.json` `sound.cues` names eight cues and a channel ident
-with lengths and characters, so that they get produced once, in one session,
-and never re-recorded. The narration voice is chosen by audition (LAWS 19) and
-named by `ELEVENLABS_VOICE_ID`.
+| Visitor name | Room identifier | Landing chapter |
+| --- | --- | --- |
+| The Observatory | `hall` | Entrance |
+| The Mixing Chamber | `einstruct` | Patterns |
+| The Gravity Chamber | `spectre` | Worlds |
+| The Binding Chamber | `phototroph` | Bonds |
+| The Reconstruction Gallery | `world-engine` | Additional exhibit |
+| The Long Gallery | `gallery` | Between exhibits |
+| The Lantern Walk | `orangery` | Between exhibits |
+| The Horizon Terrace | `terrace` | Outdoor view |
+| The Meridian Garden | `parterre` | Grounds |
+
+Invite visitors to compare recorded runs. Do not describe changing a
+simulation parameter as an available browser control. A heavy centre leaves
+a causal question open; one capture does not establish equilibrium or
+binding rates. The current
+[exhibit plan](../docs/EXHIBIT-PLAN.md) and guide carry these boundaries.
+The local demo uses synthetic particles, so its captions and guide cannot
+inherit the research interpretation.
+
+## Images and remaining assets
+
+- [observatory.webp](../grove/public/site/observatory.webp) is the landing
+  hero and share image: a 1600 × 900 browser capture of the local demo.
+  Distant particles are synthetic. Caption it accordingly; it does not
+  establish live-media availability or headset rendering quality.
+- [particle-tape.png](../grove/public/site/particle-tape.png) is the unchanged
+  einstruct poster, frame 400 from the sampled `vr-high` variant of bundle
+  `2dd0038799b2db15`. It is scientific source imagery, separate from the demo
+  capture. Preserve its pixels and source caption.
+- [imagery.json](../grove/public/site/imagery.json) is the source and encoding
+  record for the public images. The older Austrian hall render remains in
+  [docs/img/palace-still-hall.png](../docs/img/palace-still-hall.png) as
+  historical imagery, rather than the Observatory's current hero.
+
+There is no new filmed tour, sound-cue collection or PNG app-icon family in
+this rebuild. The SVG favicon still ships. The old sound and media wish list
+is preserved as a proposal in the archive, not presented as existing media.
+
+## Earlier identity
+
+The [2026-09-13 README](archive/2026-09-13/README.md) and
+[token catalog](archive/2026-09-13/tokens.json) are preserved byte-for-byte
+from before this update. They describe the earlier green interface and
+Austrian palace presentation, including its then-current asset inventory and
+proposals. Resolve relative links in the archived README from its original
+`brand/` location; its claims about what was current are dated evidence.
+
+The legal pages, local dashboard and seed favicon still use elements of
+that earlier identity. This documentation update does not recolour them,
+change scientific images, or replace archived room evidence.

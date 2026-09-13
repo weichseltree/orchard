@@ -5,7 +5,7 @@ the picture came from.
 
 The orchard turns research outputs into rooms you can visit in a browser.
 Its public world, **the grove**, brings particle tapes, videos and figures
-into a palace and its gardens. Its local tools collect those outputs, keep
+into **the Observatory**, a nocturnal museum and its gardens. Its local tools collect those outputs, keep
 their provenance, and let the host choose what hangs.
 
 [Visit the grove](https://www.weichseltree.com/grove/) ·
@@ -13,9 +13,16 @@ their provenance, and let the host choose what hangs.
 [Bring your research](#bring-your-research) ·
 [Contribute](CONTRIBUTING.md)
 
-![The hall in the grove, with a marble floor and doors leading to the research rooms.](docs/img/stations/hall-spawn.jpg)
+![The Observatory, with illuminated vaults, layered stone portals and a suspended brass fixture.](grove/public/site/observatory.webp)
 
-*The hall in the browser, from the repository's saved camera stations.*
+*The Observatory in the browser, captured in the local demo with controls
+hidden. Distant particles are synthetic playback fixtures.*
+
+Begin with a question: **Patterns** compares a mixture with its control,
+**Worlds** follows heavy and light matter, and **Bonds** watches one atomic
+capture. Each chamber's guide explains what to look for and what the evidence
+can establish. [The Observatory design](docs/specs/OBSERVATORY.md) describes
+the rebuilt architecture, exhibit stories and reproducible camera checks.
 
 ## What you can do
 
@@ -48,7 +55,7 @@ pnpm demo
 ```
 
 Open [localhost:5173/grove/?demo](http://localhost:5173/grove/?demo). You land
-beside moving particles in the einstruct room. Click the view, use **WASD**
+beside moving particles in the Mixing Chamber. Click the view, use **WASD**
 or the arrow keys to walk, move the mouse to look, and press **Space** to
 pause. **Esc** releases the pointer so you can use the on-screen controls.
 

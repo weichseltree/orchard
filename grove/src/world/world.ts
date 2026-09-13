@@ -1,5 +1,6 @@
 import {
   Box3,
+  DirectionalLight,
   Euler,
   Group,
   HemisphereLight,
@@ -138,13 +139,21 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
   const { mansion, renderer, device, provenance, onNotice } = options;
   const group = new Group();
   group.name = "mansion";
-  // The one runtime light. The baked rooms carry their lighting in the
-  // lightmap and bring no lights of their own (rooms.ts, shellLights); this
-  // is for what is not baked (the tape pedestals, the avatars), and a
-  // hemisphere adds no specular, so the floors keep only the bake's highlights.
-  const ambient = new HemisphereLight(0xd6dfd7, 0x4a544b, 0.35);
+  // The Observatory shades its architecture in shared vertex-coloured batches.
+  // These two inexpensive lights give pedestals and avatars their form; the
+  // scientific tapes and media retain their own unlit, ungraded colours.
+  const observatory = mansion.rooms.some((room) => room.architecture === "observatory");
+  const ambient = observatory
+    ? new HemisphereLight(0xb6cee8, 0x283544, 0.6)
+    : new HemisphereLight(0xd6dfd7, 0x4a544b, 0.35);
   ambient.name = "mansion-ambient";
   group.add(ambient);
+  if (observatory) {
+    const key = new DirectionalLight(0xffdcb0, 0.9);
+    key.name = "observatory-key";
+    key.position.set(-30, 50, 20);
+    group.add(key);
+  }
   // The outside goes in first: it costs nothing to load, so the very first
   // frame already has a horizon, and the hall's windows never show the page.
   const sky: SkyDome | null = mansion.sky ? buildSky(mansion.sky) : null;
@@ -163,9 +172,11 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
       }));
 
   async function loadShell(room: Room): Promise<void> {
-    // The initial page can render before the GLTF/KTX2 loader code arrives.
-    const { buildRoom } = await import("./rooms");
-    const shell = await buildRoom({ room, renderer, tier: device.tier, onNotice });
+    // Runtime architecture needs no GLTF loaders, texture decoders or room
+    // downloads. Legacy scene documents can still use their original assets.
+    const shell = room.architecture === "observatory"
+      ? (await import("./observatory")).buildObservatory(room)
+      : await (await import("./rooms")).buildRoom({ room, renderer, tier: device.tier, onNotice });
     shells.set(room.id, shell);
     group.add(shell.group);
     applyMarkers(room, shell);

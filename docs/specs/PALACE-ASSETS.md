@@ -1,5 +1,8 @@
 # Palace assets: what to lift, where from, and how it enters the repo
 
+> Historical scouting record. The current [Observatory](OBSERVATORY.md)
+> uses repository-native runtime geometry and does not ship these palace assets.
+
 Scouted 2026-09-12 for the direction in DECISIONS 2026-09-12: the hall is the
 first room of an Austrian baroque palace with a real orchard outside its
 windows. Target stack is the one M0 already runs: three.js 0.186, glTF with

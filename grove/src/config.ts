@@ -42,10 +42,10 @@ export const MOVE_EPSILON_M = 0.02;
 export const MOVE_EPSILON_YAW_RAD = 0.035;
 
 export const PALETTE = {
-  background: "#0e1310",
-  text: "#d9e2da",
-  dim: "#8a978c",
-  accent: "#7fc97f",
+  background: "#09111c",
+  text: "#eee9df",
+  dim: "#a1afbd",
+  accent: "#e1bd82",
 } as const;
 
 function trimSlash(s: string): string {

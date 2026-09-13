@@ -13,6 +13,7 @@ From `grove/`, after `pnpm install --frozen-lockfile`:
 pnpm quality                         # tests, types, build, size budgets
 pnpm exec playwright install chromium
 pnpm quality:all                     # adds desktop/touch and production browser checks
+pnpm quality:world --screenshots     # all 13 Observatory rooms and camera records
 ```
 
 Linux CI uses `pnpm exec playwright install --with-deps chromium` to install
@@ -52,9 +53,10 @@ misspelled metric fails instead of silently skipping a check. Use
 needs a measured reason; a lower score obtained by omitting a visible room
 or losing source data is not an improvement.
 
-Total build bytes include optional PNG fallbacks when their local bake files
-exist. Those files are ignored by Git; a clean checkout can therefore build
-fewer bytes than an operator's checkout. Compare the same asset inputs.
+The current Observatory references no baked room assets. Its build therefore
+excludes the old GLBs and optional PNG/KTX2 lightmaps even when they exist
+locally. Historical palace totals depended on which optional bake files
+were present; use the recorded inputs when comparing those releases.
 The large-chunk warning for Three.js/HLS remains visible; deferred HLS does
 not belong to the startup closure.
 
@@ -69,7 +71,7 @@ Reports distinguish cold and warm visits, encoded and decoded body bytes,
 network transfer accounting, completed requests, cache hits and loaded room
 count. The observation window ends 1.5 seconds after the starting geometry
 appears; deferred transfers can still be pending. This measures the early
-visit, not the eventual whole palace. Local gzip transport is an explicit
+visit, not the eventual whole world. Local gzip transport is an explicit
 model. It is not a measurement of the production CDN or a mobile connection.
 
 Checks include automatic WCAG A/AA rules, separate manual-review findings,

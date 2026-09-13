@@ -34,13 +34,14 @@ describe("local demo", () => {
     expect(hangings.every((h) => h.kind === "tape")).toBe(true);
   });
 
-  it("preserves the source scene and the palace geometry", () => {
+  it("preserves the source scene and the Observatory geometry", () => {
     const original = structuredClone(mansionDocument);
     const demo = demoMansion(mansionDocument, true);
     expect(mansionDocument).toEqual(original);
     const production = parseMansion(original);
     for (let i = 0; i < production.rooms.length; i++) {
       expect(demo.rooms[i]?.glb).toBe(production.rooms[i]?.glb);
+      expect(demo.rooms[i]?.architecture).toBe(production.rooms[i]?.architecture);
       expect(demo.rooms[i]?.doorways).toEqual(production.rooms[i]?.doorways);
       expect(demo.rooms[i]?.bounds).toEqual(production.rooms[i]?.bounds);
     }

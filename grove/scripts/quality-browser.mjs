@@ -51,7 +51,7 @@ const report = {
     'Decoded/encoded body sizes include cached resources; transferBytes reports network accounting separately.',
     'Production mode blocks external authentication, presence and media; it validates local build geometry only.',
     'The static server models identity or gzip and cache policy headers, not CDN Brotli or conditional 304 responses.',
-    'Readiness is observed on animation frames when the start room GLB enters the scene; it is not GPU completion.',
+    'Readiness is observed when the start room architecture enters the scene; it is not GPU completion.',
     'App resource snapshots use a 1.5 s observation window after first room readiness; later streaming is not included.',
   ],
 };
@@ -106,7 +106,8 @@ async function newPage(profile, { disableGraphics = false } = {}) {
         window.__quality.shellKind = 'glb';
       } else if (id && app.world?.group?.getObjectByName(`${id}-shell`)) {
         window.__quality.firstRoomReadyMs = performance.now();
-        window.__quality.shellKind = 'fallback';
+        window.__quality.shellKind = app.world.group.getObjectByName(`${id}-shell`).userData.architecture === 'observatory'
+          ? 'observatory' : 'fallback';
       } else requestAnimationFrame(inspect);
     };
     requestAnimationFrame(inspect);
@@ -152,7 +153,7 @@ async function transferAudit() {
             report.measurements.push({ kind: 'transfer', profile: profile.name, path, sample, cache, ...measured });
             if (path.startsWith('/grove/')) {
               const name = `${profile.name} ${cache} visit ${sample}`;
-              check(`${name}: first room uses the built geometry`, measured.shellKind === 'glb', measured.shellKind);
+              check(`${name}: first room uses the designed geometry`, ['glb', 'observatory'].includes(measured.shellKind), measured.shellKind);
               if (!args['allow-missing-metrics']) {
                 check(`${name}: runtime reports first room readiness`, typeof measured.runtime?.visit?.firstRoomReadyMs === 'number' && Number.isFinite(measured.runtime.visit.firstRoomReadyMs));
               }

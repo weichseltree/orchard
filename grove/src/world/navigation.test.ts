@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import mansionDocument from "./mansion.json";
-import { BODY_RADIUS, inAperture, insideRoom, resolveMove, roomAt } from "./navigation";
+import { BODY_RADIUS, DOOR_SHOULDER, inAperture, insideRoom, resolveMove, roomAt } from "./navigation";
 import { parseMansion, type Doorway } from "./schema";
 import { wallPieces } from "./rooms";
 
@@ -44,18 +44,18 @@ describe("resolveMove", () => {
   it("refuses a sideways slide that starts outside the opening", () => {
     // Lined up with the doorway at the destination but not at the start:
     // sliding along the wall must not pop the body through it.
-    const out = resolveMove(mansion, "hall", { x: 2, z: -9.7 }, { x: 0.2, z: -10.2 });
+    const outside = hall.doorways[0]!.width / 2 + BODY_RADIUS;
+    const out = resolveMove(mansion, "hall", { x: outside, z: -9.7 }, { x: 0.2, z: -10.2 });
     expect(out.room).toBe("hall");
     expect(out.z).toBeCloseTo(hall.bounds.min[2] + BODY_RADIUS);
   });
 
   it("only opens across the passable part of the opening", () => {
-    // The opening is 2.4 m wide; a body 0.35 m across with 0.15 m of shoulder
-    // fits within 0.7 m of the centre and no further.
-    const inside = resolveMove(mansion, "hall", { x: 0.65, z: -9.6 }, { x: 0.65, z: -10.4 });
+    const limit = hall.doorways[0]!.width / 2 - BODY_RADIUS - DOOR_SHOULDER;
+    const inside = resolveMove(mansion, "hall", { x: limit - 0.05, z: -9.6 }, { x: limit - 0.05, z: -10.4 });
     expect(inside.room).toBe("einstruct");
     expect(inside.x).toBeLessThanOrEqual(einstruct.bounds.max[0] - BODY_RADIUS + 1e-9);
-    const edge = resolveMove(mansion, "hall", { x: 1.05, z: -9.6 }, { x: 1.05, z: -10.4 });
+    const edge = resolveMove(mansion, "hall", { x: limit + 0.05, z: -9.6 }, { x: limit + 0.05, z: -10.4 });
     expect(edge.room).toBe("hall");
     expect(edge.z).toBeCloseTo(hall.bounds.min[2] + BODY_RADIUS);
   });

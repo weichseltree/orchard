@@ -11,6 +11,30 @@ donor rather than an exhibit tree.
 Each tree answers from a session in its own repo; the orchard session
 coordinates over SendMessage.
 
+## Reading the exhibits in the Observatory
+
+The visitor guide presents this slate as four research chambers around the
+Observatory's arrival hall. [Its companion text](../grove/src/ui/exhibit-content.ts)
+keeps each question beside an observation to try and a limit on what the
+picture establishes:
+
+| chamber | what to compare | boundary of the evidence |
+|---|---|---|
+| The Mixing Chamber · einstruct | the evolving sheet and the repeatedly mixed control | the browser's particle sample is not a measurement of every empty region |
+| The Gravity Chamber · spectre | the same starting mixture across three interaction strengths | a heavy centre does not isolate unmixing from shared cooling as its cause |
+| The Binding Chamber · phototroph | one three-atom capture, replayed through time | one encounter does not establish equilibrium or binding rates |
+| The Reconstruction Gallery · world-engine | the classroom, behind-chair and chair-edge still studies | the room does not demonstrate a live reconstruction or a working lens doorway |
+
+The hall offers a suggested order and direct room links. Open-door directions
+come from the scene's actual connections. The walks, gallery and groves are
+places to pause; they do not advertise an unreleased slate. The local demo
+replaces the scientific observations and species explanations with explicit
+synthetic-test copy, while linking separately to the research notes.
+
+The answers and rulings below retain their dates. They document the exhibit
+history; they are not a live availability list. The scene's hanging references
+and the live exhibit table determine what a visitor can actually see.
+
 ## Hanging now
 
 | tree | kind | bundle | where |

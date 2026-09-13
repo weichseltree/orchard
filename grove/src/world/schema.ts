@@ -114,6 +114,8 @@ export const HangingSchema = z.discriminatedUnion("kind", [
 export const RoomSchema = z.looseObject({
   id: z.string().min(1),
   title: z.string().default(""),
+  /** Designed runtime geometry or the original asset/fallback loader. */
+  architecture: z.enum(["legacy", "observatory"]).default("legacy"),
   /** The SpacetimeDB room name this room joins ("grove" for the hall). */
   presence: z.string().min(1),
   /** Empty means "no glb, build the fallback". */
@@ -153,6 +155,8 @@ export const SkySchema = z.looseObject({
   horizon: z.string().default("#d6dfe8"),
   ground: z.string().default("#2f3a2c"),
   sun: z.string().default("#fff1d6"),
+  /** Zero leaves only the atmospheric gradient; no invented celestial disc. */
+  sunIntensity: z.number().nonnegative().default(1),
   /** Where the numbers came from, for the reader. */
   source: z.string().default(""),
 });

@@ -31,11 +31,15 @@ describe("sunFromBlenderTravel", () => {
 });
 
 describe("mansion.json sky", () => {
-  it("names the same sun as the hall's bake record", () => {
+  it("uses a designed twilight gradient without an artificial sun disc", () => {
     const sky = parseMansion(mansionDocument).sky;
     expect(sky).toBeDefined();
-    expect(sky!.sunTravelBlender).toEqual(HALL_SUN);
-    expect(sky!.sunAngleDeg).toBe(hallRecord.lighting.sun_angle_deg);
+    expect(sky!.sunIntensity).toBe(0);
+    expect(sky!.source).toContain("not an astronomical sky");
+    const dome = buildSky(sky!);
+    expect((dome.mesh.material as unknown as { uniforms: { uSunIntensity: { value: number } } })
+      .uniforms.uSunIntensity.value).toBe(0);
+    dome.dispose();
   });
 });
 

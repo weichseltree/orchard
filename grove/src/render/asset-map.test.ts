@@ -32,11 +32,15 @@ describe("fingerprinted room assets", () => {
     );
   });
 
-  it("ships the scene's glbs and lightmap tiers, not the bake's by-products", () => {
+  it("ships no retired palace assets for the runtime Observatory", () => {
     const refs = referencedAssets(mansionDocument);
-    expect(refs).toContain("assets/palace/hall/hall.glb");
-    expect(refs).toContain("assets/palace/hall/lightmap-1024.ktx2");
-    expect(refs.some((r) => r.endsWith("preview.png") || r.endsWith(".json"))).toBe(false);
-    expect(refs.some((r) => r.startsWith("assets/hall/"))).toBe(false);
+    expect(refs).toEqual([]);
+  });
+
+  it("finds legacy scene assets while ignoring non-assets and bake records", () => {
+    expect(referencedAssets({ glb: "assets/room.glb", lightmap: ["assets/lightmap.ktx2"],
+      record: "assets/bake.json", other: "https://example.com/image.png" })).toEqual([
+      "assets/lightmap.ktx2", "assets/room.glb",
+    ]);
   });
 });

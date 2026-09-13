@@ -22,6 +22,7 @@ import {
 } from "../render/lightmap";
 import type { DeviceTier } from "../tape/bundle";
 import type { Doorway, Room } from "./schema";
+import { buildObservatory } from "./observatory";
 
 // A room's shell. The hall comes from WP3's bake when it is there and from a
 // grey box when it is not, so WP2 never waits on WP3; either way the doorway
@@ -86,6 +87,7 @@ export function lightmapCandidates(
 
 export async function buildRoom(options: BuildRoomOptions): Promise<RoomShell> {
   const { room, renderer } = options;
+  if (room.architecture === "observatory") return buildObservatory(room);
   const base = options.assetBase ?? "/";
   if (room.glb) {
     try {

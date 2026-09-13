@@ -2,6 +2,20 @@
 
 Ordered. Items with a name in brackets wait on that person.
 
+## Observatory replacement (2026-09-14)
+
+The public world now uses the [Observatory design](specs/OBSERVATORY.md).
+All 13 areas have new runtime architecture; the former palace scene and
+bake records are archived. The site and guide introduce research through
+questions, observations and visible limits, with explicit synthetic-demo
+copy. [The replacement review](reviews/2026-09-14-observatory.md) records the
+visual evidence, build reduction, added content cost and validation.
+
+Next: physical Quest/iPhone visual and frame-cadence checks, then complete
+live-service acceptance. The shared particle cut-plane and omitted source
+channels remain research-viewing work. Older priorities below retain their
+original context; palace bake/download figures describe the retired world.
+
 ## Measured rebuild (2026-09-13)
 
 The next pass improves loading order, defers loader code, fixes cross-tier

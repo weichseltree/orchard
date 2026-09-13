@@ -1,0 +1,576 @@
+{
+  "schema": "orchard/observatory-review/1",
+  "date": "2026-09-14",
+  "baseline_commit": "3357972e50944f772825e195596132648b9a44c2",
+  "build": {
+    "before": {
+      "deferredModuleViolations": 0,
+      "totalBytes": 113682707,
+      "totalFiles": 77,
+      "startupJsBytes": 763667,
+      "startupJsGzipBytes": 199417,
+      "startupJsRequests": 2,
+      "allJsGzipBytes": 486310,
+      "largestJsGzipBytes": 198081,
+      "cssGzipBytes": 2505,
+      "siteImageBytes": 641095
+    },
+    "after": {
+      "deferredModuleViolations": 0,
+      "totalBytes": 3423695,
+      "totalFiles": 27,
+      "startupJsBytes": 768071,
+      "startupJsGzipBytes": 202044,
+      "startupJsRequests": 2,
+      "allJsGzipBytes": 492665,
+      "largestJsGzipBytes": 200625,
+      "cssGzipBytes": 3540,
+      "siteImageBytes": 604359
+    },
+    "comparison": {
+      "deferredModuleViolations": {
+        "before": 0,
+        "after": 0,
+        "changePercent": null
+      },
+      "totalBytes": {
+        "before": 113682707,
+        "after": 3423695,
+        "changePercent": -96.98837660507152
+      },
+      "totalFiles": {
+        "before": 77,
+        "after": 27,
+        "changePercent": -64.93506493506493
+      },
+      "startupJsBytes": {
+        "before": 763667,
+        "after": 768071,
+        "changePercent": 0.5766911494146009
+      },
+      "startupJsGzipBytes": {
+        "before": 199417,
+        "after": 202044,
+        "changePercent": 1.3173400462347744
+      },
+      "startupJsRequests": {
+        "before": 2,
+        "after": 2,
+        "changePercent": 0
+      },
+      "allJsGzipBytes": {
+        "before": 486310,
+        "after": 492665,
+        "changePercent": 1.3067796261643807
+      },
+      "largestJsGzipBytes": {
+        "before": 198081,
+        "after": 200625,
+        "changePercent": 1.2843230799521408
+      },
+      "cssGzipBytes": {
+        "before": 2505,
+        "after": 3540,
+        "changePercent": 41.31736526946108
+      },
+      "siteImageBytes": {
+        "before": 641095,
+        "after": 604359,
+        "changePercent": -5.73019599279358
+      }
+    },
+    "previous_clean_ci_total_bytes": 49499454,
+    "legacy_scene_assets": {
+      "unique_files": 52,
+      "local_bytes": 110244381
+    },
+    "limits": "Build excludes streamed research media; previous operator build included optional ignored PNG lightmaps."
+  },
+  "architecture": {
+    "rooms": 13,
+    "draw_batches": 141,
+    "triangles": 74420,
+    "geometries": 14,
+    "material_variants": 32
+  },
+  "browser": {
+    "before": [
+      {
+        "profile": "desktop",
+        "cache": "cold",
+        "samples": [
+          {
+            "firstRoomReadyMs": 1278,
+            "transferBytes": 11734250,
+            "encodedBodyBytes": 11729750,
+            "loadedRoomCount": 3
+          },
+          {
+            "firstRoomReadyMs": 911.3999999910593,
+            "transferBytes": 12823856,
+            "encodedBodyBytes": 12819056,
+            "loadedRoomCount": 3
+          },
+          {
+            "firstRoomReadyMs": 968.7000000029802,
+            "transferBytes": 11734250,
+            "encodedBodyBytes": 11729750,
+            "loadedRoomCount": 3
+          }
+        ],
+        "median": {
+          "firstRoomReadyMs": 968.7000000029802,
+          "transferBytes": 11734250,
+          "encodedBodyBytes": 11729750,
+          "loadedRoomCount": 3
+        }
+      },
+      {
+        "profile": "desktop",
+        "cache": "warm",
+        "samples": [
+          {
+            "firstRoomReadyMs": 6311,
+            "transferBytes": 1380,
+            "encodedBodyBytes": 4584146,
+            "loadedRoomCount": 1
+          },
+          {
+            "firstRoomReadyMs": 4793.5,
+            "transferBytes": 1380,
+            "encodedBodyBytes": 4584146,
+            "loadedRoomCount": 1
+          },
+          {
+            "firstRoomReadyMs": 5137.20000000298,
+            "transferBytes": 1380,
+            "encodedBodyBytes": 4584146,
+            "loadedRoomCount": 1
+          }
+        ],
+        "median": {
+          "firstRoomReadyMs": 5137.20000000298,
+          "transferBytes": 1380,
+          "encodedBodyBytes": 4584146,
+          "loadedRoomCount": 1
+        }
+      },
+      {
+        "profile": "phone",
+        "cache": "cold",
+        "samples": [
+          {
+            "firstRoomReadyMs": 1164.5,
+            "transferBytes": 7792920,
+            "encodedBodyBytes": 7786620,
+            "loadedRoomCount": 6
+          },
+          {
+            "firstRoomReadyMs": 837.5,
+            "transferBytes": 9905353,
+            "encodedBodyBytes": 9897853,
+            "loadedRoomCount": 8
+          },
+          {
+            "firstRoomReadyMs": 646.5,
+            "transferBytes": 12655876,
+            "encodedBodyBytes": 12646876,
+            "loadedRoomCount": 11
+          }
+        ],
+        "median": {
+          "firstRoomReadyMs": 837.5,
+          "transferBytes": 9905353,
+          "encodedBodyBytes": 9897853,
+          "loadedRoomCount": 8
+        }
+      },
+      {
+        "profile": "phone",
+        "cache": "warm",
+        "samples": [
+          {
+            "firstRoomReadyMs": 4345,
+            "transferBytes": 1380,
+            "encodedBodyBytes": 4900883,
+            "loadedRoomCount": 3
+          },
+          {
+            "firstRoomReadyMs": 3255.7000000029802,
+            "transferBytes": 1380,
+            "encodedBodyBytes": 5499910,
+            "loadedRoomCount": 4
+          },
+          {
+            "firstRoomReadyMs": 3723.4000000059605,
+            "transferBytes": 1380,
+            "encodedBodyBytes": 5191582,
+            "loadedRoomCount": 4
+          }
+        ],
+        "median": {
+          "firstRoomReadyMs": 3723.4000000059605,
+          "transferBytes": 1380,
+          "encodedBodyBytes": 5191582,
+          "loadedRoomCount": 4
+        }
+      }
+    ],
+    "after_concurrent_first_pass": [
+      {
+        "profile": "desktop",
+        "cache": "cold",
+        "samples": [
+          {
+            "firstRoomReadyMs": 332.40000000596046,
+            "transferBytes": 213732,
+            "encodedBodyBytes": 211632,
+            "loadedRoomCount": 12
+          },
+          {
+            "firstRoomReadyMs": 596.5,
+            "transferBytes": 213732,
+            "encodedBodyBytes": 211632,
+            "loadedRoomCount": 12
+          },
+          {
+            "firstRoomReadyMs": 550,
+            "transferBytes": 213732,
+            "encodedBodyBytes": 211632,
+            "loadedRoomCount": 12
+          }
+        ],
+        "median": {
+          "firstRoomReadyMs": 550,
+          "transferBytes": 213732,
+          "encodedBodyBytes": 211632,
+          "loadedRoomCount": 12
+        }
+      },
+      {
+        "profile": "desktop",
+        "cache": "warm",
+        "samples": [
+          {
+            "firstRoomReadyMs": 8844,
+            "transferBytes": 1392,
+            "encodedBodyBytes": 211632,
+            "loadedRoomCount": 12
+          },
+          {
+            "firstRoomReadyMs": 11727.20000000298,
+            "transferBytes": 1392,
+            "encodedBodyBytes": 211632,
+            "loadedRoomCount": 12
+          },
+          {
+            "firstRoomReadyMs": 11464.20000000298,
+            "transferBytes": 1392,
+            "encodedBodyBytes": 211632,
+            "loadedRoomCount": 12
+          }
+        ],
+        "median": {
+          "firstRoomReadyMs": 11464.20000000298,
+          "transferBytes": 1392,
+          "encodedBodyBytes": 211632,
+          "loadedRoomCount": 12
+        }
+      },
+      {
+        "profile": "phone",
+        "cache": "cold",
+        "samples": [
+          {
+            "firstRoomReadyMs": 431.29999999701977,
+            "transferBytes": 213732,
+            "encodedBodyBytes": 211632,
+            "loadedRoomCount": 12
+          },
+          {
+            "firstRoomReadyMs": 609.4000000059605,
+            "transferBytes": 213732,
+            "encodedBodyBytes": 211632,
+            "loadedRoomCount": 12
+          },
+          {
+            "firstRoomReadyMs": 685,
+            "transferBytes": 213732,
+            "encodedBodyBytes": 211632,
+            "loadedRoomCount": 12
+          }
+        ],
+        "median": {
+          "firstRoomReadyMs": 609.4000000059605,
+          "transferBytes": 213732,
+          "encodedBodyBytes": 211632,
+          "loadedRoomCount": 12
+        }
+      },
+      {
+        "profile": "phone",
+        "cache": "warm",
+        "samples": [
+          {
+            "firstRoomReadyMs": 5002.29999999702,
+            "transferBytes": 1392,
+            "encodedBodyBytes": 211632,
+            "loadedRoomCount": 12
+          },
+          {
+            "firstRoomReadyMs": 5524.0999999940395,
+            "transferBytes": 1392,
+            "encodedBodyBytes": 211632,
+            "loadedRoomCount": 12
+          },
+          {
+            "firstRoomReadyMs": 6477.5,
+            "transferBytes": 1392,
+            "encodedBodyBytes": 211632,
+            "loadedRoomCount": 12
+          }
+        ],
+        "median": {
+          "firstRoomReadyMs": 5524.0999999940395,
+          "transferBytes": 1392,
+          "encodedBodyBytes": 211632,
+          "loadedRoomCount": 12
+        }
+      }
+    ],
+    "after_serial_final_build": [
+      {
+        "profile": "desktop",
+        "cache": "cold",
+        "samples": [
+          {
+            "firstRoomReadyMs": 284.40000000596046,
+            "transferBytes": 213741,
+            "encodedBodyBytes": 211641,
+            "loadedRoomCount": 12
+          },
+          {
+            "firstRoomReadyMs": 260.5,
+            "transferBytes": 213741,
+            "encodedBodyBytes": 211641,
+            "loadedRoomCount": 12
+          },
+          {
+            "firstRoomReadyMs": 337.09999999403954,
+            "transferBytes": 213741,
+            "encodedBodyBytes": 211641,
+            "loadedRoomCount": 12
+          }
+        ],
+        "median": {
+          "firstRoomReadyMs": 284.40000000596046,
+          "transferBytes": 213741,
+          "encodedBodyBytes": 211641,
+          "loadedRoomCount": 12
+        }
+      },
+      {
+        "profile": "desktop",
+        "cache": "warm",
+        "samples": [
+          {
+            "firstRoomReadyMs": 5782.4000000059605,
+            "transferBytes": 1392,
+            "encodedBodyBytes": 211641,
+            "loadedRoomCount": 12
+          },
+          {
+            "firstRoomReadyMs": 7503.600000008941,
+            "transferBytes": 1392,
+            "encodedBodyBytes": 211641,
+            "loadedRoomCount": 12
+          },
+          {
+            "firstRoomReadyMs": 6192,
+            "transferBytes": 1392,
+            "encodedBodyBytes": 211641,
+            "loadedRoomCount": 12
+          }
+        ],
+        "median": {
+          "firstRoomReadyMs": 6192,
+          "transferBytes": 1392,
+          "encodedBodyBytes": 211641,
+          "loadedRoomCount": 12
+        }
+      },
+      {
+        "profile": "phone",
+        "cache": "cold",
+        "samples": [
+          {
+            "firstRoomReadyMs": 283.29999999701977,
+            "transferBytes": 213741,
+            "encodedBodyBytes": 211641,
+            "loadedRoomCount": 12
+          },
+          {
+            "firstRoomReadyMs": 283.5,
+            "transferBytes": 213741,
+            "encodedBodyBytes": 211641,
+            "loadedRoomCount": 12
+          },
+          {
+            "firstRoomReadyMs": 326.5,
+            "transferBytes": 213741,
+            "encodedBodyBytes": 211641,
+            "loadedRoomCount": 12
+          }
+        ],
+        "median": {
+          "firstRoomReadyMs": 283.5,
+          "transferBytes": 213741,
+          "encodedBodyBytes": 211641,
+          "loadedRoomCount": 12
+        }
+      },
+      {
+        "profile": "phone",
+        "cache": "warm",
+        "samples": [
+          {
+            "firstRoomReadyMs": 2623.4000000059605,
+            "transferBytes": 1392,
+            "encodedBodyBytes": 211641,
+            "loadedRoomCount": 12
+          },
+          {
+            "firstRoomReadyMs": 3103.699999988079,
+            "transferBytes": 1392,
+            "encodedBodyBytes": 211641,
+            "loadedRoomCount": 12
+          },
+          {
+            "firstRoomReadyMs": 2504.9000000059605,
+            "transferBytes": 1392,
+            "encodedBodyBytes": 211641,
+            "loadedRoomCount": 12
+          }
+        ],
+        "median": {
+          "firstRoomReadyMs": 2623.4000000059605,
+          "transferBytes": 1392,
+          "encodedBodyBytes": 211641,
+          "loadedRoomCount": 12
+        }
+      }
+    ],
+    "limits": [
+      "Chromium headless with SwiftShader; hardware acceptance remains open.",
+      "The first after-pass overlapped the demo browser audit; the final-build rerun was serial.",
+      "Before measurements are the recorded final run of the prior rebuild, not a simultaneous controlled experiment.",
+      "One-and-a-half-second observation window after first geometry readiness. No live services or service worker.",
+      "Warm desktop readiness regressed in the serial run even as cold readiness and phone warm readiness improved; retained explicitly."
+    ]
+  },
+  "validation": {
+    "python_passed": 238,
+    "frontend_passed": 285,
+    "browser_helper_passed": 4,
+    "demo_checks_passed": 97,
+    "production_checks_passed": 47,
+    "world_checks_passed": 21,
+    "automatic_axe_violations": 0,
+    "manual_landing_contrast_groups": 3
+  },
+  "reports": [
+    {
+      "path": "results/observatory/build-before.json",
+      "sha256": "9c6feabaae84da304850fbfbdea45e1ce00f6eb595bde99c6cb74774bbe6229c",
+      "summary": null
+    },
+    {
+      "path": "results/observatory/build-final.json",
+      "sha256": "06bc91227390b8154e2be272c9fbf1d9de8e4059cda38e7ea10cdf06610b986c",
+      "summary": null
+    },
+    {
+      "path": "results/observatory/production-before.json",
+      "sha256": "dd56b3e80bcdc678d30a9942bdfaf7b57f3f82c029346d7bde1c48a459985dc3",
+      "summary": {
+        "checks": 47,
+        "passed": 47,
+        "failed": 0,
+        "errors": 0,
+        "automaticAxeViolations": 0,
+        "manualReviewFindings": 3
+      }
+    },
+    {
+      "path": "results/observatory/production-final.json",
+      "sha256": "117a5f27aec160fd7cfc06362ee2c075f64d5a1115983dc1a2cd93fdd606c7ec",
+      "summary": {
+        "checks": 47,
+        "passed": 47,
+        "failed": 0,
+        "errors": 0,
+        "automaticAxeViolations": 0,
+        "manualReviewFindings": 3
+      }
+    },
+    {
+      "path": "results/observatory/production-verified.json",
+      "sha256": "f4cfbfca836339f4f20ff1c38e585cc51f0ef264f6c77101a64f1db0b1c832fd",
+      "summary": {
+        "checks": 47,
+        "passed": 47,
+        "failed": 0,
+        "errors": 0,
+        "automaticAxeViolations": 0,
+        "manualReviewFindings": 3
+      }
+    },
+    {
+      "path": "results/observatory/demo-final.json",
+      "sha256": "6105b5e8063729ae0b71777c842d46dc4cec145a34c3257f3ff06bb844383284",
+      "summary": {
+        "checks": 97,
+        "passed": 97,
+        "failed": 0,
+        "errors": 0,
+        "automaticAxeViolations": 0,
+        "manualReviewFindings": 3
+      }
+    },
+    {
+      "path": "results/observatory/world-final.json",
+      "sha256": "134a23800f4efa7853719e0a2ace58a5e6a8c32013843c6bb5feb12241ae3525",
+      "summary": {
+        "checks": 20,
+        "passed": 20,
+        "failed": 0,
+        "errors": 0
+      }
+    },
+    {
+      "path": "results/observatory/world-verified.json",
+      "sha256": "265343e051af25f22a3fc1a0fad74a9b43fb0c71903a69dd4077479d9e1108e6",
+      "summary": {
+        "checks": 21,
+        "passed": 21,
+        "failed": 0,
+        "errors": 0
+      }
+    },
+    {
+      "path": "results/observatory/integration-review.json",
+      "sha256": "2a1ec41ad9b0d14b377b9ba5f622b13f6d427d26a133fae3167420579ab94ee0",
+      "summary": null
+    },
+    {
+      "path": "results/observatory/landing-contrast.json",
+      "sha256": "0427ee6d2277a1d4bfe84d6fca1d689ca052195b05af3a1311bc6855a42d3c53",
+      "summary": null
+    },
+    {
+      "path": "results/observatory/guide-app-check.json",
+      "sha256": "e26943908241213bacad8f3fd5db5c9632b622609a5927eed342eb77d0c30f34",
+      "summary": null
+    }
+  ]
+}

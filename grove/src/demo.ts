@@ -6,7 +6,7 @@ export function demoEnabled(development: boolean, search: string): boolean {
 }
 
 /**
- * Keep the palace, but replace every scientific hanging with clearly named
+ * Keep the architecture, but replace every scientific hanging with clearly named
  * local fixtures. No content hash or live exhibit reference may survive: a
  * new contributor should not need the operator's bundles or cloud accounts.
  * The scene document itself is never changed.
@@ -16,7 +16,7 @@ export function demoMansion(
   videoAvailable = import.meta.env.VITE_DEMO_VIDEO === "1",
 ): Mansion {
   const mansion = parseMansion(structuredClone(document));
-  mansion.title = "The palace · local demo";
+  mansion.title = `${mansion.title} · local demo`;
   for (const room of mansion.rooms) {
     room.hangings = room.hangings.filter(
       (hanging) => hanging.kind === "tape" || (hanging.kind === "video" && videoAvailable),

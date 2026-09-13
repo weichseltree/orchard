@@ -1,5 +1,9 @@
 # The palace
 
+> Historical design. The [Observatory](OBSERVATORY.md) replaces this palace
+> in the current client as of 2026-09-14. Its original scene is preserved in
+> [archive/palace-2026-09-12.json](archive/palace-2026-09-12.json).
+
 The architecture of the grove's public world from here on: the hall becomes
 the marble hall of a palace, Austrian in character, and the grounds outside
 its windows are an orchard of sour cherry trees, the Weichsel the channel is

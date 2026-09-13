@@ -1,6 +1,6 @@
 {
   "schema": "orchard/mansion/1",
-  "title": "The Observatory",
+  "title": "The palace",
   "start": "hall",
   "sky": {
     "sunTravelBlender": [
@@ -9,21 +9,29 @@
       -0.5498
     ],
     "sunAngleDeg": 1.6,
-    "zenith": "#07101f",
-    "horizon": "#25364c",
-    "ground": "#070e18",
-    "sun": "#b7cedb",
-    "source": "Designed twilight atmosphere for the Observatory; not an astronomical sky or simulation output.",
-    "sunIntensity": 0
+    "zenith": "#4a78b8",
+    "horizon": "#d6dfe8",
+    "ground": "#2f3a2c",
+    "sun": "#fff1d6",
+    "source": "grove/public/assets/hall/hall.json lighting: the bake's sun, Blender axes, converted by the client"
   },
   "rooms": [
     {
       "id": "hall",
-      "title": "The Observatory",
+      "title": "The hall",
       "presence": "grove",
+      "glb": "assets/palace/hall/hall.glb",
+      "lightmap": [
+        "assets/palace/hall/lightmap.ktx2",
+        "assets/palace/hall/lightmap.png"
+      ],
+      "lightmapPhone": [
+        "assets/palace/hall/lightmap-1024.ktx2",
+        "assets/palace/hall/lightmap.png"
+      ],
       "fallback": {
         "kind": "box",
-        "color": "#101c2b"
+        "color": "#8e968d"
       },
       "bounds": {
         "min": [
@@ -51,16 +59,16 @@
           "axis": "z",
           "at": -10,
           "center": 0,
-          "width": 4.8,
-          "height": 4.6
+          "width": 2.4,
+          "height": 3.2
         },
         {
           "to": "phototroph",
           "axis": "z",
           "at": 10,
           "center": 0,
-          "width": 4.8,
-          "height": 4.6
+          "width": 2.4,
+          "height": 3.2
         },
         {
           "to": "greenhouse",
@@ -89,6 +97,34 @@
           "height": 5.6
         }
       ],
+      "palace": {
+        "type": "hall",
+        "windows": [
+          {
+            "wall": "-x",
+            "centers": [
+              8.333,
+              5.0,
+              -5.0,
+              -8.333
+            ],
+            "width": 1.6,
+            "sill": 1.6,
+            "head": 5.6,
+            "reveal": 0.35
+          }
+        ],
+        "posters": [
+          {
+            "wall": "+x",
+            "center": 0,
+            "width": 6,
+            "height": 3.4,
+            "z0": 1.4
+          }
+        ],
+        "floor": "floor_marble"
+      },
       "hangings": [
         {
           "id": "hall-poster",
@@ -101,6 +137,7 @@
             },
             "id": "c59c7baa6fd15489"
           },
+          "marker": "poster_wall",
           "position": [
             6.74,
             3.1,
@@ -114,17 +151,24 @@
           "widthMeters": 6,
           "heightMeters": 3.4
         }
-      ],
-      "architecture": "observatory",
-      "exposure": 1
+      ]
     },
     {
       "id": "einstruct",
-      "title": "The Mixing Chamber",
+      "title": "einstruct",
       "presence": "einstruct",
+      "glb": "assets/palace/einstruct/einstruct.glb",
+      "lightmap": [
+        "assets/palace/einstruct/lightmap.ktx2",
+        "assets/palace/einstruct/lightmap.png"
+      ],
+      "lightmapPhone": [
+        "assets/palace/einstruct/lightmap-1024.ktx2",
+        "assets/palace/einstruct/lightmap.png"
+      ],
       "fallback": {
         "kind": "box",
-        "color": "#101c2b"
+        "color": "#7d857e"
       },
       "bounds": {
         "min": [
@@ -152,16 +196,16 @@
           "axis": "z",
           "at": -10,
           "center": 0,
-          "width": 4.8,
-          "height": 4.6
+          "width": 2.4,
+          "height": 3.2
         },
         {
           "to": "world-engine",
           "axis": "z",
           "at": -22,
           "center": 0,
-          "width": 4.8,
-          "height": 4.6
+          "width": 2.4,
+          "height": 3.2
         },
         {
           "to": "spectre",
@@ -172,6 +216,18 @@
           "height": 3.2
         }
       ],
+      "palace": {
+        "type": "state-room",
+        "windows": [
+          {
+            "wall": "-x",
+            "bays": 3,
+            "width": 1.6,
+            "sill": 1.6,
+            "head": 5.6
+          }
+        ]
+      },
       "hangings": [
         {
           "id": "einstruct-tape",
@@ -282,7 +338,7 @@
             "id": "f0b3eba5f655c2a9"
           },
           "position": [
-            -4.8,
+            -4.2,
             2.35,
             -10.26
           ],
@@ -291,19 +347,26 @@
             180,
             0
           ],
-          "widthMeters": 3.5
+          "widthMeters": 4.5
         }
-      ],
-      "architecture": "observatory",
-      "exposure": 1
+      ]
     },
     {
       "id": "world-engine",
-      "title": "The Reconstruction Gallery",
+      "title": "world-engine",
       "presence": "world-engine",
+      "glb": "assets/palace/world-engine/world-engine.glb",
+      "lightmap": [
+        "assets/palace/world-engine/lightmap.ktx2",
+        "assets/palace/world-engine/lightmap.png"
+      ],
+      "lightmapPhone": [
+        "assets/palace/world-engine/lightmap-1024.ktx2",
+        "assets/palace/world-engine/lightmap.png"
+      ],
       "fallback": {
         "kind": "box",
-        "color": "#101c2b"
+        "color": "#6f7580"
       },
       "bounds": {
         "min": [
@@ -331,18 +394,30 @@
           "axis": "z",
           "at": -22,
           "center": 0,
-          "width": 4.8,
-          "height": 4.6
+          "width": 2.4,
+          "height": 3.2
         },
         {
           "to": "orangery",
           "axis": "z",
           "at": -34,
           "center": 0,
-          "width": 4.8,
-          "height": 4.6
+          "width": 2.4,
+          "height": 3.2
         }
       ],
+      "palace": {
+        "type": "state-room",
+        "windows": [
+          {
+            "wall": "-x",
+            "bays": 3,
+            "width": 1.6,
+            "sill": 1.6,
+            "head": 5.6
+          }
+        ]
+      },
       "hangings": [
         {
           "id": "world-engine-classroom",
@@ -407,7 +482,7 @@
             "id": "df31b52fbd0faada"
           },
           "position": [
-            4.8,
+            4.1,
             2.4,
             -33.74
           ],
@@ -416,20 +491,27 @@
             0,
             0
           ],
-          "widthMeters": 3.5,
+          "widthMeters": 4.5,
           "heightMeters": 3.4
         }
-      ],
-      "architecture": "observatory",
-      "exposure": 1
+      ]
     },
     {
       "id": "orangery",
-      "title": "The Lantern Walk",
+      "title": "orangery",
       "presence": "orangery",
+      "glb": "assets/palace/orangery/orangery.glb",
+      "lightmap": [
+        "assets/palace/orangery/lightmap.ktx2",
+        "assets/palace/orangery/lightmap.png"
+      ],
+      "lightmapPhone": [
+        "assets/palace/orangery/lightmap-1024.ktx2",
+        "assets/palace/orangery/lightmap.png"
+      ],
       "fallback": {
         "kind": "box",
-        "color": "#101c2b"
+        "color": "#8a8f8a"
       },
       "bounds": {
         "min": [
@@ -457,8 +539,8 @@
           "axis": "z",
           "at": -34,
           "center": 0,
-          "width": 4.8,
-          "height": 4.6
+          "width": 2.4,
+          "height": 3.2
         },
         {
           "to": "terrace",
@@ -485,17 +567,63 @@
           "height": 5.0
         }
       ],
+      "palace": {
+        "type": "orangery",
+        "windows": [
+          {
+            "wall": "-x",
+            "centers": [
+              -36,
+              -44,
+              -48,
+              -56,
+              -60,
+              -68
+            ],
+            "width": 3.0,
+            "sill": 0.0,
+            "head": 5.0,
+            "reveal": 0.45
+          }
+        ],
+        "niches": [
+          {
+            "wall": "+x",
+            "centers": [
+              -38,
+              -42,
+              -46,
+              -50,
+              -54,
+              -58,
+              -62,
+              -66
+            ],
+            "width": 2.4,
+            "height": 4.0,
+            "depth": 0.6
+          }
+        ]
+      },
       "hangings": [],
-      "exposure": 1,
-      "architecture": "observatory"
+      "exposure": 0.6
     },
     {
       "id": "phototroph",
-      "title": "The Binding Chamber",
+      "title": "phototroph",
       "presence": "phototroph",
+      "glb": "assets/palace/phototroph/phototroph.glb",
+      "lightmap": [
+        "assets/palace/phototroph/lightmap.ktx2",
+        "assets/palace/phototroph/lightmap.png"
+      ],
+      "lightmapPhone": [
+        "assets/palace/phototroph/lightmap-1024.ktx2",
+        "assets/palace/phototroph/lightmap.png"
+      ],
       "fallback": {
         "kind": "box",
-        "color": "#101c2b"
+        "color": "#5f6a66"
       },
       "bounds": {
         "min": [
@@ -523,18 +651,30 @@
           "axis": "z",
           "at": 10,
           "center": 0,
-          "width": 4.8,
-          "height": 4.6
+          "width": 2.4,
+          "height": 3.2
         },
         {
           "to": "gallery",
           "axis": "z",
           "at": 22,
           "center": 0,
-          "width": 4.8,
-          "height": 4.6
+          "width": 2.4,
+          "height": 3.2
         }
       ],
+      "palace": {
+        "type": "state-room",
+        "windows": [
+          {
+            "wall": "-x",
+            "bays": 3,
+            "width": 1.6,
+            "sill": 3.5,
+            "head": 5.6
+          }
+        ]
+      },
       "hangings": [
         {
           "id": "phototroph-tape",
@@ -573,17 +713,24 @@
           },
           "pointSize": 40
         }
-      ],
-      "architecture": "observatory",
-      "exposure": 1
+      ]
     },
     {
       "id": "gallery",
-      "title": "The Long Gallery",
+      "title": "gallery",
       "presence": "gallery",
+      "glb": "assets/palace/gallery/gallery.glb",
+      "lightmap": [
+        "assets/palace/gallery/lightmap.ktx2",
+        "assets/palace/gallery/lightmap.png"
+      ],
+      "lightmapPhone": [
+        "assets/palace/gallery/lightmap-1024.ktx2",
+        "assets/palace/gallery/lightmap.png"
+      ],
       "fallback": {
         "kind": "box",
-        "color": "#101c2b"
+        "color": "#8e968d"
       },
       "bounds": {
         "min": [
@@ -611,8 +758,8 @@
           "axis": "z",
           "at": 22,
           "center": 0,
-          "width": 4.8,
-          "height": 4.6
+          "width": 2.4,
+          "height": 3.2
         },
         {
           "to": "event-atoms",
@@ -651,17 +798,66 @@
           "closed": true
         }
       ],
-      "hangings": [],
-      "architecture": "observatory",
-      "exposure": 1
+      "palace": {
+        "type": "gallery",
+        "windows": [
+          {
+            "wall": "-x",
+            "bays": 9,
+            "width": 1.6,
+            "sill": 1.6,
+            "head": 5.6
+          }
+        ],
+        "posters": [
+          {
+            "wall": "+x",
+            "center": 24.3,
+            "width": 3.6,
+            "height": 3.0,
+            "z0": 1.5
+          },
+          {
+            "wall": "+x",
+            "center": 34,
+            "width": 4.5,
+            "height": 3.0,
+            "z0": 1.5
+          },
+          {
+            "wall": "+x",
+            "center": 46,
+            "width": 4.5,
+            "height": 3.0,
+            "z0": 1.5
+          },
+          {
+            "wall": "+x",
+            "center": 55.7,
+            "width": 3.6,
+            "height": 3.0,
+            "z0": 1.5
+          }
+        ]
+      },
+      "hangings": []
     },
     {
       "id": "spectre",
-      "title": "The Gravity Chamber",
+      "title": "spectre",
       "presence": "spectre",
+      "glb": "assets/palace/spectre/spectre.glb",
+      "lightmap": [
+        "assets/palace/spectre/lightmap.ktx2",
+        "assets/palace/spectre/lightmap.png"
+      ],
+      "lightmapPhone": [
+        "assets/palace/spectre/lightmap-1024.ktx2",
+        "assets/palace/spectre/lightmap.png"
+      ],
       "fallback": {
         "kind": "box",
-        "color": "#101c2b"
+        "color": "#15171a"
       },
       "bounds": {
         "min": [
@@ -693,6 +889,9 @@
           "height": 3.2
         }
       ],
+      "palace": {
+        "type": "planet"
+      },
       "hangings": [
         {
           "id": "spectre-chi0",
@@ -802,17 +1001,24 @@
           ],
           "widthMeters": 6
         }
-      ],
-      "architecture": "observatory",
-      "exposure": 1
+      ]
     },
     {
       "id": "greenhouse",
-      "title": "The Workshop",
+      "title": "greenhouse",
       "presence": "greenhouse",
+      "glb": "assets/palace/greenhouse/greenhouse.glb",
+      "lightmap": [
+        "assets/palace/greenhouse/lightmap.ktx2",
+        "assets/palace/greenhouse/lightmap.png"
+      ],
+      "lightmapPhone": [
+        "assets/palace/greenhouse/lightmap-1024.ktx2",
+        "assets/palace/greenhouse/lightmap.png"
+      ],
       "fallback": {
         "kind": "box",
-        "color": "#101c2b"
+        "color": "#7c8a80"
       },
       "bounds": {
         "min": [
@@ -846,17 +1052,43 @@
           "admin": true
         }
       ],
-      "hangings": [],
-      "architecture": "observatory",
-      "exposure": 1
+      "palace": {
+        "type": "greenhouse",
+        "windows": [
+          {
+            "wall": "+x",
+            "bays": 2,
+            "width": 2.0,
+            "sill": 1.0,
+            "head": 4.2
+          },
+          {
+            "wall": "-y",
+            "bays": 2,
+            "width": 2.0,
+            "sill": 1.0,
+            "head": 4.2
+          }
+        ]
+      },
+      "hangings": []
     },
     {
       "id": "terrace",
-      "title": "The Horizon Terrace",
+      "title": "terrace",
       "presence": "terrace",
+      "glb": "assets/palace/terrace/terrace.glb",
+      "lightmap": [
+        "assets/palace/terrace/lightmap.ktx2",
+        "assets/palace/terrace/lightmap.png"
+      ],
+      "lightmapPhone": [
+        "assets/palace/terrace/lightmap-1024.ktx2",
+        "assets/palace/terrace/lightmap.png"
+      ],
       "fallback": {
         "kind": "ground",
-        "color": "#0d1b23"
+        "color": "#8a8578"
       },
       "bounds": {
         "min": [
@@ -944,6 +1176,28 @@
           "height": 8
         }
       ],
+      "palace": {
+        "type": "cell",
+        "ground": "gravel",
+        "balustrade": {
+          "x": -15,
+          "openings": [
+            [
+              -6,
+              6
+            ],
+            [
+              -38,
+              -34
+            ],
+            [
+              34,
+              38
+            ]
+          ]
+        },
+        "facade": true
+      },
       "hangings": [
         {
           "id": "moon",
@@ -976,16 +1230,24 @@
           ]
         }
       ],
-      "exposure": 1,
-      "architecture": "observatory"
+      "exposure": 0.2
     },
     {
       "id": "parterre",
-      "title": "The Meridian Garden",
+      "title": "parterre",
       "presence": "parterre",
+      "glb": "assets/palace/parterre/parterre.glb",
+      "lightmap": [
+        "assets/palace/parterre/lightmap.ktx2",
+        "assets/palace/parterre/lightmap.png"
+      ],
+      "lightmapPhone": [
+        "assets/palace/parterre/lightmap-1024.ktx2",
+        "assets/palace/parterre/lightmap.png"
+      ],
       "fallback": {
         "kind": "ground",
-        "color": "#0d1b23"
+        "color": "#8a8578"
       },
       "bounds": {
         "min": [
@@ -1057,17 +1319,36 @@
           "height": 8
         }
       ],
+      "palace": {
+        "type": "cell",
+        "ground": "parterre",
+        "basin": {
+          "center": [
+            -35,
+            0
+          ],
+          "radius": 5
+        }
+      },
       "hangings": [],
-      "exposure": 1,
-      "architecture": "observatory"
+      "exposure": 0.2
     },
     {
       "id": "orchard-west",
-      "title": "The Western Grove",
+      "title": "orchard-west",
       "presence": "orchard-west",
+      "glb": "assets/palace/orchard-west/orchard-west.glb",
+      "lightmap": [
+        "assets/palace/orchard-west/lightmap.ktx2",
+        "assets/palace/orchard-west/lightmap.png"
+      ],
+      "lightmapPhone": [
+        "assets/palace/orchard-west/lightmap-1024.ktx2",
+        "assets/palace/orchard-west/lightmap.png"
+      ],
       "fallback": {
         "kind": "ground",
-        "color": "#0d1b23"
+        "color": "#5a6b47"
       },
       "bounds": {
         "min": [
@@ -1107,17 +1388,31 @@
           "height": 8
         }
       ],
+      "palace": {
+        "type": "cell",
+        "ground": "grass",
+        "trees": true,
+        "seed": 11
+      },
       "hangings": [],
-      "exposure": 1,
-      "architecture": "observatory"
+      "exposure": 0.2
     },
     {
       "id": "orchard-south",
-      "title": "The Far Grove",
+      "title": "orchard-south",
       "presence": "orchard-south",
+      "glb": "assets/palace/orchard-south/orchard-south.glb",
+      "lightmap": [
+        "assets/palace/orchard-south/lightmap.ktx2",
+        "assets/palace/orchard-south/lightmap.png"
+      ],
+      "lightmapPhone": [
+        "assets/palace/orchard-south/lightmap-1024.ktx2",
+        "assets/palace/orchard-south/lightmap.png"
+      ],
       "fallback": {
         "kind": "ground",
-        "color": "#0d1b23"
+        "color": "#5a6b47"
       },
       "bounds": {
         "min": [
@@ -1165,17 +1460,31 @@
           "height": 8
         }
       ],
+      "palace": {
+        "type": "cell",
+        "ground": "grass",
+        "trees": true,
+        "seed": 12
+      },
       "hangings": [],
-      "exposure": 1,
-      "architecture": "observatory"
+      "exposure": 0.2
     },
     {
       "id": "orchard-east",
-      "title": "The Eastern Grove",
+      "title": "orchard-east",
       "presence": "orchard-east",
+      "glb": "assets/palace/orchard-east/orchard-east.glb",
+      "lightmap": [
+        "assets/palace/orchard-east/lightmap.ktx2",
+        "assets/palace/orchard-east/lightmap.png"
+      ],
+      "lightmapPhone": [
+        "assets/palace/orchard-east/lightmap-1024.ktx2",
+        "assets/palace/orchard-east/lightmap.png"
+      ],
       "fallback": {
         "kind": "ground",
-        "color": "#0d1b23"
+        "color": "#5a6b47"
       },
       "bounds": {
         "min": [
@@ -1215,9 +1524,14 @@
           "height": 8
         }
       ],
+      "palace": {
+        "type": "cell",
+        "ground": "grass",
+        "trees": true,
+        "seed": 13
+      },
       "hangings": [],
-      "exposure": 1,
-      "architecture": "observatory"
+      "exposure": 0.2
     }
   ]
 }

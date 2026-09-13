@@ -25,7 +25,8 @@
     "quality:build": "tsx scripts/quality-build.ts",
     "quality:browser": "node scripts/quality-browser.mjs",
     "quality": "pnpm test && node --test scripts/quality-browser-support.test.mjs && pnpm typecheck && pnpm build && pnpm quality:build",
-    "quality:all": "pnpm quality && pnpm quality:browser --out ../results/quality/demo.json && pnpm quality:browser --dist dist --gzip --out ../results/quality/production.json"
+    "quality:all": "pnpm quality && pnpm quality:browser --out ../results/quality/demo.json && pnpm quality:browser --dist dist --gzip --out ../results/quality/production.json && pnpm quality:world --out ../results/quality/world.json",
+    "quality:world": "node scripts/quality-world.mjs"
   },
   "dependencies": {
     "hls.js": "^1.7.3",

@@ -67,6 +67,7 @@ uniform vec3 uGround;
 uniform vec3 uSunColor;
 uniform vec3 uSunDir;
 uniform float uSunCos;
+uniform float uSunIntensity;
 varying vec3 vDir;
 void main() {
   vec3 d = normalize(vDir);
@@ -78,8 +79,8 @@ void main() {
   vec3 c = up >= 0.0 ? sky : ground;
   float s = dot(d, uSunDir);
   // A wide haze around the sun and the disc itself, which is meant to blow out.
-  c += uSunColor * 0.25 * pow(max(s, 0.0), 24.0);
-  c += uSunColor * 4.0 * smoothstep(uSunCos - 0.0004, uSunCos, s);
+  c += uSunColor * uSunIntensity * 0.25 * pow(max(s, 0.0), 24.0);
+  c += uSunColor * uSunIntensity * 4.0 * smoothstep(uSunCos - 0.0004, uSunCos, s);
   gl_FragColor = vec4(c, 1.0);
   #include <colorspace_fragment>
 }
@@ -97,6 +98,7 @@ export function buildSky(sky: Sky): SkyDome {
       uSunColor: { value: new Color(sky.sun) },
       uSunDir: { value: sun.clone() },
       uSunCos: { value: Math.cos(((sky.sunAngleDeg / 2) * Math.PI) / 180) },
+      uSunIntensity: { value: sky.sunIntensity },
     },
     side: BackSide,
     depthWrite: false,
