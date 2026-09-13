@@ -852,9 +852,11 @@ def build_facade(b, mansion):
     # stone surrounds round every opening, standing proud of the limewash
     for y0, y1, z0, z1, kind in holes:
         fw, fp = 0.28, 0.10
-        box(b, FACADE_X - fp, FACADE_X, y0 - fw, y0, max(z0 - 0.02, 0.0), z1 + fw, C_STONE, top=True)
-        box(b, FACADE_X - fp, FACADE_X, y1, y1 + fw, max(z0 - 0.02, 0.0), z1 + fw, C_STONE, top=True)
-        box(b, FACADE_X - fp, FACADE_X, y0 - fw, y1 + fw, z1, z1 + fw, C_STONE, top=True)
+        # jambs stop under the head, which alone owns the top and the underside:
+        # a jamb running through it doubled the top face, and the double baked black
+        box(b, FACADE_X - fp, FACADE_X, y0 - fw, y0, max(z0 - 0.02, 0.0), z1, C_STONE, top=False)
+        box(b, FACADE_X - fp, FACADE_X, y1, y1 + fw, max(z0 - 0.02, 0.0), z1, C_STONE, top=False)
+        box(b, FACADE_X - fp, FACADE_X, y0 - fw, y1 + fw, z1, z1 + fw, C_STONE, top=True, bottom=True)
         if kind == "window":
             box(b, FACADE_X - 0.16, FACADE_X, y0 - fw, y1 + fw, z0 - 0.12, z0, C_STONE, top=True)  # sill
     # a string course and a parapet band in stone
