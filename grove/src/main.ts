@@ -64,8 +64,11 @@ const body = createBody(
   MathUtils.degToRad(startYaw),
   startRoom.id,
 );
-// `&pitch=<deg>` looks up or down from the start, for a link to something high.
+// `&pitch=<deg>` looks up or down from the start, for a link to something high;
+// `&x=&z=` stand somewhere else in the room, and then the marker leaves them be.
 if (query.has("pitch")) body.pitch = MathUtils.degToRad(Number(query.get("pitch")));
+if (query.has("x")) body.x = Number(query.get("x"));
+if (query.has("z")) body.z = Number(query.get("z"));
 /** Until the visitor moves, the asset's own spawn marker may still move them. */
 let bodyPlaced = false;
 
@@ -225,8 +228,10 @@ function boot(): void {
       // The asset's spawn marker is the authority; if the visitor has not
       // moved yet, put them where the bake says the room starts.
       if (room.id !== body.room || bodyPlaced) return;
-      body.x = room.spawn.position[0];
-      body.z = room.spawn.position[2];
+      if (!query.has("x") && !query.has("z")) {
+        body.x = room.spawn.position[0];
+        body.z = room.spawn.position[2];
+      }
       // ...except the heading when the link asked for one: `?yaw=` is for
       // looking at a particular wall, and the marker must not turn it away.
       if (!query.has("yaw")) body.yaw = MathUtils.degToRad(room.spawn.yawDeg);
