@@ -13,6 +13,11 @@ A <name>.probe.new.jpg is the same station 2 mm to the side: pixels that
 flip between the two frames beyond what a 2 mm shift explains (the blur
 absorbs the shift) are faces fighting the depth buffer. Reported as
 FLICKER with the fraction and the pixel row/column of the worst patch.
+Best effort: the software rasteriser the shots use resolves an exact tie
+the same way every frame, so a coplanar pair that flickers on a real GPU
+can read steady here. `palace.py --check` is the guard for those; this
+probe catches the precision flicker a checker cannot see (a face a few
+millimetres off another at distance).
 """
 import glob
 import os
