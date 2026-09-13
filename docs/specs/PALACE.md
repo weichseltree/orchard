@@ -664,6 +664,17 @@ the plan above in one evening. Where the build departs from the spec:
   front window reveals run from the face at x = -6.9 to the facade's outer
   plane at -7.5; the facade's door thresholds are a 2 cm step; pilasters
   keep clear of every still and video wall in the plan.
+- **Interior fill lamps and a per-room exposure** (2026-09-13): the sun
+  and sky through the windows left every underside (the gilt cornice bead,
+  the capitals) at a fifth of the floor's light, black after AgX, so each
+  interior room hangs warm 400 W point lamps, one per 8 m along its long
+  axis at 0.55 of its height (a probe at 300 and 900 W chose the value).
+  One sun bakes the whole palace, so the grounds carry about six times the
+  hall's light: `mansion.json` gives each room an `exposure` (grounds 0.2,
+  orangery 0.6, the rest 1) and the client's eye adapts toward it over
+  about a second on crossing. Mouldings run through the corners without
+  cap pieces and walls lap the floor and ceiling planes by 5 cm, so the
+  T-junction hairlines show wall, not sky.
 - **The materials are the museum's, not the gallery palette**: cream
   stucco, a red-brown marble wainscot, grey-white marble dressings a step
   below the wall so the order reads, gilt capitals, crests and the
