@@ -65,10 +65,10 @@ def log(msg):
 # --------------------------------------------------------------------------
 # part -> (linear albedo, roughness, texture name or None, tile metres, metallic)
 LOOK = {
-    "floor_marble":  ((0.62, 0.60, 0.56), 0.18, "floor_pattern", 6.0, 0.0),
+    "floor_marble":  ((0.62, 0.60, 0.56), 0.35, "floor_pattern", 6.0, 0.0),   # 0.18 read as wet; ruled 2026-09-13
     "floor_parquet": ((0.30, 0.20, 0.12), 0.45, "parquet", 2.4, 0.0),
     "floor_stone":   ((0.42, 0.41, 0.38), 0.70, "stone", 2.0, 0.0),
-    "floor_dark":    ((0.045, 0.045, 0.05), 0.25, None, 1.0, 0.0),
+    "floor_dark":    ((0.045, 0.045, 0.05), 0.35, None, 1.0, 0.0),
     "wall_stucco":   ((0.66, 0.62, 0.55), 0.90, None, 1.0, 0.0),
     "wall_limewash": ((0.72, 0.70, 0.66), 0.92, None, 1.0, 0.0),
     "wall_dark":     ((0.02, 0.02, 0.025), 0.95, None, 1.0, 0.0),
@@ -382,6 +382,23 @@ class RoomPlan:
         """This wall is the -x face at the facade's line: its reveals run to FACADE_X."""
         return wall == "-x" and abs(self.bx0 + 7.0) < 1e-6
 
+    def neighbour_is_cell(self, d):
+        other = next((r for r in self.mansion["rooms"] if r["id"] == d["to"]), None)
+        return other is not None and (other.get("palace") or {}).get("type") == "cell"
+
+    def door_depth(self, d, wall):
+        """How far this room's reveal runs into an open doorway. A doorway's
+        reveal belongs to ONE room, so no jamb is two half-jambs from two
+        bakes meeting at the bounds plane: on the garden front the room runs
+        it to the facade's outer face; between two rooms the one whose wall
+        is the +x or +y face runs it the full two half-walls, and the other
+        builds none. Doors into any other cell keep the half-wall."""
+        if self.on_garden_front(wall) and self.neighbour_is_cell(d):
+            return self.x0 - FACADE_X
+        if self.neighbour_is_cell(d):
+            return WALL_HALF
+        return 2 * WALL_HALF if wall in ("+x", "+y") else 0.0
+
     def wall_hangings(self):
         """(wall, u0, u1) for every still or video the plan hangs on a wall,
         so pilasters keep clear of the picture."""
@@ -437,9 +454,11 @@ class RoomPlan:
 # --------------------------------------------------------------------------
 # geometry
 # --------------------------------------------------------------------------
-def build_wall(b, plan, wall, holes):
+def build_wall(b, plan, wall, holes, cutouts=()):
     """A stepped wall: wainscot, field, cornice, frieze. Adapted from
-    bake_hall.build_wall with the room's own heights."""
+    bake_hall.build_wall with the room's own heights. `cutouts` are holes
+    that apply to the wainscot only: the strip and its ledge stop where a
+    door surround stands, instead of running hidden through its box."""
     A, B = plan.walls()[wall]
     a = Vector((A[0], A[1], 0.0))
     bb = Vector((B[0], B[1], 0.0))
@@ -461,15 +480,20 @@ def build_wall(b, plan, wall, holes):
     # and runs to the far corner: the previous wall's moulding fills the
     # corner square, so no corner cap is needed (a cap was a tiny island
     # that baked black) and nothing overlaps.
+    # every proud strip and ledge starts its own inset past the corner, so a
+    # face that starts at 0 gets a vertex at each of those insets (welded, no T)
+    def cuts_from(s):
+        return [c - s for c in (WAINSCOT_P, CORNICE_P) if c - s > 1e-6]
     for z0, z1, inset, mat in strips:
         s = inset
         origin = a + uh * s + n * inset + Z * z0
         loc = []
-        for hu0, hu1, hz0, hz1 in holes:
+        hs = list(holes) + [c for c in cutouts if z1 <= wh + EPS]
+        for hu0, hu1, hz0, hz1 in hs:
             if hz1 <= z0 + EPS or hz0 >= z1 - EPS:
                 continue
             loc.append((hu0 - s, max(hz0, z0) - z0, hu1 - s, min(hz1, z1) - z0))
-        b.rect_holes(origin, uh * (L - s), Z * (z1 - z0), loc, mat, want=n)
+        b.rect_holes(origin, uh * (L - s), Z * (z1 - z0), loc, mat, want=n, cuts=cuts_from(s))
     caps = []
     if wh > 0:
         caps.append((wh, WAINSCOT_P, 0.0, P_WAINSCOT))
@@ -479,8 +503,9 @@ def build_wall(b, plan, wall, holes):
         s = max(i0, i1)
         up = Z if i1 < i0 else -Z
         origin = a + uh * s + n * min(i0, i1) + Z * z
-        loc = [(hu0 - s, 0.0, hu1 - s, abs(i1 - i0)) for hu0, hu1, hz0, hz1 in holes if hz0 < z - EPS < hz1]
-        b.rect_holes(origin, uh * (L - s), n * abs(i1 - i0), loc, mat, want=up)
+        hs = list(holes) + ([c for c in cutouts] if z <= wh + EPS else [])
+        loc = [(hu0 - s, 0.0, hu1 - s, abs(i1 - i0)) for hu0, hu1, hz0, hz1 in hs if hz0 < z - EPS < hz1 + EPS]
+        b.rect_holes(origin, uh * (L - s), n * abs(i1 - i0), loc, mat, want=up, cuts=cuts_from(s))
 
 
 def build_corner_caps(b, plan):
@@ -526,7 +551,9 @@ def build_pilasters(b, plan, holes_by_wall):
         L = math.dist(A, B)
         bays = max(2, int(round(L / 4.0)))
         pitch = L / bays
-        us = [pitch * i for i in range(1, bays)] + [0.45, L - 0.45]
+        # the corner pilasters belong to the x walls alone: one on each wall
+        # overlapped its neighbour by 2 cm, and the capitals by more
+        us = [pitch * i for i in range(1, bays)] + ([0.45, L - 0.45] if wall in ("+x", "-x") else [])
         holes = holes_by_wall.get(wall, [])
         for u in us:
             if any(h[0] - 0.6 < u < h[1] + 0.6 for h in holes):
@@ -539,8 +566,8 @@ def build_pilasters(b, plan, holes_by_wall):
 def build_surround(b, plan, wall, hole):
     """A marble frame round a doorway on this room's face, a gilt crest above."""
     u0, u1, z0, z1 = hole
-    box_on_wall(b, plan, wall, u0 - SURR_W, u0, 0.0, z1 + SURR_H, SURR_P, P_TRIM)
-    box_on_wall(b, plan, wall, u1, u1 + SURR_W, 0.0, z1 + SURR_H, SURR_P, P_TRIM)
+    box_on_wall(b, plan, wall, u0 - SURR_W, u0, -WALL_LAP, z1 + SURR_H, SURR_P, P_TRIM)
+    box_on_wall(b, plan, wall, u1, u1 + SURR_W, -WALL_LAP, z1 + SURR_H, SURR_P, P_TRIM)
     box_on_wall(b, plan, wall, u0, u1, z1, z1 + SURR_H, SURR_P, P_TRIM)
     if z1 + SURR_H + CREST_H < plan.style["cornice"][0] - 0.1:
         box_on_wall(b, plan, wall, u0 - SURR_W * 0.5, u1 + SURR_W * 0.5, z1 + SURR_H, z1 + SURR_H + CREST_H, CREST_P, P_GILT)
@@ -582,21 +609,28 @@ def build_room(plan):
     leaves = []
     markers = []
 
+    cutouts_by_wall = {w: [] for w in holes_by_wall}
     for d in plan.doorways:
         wall, hole = plan.hole_for_door(d)
         closed = bool(d.get("closed"))
+        holes_by_wall[wall].append(hole)
         if closed:
             # a door leaf set into the wall to the bounds plane, framed: the wall stays solid behind it
-            holes_by_wall[wall].append(hole)
             leaves.append((wall, hole))
         else:
-            holes_by_wall[wall].append(hole)
-            reveals.append((wall, hole, DOOR_DEPTH, "lrt", P_TRIM, "door"))
+            depth = plan.door_depth(d, wall)
+            if depth > 0:
+                reveals.append((wall, hole, depth, "lrt", P_TRIM, "door"))
         surrounds.append((wall, hole))
+        u0, u1 = hole[0], hole[1]
+        cutouts_by_wall[wall].append((u0 - SURR_W, u1 + SURR_W, -WALL_LAP, plan.style["wainscot"]))
         markers.append(("door", d, wall, hole))
     for wall, hole, depth in plan.window_holes():
         holes_by_wall[wall].append(hole)
-        reveals.append((wall, hole, depth, "lrtb", P_TRIM, "window"))
+        # a window down to the floor is an opening you walk through: no bottom
+        # reveal in the ground's plane, a threshold instead, like a door
+        sides = "lrtb" if hole[2] > EPS else "lrt"
+        reveals.append((wall, hole, depth, sides, P_TRIM, "window"))
         markers.append(("window", None, wall, hole))
     for k, p in enumerate(plan.posters):
         wall = p["wall"]
@@ -615,7 +649,7 @@ def build_room(plan):
             markers.append(("niche", nch, wall, hole))
 
     for wall in ("+x", "+y", "-x", "-y"):
-        build_wall(b, plan, wall, holes_by_wall[wall])
+        build_wall(b, plan, wall, holes_by_wall[wall], cutouts_by_wall[wall])
 
     for wall, hole, depth, sides, mat, kind in reveals:
         plan.extends[wall] = max(plan.extends.get(wall, 0.0), depth - WALL_HALF)
@@ -628,7 +662,7 @@ def build_room(plan):
         n = Vector(plan.interior_normal(wall))
         uh = u.normalized()
         back = o + uh * u0 + Z * z0 - n * depth
-        if kind == "door":                                        # a doorway: threshold strip, open beyond
+        if kind == "door" or (kind == "window" and z0 <= EPS):    # a doorway: threshold strip, open beyond
             b.quad(o + uh * u0, uh * (u1 - u0), -n * depth, P_TRIM, want=Z)
         elif kind == "niche":                                     # a niche: floor and back
             b.quad(o + uh * u0, uh * (u1 - u0), -n * depth, P_FLOOR, want=Z)
@@ -823,45 +857,51 @@ def garden_front(mansion):
     return out
 
 
+def facade_frame(b, x0, x1, y0, y1, z0, z1, mat, top=True, bottom=False):
+    """A stone block standing proud of the facade: every face but the one
+    against the wall (x1 is the facade's plane), so nothing hides behind it."""
+    b.quad((x0, y0, z0), (0, y1 - y0, 0), (0, 0, z1 - z0), mat, want=(-1, 0, 0))
+    b.quad((x0, y0, z0), (x1 - x0, 0, 0), (0, 0, z1 - z0), mat, want=(0, -1, 0))
+    b.quad((x0, y1, z0), (x1 - x0, 0, 0), (0, 0, z1 - z0), mat, want=(0, 1, 0))
+    if top:
+        b.quad((x0, y0, z1), (x1 - x0, 0, 0), (0, y1 - y0, 0), mat, want=(0, 0, 1))
+    if bottom:
+        b.quad((x0, y0, z0), (x1 - x0, 0, 0), (0, y1 - y0, 0), mat, want=(0, 0, -1))
+
+
 def build_facade(b, mansion):
     """The garden front seen from outside: one wall at FACADE_X with every
     window and door of the rooms behind it, a parapet, end returns and a
-    flat slate roof over the whole plan."""
+    flat slate roof over the whole plan. The openings' reveals belong to the
+    rooms (they run from the interior face to FACADE_X); the facade cuts the
+    holes and dresses them in stone."""
     fronts = garden_front(mansion)
     y_lo = min(p.by0 for p, _ in fronts)
     y_hi = max(p.by1 for p, _ in fronts)
     top = 8.2
-    holes = []
-    for plan, hs in fronts:
-        for y0, y1, z0, z1, kind in hs:
-            holes.append((y0 - y_lo, y1 - y_lo, z0, z1, kind))
-    # the wall, facing -x, u runs +y from y_lo
+    holes = [h for _, hs in fronts for h in hs]            # absolute blender y, z
+    # the wall, facing -x, u runs +y from y_lo: holes in the wall's own coordinates
     b.rect_holes((FACADE_X, y_lo, 0.0), (0, y_hi - y_lo, 0), (0, 0, top),
-                 [(h[0], h[2], h[1], h[3]) for h in holes], C_FACADE, want=(-1, 0, 0))
-    # door reveals through the facade's thickness, back to the bounds plane
-    depth = -7.0 - FACADE_X
+                 [(y0 - y_lo, z0, y1 - y_lo, z1) for y0, y1, z0, z1, _ in holes], C_FACADE, want=(-1, 0, 0))
+    # stone surrounds round every opening, standing proud of the limewash by
+    # exactly the plinth band's depth, so the band ends flush against a jamb
+    fw, fp = 0.28, 0.12
     for y0, y1, z0, z1, kind in holes:
-        if kind != "door":
-            continue
-        b.quad((FACADE_X, y0, z0), (0, 0, z1 - z0), (depth, 0, 0), C_STONE, want=(0, 1, 0))
-        b.quad((FACADE_X, y1, z0), (0, 0, z1 - z0), (depth, 0, 0), C_STONE, want=(0, -1, 0))
-        b.quad((FACADE_X, y0, z1), (0, y1 - y0, 0), (depth, 0, 0), C_STONE, want=(0, 0, -1))
-        # a 2 cm stone step, not a strip coplanar with the cell's ground
-        b.quad((FACADE_X, y0, STEP_H), (0, y1 - y0, 0), (depth, 0, 0), C_STONE, want=(0, 0, 1))
-        b.quad((FACADE_X, y0, 0.0), (0, y1 - y0, 0), (0, 0, STEP_H), C_STONE, want=(-1, 0, 0))
-    # stone surrounds round every opening, standing proud of the limewash
-    for y0, y1, z0, z1, kind in holes:
-        fw, fp = 0.28, 0.10
-        # jambs stop under the head, which alone owns the top and the underside:
-        # a jamb running through it doubled the top face, and the double baked black
-        box(b, FACADE_X - fp, FACADE_X, y0 - fw, y0, max(z0 - 0.02, 0.0), z1, C_STONE, top=False)
-        box(b, FACADE_X - fp, FACADE_X, y1, y1 + fw, max(z0 - 0.02, 0.0), z1, C_STONE, top=False)
-        box(b, FACADE_X - fp, FACADE_X, y0 - fw, y1 + fw, z1, z1 + fw, C_STONE, top=True, bottom=True)
-        if kind == "window":
-            box(b, FACADE_X - 0.16, FACADE_X, y0 - fw, y1 + fw, z0 - 0.12, z0, C_STONE, top=True)  # sill
-    # a string course and a parapet band in stone
-    b.quad((FACADE_X - 0.12, y_lo, 1.1), (0, y_hi - y_lo, 0), (0.12, 0, 0), C_STONE, want=(0, 0, 1))
-    b.quad((FACADE_X - 0.12, y_lo, 0.0), (0, y_hi - y_lo, 0), (0, 0, 1.1), C_STONE, want=(-1, 0, 0))
+        # jambs stand on the sill (a window) or the ground (a door) and stop
+        # under the head, which alone owns the top: no face is doubled anywhere
+        facade_frame(b, FACADE_X - fp, FACADE_X, y0 - fw, y0, z0, z1, C_STONE, top=False)
+        facade_frame(b, FACADE_X - fp, FACADE_X, y1, y1 + fw, z0, z1, C_STONE, top=False)
+        facade_frame(b, FACADE_X - fp, FACADE_X, y0 - fw, y1 + fw, z1, z1 + fw, C_STONE, top=True, bottom=True)
+        if z0 > EPS:
+            facade_frame(b, FACADE_X - 0.16, FACADE_X, y0 - fw, y1 + fw, z0 - 0.12, z0, C_STONE, top=True, bottom=True)
+    # a plinth band with a string course on top, broken at every opening that
+    # reaches below it (a door, a window to the floor): it used to run across
+    # the doors as a 1.1 m parapet
+    low = [(y0 - fw - y_lo, y1 + fw - y_lo) for y0, y1, z0, z1, _ in holes if z0 < 1.1 - EPS]
+    b.rect_holes((FACADE_X - 0.12, y_lo, 1.1), (0, y_hi - y_lo, 0), (0.12, 0, 0),
+                 [(a, 0.0, c, 0.12) for a, c in low], C_STONE, want=(0, 0, 1))
+    b.rect_holes((FACADE_X - 0.12, y_lo, 0.0), (0, y_hi - y_lo, 0), (0, 0, 1.1),
+                 [(a, 0.0, c, 1.1) for a, c in low], C_STONE, want=(-1, 0, 0))
     b.quad((FACADE_X - 0.15, y_lo, top - 0.8), (0, y_hi - y_lo, 0), (0, 0, 0.8), C_STONE, want=(-1, 0, 0))
     b.quad((FACADE_X - 0.15, y_lo, top - 0.8), (0, y_hi - y_lo, 0), (0.15, 0, 0), C_STONE, want=(0, 0, -1))
     b.quad((FACADE_X - 0.15, y_lo, top), (0, y_hi - y_lo, 0), (21.1 - FACADE_X + 0.15, 0, 0), C_SLATE, want=(0, 0, 1))
@@ -874,11 +914,12 @@ def build_facade(b, mansion):
 def build_balustrade(b, plan, spec):
     x = float(spec["x"])
     openings = [(-float(z1), -float(z0)) for z0, z1 in spec.get("openings", [])]   # gltf z -> blender y
+    # the rail runs between the piers, not through them
     segs, cursor = [], plan.y0
     for o0, o1 in sorted(openings):
-        if o0 > cursor:
-            segs.append((cursor, o0))
-        cursor = o1
+        if o0 - 0.35 > cursor:
+            segs.append((cursor, o0 - 0.35))
+        cursor = o1 + 0.35
     if cursor < plan.y1:
         segs.append((cursor, plan.y1))
     for y0, y1 in segs:
@@ -899,13 +940,18 @@ def build_parterre(b, plan):
     a round basin at the centre of the axis."""
     x0, x1, y0, y1 = plan.x0, plan.x1, plan.y0, plan.y1
     cx, cy = -35.0, 0.0
-    path = 3.0
+    # the paths are wide enough that a quarter's inner corner (path * sqrt 2
+    # from the centre) clears the basin's rim by a hedge's width
+    path = 4.5
     rim_r, water_r = 5.4, 5.0
+    assert path * math.sqrt(2) > rim_r + 0.6
     for (qx0, qx1) in ((x0 + 2.0, cx - path), (cx + path, x1 - 2.0)):
         for (qy0, qy1) in ((y0 + 2.0, cy - path), (cy + path, y1 - 2.0)):
-            h = 0.6
-            for (a0, a1, b0, b1) in ((qx0, qx0 + 0.6, qy0, qy1), (qx1 - 0.6, qx1, qy0, qy1),
-                                     (qx0, qx1, qy0, qy0 + 0.6), (qx0, qx1, qy1 - 0.6, qy1)):
+            h, w = 0.6, 0.6
+            # a mitred ring: the long sides run the full length, the short
+            # sides fill between them, so no two boxes share any volume
+            for (a0, a1, b0, b1) in ((qx0, qx0 + w, qy0, qy1), (qx1 - w, qx1, qy0, qy1),
+                                     (qx0 + w, qx1 - w, qy0, qy0 + w), (qx0 + w, qx1 - w, qy1 - w, qy1)):
                 box(b, a0, a1, b0, b1, 0.0, h, C_HEDGE)
     n = 24
     for i in range(n):
@@ -982,7 +1028,10 @@ class CellPlan(RoomPlan):
 
 def build_cell(plan, mansion):
     b = hb.Build()
-    W, D = plan.x1 - plan.x0, plan.y1 - plan.y0
+    # the ground ends where the facade stands: the strip inside it belongs to
+    # the rooms' thresholds, which are in the same plane and would fight it
+    x1 = min(plan.x1, FACADE_X) if plan.spec.get("facade") else plan.x1
+    W, D = x1 - plan.x0, plan.y1 - plan.y0
     # the ground as a grid of 10 m quads so the lightmap packer gives it area
     nx, ny = max(1, int(W / 10)), max(1, int(D / 10))
     for i in range(nx):
@@ -1177,7 +1226,8 @@ def build_scene(mansion, textures, bake_res, margin, target_id):
     return objects, plans, target, trees_of
 
 
-FILL_COLOUR = (1.0, 0.86, 0.68)        # warm, a chandelier's
+FILL_COLOUR = (1.0, 0.91, 0.80)        # warm, a chandelier's; (1.0, 0.86, 0.68) turned the window heads gold
+AO_STRENGTH, AO_DISTANCE, AO_SAMPLES = 0.4, 1.0, 128   # "a bit of ambient occlusion", ruled 2026-09-13
 FILL_W = 400.0                         # per lamp; probe 2026-09-13: 300 lifts the cornice underside from 0.19 to 0.30 of the floor, 900 flattens the sun
 
 
@@ -1411,12 +1461,282 @@ def check_bounds(objects, plans):
     return bad
 
 
+
+# --------------------------------------------------------------------------
+# face collisions: found before any bake, never in a screenshot
+# --------------------------------------------------------------------------
+# A pair of faces in one plane facing the same way and overlapping z-fights,
+# and a bake paints one of them black. A face whose edge passes through the
+# interior of another means two bodies share volume (the hedge corners, a
+# jamb run into a sill). Both are found on the raw quads of every room in
+# world space, which is where a room's faces meet its neighbour's.
+FACE_TOL_PLANE = 1e-4     # metres: within this of a plane is on it
+FACE_TOL_AREA = 1e-3      # m^2: smaller overlaps are numerical dust
+FACE_TOL_INSIDE = 1e-3    # metres: a crossing this close to an edge is a touch
+# pierces that are the design: the walls lap the floor and the ceiling by
+# WALL_LAP so no seam shows, and a card tree's crown crosses its trunk
+FACE_LAPS = ({"floor", "wainscot"}, {"floor", "wall"}, {"floor", "trim"}, {"wall", "ceiling"},
+             {"trim", "ceiling"}, {"wainscot", "wall"}, {"trunk", "leaf"})
+
+
+def _face_list(room_id, tag, b, mat_names):
+    out = []
+    for face, mat in zip(b.faces, b.mats):
+        vs = [Vector(b.verts[i]) for i in face]
+        n = (vs[1] - vs[0]).cross(vs[-1] - vs[0])
+        if n.length < 1e-9:
+            n = (vs[2] - vs[0]).cross(vs[-1] - vs[1])
+        if n.length < 1e-9:
+            continue
+        n.normalize()
+        lo = Vector((min(v.x for v in vs), min(v.y for v in vs), min(v.z for v in vs)))
+        hi = Vector((max(v.x for v in vs), max(v.y for v in vs), max(v.z for v in vs)))
+        out.append((room_id, tag, mat_names[mat], vs, n, n.dot(vs[0]), (lo, hi)))
+    return out
+
+
+def _basis(n):
+    a = Vector((1, 0, 0)) if abs(n.x) < 0.9 else Vector((0, 1, 0))
+    u = a.cross(n).normalized()
+    return u, n.cross(u)
+
+
+def _to2d(vs, o, u, v):
+    return [((p - o).dot(u), (p - o).dot(v)) for p in vs]
+
+
+def _ccw(poly):
+    a = sum(poly[i][0] * poly[(i + 1) % len(poly)][1] - poly[(i + 1) % len(poly)][0] * poly[i][1] for i in range(len(poly)))
+    return poly if a >= 0 else poly[::-1]
+
+
+def _area(poly):
+    return 0.5 * abs(sum(poly[i][0] * poly[(i + 1) % len(poly)][1] - poly[(i + 1) % len(poly)][0] * poly[i][1]
+                         for i in range(len(poly))))
+
+
+def _clip(subject, clipper):
+    """Sutherland-Hodgman against a convex counter-clockwise clipper."""
+    out = subject
+    for i in range(len(clipper)):
+        if not out:
+            break
+        ax, ay = clipper[i]
+        bx, by = clipper[(i + 1) % len(clipper)]
+        inp, out = out, []
+
+        def inside(p):
+            return (bx - ax) * (p[1] - ay) - (by - ay) * (p[0] - ax) >= -1e-9
+
+        def inter(p, q):
+            den = (p[0] - q[0]) * (ay - by) - (p[1] - q[1]) * (ax - bx)
+            if abs(den) < 1e-12:
+                return q
+            t = ((p[0] - ax) * (ay - by) - (p[1] - ay) * (ax - bx)) / den
+            return (p[0] + t * (q[0] - p[0]), p[1] + t * (q[1] - p[1]))
+        for j in range(len(inp)):
+            cur, prev = inp[j], inp[j - 1]
+            if inside(cur):
+                if not inside(prev):
+                    out.append(inter(prev, cur))
+                out.append(cur)
+            elif inside(prev):
+                out.append(inter(prev, cur))
+    return out
+
+
+def _strictly_inside(p, poly):
+    poly = _ccw(poly)
+    for i in range(len(poly)):
+        ax, ay = poly[i]
+        bx, by = poly[(i + 1) % len(poly)]
+        L = math.hypot(bx - ax, by - ay)
+        if L < 1e-9:
+            continue
+        if ((bx - ax) * (p[1] - ay) - (by - ay) * (p[0] - ax)) / L < FACE_TOL_INSIDE:
+            return False
+    return True
+
+
+def _pierce(qa, qb):
+    """A point where an edge of qa crosses the interior of qb, or None."""
+    va, vb, nb, db = qa[3], qb[3], qb[4], qb[5]
+    u, v = _basis(nb)
+    poly = _to2d(vb, vb[0], u, v)
+    for i in range(len(va)):
+        p, q = va[i], va[(i + 1) % len(va)]
+        sp, sq = nb.dot(p) - db, nb.dot(q) - db
+        if sp * sq >= 0 or abs(sp) < 1e-5 or abs(sq) < 1e-5:     # an endpoint on the plane is a touch (float32 vectors)
+            continue
+        x = p + (q - p) * (sp / (sp - sq))
+        if _strictly_inside(((x - vb[0]).dot(u), (x - vb[0]).dot(v)), poly):
+            return x
+    return None
+
+
+def check_faces(mansion, only=()):
+    """Builds every room's raw quads and reports the face pairs that would
+    render wrongly; returns the number of defects. Also checks that the
+    facade's wall leaves every garden-front opening clear."""
+    quads = []
+    for room in mansion["rooms"]:
+        if not room.get("palace") or (only and room["id"] not in only):
+            continue
+        if room["palace"].get("type") == "cell":
+            plan = CellPlan(room, mansion)
+            b, trees = build_cell(plan, mansion)
+            quads += _face_list(plan.id, "cell", b, CELL_PARTS)
+            if trees is not None:
+                quads += _face_list(plan.id, "trees", trees[0], CELL_PARTS)
+        else:
+            plan = RoomPlan(room, mansion)
+            b, _ = build_room(plan)
+            quads += _face_list(plan.id, "room", b, PARTS)
+    cell = 2.0
+    grid = {}
+    for idx, q in enumerate(quads):
+        lo, hi = q[6]
+        for ix in range(int(math.floor(lo.x / cell)), int(math.floor(hi.x / cell)) + 1):
+            for iy in range(int(math.floor(lo.y / cell)), int(math.floor(hi.y / cell)) + 1):
+                for iz in range(int(math.floor(lo.z / cell)), int(math.floor(hi.z / cell)) + 1):
+                    grid.setdefault((ix, iy, iz), []).append(idx)
+    pairs = set()
+    for members in grid.values():
+        for i in range(len(members)):
+            for j in range(i + 1, len(members)):
+                a, b = members[i], members[j]
+                pairs.add((a, b) if a < b else (b, a))
+    found = {}
+    for a, b in pairs:
+        qa, qb = quads[a], quads[b]
+        (alo, ahi), (blo, bhi) = qa[6], qb[6]
+        if not all(alo[k] <= bhi[k] + FACE_TOL_PLANE and blo[k] <= ahi[k] + FACE_TOL_PLANE for k in range(3)):
+            continue
+        na, nb = qa[4], qb[4]
+        dot = na.dot(nb)
+        if abs(dot) > 1 - 1e-6:
+            if not all(abs(na.dot(p) - qa[5]) < FACE_TOL_PLANE for p in qb[3]):
+                continue
+            if dot < 0:
+                continue                       # back to back: single-sided faces, hidden, harmless
+            u, v = _basis(na)
+            ov = _area(_clip(_ccw(_to2d(qa[3], qa[3][0], u, v)), _ccw(_to2d(qb[3], qa[3][0], u, v))))
+            if ov > FACE_TOL_AREA:
+                c = sum(qa[3], Vector()) / len(qa[3])
+                found.setdefault(("overlap", qa[0], qb[0], qa[2], qb[2]), []).append((ov, c))
+            continue
+        if qa[1] == "trees" and qb[1] == "trees":
+            continue
+        if {qa[2], qb[2]} in FACE_LAPS:
+            continue
+        x = _pierce(qa, qb) or _pierce(qb, qa)
+        if x is not None:
+            found.setdefault(("pierce", qa[0], qb[0], qa[2], qb[2]), []).append((0.0, x))
+    # the facade must not stand in front of any opening of the rooms behind it
+    # anything of the cell facing the garden at or outside the facade's plane
+    facade = [q for q in quads if q[1] == "cell" and abs(q[4].x) > 0.99
+              and FACADE_X - 0.5 <= q[3][0].x <= FACADE_X + FACE_TOL_PLANE]
+    for plan, holes in garden_front(mansion):
+        if only and plan.id not in only:
+            continue
+        for y0, y1, z0, z1, kind in holes:
+            for q in facade:
+                lo, hi = q[6]
+                oy = min(y1, hi.y) - max(y0, lo.y)
+                oz = min(z1, hi.z) - max(z0, lo.z)
+                if oy > 1e-3 and oz > 1e-3 and oy * oz > FACE_TOL_AREA:
+                    found.setdefault(("blocked", "terrace", plan.id, q[2], kind), []).append(
+                        (oy * oz, Vector((lo.x, (lo.y + hi.y) / 2, (lo.z + hi.z) / 2))))
+    bad = 0
+    for key in sorted(found, key=lambda k: (k[0], k[1], k[2])):
+        kind, ra, rb, ma, mb = key
+        hits = found[key]
+        bad += len(hits)
+        log("face %-8s %-14s %-14s %-9s %-9s n=%-4d area=%.3f m2  e.g. (%.2f, %.2f, %.2f)"
+            % (kind, ra, rb, ma, mb, len(hits), sum(h[0] for h in hits), *hits[0][1]))
+    log("faces: %d quads, %d defects" % (len(quads), bad))
+    return bad
+
+
+def lightmap_stats(ob, uv2_name, buf, res, hi, mat_names):
+    """Mean and 10th percentile of the baked value at each face's centre,
+    per material, as fractions of the lightmap's white point: an island that
+    comes out near black is enclosed geometry or a lamp that does not reach."""
+    me = ob.data
+    uvl = me.uv_layers[uv2_name].data
+    lum = (buf.reshape(res, res, 4)[:, :, :3] @ np.array([0.2126, 0.7152, 0.0722], dtype=np.float32)) / max(hi, 1e-6)
+    per = {}
+    for poly in me.polygons:
+        u = v = 0.0
+        for li in poly.loop_indices:
+            u += uvl[li].uv[0]
+            v += uvl[li].uv[1]
+        k = len(poly.loop_indices)
+        col = min(res - 1, max(0, int(u / k * res)))
+        row = min(res - 1, max(0, int(v / k * res)))
+        per.setdefault(poly.material_index, []).append(float(lum[row, col]))
+    out = {}
+    for mi, vals in sorted(per.items()):
+        a = np.array(vals)
+        name = mat_names[mi] if mi < len(mat_names) else str(mi)
+        out[name] = {"faces": len(vals), "mean": round(float(a.mean()), 4),
+                     "p10": round(float(np.percentile(a, 10)), 4), "p90": round(float(np.percentile(a, 90)), 4)}
+        flag = "  DARK" if out[name]["p10"] < 0.03 else ""
+        log("lmstats %-9s n=%-5d mean %.3f  p10 %.3f  p90 %.3f%s" % (name, len(vals), a.mean(),
+                                                                       np.percentile(a, 10), np.percentile(a, 90), flag))
+    return out
+
+
+def bake_ao(scene, ob, mats, uv2_name, res, margin, samples, distance, hidden):
+    """Cycles' AO pass to its own image on the same UVs: a fraction 0..1 per
+    texel. `hidden` objects (the card trees) do not occlude."""
+    img = bpy.data.images.new("ao_%s" % ob.name, res, res, alpha=True, float_buffer=True)
+    img.colorspace_settings.name = "Non-Color"
+    for m in mats:
+        m.node_tree.nodes["lightmap_bake_target"].image = img
+    was = [(o, o.hide_render) for o in hidden]
+    for o, _ in was:
+        o.hide_render = True
+    old_samples, old_type = scene.cycles.samples, scene.cycles.bake_type
+    scene.cycles.samples = samples
+    scene.cycles.bake_type = "AO"
+    scene.world.light_settings.distance = distance
+    bpy.ops.object.select_all(action="DESELECT")
+    ob.select_set(True)
+    bpy.context.view_layer.objects.active = ob
+    t0 = time.time()
+    bpy.ops.object.bake(type="AO", uv_layer=uv2_name, margin=margin, margin_type="ADJACENT_FACES", use_clear=True)
+    dn = hb.compositor_denoise(img, res).reshape(-1, 4)
+    ao = np.clip(dn[:, 0], 0.0, 1.0)
+    scene.cycles.samples, scene.cycles.bake_type = old_samples, old_type
+    for o, h in was:
+        o.hide_render = h
+    return ao, time.time() - t0
+
+
+def write_grey_png(values, res, path):
+    img = bpy.data.images.new("grey_out", res, res, alpha=False, float_buffer=False)
+    img.colorspace_settings.name = "Non-Color"
+    px = np.empty((res * res, 4), dtype=np.float32)
+    px[:, 0] = px[:, 1] = px[:, 2] = values
+    px[:, 3] = 1.0
+    img.pixels.foreach_set(px.reshape(-1))
+    img.filepath_raw = path
+    img.file_format = "PNG"
+    img.save()
+    bpy.data.images.remove(img)
+
+
 def parse_args(argv):
     p = argparse.ArgumentParser(prog="palace.py")
     p.add_argument("--out", default="grove/public/assets/palace")
     p.add_argument("--room", default="")
     p.add_argument("--list", action="store_true")
-    p.add_argument("--check", action="store_true", help="build every room and verify none leaves its bounds")
+    p.add_argument("--check", action="store_true",
+                   help="build every room, verify bounds and face collisions; bake_all.sh refuses to queue without CHECK OK")
+    p.add_argument("--ao-strength", type=float, default=AO_STRENGTH, help="ambient occlusion multiplied into the lightmap; 0 for none")
+    p.add_argument("--ao-distance", type=float, default=AO_DISTANCE)
+    p.add_argument("--ao-samples", type=int, default=AO_SAMPLES)
     p.add_argument("--stills", action="store_true")
     p.add_argument("--still-rooms", default="hall,einstruct,spectre,gallery,orangery")
     p.add_argument("--still-yaw", type=float, default=None, help="override the spawn yaw for every still")
@@ -1466,6 +1786,7 @@ def main():
     if args.check:
         objects, plans, _, _ = build_scene(mansion, textures, 256, 2, None)
         bad = check_bounds(objects, plans)
+        bad += check_faces(mansion, only=[r for r in args.room.split(",") if r])
         log("CHECK %s" % ("OK" if not bad else "FAILED: %d" % bad))
         return
 
@@ -1519,8 +1840,26 @@ def main():
         buf = dn
         t_denoise = time.time() - t_dn
         denoise_how = "OpenImageDenoise via the compositor Denoise node"
+    ao_record = None
+    if args.ao_strength > 0 and not args.no_bake:
+        # a bit of ambient occlusion: the diffuse bake already carries the
+        # physics of bounced light; this is the contact darkening on top of
+        # the fill's even light, multiplied in at a ruled strength
+        ao, t_ao = bake_ao(scene, ob, objects[plan.id][1], uv2, args.res, args.margin, args.ao_samples,
+                           args.ao_distance, list(trees_of.values()))
+        mix = (1.0 - args.ao_strength) + args.ao_strength * ao
+        buf.reshape(-1, 4)[:, :3] *= mix[:, None]
+        write_grey_png(ao, args.res, os.path.join(out_dir, "ao.png"))
+        ao_record = {"strength": args.ao_strength, "distance_m": args.ao_distance, "samples": args.ao_samples,
+                     "file": "ao.png", "seconds": round(t_ao, 2), "mean": round(float(ao.mean()), 4),
+                     "applied": "lightmap *= (1 - strength) + strength * ao, before normalisation"}
+        log("ao %.1f s, mean %.3f, strength %.2f at %.1f m" % (t_ao, ao.mean(), args.ao_strength, args.ao_distance))
+        for m in objects[plan.id][1]:
+            m.node_tree.nodes["lightmap_bake_target"].image = bake_img
     png = os.path.join(out_dir, "lightmap.png")
     stats = hb.write_lightmap_png(buf, args.res, png)
+    lm_stats = lightmap_stats(ob, uv2, buf, args.res, stats["p999_irradiance_over_pi"],
+                              CELL_PARTS if isinstance(plan, CellPlan) else PARTS)
     tiers = ktx_tiers(png, out_dir, args.res)
     log("lightmap: coverage %.1f%%, scale %.3f, tiers %s" % (100 * stats["coverage"], stats["scale"], tiers))
 
@@ -1558,6 +1897,7 @@ def main():
             "ktx2_px": min(args.res, FULL_TIER_PX), "ktx2_phone_px": 1024,
             "scale": stats["scale"], "three_light_map_intensity": round(stats["scale"] * math.pi, 6),
             "coverage": stats["coverage"], "clipped_fraction": stats["clipped_fraction"],
+            "ao": ao_record, "stats_per_material": lm_stats,
             "binding": "texture.colorSpace = SRGBColorSpace, flipY = false, channel = 1, "
                        "material.lightMapIntensity = three_light_map_intensity",
         },
@@ -1582,7 +1922,7 @@ def main():
         t_preview = preview_from_lightmap(scene, plan, ob, objects[plan.id][1], png, stats["scale"],
                                           os.path.join(out_dir, "preview.png"))
         log("preview %.1f s" % t_preview)
-    for name in ("%s.glb" % plan.id, "lightmap.png", "lightmap.ktx2", "lightmap-1024.ktx2", "preview.png"):
+    for name in ("%s.glb" % plan.id, "lightmap.png", "ao.png", "lightmap.ktx2", "lightmap-1024.ktx2", "preview.png"):
         p = os.path.join(out_dir, name)
         if os.path.exists(p):
             record["files"][name] = {"bytes": os.path.getsize(p), "sha256": hb.sha256_file(p)}

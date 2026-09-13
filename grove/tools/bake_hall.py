@@ -123,13 +123,17 @@ class Build:
         self.faces.append((i, i + 1, i + 2, i + 3))
         self.mats.append(mat)
 
-    def rect_holes(self, p, u, v, holes, mat, want=None):
+    def rect_holes(self, p, u, v, holes, mat, want=None, cuts=()):
         """Rectangle p + [0,|u|] x [0,|v|] minus axis-aligned holes, as a guillotine
-        grid of quads.  holes are (u0, v0, u1, v1) in metres along u and v."""
+        grid of quads.  holes are (u0, v0, u1, v1) in metres along u and v.
+        `cuts` are extra grid lines along u: a vertex there lets a neighbouring
+        face that starts at that u share it, instead of ending on this face's
+        edge (a T-junction, which cracks a pixel at grazing angles)."""
         u, v = Vector(u), Vector(v)
         U, V = u.length, v.length
         uh, vh = u.normalized(), v.normalized()
-        cuts_u = sorted({0.0, U} | {round(h[0], 6) for h in holes} | {round(h[2], 6) for h in holes})
+        cuts_u = sorted({0.0, U} | {round(h[0], 6) for h in holes} | {round(h[2], 6) for h in holes}
+                        | {round(c, 6) for c in cuts})
         cuts_v = sorted({0.0, V} | {round(h[1], 6) for h in holes} | {round(h[3], 6) for h in holes})
         cuts_u = [c for c in cuts_u if -EPS <= c <= U + EPS]
         cuts_v = [c for c in cuts_v if -EPS <= c <= V + EPS]
