@@ -660,10 +660,42 @@ the plan above in one evening. Where the build departs from the spec:
   side walls, floor strip, wainscot and cornice 20 cm into the next room
   along every shared plane (Manuel saw the room behind sticking through the
   wall, 2026-09-13); every room's geometry now lies within its own bounds
-  and `palace.py --check` verifies it before lane time is spent. Garden
-  front window reveals run from the face at x = -6.9 to the facade's outer
-  plane at -7.5; the facade's door thresholds are a 2 cm step; pilasters
+  and `palace.py --check` verifies it before lane time is spent. Pilasters
   keep clear of every still and video wall in the plan.
+- **A doorway's reveal belongs to one room** (2026-09-13, afternoon): the
+  first cut gave each side a 10 cm half meeting at the bounds plane, which
+  put a seam from two bakes down every jamb. Now the room whose wall is
+  the +x or +y face runs the full 20 cm and the other builds none; on the
+  garden front the room runs its doors and windows to the facade's outer
+  plane at -7.5, the facade only cuts the holes and dresses them (frames
+  built without backs, in absolute coordinates: the first facade read
+  wall-relative numbers as absolute and hung every frame 58 m along), and
+  the terrace's ground stops at the facade's face so floor-level openings
+  have nothing to fight. A window to the floor gets a threshold, not a
+  bottom reveal.
+- **`--check` finds face collisions before a bake** and `bake_all.sh`
+  refuses to queue without it: every room's raw quads in world space,
+  reported as same-plane overlaps (a z-fight, and a black patch in the
+  bake), faces piercing other faces (two bodies sharing volume: the hedge
+  corners were four overlapping boxes with their inner corners in the
+  basin, the balustrade's rail ran through its piers, corner pilasters met
+  by 2 cm), and anything of the facade in front of an opening. The walls'
+  laps into floor and ceiling and a card tree's crown through its trunk
+  are whitelisted as the design. The wainscot stops where a door surround
+  stands, and every proud strip cuts a vertex at the other insets so the
+  T-junctions weld (the greenhouse's line of sky at the cornice).
+- **Ambient occlusion**, ruled 2026-09-13: a Cycles AO pass (128 samples,
+  1 m) on the same UVs, multiplied into the lightmap at 0.4 before
+  normalisation; `ao.png` and the strength sit in the record, so another
+  strength is a recomposition, not a bake. Per-material lightmap statistics
+  (mean, p10, p90 at each face's centre) are logged and recorded, and a
+  material whose p10 is under 3 % of the white point is flagged DARK.
+- **No runtime lights in a baked room**: the client used to add a
+  hemisphere and a key per room at low intensity, and lights are global,
+  so the marble collected one highlight per loaded room. One scene-level
+  hemisphere keeps pedestals and avatars visible; the marble's roughness
+  is 0.35 for the probe to come; lightmaps use their KTX2 mip levels;
+  `?debug=overdraw` shows doubled and hidden faces as brighter patches.
 - **Interior fill lamps and a per-room exposure** (2026-09-13): the sun
   and sky through the windows left every underside (the gilt cornice bead,
   the capitals) at a fifth of the floor's light, black after AgX, so each

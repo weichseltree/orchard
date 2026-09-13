@@ -69,7 +69,7 @@ artefacts:
     ep05 --title "A + B → nothing, d = 2, N = 200 000"
   commit: b498778-dirty
   sha256: a297762de7b1db5792e00f3cf39e9921f2e29303f73f77de5ba9772cda11eb6e
-  approved: false
+  approved: true
   bundle: c59c7baa6fd15489
 - kind: master
   path: results/film/episodes/ep05_chemistry/ep05_chemistry.mp4

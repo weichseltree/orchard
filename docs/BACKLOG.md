@@ -152,7 +152,10 @@ Ordered. Items with a name in brackets wait on that person.
 
 ## The palace rebuild (2026-09-13, night)
 
-32. **Greenhouse cornice at a level view.** From the spawn, looking exactly
+32. ~~**Greenhouse cornice at a level view.**~~ Done 2026-09-13: the proud
+   strips now cut a vertex at every other inset, so the T-junction that let
+   the sky through is welded; verify in the greenhouse after its rebake.
+   The original note: from the spawn, looking exactly
    level at the window corner, the cornice on one wall reads as a black band
    and a one-pixel sky-blue line sits above the other wall's cornice. Any
    pitch above about 10 degrees, or a step closer, shows the corner clean,
@@ -164,9 +167,22 @@ Ordered. Items with a name in brackets wait on that person.
 33. **The moon's size is a guess.** The planet ball fills about a third of
    its tape box, so the moon hangs at 36 m and pointSize 1500 to read as a
    disc from the terrace; rule on it after a walk.
-34. **The window reveal heads read as gold lintels** in the hall: the marble
-   head faces down into the warm fill light and the sill bounce. Not wrong,
-   but say if it should be white.
+34. ~~**The window reveal heads read as gold lintels**~~ Ruled white
+   2026-09-13: the fill is a shade less saturated (1.0, 0.91, 0.80); judge
+   after the rebake.
+35. **A reflection probe per room.** With the runtime lights gone the
+   marble reflects nothing; the spec's 4.3 cube probe, rendered by Cycles at
+   the bake and loaded as a PMREM environment per room, is what gives it
+   back. Until then the floors are matte by design.
+36. **Render stations.** A fixed list of camera stations (both sides of
+   every doorway, each garden door from the terrace, each hedge corner) shot
+   after every build and diffed against the last accepted set, with a
+   z-fight probe (the same station 2 mm apart). The checker finds geometry;
+   this finds what the checker cannot (texture shimmer, a light gone wrong).
+37. **AO strength is a recomposition.** `ao.png` is kept beside every
+   lightmap; a `--recompose` that divides the old mix out of lightmap.png
+   and multiplies a new one in would let the strength be re-ruled without
+   a bake. Not written yet.
 
 ## Security (2026-09-12, docs/SECURITY.md)
 
@@ -265,3 +281,24 @@ reviewed. What each asks next:
     `S<nn>_<hash>.mp3`, which the studio copy must keep; mitsuba left
     spectre's pyproject; spectre's episode is now the studio's to make
     from lanes/m03_first_film/episodes/ep03 at the tag.
+
+## Packages and enforcement (2026-09-13)
+
+PACKAGES.md is the rule set; `orchard audit` checks it every 15 minutes.
+
+1. **logswarm is archived until its next job** (Manuel, 2026-09-13). It
+   comes back to stream monitoring data from the live platforms and the
+   simulations, and to give every active repo and live product an audio
+   stream, so a visitor can hear the compute. Nothing is designed yet; the
+   sources it would read already exist (`~/.exp_status`, expdash's
+   `/api/status`, orchard's ledger), and the grove's spatial voice path
+   (item 7) is where the sound would play. Until then audit.yaml lists it as
+   archived, and its failing pins and lockfile are not fixed.
+2. **The shared research packages.** event-atoms' `gridevents` and agivity's
+   `agivity-ihwm`, consumed by arcagi2026 by tag, replace the last cross-repo
+   `sys.path` imports outside the studio extraction (item 31 above).
+3. **phototroph's exhibit** is to show what the repo asks (does matter,
+   given one colour of light, organise into something that feeds on it)
+   rather than the dimer-split mechanism; phototroph-04 brings a proposal
+   and its lane cost for a ruling.
+
