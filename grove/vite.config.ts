@@ -6,6 +6,7 @@ import sirv from "sirv";
 import { fingerprintAssets } from "./build/fingerprint";
 import { groveServiceWorker } from "./build/service-worker";
 import { groveVersion } from "./build/version";
+import { checkDist } from "./build/check-dist";
 
 const root = fileURLToPath(new URL(".", import.meta.url));
 const threeVersion = (
@@ -68,6 +69,8 @@ export default defineConfig(({ command }) => ({
       entry: "src/sw/sw.ts",
       mediaBase: process.env.VITE_MEDIA_BASE ?? "https://media.weichseltree.com",
     }),
+    // Last: fails the build if anything served immutable has a fixed name.
+    checkDist(),
   ],
   define: {
     // scripts/copy-basis.mjs writes the transcoder under three's version.
@@ -105,7 +108,7 @@ export default defineConfig(({ command }) => ({
   preview: { port: 4173, strictPort: true },
   test: {
     root,
-    include: ["src/**/*.test.ts", "auth/**/*.test.ts"],
+    include: ["src/**/*.test.ts", "auth/**/*.test.ts", "build/**/*.test.ts"],
     environment: "node",
   },
 }));

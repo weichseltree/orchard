@@ -73,6 +73,13 @@ export const Guest = __t.object("Guest", {
 });
 export type Guest = __Infer<typeof Guest>;
 
+export const JoinThrottle = __t.object("JoinThrottle", {
+  identity: __t.identity(),
+  tokens: __t.f64(),
+  at: __t.timestamp(),
+});
+export type JoinThrottle = __Infer<typeof JoinThrottle>;
+
 export const PeopleHere = __t.object("PeopleHere", {});
 export type PeopleHere = __Infer<typeof PeopleHere>;
 

@@ -19,7 +19,8 @@
     "test:watch": "vitest",
     "dev:bundle": "tsx scripts/make-dev-bundle.ts",
     "gen:bindings": "spacetime generate --lang typescript --out-dir src/module_bindings -p ../spacetime/spacetimedb -y",
-    "deploy": "pnpm run build && wrangler pages deploy dist --project-name weichseltree --branch main"
+    "deploy": "pnpm run check:bindings && pnpm run build && wrangler pages deploy dist --project-name weichseltree --branch main",
+    "check:bindings": "node scripts/check-bindings.mjs"
   },
   "dependencies": {
     "hls.js": "^1.7.3",
