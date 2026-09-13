@@ -2,13 +2,13 @@
   "schema": "orchard/room/1",
   "asset": "phototroph",
   "generated_by": "grove/tools/palace/palace.py",
-  "script_sha256": "dfbb02eb772225842f73d7e08f2a352923145be95baad8604988c160da150501",
+  "script_sha256": "b6407037c5f1c0100c666175a325cee31f9601cb22d3513180505b4143ff6c80",
   "blender": "4.2.1 LTS",
   "git": {
-    "commit": "c700ece9d0126357643c05b200919a5ca8739d6e",
+    "commit": "8a73c7d3ecd300589dfba3be0881ceeffc4fa784",
     "dirty": true
   },
-  "generated_at_utc": "2026-09-12T22:53:04Z",
+  "generated_at_utc": "2026-09-13T03:11:04Z",
   "look": "white, gold and marble (Naturhistorisches Museum), ruled 2026-09-12",
   "bake": {
     "engine": "cycles",
@@ -25,21 +25,21 @@
     "device": "CPU",
     "threads": 16,
     "denoise": "OpenImageDenoise via the compositor Denoise node",
-    "seconds_bake": 628.76,
-    "seconds_denoise": 5.04,
-    "noise_metric": 0.028159,
+    "seconds_bake": 1321.43,
+    "seconds_denoise": 3.21,
+    "noise_metric": 0.106147,
     "skipped": false,
-    "seconds_preview": 42.82,
-    "seconds_wall_clock": 685.49
+    "seconds_preview": 10.49,
+    "seconds_wall_clock": 1345.59
   },
   "lightmap": {
     "file": "lightmap.png",
     "ktx2": "lightmap.ktx2",
     "ktx2_phone": "lightmap-1024.ktx2",
-    "scale": 2.97269,
-    "three_light_map_intensity": 9.338981,
-    "coverage": 0.6645,
-    "clipped_fraction": 0.000172,
+    "scale": 3.144136,
+    "three_light_map_intensity": 9.877595,
+    "coverage": 0.8645,
+    "clipped_fraction": 0.000262,
     "binding": "texture.colorSpace = SRGBColorSpace, flipY = false, channel = 1, material.lightMapIntensity = three_light_map_intensity"
   },
   "geometry": {
@@ -58,8 +58,8 @@
       ]
     },
     "height": 6.0,
-    "faces": 517,
-    "surface_area_m2": 799.9,
+    "faces": 511,
+    "surface_area_m2": 776.8,
     "doorways": [
       {
         "to": "hall",
@@ -122,6 +122,16 @@
     "sun_strength": 3.6,
     "world": "Nishita sky",
     "world_strength": 0.85,
+    "fill": {
+      "lamps": 19,
+      "watts_each": 400.0,
+      "colour": [
+        1.0,
+        0.86,
+        0.68
+      ],
+      "placement": "one per 8 m along each interior room's long axis at 0.55 h"
+    },
     "occluders": [
       "einstruct",
       "gallery",
@@ -140,24 +150,24 @@
   },
   "files": {
     "phototroph.glb": {
-      "bytes": 328364,
-      "sha256": "6542dd59efe1e287ed6b50c1242563d208c3c1b7e7d78e2872ca682613c23cec"
+      "bytes": 328768,
+      "sha256": "10ffdf359fd3cdeeca46e24afa4c9945a73dea2f735482800bf0490343c216d0"
     },
     "lightmap.png": {
-      "bytes": 2049642,
-      "sha256": "39366f90c712755ea4011d1ed316522b97fcdaf19d85b1642a59b7a22731dd79"
+      "bytes": 3629907,
+      "sha256": "186ec2d645bcbb0257dd70e5ea03d4d97a0ad73fcec96666ec4c2ce84e5b4f30"
     },
     "lightmap.ktx2": {
-      "bytes": 1614049,
-      "sha256": "b7308838c7671aab5c9ce8084e031201166024bbe681fa3a56afabc441bf3cc8"
+      "bytes": 3147176,
+      "sha256": "2c7a53ab5da4dc7f6bae30adb5c92780e5aced99ff4e36ed8f8d291ebe6479ef"
     },
     "lightmap-1024.ktx2": {
-      "bytes": 499127,
-      "sha256": "551effe021f00530e9dbcacb9a6a373a9dfb9f5a223dee17077da5183ec5f865"
+      "bytes": 933193,
+      "sha256": "1a50c4b3a05404ff886d9050d78a6242f60b4e5dca095d4e5933476a9f5b8077"
     },
     "preview.png": {
-      "bytes": 865389,
-      "sha256": "167c30a52ac0dfedd8d44007e58a19816b89ff788d675271cb019f494abbe778"
+      "bytes": 988685,
+      "sha256": "0298effcc8b3441acd44768f458acf51f25ba0d021a27899a6eef6e49bc1dcfd"
     }
   }
 }
