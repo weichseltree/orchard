@@ -142,12 +142,13 @@ export class Hud {
     topLeft.append(this.#people);
     root.append(topLeft);
 
-    const topRight = div("top-right");
+    const topRight = div("top-right panel");
     this.#vrButton = button("Enter VR", "btn accent", callbacks.onEnterVr);
     this.#vrButton.hidden = true;
-    this.#unmuteButton = button("Unmute", "btn", callbacks.onUnmute);
+    this.#unmuteButton = button("Sound on", "btn", callbacks.onUnmute);
     this.#unmuteButton.hidden = true;
-    const provenanceButton = button("Provenance (P)", "btn", callbacks.onProvenance);
+    const provenanceButton = button("About this view", "btn", callbacks.onProvenance);
+    provenanceButton.title = "Where this view came from (P)";
     const home = document.createElement("a");
     home.className = "btn";
     home.href = "/";
@@ -156,6 +157,9 @@ export class Hud {
     root.append(topRight);
 
     this.#notices = div("notices");
+    this.#notices.setAttribute("role", "status");
+    this.#notices.setAttribute("aria-live", "polite");
+    this.#notices.setAttribute("aria-relevant", "additions");
     root.append(this.#notices);
 
     this.#hint = div("hint panel");
@@ -381,6 +385,11 @@ export class Hud {
 
   setUnmuteAvailable(available: boolean): void {
     this.#unmuteButton.hidden = !available;
+  }
+
+  setMuted(muted: boolean): void {
+    this.#unmuteButton.textContent = muted ? "Sound on" : "Sound off";
+    this.#unmuteButton.setAttribute("aria-pressed", String(!muted));
   }
 
   setHint(text: string | null): void {

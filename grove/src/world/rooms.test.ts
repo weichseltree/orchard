@@ -1,8 +1,12 @@
-import { DirectionalLight, Group, HemisphereLight, Light, Object3D, Quaternion, Vector3 } from "three";
-import { describe, expect, it } from "vitest";
+import { DirectionalLight, Group, HemisphereLight, Light, Object3D, Quaternion, Vector3, type WebGLRenderer } from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import mansionDocument from "./mansion.json";
-import { lightmapCandidates, proceduralRoom, readMarkers, shellLights } from "./rooms";
+import { buildRoom, lightmapCandidates, proceduralRoom, readMarkers, shellLights } from "./rooms";
+import * as lightmaps from "../render/lightmap";
 import { parseMansion, roomById } from "./schema";
+
+afterEach(() => vi.restoreAllMocks());
 
 // The glb's marker empties are the authority on where things are. This is
 // WP3's hall as its nodes come out of the loader: spawn on the floor, the
@@ -80,6 +84,32 @@ describe("shellLights", () => {
     const lights = lightsUnder(shell);
     expect(lights.filter((l) => l instanceof HemisphereLight)).toHaveLength(1);
     expect(lights.filter((l) => l instanceof DirectionalLight)).toHaveLength(1);
+  });
+});
+
+describe("loading a baked room", () => {
+  it("adds the loaded scene without calling Object3D.add with an empty light list", async () => {
+    const hall = roomById(parseMansion(mansionDocument), "hall")!;
+    const scene = hallScene();
+    vi.spyOn(GLTFLoader.prototype, "loadAsync").mockResolvedValue({
+      scene,
+      parser: { json: { asset: { generator: "test room" } } },
+    } as unknown as Awaited<ReturnType<GLTFLoader["loadAsync"]>>);
+    vi.spyOn(lightmaps, "ktx2Loader").mockReturnValue({} as ReturnType<typeof lightmaps.ktx2Loader>);
+    vi.spyOn(lightmaps, "loadLightmap").mockResolvedValue(null);
+    vi.spyOn(lightmaps, "applyLightmap").mockReturnValue({
+      applied: 12, withUv1: 12, source: "embedded", intensity: 1,
+    });
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    const onNotice = vi.fn();
+
+    const shell = await buildRoom({ room: hall, renderer: {} as WebGLRenderer, onNotice });
+
+    expect(shell.group.children).toEqual([scene]);
+    expect(shell.lightmap?.applied).toBe(12);
+    expect(lightsUnder(shell.group)).toEqual([]);
+    expect(onNotice).not.toHaveBeenCalled();
+    expect(errors).not.toHaveBeenCalled();
   });
 });
 

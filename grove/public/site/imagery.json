@@ -1,0 +1,30 @@
+{
+  "description": "Source records for the landing page images. Both files are copied without alteration.",
+  "images": [
+    {
+      "file": "particle-tape.png",
+      "kind": "simulation tape poster",
+      "tree": "einstruct",
+      "bundle": "2dd0038799b2db15",
+      "source": "results/bundles/2dd0038799b2db15/poster.png",
+      "sha256": "fcdf214ef713da5ff82f79f1dcf44678dbdafe12eebececa28ba6646aea67972",
+      "width": 1280,
+      "height": 720,
+      "variant": "vr-high",
+      "variant_frame": 400,
+      "t_tau": 200.00000000001123,
+      "drawn": 2640,
+      "of_slots": 4000,
+      "note": "The poster shows the sampled browser variant, not all particles in the original simulation. Its source caption is preserved."
+    },
+    {
+      "file": "hall.png",
+      "kind": "architectural render",
+      "source": "docs/img/palace-still-hall.png",
+      "sha256": "9a29f32e94c1b0b7a907c1e26c54d786a9cdd332052a341e0ed7c18bd346f3b2",
+      "width": 1280,
+      "height": 720,
+      "note": "A repository render of the hall's architecture. This is not a browser screenshot or evidence of headset rendering quality."
+    }
+  ]
+}

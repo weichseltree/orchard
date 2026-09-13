@@ -19,13 +19,14 @@ gallery ruling (DECISIONS 2026-09-12).
 - **The orchard** is the repo and the platform: trees, a fund, a studio, a
   grove. `orchard` is the name of the software; "the orchard" is the thing
   weichseltree runs.
-- **The grove** is the public world at weichseltree.com/grove/. Today one
-  hall and the einstruct, spectre, world-engine and phototroph rooms.
+- **The grove** is the public world at weichseltree.com/grove/. The current
+  world has a hall and the einstruct, spectre, world-engine and phototroph
+  exhibit rooms, plus a gallery, orangery, terrace, garden and orchard grounds.
 - **A tree** is a research repo that registered. **A harvest** is what it
   hangs. **The greenhouse** is where rulings are made.
-- **The palace** is where the hall is going: Austrian in character, a real
-  orchard on the grounds outside the windows. Today the hall is one room and
-  the grounds are a sky dome.
+- **The palace** connects those rooms: Austrian in character, with orchard
+  trees on the grounds outside the windows. Some rooms remain unfurnished;
+  room models and local browser checks do not establish headset performance.
 
 ## The look, in four rules
 
@@ -67,8 +68,11 @@ draw a tree.
   the other. A token that is not yet in the CSS (`body`, `rule`, `faint`,
   `bad`) is inlined where used today; lift it into `:root` when you touch
   that file.
-- **On a page.** Copy the `:root` block from `grove/index.html`. Column
-  measure 36 rem, page padding 24 px, headings 600.
+- **On a page.** Copy the `:root` block from `grove/index.html`. Body copy
+  stays within 36 rem, page padding is 24 px, headings are 600. The landing
+  page places its text and real imagery in a responsive layout up to 1160 px
+  wide; the legal pages keep their reading columns. Green marks a way into
+  the grove, never a follow or funding link.
 - **In the flat dashboard** (`orchard serve`). Same ground, same greys, same
   one accent. It is admin-only and may show every number; it still uses no
   other hue, so a ruling button that means "approve" is accent-bordered and
@@ -91,11 +95,19 @@ checks (LAWS 5); on everything else it is enforced by reading.
 
 ## What exists and what is missing
 
-`tokens.json` `asset.*` says. In short: the four palette previews exist
-(`docs/img/hall-palettes-2026-09-12.png`); the hero still, the 20-second
-clip, and a favicon do not. The still and the clip come from a real browser at
-the live site (the headless shell shows sky only, BACKLOG 3), so they wait on
-the hardware pass or a desktop screen capture.
+`tokens.json` `asset.*` says. The landing page now uses an unchanged poster
+from einstruct's simulation tape (`grove/public/site/particle-tape.png`) and
+an explicitly labelled architectural render (`grove/public/site/hall.png`).
+`grove/public/site/imagery.json` records their source paths, dimensions and
+sha256 digests; the tape record also names its sampled variant and frame.
+The tape poster is the share image. The architectural render must never be
+captioned as a browser screenshot or as evidence of headset rendering quality.
+
+The SVG favicon is the seed (`grove/public/favicon.svg`). The four palette
+previews remain in `docs/img/hall-palettes-2026-09-12.png`. A live browser hero
+still with loaded exhibits and the 20-second clip are still missing; those
+remain separate from the landing page's existing source imagery. PNG app
+icons at 32 and 180 px remain to be made.
 
 ## Where the sound is
 

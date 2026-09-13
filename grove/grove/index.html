@@ -1,12 +1,20 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<title>The grove &mdash; weichseltree</title>
-<meta name="description" content="One hall, one room, one video wall, one particle tape you can stand inside.">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>the grove &mdash; weichseltree</title>
+<meta name="description" content="Walk through the palace, step inside a particle simulation, and move through its time. Open the grove in your browser.">
+<meta name="theme-color" content="#0e1310">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/src/ui/grove.css">
 </head>
 <body>
-  <canvas id="stage"></canvas>
+  <canvas id="stage" tabindex="0" aria-label="The grove, a 3D view. Use the Guide button for movement controls and room links."></canvas>
   <div id="hud"></div>
+  <section id="boot-status" class="boot-status panel" role="status" aria-live="polite">
+    <h1>Opening the grove</h1>
+    <p>The first room is on its way. You can look around as the rest arrives.</p>
+    <div class="guide-actions"><button id="reload-grove" class="btn" type="button">Reload</button><a class="btn" href="/">Back to the website</a></div>
+  </section>
   <noscript>The grove is a 3D world and needs JavaScript. <a href="/">Back to weichseltree</a>.</noscript>
-  <script type="module" src="/src/main.ts"></script>
+  <script type="module" src="/src/bootstrap.ts"></script>
 </body></html>

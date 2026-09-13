@@ -246,4 +246,16 @@ function writeVideoBundle(): void {
 }
 
 writeTapeBundle();
-writeVideoBundle();
+try {
+  writeVideoBundle();
+} catch (error: unknown) {
+  // An installed FFmpeg can still lack the life filter or the H.264 encoder.
+  // A partial manifest must not make Vite advertise a video that cannot play.
+  rmSync(videoDir, { recursive: true, force: true });
+  const status = (error as { status?: unknown } | null)?.status;
+  const detail = typeof status === "number"
+    ? `FFmpeg exited with code ${status}; see the error above`
+    : error instanceof Error ? error.message.split("\n")[0] : String(error);
+  console.warn(`video: optional test video could not be generated (${detail}).`);
+  console.warn("video: continuing with particle tapes. To add video, install FFmpeg with the life filter and libx264 encoder, then run pnpm demo again.");
+}

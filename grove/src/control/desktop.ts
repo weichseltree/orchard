@@ -16,6 +16,7 @@ export function attachDesktopControls(
   input: InputState,
   commands: Commands,
   onLockChange: (locked: boolean) => void,
+  onLockError: () => void = () => undefined,
 ): DesktopControls {
   const held = new Set<string>();
   let locked = false;
@@ -32,7 +33,7 @@ export function attachDesktopControls(
 
   const onKeyDown = (event: KeyboardEvent): void => {
     // Typing into the HUD (a report, say) is typing, not walking.
-    if (isTypingInto(event.target)) return;
+    if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || ownsKeyboard(event.target)) return;
     if (event.repeat) {
       // Held brackets keep scrubbing; everything else fires once.
       if (event.code === "BracketLeft") commands.nudgeFrames(-1);
@@ -88,39 +89,56 @@ export function attachDesktopControls(
     onLockChange(locked);
   };
 
+  const requestLock = (): void => {
+    try {
+      const request = canvas.requestPointerLock();
+      if (request) void request.catch(onLockError);
+    } catch { onLockError(); }
+  };
+
   const onClick = (): void => {
-    if (!locked) void canvas.requestPointerLock();
+    if (!locked) requestLock();
+  };
+
+  const clearMotion = (): void => {
+    held.clear();
+    applyMotion();
+  };
+  const onFocus = (event: FocusEvent): void => {
+    if (ownsKeyboard(event.target)) clearMotion();
   };
 
   canvas.addEventListener("click", onClick);
   document.addEventListener("pointerlockchange", onPointerLockChange);
+  document.addEventListener("pointerlockerror", onLockError);
+  document.addEventListener("focusin", onFocus);
   document.addEventListener("mousemove", onMouseMove);
   window.addEventListener("keydown", onKeyDown);
   window.addEventListener("keyup", onKeyUp);
-  window.addEventListener("blur", () => {
-    held.clear();
-    applyMotion();
-  });
+  window.addEventListener("blur", clearMotion);
 
   return {
     get locked() {
       return locked;
     },
     requestLock() {
-      void canvas.requestPointerLock();
+      requestLock();
     },
     dispose() {
       canvas.removeEventListener("click", onClick);
       document.removeEventListener("pointerlockchange", onPointerLockChange);
+      document.removeEventListener("pointerlockerror", onLockError);
+      document.removeEventListener("focusin", onFocus);
       document.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("blur", clearMotion);
+      clearMotion();
     },
   };
 }
 
-function isTypingInto(target: EventTarget | null): boolean {
+export function ownsKeyboard(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
-  if (target.isContentEditable || target instanceof HTMLTextAreaElement) return true;
-  return target instanceof HTMLInputElement && target.type !== "range";
+  return target.isContentEditable || target.closest("input, textarea, select, button, a, dialog, [contenteditable]") !== null;
 }

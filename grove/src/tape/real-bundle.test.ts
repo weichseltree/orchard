@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { describe, expect, it } from "vitest";
-import { TapeBundleSchema, pickVariant, variantSlots } from "./bundle";
+import { beforeAll, describe, expect, it } from "vitest";
+import { TapeBundleSchema, pickVariant, variantSlots, type TapeBundle } from "./bundle";
 import { TapeChunk } from "./decode";
 import { chunkByteLength, dequantize } from "./format";
 import { advance, frameAt, timeline } from "./time";
@@ -24,7 +24,12 @@ if (!present) {
 }
 
 when(`WP1 bundle ${BUNDLE_ID}`, () => {
-  const bundle = TapeBundleSchema.parse(JSON.parse(readFileSync(`${dir}bundle.json`, "utf8")));
+  // describe.skip still collects its tests; only hooks and test bodies are
+  // skipped. Keep fixture IO in a hook so a fresh checkout can collect safely.
+  let bundle: TapeBundle;
+  beforeAll(() => {
+    bundle = TapeBundleSchema.parse(JSON.parse(readFileSync(`${dir}bundle.json`, "utf8")));
+  });
 
   it("parses under the client's own schema", () => {
     expect(bundle.kind).toBe("tape");

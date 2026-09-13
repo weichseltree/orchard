@@ -1,7 +1,8 @@
 import "./ui/grove.css";
 import { MathUtils, Vector3 } from "three";
 import { detectDevice } from "./device";
-import { attachDesktopControls } from "./control/desktop";
+import { demoEnabled, demoMansion } from "./demo";
+import { attachDesktopControls, type DesktopControls } from "./control/desktop";
 import { consumeDeltas, createInput, type Commands } from "./control/input";
 import { clampHead, createBody, step, teleport } from "./control/locomotion";
 import { attachTouchControls } from "./control/touch";
@@ -17,6 +18,9 @@ import { PerfMeter } from "./ui/perf";
 import { Provenance } from "./ui/provenance";
 import { startGroveUpdates } from "./ui/update";
 import { WorldNotices } from "./ui/worldnotice";
+import { VisitorGuide } from "./ui/guide";
+import { startupFailed, startupReady } from "./ui/startup";
+import { finiteParameter, visitRoom } from "./world/visit";
 import { frameAt } from "./tape/time";
 import mansionDocument from "./world/mansion.json";
 import { parseMansion, roomById } from "./world/schema";
@@ -35,8 +39,10 @@ if (!canvas || !hudRoot) throw new Error("grove/index.html is missing #stage or 
 // Before any loader runs: room assets are fetched by their hashed names.
 installAssetMap();
 
-const mansion = parseMansion(mansionDocument);
+const demo = demoEnabled(import.meta.env.DEV, location.search);
+const mansion = parseMansion(demo ? demoMansion(mansionDocument) : mansionDocument);
 const device = detectDevice();
+hudRoot.classList.toggle("touch", device.touch);
 const input = createInput();
 const perf = new PerfMeter();
 const avatars = new Avatars();
@@ -55,9 +61,12 @@ view.scene.add(avatars.group, worldNotices.panel);
 // `?room=<id>&yaw=<deg>` starts a visit in another room: for looking at a
 // room while it is built, and for a link straight to a tree's room.
 const query = new URLSearchParams(location.search);
-const startRoom = roomById(mansion, query.get("room") || mansion.start);
-if (!startRoom) throw new Error(`mansion.json start room "${mansion.start}" is missing`);
-const startYaw = query.has("yaw") ? Number(query.get("yaw")) : startRoom.spawn.yawDeg;
+const startRoom = visitRoom(mansion, query);
+const requestedYaw = finiteParameter(query, "yaw");
+const requestedPitch = finiteParameter(query, "pitch");
+const requestedX = finiteParameter(query, "x");
+const requestedZ = finiteParameter(query, "z");
+const startYaw = requestedYaw ?? startRoom.spawn.yawDeg;
 view.renderer.toneMappingExposure = startRoom.exposure;
 const body = createBody(
   startRoom.spawn.position[0],
@@ -67,9 +76,9 @@ const body = createBody(
 );
 // `&pitch=<deg>` looks up or down from the start, for a link to something high;
 // `&x=&z=` stand somewhere else in the room, and then the marker leaves them be.
-if (query.has("pitch")) body.pitch = MathUtils.degToRad(Number(query.get("pitch")));
-if (query.has("x")) body.x = Number(query.get("x"));
-if (query.has("z")) body.z = Number(query.get("z"));
+if (requestedPitch !== null) body.pitch = MathUtils.degToRad(requestedPitch);
+if (requestedX !== null) body.x = MathUtils.clamp(requestedX, startRoom.bounds.min[0], startRoom.bounds.max[0]);
+if (requestedZ !== null) body.z = MathUtils.clamp(requestedZ, startRoom.bounds.min[2], startRoom.bounds.max[2]);
 // `&debug=overdraw` draws the room shells as faint additive white, so a
 // doubled or hidden face shows as a brighter patch (render/overdraw.ts).
 const debugView = query.get("debug");
@@ -127,6 +136,15 @@ const hud = new Hud(hudRoot, {
 });
 const provenance = new Provenance(hud.provenancePanel);
 view.scene.add(provenance.panel);
+let desktopControls: DesktopControls | null = null;
+const guide = new VisitorGuide(hudRoot, mansion, device, () => {
+  canvas.focus();
+  if (!device.headset) desktopControls?.requestLock();
+});
+guide.setRoom(startRoom.id);
+if (query.has("room") && query.get("room") !== startRoom.id) {
+  hud.notice(`That room is not here. You have arrived in ${startRoom.title.replace(/^The /, "the ") || startRoom.id} instead.`);
+}
 
 /** Every failure surface at once: the HUD, and the board that exists in VR. */
 function notice(text: string, sticky = false): void {
@@ -141,12 +159,12 @@ const presence = new Presence(
     onStatus: (status, detail) => {
       hud.setMe(presence.me, presence.name);
       if (status === "online") hud.setLink("connected");
-      else if (status === "connecting") hud.setLink("connecting...");
+      else if (status === "connecting") hud.setLink("connecting…");
       else {
-        hud.setLink("single-player", true);
+        hud.setLink("visiting on your own", true);
         if (detail && detail !== lastLinkDetail) {
           lastLinkDetail = detail;
-          notice(`Presence is off: ${detail}. Everything else works; retrying.`);
+          notice("The link to other visitors is unavailable. You can keep exploring; reconnecting.");
         }
       }
     },
@@ -154,7 +172,7 @@ const presence = new Presence(
   },
   // The grove's token service, when this build has one (a human check, then
   // a token that carries the visitor's identity from visit to visit).
-  { token: deploymentTokenSource(hudRoot) },
+  demo ? {} : { token: deploymentTokenSource(hudRoot) },
 );
 let lastLinkDetail = "";
 
@@ -163,20 +181,20 @@ let scrubbingUntil = 0;
 
 const commands: Commands = {
   togglePlay: () => {
-    const tape = world?.tape;
+    const tape = nearestTape();
     if (!tape) return;
     const playing = tape.togglePlay();
-    for (const other of world?.tapes.slice(1) ?? []) other?.setPlaying(playing);
+    for (const other of world?.tapes ?? []) other?.setPlaying(playing);
     hud.setPlaying(playing);
   },
   nudgeFrames: (delta) => {
     for (const tape of world?.tapes ?? []) tape?.nudgeFrames(delta);
   },
   cycleSpeed: () => {
-    const tape = world?.tape;
+    const tape = nearestTape();
     if (!tape) return;
     const speed = tape.cycleSpeed();
-    for (const other of world?.tapes.slice(1) ?? []) other?.setSpeed(speed);
+    for (const other of world?.tapes ?? []) other?.setSpeed(speed);
     hud.setSpeed(speed);
     notice(`${speed}x`);
   },
@@ -200,11 +218,13 @@ const xr = new XrControls({
 });
 view.scene.add(xr.marker);
 
-const HINT = "Click to look around  ·  WASD to walk  ·  P provenance  ·  F frame budget";
+const HINT = "Click the view to look around · W A S D to walk · Escape releases the pointer";
 if (device.touch) {
   attachTouchControls(hudRoot, canvas, input);
 } else {
-  attachDesktopControls(canvas, input, commands, (locked) => hud.setHint(locked ? null : HINT));
+  desktopControls = attachDesktopControls(canvas, input, commands,
+    (locked) => hud.setHint(locked ? null : HINT),
+    () => hud.notice("Your browser could not capture the pointer. Click the view to try again, or open Guide to choose a room."));
   hud.setHint(HINT);
 }
 watchXrSupport((supported) => hud.setXrAvailable(supported));
@@ -215,8 +235,9 @@ const headWorld = new Vector3();
 
 function boot(): void {
   hud.setHere(1);
-  hud.setLink("connecting...");
-  presence.connect(presenceRoomFor(body.room));
+  hud.setLink(demo ? "local demo" : "connecting…");
+  if (demo) notice("Local demo · synthetic particles", true);
+  else presence.connect(presenceRoomFor(body.room));
 
   const built = buildWorld({
     mansion,
@@ -227,19 +248,23 @@ function boot(): void {
     onNotice: (text) => notice(text),
     // The hangings wait this long for the live exhibit table, then take the
     // pinned ids: a slow link costs seconds, a dead one costs nothing.
-    exhibits: () => presence.whenExhibits(EXHIBIT_WAIT_MS),
+    exhibits: demo ? undefined : () => presence.whenExhibits(EXHIBIT_WAIT_MS),
     onRoomReady: (room, shell) => {
+      if (room.id === startRoom.id) {
+        startupReady();
+        guide.welcome();
+      }
       if (debugView === "overdraw") showOverdraw(shell.group);
       // The asset's spawn marker is the authority; if the visitor has not
       // moved yet, put them where the bake says the room starts.
       if (room.id !== body.room || bodyPlaced) return;
-      if (!query.has("x") && !query.has("z")) {
+      if (requestedX === null && requestedZ === null) {
         body.x = room.spawn.position[0];
         body.z = room.spawn.position[2];
       }
       // ...except the heading when the link asked for one: `?yaw=` is for
       // looking at a particular wall, and the marker must not turn it away.
-      if (!query.has("yaw")) body.yaw = MathUtils.degToRad(room.spawn.yawDeg);
+      if (requestedYaw === null) body.yaw = MathUtils.degToRad(room.spawn.yawDeg);
     },
   });
   world = built;
@@ -249,14 +274,12 @@ function boot(): void {
   built
     .load()
     .then(() => {
-      if (built.tape) {
-        hud.setScrubberVisible(true);
-        hud.setPlaying(built.tape.playing);
-        hud.setSpeed(built.tape.speed);
-      }
       handOverVideo(true);
     })
-    .catch((error: unknown) => notice(`The world did not finish loading: ${message(error)}`, true));
+    .catch((error: unknown) => {
+      startupFailed();
+      notice(`The world did not finish loading: ${message(error)}`, true);
+    });
 }
 
 function presenceRoomFor(roomId: string): string {
@@ -301,6 +324,7 @@ function handOverVideo(force = false): void {
   activeWall?.release();
   activeWall = nearest;
   hud.setUnmuteAvailable(false);
+  hud.setMuted(nearest?.muted ?? true);
   if (!nearest) return;
   void nearest.attach().then((playing) => {
     if (playing && activeWall === nearest) hud.setUnmuteAvailable(true);
@@ -338,10 +362,12 @@ async function toggleAudio(): Promise<void> {
   if (!video || video.mode === "poster") return;
   if (video.muted) await video.unmute();
   else video.mute();
+  hud.setMuted(video.muted);
   notice(video.muted ? "muted" : "unmuted");
 }
 
 let lastLabelFrame = -1;
+let lastHudTape: TapeExhibit | null = null;
 
 /** The eye adapts toward the room's exposure, most of the way in a second. */
 function adaptExposure(dt: number): void {
@@ -382,6 +408,15 @@ view.start((dt) => {
   }
 
   const tape = nearestTape();
+  hud.setScrubberVisible(tape !== null);
+  if (tape !== lastHudTape) {
+    lastHudTape = tape;
+    lastLabelFrame = -1;
+    if (tape) {
+      hud.setPlaying(tape.playing);
+      hud.setSpeed(tape.speed);
+    }
+  }
   if (tape) {
     for (const each of world?.tapes ?? []) {
       // A slot still loading is null; one throw here would skip presence and
@@ -410,14 +445,16 @@ view.start((dt) => {
   }
 
   if (body.crossedInto) {
-    void world?.ensureRooms(neighbourhood(mansion, body.crossedInto));
+    void world?.ensureRooms(neighbourhood(mansion, body.crossedInto)).catch((error: unknown) =>
+      notice(`This room did not finish loading: ${message(error)}. Reload to try again.`, true));
     bodyPlaced = true;
-    presence.join(presenceRoomFor(body.crossedInto));
+    if (!demo) presence.join(presenceRoomFor(body.crossedInto));
+    guide.setRoom(body.crossedInto);
     notice(roomById(mansion, body.crossedInto)?.title ?? body.crossedInto);
   }
 
   view.camera.getWorldPosition(headWorld);
-  presence.sendPose(headWorld.x, 0, headWorld.z, wrapAngle(headingFromCamera()));
+  if (!demo) presence.sendPose(headWorld.x, 0, headWorld.z, wrapAngle(headingFromCamera()));
   if (presence.sync()) {
     hud.setPeople(presence.peers.values());
     hud.setMe(presence.me, presence.name);

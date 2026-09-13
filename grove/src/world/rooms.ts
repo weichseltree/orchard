@@ -127,7 +127,9 @@ async function loadRoomGlb(
   const orchard = (extras.orchard ?? {}) as Record<string, unknown>;
   const meta = (orchard.lightmap ?? null) as LightmapMeta | null;
   const lightmap = applyLightmap(gltf.scene, sibling, meta);
-  group.add(...shellLights(room, lightmap));
+  // Baked shells need no runtime lights. Object3D.add() with an empty spread
+  // still tries to add undefined, so only call it for actual light groups.
+  for (const light of shellLights(room, lightmap)) group.add(light);
   return {
     group,
     provenance: {

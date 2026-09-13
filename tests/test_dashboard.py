@@ -1,5 +1,8 @@
 """The flat dashboard: localhost only, writes need the header, the moderation panel's shape."""
 import pytest
+import shutil
+import subprocess
+from pathlib import Path
 from fastapi.testclient import TestClient
 
 from orchard.dashboard import app as dashboard
@@ -22,6 +25,15 @@ def client():
 
 
 WRITE = {"X-Orchard": "1"}
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="dashboard interactions need Node.js")
+def test_dashboard_interactions():
+    result = subprocess.run(
+        ["node", "--test", str(Path(__file__).with_name("dashboard-ui.test.mjs"))],
+        capture_output=True, text=True, timeout=30,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
 
 
 def test_answers_only_to_localhost_by_name(client):

@@ -73,6 +73,10 @@ export default defineConfig(({ command }) => ({
     checkDist(),
   ],
   define: {
+    // ffmpeg is optional for the local demo; absent, show tapes without empty walls.
+    "import.meta.env.VITE_DEMO_VIDEO": JSON.stringify(
+      command === "serve" && existsSync(`${devFixtures}/dev-video/bundle.json`) ? "1" : "",
+    ),
     // scripts/copy-basis.mjs writes the transcoder under three's version.
     "import.meta.env.VITE_BASIS_PATH": JSON.stringify(`/basis/${threeVersion}/`),
     // Dev reads WP1's bundles straight off the disk; a build reads R2.

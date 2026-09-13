@@ -12,6 +12,7 @@
   "scripts": {
     "prepare:assets": "node scripts/copy-basis.mjs",
     "dev": "pnpm run prepare:assets && vite",
+    "demo": "pnpm run dev:bundle && pnpm run dev --open /grove/?demo",
     "build": "pnpm run prepare:assets && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",

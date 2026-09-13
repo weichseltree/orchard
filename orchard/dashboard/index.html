@@ -1,26 +1,39 @@
 <!doctype html>
+<html lang="en">
 <meta charset="utf-8">
-<title>orchard</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The greenhouse · orchard</title>
 <style>
-  :root { --bg:#0e1310; --panel:#161d18; --ink:#d9e2da; --dim:#8a978c; --leaf:#7fc97f; --warn:#e6b450; --bad:#e46c6c; }
+  :root { color-scheme:dark; --bg:#0e1310; --panel:#161d18; --ink:#d9e2da; --dim:#8a978c; --leaf:#7fc97f; --warn:#b7c3b9; --bad:#c98a7f; }
+  * { box-sizing:border-box; }
   body { margin:0; padding:20px 24px; background:var(--bg); color:var(--ink); font:14px/1.4 system-ui, sans-serif; }
+  a { color:var(--ink); text-underline-offset:3px; }
+  :focus-visible { outline:2px solid var(--leaf); outline-offset:3px; }
+  header { display:flex; justify-content:space-between; gap:16px; align-items:start; }
+  #action-status { position:sticky; top:0; z-index:2; min-height:1.5em; margin:12px 0; padding:8px 0; background:var(--bg); }
+  button:disabled { opacity:.55; cursor:wait; }
   h1 { font-weight:600; font-size:20px; margin:0 0 4px; } h1 span { color:var(--dim); font-weight:400; }
   h2 { font-size:13px; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); margin:24px 0 8px; }
-  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:16px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr)); gap:16px; }
+  .grid > div { min-width:0; }
   .panel { background:var(--panel); border-radius:8px; padding:12px 14px; overflow-x:auto; }
   table { border-collapse:collapse; width:100%; } th, td { text-align:left; padding:3px 8px 3px 0; white-space:nowrap; }
   th { color:var(--dim); font-weight:500; } td.num { text-align:right; font-variant-numeric:tabular-nums; }
   .bar { height:6px; background:#243026; border-radius:3px; overflow:hidden; } .bar i { display:block; height:100%; background:var(--leaf); }
   .bar i.warn { background:var(--warn); } .bar i.bad { background:var(--bad); }
   .stage { color:var(--leaf); } .muted { color:var(--dim); }
-  form.row { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; } input, select, button { background:#0e1310; color:var(--ink); border:1px solid #2a352c; border-radius:4px; padding:3px 6px; font:inherit; }
+  form.row { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; } input, select, button { max-width:100%; min-height:36px; background:#0e1310; color:var(--ink); border:1px solid #2a352c; border-radius:4px; padding:6px 8px; font:inherit; }
   button { cursor:pointer; } button.verdict { padding:1px 6px; font-size:12px; } button.ok { border-color:var(--leaf); } button.bad { border-color:var(--bad); }
   td.wrap { white-space:normal; max-width:420px; }
   td.chat { white-space:pre-wrap; max-width:420px; color:var(--dim); font-size:12.5px; }
   .fail { color:var(--bad); } .stale { color:var(--warn); }
+  @media(max-width:600px) { body { padding:16px; } header { flex-wrap:wrap; } input,select { font-size:16px; } button { min-height:44px; } }
 </style>
-<h1>orchard <span>· the fund and the studio · weichseltree</span></h1>
-<div class="muted" id="meta">loading…</div>
+<header><div><h1>The greenhouse <span>· orchard</span></h1>
+<p class="muted">Review the harvest, direct the next work, and see what the lanes cost.</p>
+<div class="muted" id="meta" role="status">Loading portfolio and ledger…</div></div>
+<button type="button" id="refresh">Refresh dashboard</button></header>
+<div id="action-status" role="status" aria-live="polite"></div>
 <h2>Portfolio</h2><div class="panel"><table id="trees"></table></div>
 <div class="grid">
   <div><h2>Capital, last 30 days</h2><div class="panel"><table id="spend"></table></div></div>
@@ -34,16 +47,16 @@
 <div class="panel">
   <table id="reviews"></table>
   <form id="review-form" class="row">
-    <input name="tree" placeholder="tree" required size="10"><input name="thesis" placeholder="thesis id" required size="18">
-    <select name="kind"><option>styleframe</option><option>animatic</option><option>cut</option><option>still</option><option>master</option></select>
-    <input name="title" placeholder="title" required size="28"><input name="url" placeholder="url (optional)" size="28">
+    <input name="tree" aria-label="Tree" placeholder="tree" required size="10"><input name="thesis" aria-label="Thesis id" placeholder="thesis id" required size="18">
+    <select name="kind" aria-label="Kind of harvest"><option>styleframe</option><option>animatic</option><option>cut</option><option>still</option><option>master</option></select>
+    <input name="title" aria-label="Title" placeholder="title" required size="28"><input name="url" aria-label="URL (optional)" type="url" placeholder="url (optional)" size="28">
     <button>submit for review</button>
   </form>
 </div>
 <div class="grid">
   <div><h2>Rulings</h2><div class="panel"><table id="rulings"></table></div></div>
   <div><h2>Directives</h2><div class="panel"><table id="directives"></table>
-    <form id="directive-form" class="row"><input name="text" placeholder="a standing instruction every session reads" size="48" required><button>set</button></form></div></div>
+    <form id="directive-form" class="row"><input name="text" aria-label="Standing instruction" placeholder="a standing instruction every session reads" size="48" required><button>Set directive</button></form></div></div>
   <div><h2>Hanging in the grove</h2><div class="panel"><table id="exhibits"></table></div></div>
 </div>
 <h2>The grove · people</h2>
@@ -59,25 +72,38 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const row = (cells, cls=[]) => '<tr>' + cells.map((c,i)=>`<td class="${cls[i]||''}">${c}</td>`).join('') + '</tr>';
 const head = h => '<tr>' + h.map(x=>`<th>${x}</th>`).join('') + '</tr>';
+const empty = (columns, text) => `<tr><td colspan="${columns}" class="muted">${esc(text)}</td></tr>`;
+function link(url, title){
+  try { const u = new URL(url); if(u.protocol==='https:' || u.protocol==='http:') return `<a href="${esc(u.href)}" target="_blank" rel="noopener noreferrer">${esc(title)}</a>`; } catch { /* show the title if the URL cannot be opened safely */ }
+  return esc(title);
+}
+function status(text, failed=false){ const el=$('#action-status'); el.textContent=text; el.className=failed?'fail':'muted'; }
+function unavailable(section, error){
+  const ids=section==='greenhouse'?['reviews','rulings','directives','exhibits']:['online','reports','bans'];
+  const message=`${section==='greenhouse'?'Greenhouse':'The grove'} unavailable: ${error.message ?? error}`;
+  for(const id of ids) $('#'+id).innerHTML=empty(section==='greenhouse'?8:6,message);
+  if(section==='people') $('#gate').textContent='Token gate unavailable until the grove reconnects.';
+}
+async function get(url){ const r=await fetch(url, {cache:'no-store'}); const data=await r.json(); if(!r.ok && !data.error) throw new Error(data.detail || `Request failed (${r.status})`); return data; }
 async function main(){
-  const [trees, led] = await Promise.all([fetch('/api/portfolio').then(r=>r.json()), fetch('/api/ledger').then(r=>r.json())]);
+  const [trees, led] = await Promise.all([get('/api/portfolio'), get('/api/ledger')]);
   const recent = Object.fromEntries(led.spend_recent.map(s=>[s.repo,s]));
   $('#meta').textContent = `${led.n_jobs} ledger records · expdash ${led.expdash_reachable?'reachable':'NOT reachable'} · video share ${(100*led.video_share.video_h/Math.max(1,led.video_share.total_h)).toFixed(0)}% of ${led.video_share.total_h.toFixed(0)} lane-hours`;
   trees.sort((a,b)=>(b.potential-a.potential)||a.name.localeCompare(b.name));
   $('#trees').innerHTML = head(['tree','status','stage','pot','theses','gpu h 30d','video h 30d','budget gpu h','question']) +
-    trees.map(t=>{const s=recent[t.name]; const st=(t.theses.map(x=>x.stage).concat([t.stage])).sort((a,b)=>STAGES.indexOf(b)-STAGES.indexOf(a))[0];
-      return row([esc(t.name),esc(t.status),`<span class="stage">${esc(st)}</span>`,t.potential||'',t.theses.length,(s?s.gpu_h:0).toFixed(1),(s?s.video_h:0).toFixed(1),t.budget.gpu_h||'<span class="muted">ask</span>',esc(t.question.slice(0,90))],['','','','num','num','num','num','num']);}).join('');
+    (trees.map(t=>{const s=recent[t.name]; const st=(t.theses.map(x=>x.stage).concat([t.stage])).sort((a,b)=>STAGES.indexOf(b)-STAGES.indexOf(a))[0];
+      return row([esc(t.name),esc(t.status),`<span class="stage">${esc(st)}</span>`,t.potential||'',t.theses.length,(s?s.gpu_h:0).toFixed(1),(s?s.video_h:0).toFixed(1),t.budget.gpu_h||'<span class="muted">ask</span>',esc(t.question.slice(0,90))],['','','','num','num','num','num','num']);}).join('') || empty(9,'No trees yet. Run uv run orchard scout /path/to/repo to draft the first tree.'));
   $('#spend').innerHTML = head(['repo','gpu h','cpu h','exprun h','video h','jobs','failed','waited h']) +
-    led.spend_recent.slice(0,14).map(s=>row([esc(s.repo),s.gpu_h.toFixed(1),s.cpu_h.toFixed(1),s.none_h.toFixed(1),s.video_h.toFixed(1),s.n,s.n_failed,s.wait_h.toFixed(0)],['','num','num','num','num','num','num','num'])).join('');
+    (led.spend_recent.slice(0,14).map(s=>row([esc(s.repo),s.gpu_h.toFixed(1),s.cpu_h.toFixed(1),s.none_h.toFixed(1),s.video_h.toFixed(1),s.n,s.n_failed,s.wait_h.toFixed(0)],['','num','num','num','num','num','num','num'])).join('') || empty(8,'No lane usage recorded in the last 30 days.'));
   $('#cards').innerHTML = led.cards.filter(c=>c.kind!=='disk').map(c=>{const p=Math.min(100,c.percent||0); const cls=p>90?'bad':p>70?'warn':'';
     return `<div style="margin:6px 0 10px"><div style="display:flex;justify-content:space-between"><span>${esc(c.label)}</span><span class="muted">${Number(c.used||0).toLocaleString()} / ${Number(c.limit||0).toLocaleString()} ${esc(c.unit||'')}</span></div><div class="bar"><i class="${cls}" style="width:${p}%"></i></div><div class="muted" style="font-size:12px">${esc(c.note||'')}</div></div>`;}).join('') || '<span class="muted">expdash not reachable</span>';
-  $('#wait').innerHTML = head(['tier','n','median min','p90 h','max h']) + Object.entries(led.queue_wait).sort().map(([t,v])=>row([t,v.n,v.median_min.toFixed(0),v.p90_h.toFixed(1),v.max_h.toFixed(1)],['','num','num','num','num'])).join('');
-  $('#running').innerHTML = head(['name','repo','box','lane','status','prio']) + (led.running.map(j=>row([esc(j.name),esc(j.repo),esc(j.box),j.lane,j.status,j.prio??''])).join('') || row(['<span class="muted">nothing on the lanes</span>']));
+  $('#wait').innerHTML = head(['tier','n','median min','p90 h','max h']) + (Object.entries(led.queue_wait).sort().map(([t,v])=>row([esc(t),v.n,v.median_min.toFixed(0),v.p90_h.toFixed(1),v.max_h.toFixed(1)],['','num','num','num','num'])).join('') || empty(5,'No queue waits recorded.'));
+  $('#running').innerHTML = head(['name','repo','box','lane','status','prio']) + (led.running.map(j=>row([esc(j.name),esc(j.repo),esc(j.box),esc(j.lane),esc(j.status),esc(j.prio??'')])).join('') || empty(6,led.expdash_reachable?'Nothing on the lanes.':'Connect expdash to see running jobs.'));
 }
 const ago = s => s < 90 ? `${Math.round(s)} s` : s < 5400 ? `${Math.round(s/60)} min` : s < 172800 ? `${(s/3600).toFixed(1)} h` : `${Math.round(s/86400)} d`;
 // results/audit.json, rewritten by the orchard-sync timer every 15 minutes; stale past 45.
 async function audit(){
-  const a = await fetch('/api/audit').then(r=>r.json());
+  const a = await get('/api/audit');
   if(a.error){ $('#audit-meta').textContent = a.error; $('#audit').innerHTML = ''; return; }
   const s = a.summary;
   $('#audit-meta').innerHTML = `${s.repos} repos · <span class="${s.fail?'fail':'stage'}">${s.fail} fail</span> · ${s.warn} warn · ${s.waived} waived · ${s.skip} skip · ${s.ok} ok`
@@ -88,26 +114,52 @@ async function audit(){
 const STAGES=['scouted','planted','thesis','styleframe','animatic','greenlit','rendering','mastered','published','exhibited'];
 const when = s => s ? new Date(s*1000).toLocaleString() : '';
 // X-Orchard: the server refuses writes without it, so no other page can post here.
-async function post(url, body){ const r = await fetch(url,{method:'POST',headers:{'content-type':'application/json','x-orchard':'1'},body:JSON.stringify(body)}); if(!r.ok){ alert(await r.text()); } await Promise.all([greenhouse(), people()]); }
-async function rule(id, verdict){ const note = verdict==='approved'||verdict==='greenlit' ? (prompt('note (optional)')??'') : (prompt('what must change?')??''); if(note===null) return; await post('/api/rule',{review_id:id,verdict,note}); }
+const pending = new Set();
+async function post(url, body){
+  const key=JSON.stringify([url,body.review_id ?? body.who ?? '']);
+  if(pending.has(key)) return false;
+  pending.add(key); status('Saving…');
+  try {
+    const r = await fetch(url,{method:'POST',headers:{'content-type':'application/json','x-orchard':'1'},body:JSON.stringify(body)});
+    if(!r.ok){
+      const text=await r.text(); let detail=text;
+      try { const data=JSON.parse(text); detail=typeof data.detail==='string'?data.detail:JSON.stringify(data.detail ?? data); } catch { /* plain-text error */ }
+      throw new Error(detail || `Request failed (${r.status})`);
+    }
+    status('Saved.');
+    const results=await Promise.allSettled([greenhouse(), people()]);
+    results.forEach((result,index)=>{if(result.status==='rejected') unavailable(index===0?'greenhouse':'people',result.reason);});
+    if(results.some(r=>r.status==='rejected')) status('Saved. Some panels could not refresh; use Refresh dashboard to try again.');
+    return true;
+  } catch(error){ status(`Not saved: ${error.message}. Check the connection before trying again.`, true); return false; }
+  finally { pending.delete(key); }
+}
+const rulingDrafts = new Map();
+async function rule(id, verdict){
+  const key=`${id}:${verdict}`;
+  const note=prompt(verdict==='approved'||verdict==='greenlit'?'Note (optional)':'What must change?',rulingDrafts.get(key) ?? '');
+  if(note===null) return;
+  rulingDrafts.set(key,note);
+  if(await post('/api/rule',{review_id:id,verdict,note})) rulingDrafts.delete(key);
+}
 async function greenhouse(){
-  const g = await fetch('/api/greenhouse').then(r=>r.json());
-  if(g.error){ $('#reviews').innerHTML = row([`<span class="muted">greenhouse unreachable: ${esc(g.error)}</span>`]); return; }
+  const g = await get('/api/greenhouse');
+  if(g.error){ for(const id of ['reviews','rulings','directives','exhibits']) $('#'+id).innerHTML = empty(8,`Greenhouse unavailable: ${g.error}`); throw new Error(g.error); }
   const verdicts = it => it.status!=='open' ? `<span class="stage">${esc(it.status)}</span>` :
     ['approved','greenlit','changes','rejected'].map(v=>`<button class="verdict ${v==='changes'||v==='rejected'?'bad':'ok'}" onclick="rule(${it.id},'${v}')">${v}</button>`).join(' ');
   $('#reviews').innerHTML = head(['#','tree','thesis','kind','title','note','submitted','ruling']) +
-    (g.review_items.map(it=>row([it.id,esc(it.tree),esc(it.thesis),esc(it.kind),it.url?`<a href="${esc(it.url)}" target="_blank">${esc(it.title)}</a>`:esc(it.title),esc(it.note),when(it.created_at),verdicts(it)],['num','','','','','wrap','muted',''])).join('') || row(['<span class="muted">nothing waiting for a ruling</span>']));
+    (g.review_items.map(it=>row([it.id,esc(it.tree),esc(it.thesis),esc(it.kind),link(it.url,it.title),esc(it.note),when(it.created_at),verdicts(it)],['num','','','','','wrap','muted',''])).join('') || row(['<span class="muted">nothing waiting for a ruling</span>']));
   $('#rulings').innerHTML = head(['when','review','verdict','note']) + (g.rulings.map(r=>row([when(r.at),'#'+r.review_id,`<span class="stage">${esc(r.verdict)}</span>`,esc(r.note)],['muted','num','','wrap'])).join('') || row(['<span class="muted">no rulings yet</span>']));
   $('#directives').innerHTML = head(['when','directive','']) + (g.directives.map(d=>row([when(d.at),d.active?esc(d.text):`<s class="muted">${esc(d.text)}</s>`,d.active?`<button class="verdict" onclick="post('/api/directive/${d.id}/retire',{})">retire</button>`:''],['muted','wrap',''])).join('') || row(['<span class="muted">no directives</span>']));
-  $('#exhibits').innerHTML = head(['#','tree','kind','title','hung']) + (g.exhibits.map(e=>row([e.id,esc(e.tree),esc(e.kind),`<a href="${esc(e.url)}" target="_blank">${esc(e.title)}</a>`,when(e.hung_at)],['num','','','','muted'])).join('') || row(['<span class="muted">nothing hangs yet</span>']));
+  $('#exhibits').innerHTML = head(['#','tree','kind','title','hung']) + (g.exhibits.map(e=>row([e.id,esc(e.tree),esc(e.kind),link(e.url,e.title),when(e.hung_at)],['num','','','','muted'])).join('') || row(['<span class="muted">nothing hangs yet</span>']));
 }
 // Identities travel in data- attributes, checked by the server's pattern; nothing a
 // visitor typed is ever put into an attribute or a handler.
 const act = (a, who, label, cls='', extra='') => `<button class="verdict ${cls}" data-act="${a}" data-who="${esc(who)}" ${extra}>${label}</button>`;
 const until = s => s > Date.now()/1000 + 50*365*86400 ? 'for good' : when(s);
 async function people(){
-  const p = await fetch('/api/people').then(r=>r.json());
-  if(p.error){ $('#online').innerHTML = row([`<span class="muted">grove unreachable: ${esc(p.error)}</span>`]); return; }
+  const p = await get('/api/people');
+  if(p.error){ for(const id of ['online','reports','bans']) $('#'+id).innerHTML = empty(6,`The grove is unavailable: ${p.error}`); $('#gate').textContent='Token gate unavailable until the grove reconnects.'; throw new Error(p.error); }
   $('#online').innerHTML = head(['name','room','network','']) + (p.online.map(v=>row([
       esc(v.name) + (v.is_admin?' <span class="stage">host</span>':'') + (v.muted?' <span class="muted">muted</span>':''),
       esc(v.room), `<span class="muted">${esc((v.network||'-').slice(0,8))}</span>`,
@@ -134,9 +186,11 @@ document.addEventListener('click', async ev => {
   else if(a==='resolve') await post(`/api/reports/${Number(b.dataset.id)}/resolve`, {});
   else if(a==='ban'){
     const m = prompt('Ban for how many minutes? 0 is for good.', '1440'); if(m===null) return;
-    const reason = prompt('Reason (only you see it):', '') ?? '';
+    const minutes=Number(m);
+    if(!m.trim() || !Number.isSafeInteger(minutes) || minutes<0 || minutes>10000000){ status('Enter whole minutes from 0 to 10000000. Only 0 means a permanent ban.',true); return; }
+    const reason = prompt('Reason (only you see it):', ''); if(reason===null) return;
     const network = confirm('Ban their whole network too? Everyone behind the same address is kept out.');
-    await post('/api/people/ban', {who, minutes: Math.max(0, Math.floor(Number(m)||0)), reason, network});
+    await post('/api/people/ban', {who, minutes, reason, network});
   }
   else if(a==='gate'){
     const on = b.dataset.required==='true';
@@ -144,10 +198,35 @@ document.addEventListener('click', async ev => {
     await post('/api/auth', {issuers: JSON.parse(b.dataset.issuers), required: on});
   }
 });
-$('#review-form').addEventListener('submit', async ev => { ev.preventDefault(); const f = new FormData(ev.target); await post('/api/review', Object.fromEntries(f.entries())); ev.target.reset(); });
-$('#directive-form').addEventListener('submit', async ev => { ev.preventDefault(); const f = new FormData(ev.target); await post('/api/directive', {text:f.get('text')}); ev.target.reset(); });
-main().catch(e=>{$('#meta').textContent='error: '+e;});
-audit().catch(e=>{$('#audit-meta').textContent='audit: '+e;});
-greenhouse().catch(e=>{$('#reviews').innerHTML=row(['<span class="muted">greenhouse: '+esc(e)+'</span>']);});
-people().catch(e=>{$('#online').innerHTML=row(['<span class="muted">people: '+esc(e)+'</span>']);});
+async function submit(ev, url){
+  ev.preventDefault(); const form=ev.target, button=form.querySelector('button');
+  if(button.disabled) return;
+  button.disabled=true;
+  const values=Object.fromEntries(new FormData(form).entries());
+  try {
+    if(await post(url,values)) {
+      // Fields remain editable while a request is in flight; do not erase the next draft.
+      if(JSON.stringify(Object.fromEntries(new FormData(form).entries()))===JSON.stringify(values)) form.reset();
+      else status('Saved. Your newer edits are still in the form.');
+    }
+  }
+  finally { button.disabled=false; }
+}
+$('#review-form').addEventListener('submit', ev => submit(ev,'/api/review'));
+$('#directive-form').addEventListener('submit', ev => submit(ev,'/api/directive'));
+async function refresh(){
+  const button=$('#refresh'); if(button.disabled) return; button.disabled=true;
+  try {
+    const results=await Promise.allSettled([
+      main().catch(e=>{$('#meta').textContent='Portfolio and ledger unavailable: '+e.message; throw e;}),
+      audit().catch(e=>{$('#audit-meta').textContent='Audit unavailable: '+e.message; throw e;}),
+      greenhouse().catch(e=>{unavailable('greenhouse',e); throw e;}),
+      people().catch(e=>{unavailable('people',e); throw e;})
+    ]);
+    status(results.some(r=>r.status==='rejected')?'Some panels are unavailable. Check the connection, then refresh. Local tools still work.':`Updated at ${new Date().toLocaleTimeString()}.`);
+  } finally { button.disabled=false; }
+}
+$('#refresh').addEventListener('click',refresh);
+refresh();
 </script>
+</html>

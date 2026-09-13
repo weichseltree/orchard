@@ -1,122 +1,153 @@
-# orchard
+# the orchard
 
-A VR-first host for research artefacts, and the fund and studio that feed it.
-Research repos register as trees and publish their outputs as bundles that
-stream into a headset or onto a phone. The world is a map: a mansion that
-defies physics, with portals between rooms and between orchards, lit by baked
-ray-traced light. Anyone can fork it, run a node, link it to others, and fund
-a tree in kind by hosting its trusted code for rendering and preprocessing.
-[docs/PLATFORM.md](docs/PLATFORM.md) is the direction; the first mansion is
-one hall, one room, one tape and one video.
+Walk inside a particle simulation. Pause it, move through it, and see where
+the picture came from.
 
-The first orchard is [weichseltree](https://github.com/weichseltree)'s, at
-weichseltree.com. Its trees are particle simulations, point-cloud mathematics
-and emergence; its harvest is a YouTube series and the rooms of the mansion.
-Capital is GPU-lane time, cpu-lane time, queue position, API quota and disk.
+The orchard turns research outputs into rooms you can visit in a browser.
+Its public world, **the grove**, brings particle tapes, videos and figures
+into a palace and its gardens. Its local tools collect those outputs, keep
+their provenance, and let the host choose what hangs.
 
-The name: weichseltree is a tree. An orchard is many trees under one
-management, watered on purpose, pruned on evidence, harvested when ripe.
+[Visit the grove](https://www.weichseltree.com/grove/) ·
+[Run the local demo](#run-the-local-demo) ·
+[Bring your research](#bring-your-research) ·
+[Contribute](CONTRIBUTING.md)
 
-## Why this exists
+![The hall in the grove, with a marble floor and doors leading to the research rooms.](docs/img/stations/hall-spawn.jpg)
 
-Between 2026-08-11 and 2026-09-11 three repos each built half a studio and
-none shipped a watchable episode. spectre delivered a 43 s excerpt with no
-audio stream. einstruct delivered a 4:30 animatic with about 100 s of silence
-and a narrator chosen by a random draw. phototroph built an 18,000-line studio
-with a React editor and rendered zero seconds of its spine, because one
-path-traced episode was costed at 58 GPU-days. Over the same month the two
-boxes ran about 1,400 lane-hours, 11 percent of them on video, queue waiting
-exceeded running six to one, and research jobs aborted 43 percent of the time.
-The audit behind those numbers is operator-private (`notes/`).
+*The hall in the browser, from the repository's saved camera stations.*
 
-The videos felt like a repo history because they were one: episodes in
-experiment order, storyboards doubling as lab notebooks, narration saying
-"registered" and "P1", mechanism before wonder, shot-level gates passing while
-the episode failed. [docs/LAWS.md](docs/LAWS.md) is the standing answer.
+## What you can do
 
-## The model
+- **Explore a result.** Walk through recorded particles, pause time, move
+  frame by frame, and inspect the tape's source. Desktop, touch and WebXR
+  controls share the same world.
+- **Show your research.** Bundle particle tapes, videos and stills with
+  content hashes and provenance. Hang approved outputs without rebuilding
+  the client when the room follows a live exhibit.
+- **Run an orchard.** Track research trees, measured compute spend, review
+  requests and rulings from a local dashboard. A tree is a research
+  repository; its harvest is what visitors can see.
 
-**The fund** buys episode theses, not repos. A thesis is one viewer question,
-one measured number and one picture. It moves through stages that are the
-term sheet: `scouted → planted → thesis → styleframe → animatic → greenlit →
-rendering → mastered → published → exhibited`. Capital for expensive renders
-unlocks only past `greenlit`, after the render was costed from measured
-coefficients. Every tree carries a kill criterion.
+This is an early working platform. Particle playback, rooms, media bundles,
+presence and the local dashboard are implemented. **Quest and iPhone hardware
+validation remains open.** Spatial voice, browser host access, linked nodes
+and the shared episode production studio are planned. The studio's current
+scope is described in [studio/README.md](studio/README.md); the broader
+direction is in [PLATFORM.md](docs/PLATFORM.md).
 
-**The studio** owns storyboards, narration, rendering budgets, finishing and
-review. One storyboard schema with a concept ledger, narration as data whose
-durations come from measured takes, machine checks that read like an editor
-(vocabulary chain, banned words, silence per shot, episode-scale contact
-sheet), renderer plugins behind spectre's tape format, and channel-wide
-finishing: palette, ident, music, titles, thumbnails, one voice.
+## Run the local demo
 
-**The greenhouse** is where you rule: a flat dashboard while you work and an
-admin room in the grove. The dashboard's greenhouse panels read the review
-queue, rulings, directives and exhibits from the live database and write
-rulings and directives back; `orchard sync` carries a ruling into the thesis's
-stage in the manifest. Rulings become law that every portfolio session reads.
+You need **Node.js 22** and **pnpm 10.29.2**. Run from a fresh checkout:
 
-**The grove** is public: each tree hangs its approved harvest in its room,
-visitors join from a link with no login, hear each other spatially, and can
-walk inside the tape of the simulation an episode is about. Linked orchards
-appear as portals in the hall.
-
-## Layout
-
-```
-orchard/            python: manifest schema, portfolio, ledger, scout, cli, flat dashboard
-trees/<name>.yaml   the fund's copy of each tree manifest (canonical: <repo>/orchard.yaml)
-docs/               PLATFORM (direction), LAWS (studio law), HOSTING, DECISIONS
-notes/              operator-private, gitignored: audits of private repos and sessions
-studio/             storyboard schema and checks (extracted from phototroph's ptstudio next)
-grove/              WebXR client, Cloudflare Pages
-spacetime/          SpacetimeDB module: presence, rooms, exhibits, review queue, rulings, directives
-deploy/systemd/     the orchard-sync user timer
-results/            gitignored outputs
+```bash
+git clone https://github.com/weichseltree/orchard.git
+cd orchard/grove
+pnpm install --frozen-lockfile
+pnpm demo
 ```
 
-## Use
+Open [localhost:5173/grove/?demo](http://localhost:5173/grove/?demo). You land
+beside moving particles in the einstruct room. Click the view, use **WASD**
+or the arrow keys to walk, move the mouse to look, and press **Space** to
+pause. **Esc** releases the pointer so you can use the on-screen controls.
 
+The demo generates its own synthetic particles and runs without API keys,
+a database, production media or a headset. It is a playback demonstration,
+not scientific evidence. If FFmpeg is installed, it also generates a test
+video. Stop the server with **Ctrl+C**.
+
+For touch controls, development settings, build checks and troubleshooting,
+see [grove/README.md](grove/README.md).
+
+## Use the local tools
+
+The Python tools require **Python 3.12 or later** and **uv**. From the
+repository root:
+
+```bash
+uv sync --locked
+uv run orchard --help
+uv run orchard board
+uv run orchard serve
 ```
-uv sync
-uv run orchard doctor            # what is wired up
-uv run orchard scout [repo...]   # draft trees/<name>.yaml from a repo
-uv run orchard plant <name>      # write orchard.yaml into the repo: registration
-uv run orchard board             # the portfolio, with 30-day spend per tree
-uv run orchard ledger [--json]   # capital spent and left, from ~/.exp_status and expdash
-uv run orchard serve             # flat dashboard on http://127.0.0.1:8787
-uv run orchard harvest <name>    # bundle every artefact the tree declares, record the ids
-uv run orchard bundle verify <dir>          # id and every digest, no token needed
-uv run orchard push <dir>                   # upload a bundle to R2
-uv run orchard exhibit hang <dir> --approve # push, then hang it in the grove (a ruling)
-uv run orchard exhibit list | take-down <id>
-uv run orchard sync all          # trees and the ledger up to the database, rulings back down
-uv run orchard sync install      # ...every 15 minutes, as a systemd user timer
+
+Open [127.0.0.1:8787](http://127.0.0.1:8787) for the local dashboard.
+The checked-in tree manifests let you inspect the portfolio without cloning
+every research repository. The ledger reads local job records and expdash;
+on a new machine, no recorded spend and an unavailable expdash are expected.
+The greenhouse panels need a configured SpacetimeDB connection.
+
+`uv run orchard doctor` reports installed tools and optional service
+configuration. Missing cloud or narration credentials do not prevent the
+local demo, portfolio inspection or bundle verification. Configure only the
+services you intend to use; [secrets.example.env](secrets.example.env)
+explains each group. Hosting setup is in [HOSTING.md](docs/HOSTING.md).
+
+## Bring your research
+
+The smallest integration is an existing result: a particle tape in
+[`video/tape/1`](packages/tape/README.md) format, an MP4, or a still image.
+The bundler writes local output without publishing it:
+
+```bash
+uv run orchard bundle tape /path/to/tape --tree my-research --title "A particle tape"
+uv run orchard bundle video /path/to/clip.mp4 --tree my-research --title "A result in motion"
+uv run orchard bundle still /path/to/figure.png --tree my-research --title "A measured result"
+uv run orchard bundle verify results/bundles/BUNDLE_ID
 ```
 
-## Integrating a repo's results
+Replace the paths with your own files and `BUNDLE_ID` with the directory
+name printed by the bundler. Video and still conversion require FFmpeg;
+`orchard doctor` checks the media tools. Verification checks the bundle's
+identity and recorded digests without a token.
 
-A repo's manifest lists its artefacts (`tape`, `clip`, `master`, `still`,
-`figure`). `orchard harvest <tree>` bundles each one that exists, hashes the
-source, and writes `bundle`, `sha256` and `commit` back into the artefact, so
-a second harvest is a no-op until the source changes. `orchard exhibit hang`
-verifies the bundle, pushes it to R2 and names it to the live database's
-`exhibit` table; it refuses unless the artefact is `approved` or `--approve`
-records that ruling. In the grove a hanging that names a tree and a kind
-shows whatever hangs there now, so a new harvest reaches visitors without a
-client deploy; the pinned id is what plays when the database is unreachable.
+For a continuing research tree, `uv run orchard scout /path/to/my-research`
+drafts `trees/my-research.yaml`. Review its question, paths and artefacts,
+then `uv run orchard plant my-research` writes `orchard.yaml` into that
+research repository. That file becomes canonical; `trees/` keeps a mirror.
 
-The ledger reads `~/.exp_status/**/*.json`, `.api_usage.jsonl` and
-`http://localhost:8686/api/status`. It never writes. Lane rules, priorities and
-the two-box discipline are in `~/.claude/CLAUDE.md` and `~/expdash/README.md`
-and apply unchanged to every render the studio launches.
+```bash
+uv run orchard harvest my-research --dry-run
+uv run orchard harvest my-research
+```
 
-## Hosting
+Harvest bundles supported artefacts and records their hashes and bundle
+identities. It refuses unfinished tapes and dirty research repositories by
+default. It does not run simulations or publish results.
 
-SpacetimeDB for world state, Cloudflare for site, media and voice, no Google
-endpoints in the client so mainland China is not locked out. The home box only
-ever connects outward. [docs/HOSTING.md](docs/HOSTING.md).
+Once hosting is configured, `orchard exhibit hang results/bundles/BUNDLE_ID`
+uploads and hangs an approved artefact. Adding `--approve` records the
+host's ruling in its manifest. See the
+[harvest and exhibit guide](docs/impl/M2-harvest-exhibit.md) for the full
+flow, including dry runs and taking an exhibit down.
+
+## How it fits together
+
+| Path | Purpose |
+| --- | --- |
+| [grove/](grove/README.md) | Browser world and public site; Three.js, TypeScript and Vite |
+| [orchard/](orchard/) | Python CLI, manifests, bundling, ledger and local dashboard |
+| [packages/tape/](packages/tape/README.md) | Shared particle tape format and Python reader/writer |
+| [spacetime/](spacetime/) | World state, presence, exhibits, reviews and moderation |
+| [trees/](trees/) | Draft manifests and mirrored research manifests |
+| [studio/](studio/README.md) | Planned shared episode production tools |
+| [docs/](docs/) | Design, implementation notes, hosting and validation evidence |
+| [brand/](brand/README.md) | Visual identity and [writing voice](brand/VOICE.md) |
+
+The fund buys an episode thesis: one viewer question, one measured number
+and one picture. The intended stages run from a first idea through a
+styleframe, animatic and render ruling to an episode and its room. Expensive
+renders need a measured cost and a ruling first. [LAWS.md](docs/LAWS.md)
+records the editorial rules; [BACKLOG.md](docs/BACKLOG.md) records work and
+validation still owed.
+
+The first orchard is [weichseltree](https://github.com/weichseltree)'s.
+Contributions to playback, device testing, documentation and research
+integration are welcome; [CONTRIBUTING.md](CONTRIBUTING.md) gives starting
+points and the checks for each area.
 
 ## License
 
-AGPL-3.0-or-later. See [LICENSE](LICENSE). Run a node, change the platform, publish the change.
+[AGPL-3.0-or-later](LICENSE). You can run your own node and modify the
+platform under the terms of that license.
