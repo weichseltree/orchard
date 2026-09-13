@@ -10,9 +10,11 @@ and touch fixes, 3D startup recovery, safer dashboard submissions, contributor
 setup and the Checks workflow. The baked-room console error is fixed and
 missing research fixtures now skip cleanly in contributor checkouts.
 [The review](reviews/2026-09-13-ux.md) records the changes and validation:
-214 Python tests, 216 grove tests with research fixtures, and 207 grove tests
-plus nine expected skips without them. Real-device, hosted-service and
-remote CI acceptance are separate from those local results.
+214 Python tests in the initial UX pass and 226 after the audit follow-up;
+216 grove tests with research fixtures, and 207 plus nine expected skips
+without them. [GitHub Checks for `7244bdd`](https://github.com/weichseltree/orchard/actions/runs/34773079344)
+passed both jobs, including TypeScript and the production build. Hardware
+and hosted-service acceptance remain open; a Git push does not deploy the site.
 
 Use this order for the next work. The numbered items below retain their
 earlier decisions and evidence; these priorities group the remaining gaps.
