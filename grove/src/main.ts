@@ -64,6 +64,8 @@ const body = createBody(
   MathUtils.degToRad(startYaw),
   startRoom.id,
 );
+// `&pitch=<deg>` looks up or down from the start, for a link to something high.
+if (query.has("pitch")) body.pitch = MathUtils.degToRad(Number(query.get("pitch")));
 /** Until the visitor moves, the asset's own spawn marker may still move them. */
 let bodyPlaced = false;
 
