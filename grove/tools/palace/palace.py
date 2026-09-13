@@ -1167,6 +1167,42 @@ def build_scene(mansion, textures, bake_res, margin, target_id):
     return objects, plans, target, trees_of
 
 
+FILL_COLOUR = (1.0, 0.86, 0.68)        # warm, a chandelier's
+FILL_W = 400.0                         # per lamp; probe 2026-09-13: 300 lifts the cornice underside from 0.19 to 0.30 of the floor, 900 flattens the sun
+
+
+def add_fill_lights(scene, plans, power):
+    """Interior fill: warm point lights along each interior room's long
+    axis, one per 8 m, hung at 0.55 of the height. The sun and sky alone
+    leave every underside (the cornice bead, the capitals) at a fifth of
+    the floor's irradiance, which AgX crushes to black; a palace hall has
+    its chandeliers. Returns the light objects."""
+    out = []
+    if power <= 0:
+        return out
+    for plan in plans.values():
+        if isinstance(plan, CellPlan):
+            continue
+        W, D = plan.x1 - plan.x0, plan.y1 - plan.y0
+        along_x = W >= D
+        L = max(W, D)
+        n = max(1, int(round(L / 8.0)))
+        cx, cy = (plan.x0 + plan.x1) / 2, (plan.y0 + plan.y1) / 2
+        z = 0.55 * plan.h
+        for i in range(n):
+            t = (i + 0.5) / n - 0.5
+            loc = (cx + t * L, cy, z) if along_x else (cx, cy + t * L, z)
+            ld = bpy.data.lights.new("fill_%s_%d" % (plan.id, i), type="POINT")
+            ld.energy = float(power)
+            ld.color = FILL_COLOUR
+            ld.shadow_soft_size = 0.5
+            ob = bpy.data.objects.new(ld.name, ld)
+            ob.location = loc
+            scene.collection.objects.link(ob)
+            out.append(ob)
+    return out
+
+
 def render_still(scene, cam_pos, facing, out_path, samples, lens=22.0, exposure=0.0):
     cam_data = bpy.data.cameras.new("still_cam")
     cam_data.sensor_width = 36.0
@@ -1372,6 +1408,7 @@ def parse_args(argv):
     p.add_argument("--res", type=int, default=2048)
     p.add_argument("--margin", type=int, default=8)
     p.add_argument("--no-bake", action="store_true")
+    p.add_argument("--fill", type=float, default=FILL_W, help="interior fill light power per lamp, W; 0 for none")
     p.add_argument("--no-preview", dest="preview", action="store_false")
     p.add_argument("--adaptive-threshold", type=float, default=0.01)
     p.add_argument("--save-blend", default="")
@@ -1417,6 +1454,7 @@ def main():
 
     if args.stills:
         objects, plans, _, _ = build_scene(mansion, textures, 256, 2, None)
+        add_fill_lights(scene, plans, args.fill)
         img_dir = os.path.join(REPO, "docs", "img")
         os.makedirs(img_dir, exist_ok=True)
         for rid in args.still_rooms.split(","):
@@ -1436,6 +1474,7 @@ def main():
     if not args.room:
         raise SystemExit("--room <id>, --stills or --list")
     objects, plans, target, trees_of = build_scene(mansion, textures, args.res, args.margin, args.room)
+    fills = add_fill_lights(scene, plans, args.fill)
     if target is None:
         raise SystemExit("no palace block for room %r" % args.room)
     plan, ob, bake_img, uv2, markers = target
@@ -1513,6 +1552,8 @@ def main():
         },
         "lighting": {"sun_direction_blender": [round(c, 4) for c in Vector(hb.SUN_DIR).normalized()],
                      "sun_strength": hb.SUN_STRENGTH, "world": "Nishita sky", "world_strength": hb.SKY_STRENGTH,
+                     "fill": {"lamps": len(fills), "watts_each": args.fill, "colour": FILL_COLOUR,
+                              "placement": "one per 8 m along each interior room's long axis at 0.55 h"},
                      "occluders": sorted(objects)},
         "files": {},
     }
