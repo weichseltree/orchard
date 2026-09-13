@@ -1137,11 +1137,14 @@ def test_the_wrangler_path_passes_cache_control(tmp_path, monkeypatch):
     from orchard import push as pushmod
     ran = []
     monkeypatch.setattr(pushmod, "require", lambda name: "x")
+    # Command construction must not depend on a local frontend installation.
+    monkeypatch.setattr(pushmod, "wrangler", lambda: "mock-wrangler")
     monkeypatch.setattr(pushmod.subprocess, "run",
                         lambda cmd, **kw: ran.append(cmd) or type("R", (), {"returncode": 0})())
     f = tmp_path / "c.bin"; f.write_bytes(b"1")
     pushmod._wrangler_put("id/c.bin", f, "application/octet-stream", "b",
                           pushmod.CACHE_IMMUTABLE)
+    assert ran[0][0] == "mock-wrangler"
     assert ran[0][-2:] == ["--cache-control", pushmod.CACHE_IMMUTABLE]
 
 
