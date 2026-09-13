@@ -40,3 +40,9 @@ waivers:
       loads spectre's storyboard parser (core/film/pacing.py) from spectre's
       working tree; BACKLOG 31's studio extraction moves it to a package under
       orchard/packages/, pinned by tag
+  - repo: orchard
+    rule: sibling-import
+    path: tests/test_audit.py
+    reason: >-
+      the check's own test fixtures: synthetic repos whose code is written out
+      as strings, not imports orchard makes

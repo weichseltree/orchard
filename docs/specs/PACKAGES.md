@@ -188,10 +188,11 @@ All three consumers switched to orchard-tape on 2026-09-13, each byte-checked
 against tapes written by spectre's own `tape.py` at fd0f465: spectre (module
 alias), einstruct `4cf1121`, phototroph `aa91078` (a locked PEP 723 script).
 
-The one cross-repo `sys.path` import left: einstruct's `film/assemble.py`
+The cross-repo `sys.path` import left among the tape's consumers: einstruct's `film/assemble.py`
 loads spectre's storyboard parser (`core/film/pacing.py`) from spectre's
 working tree. That is BACKLOG 31's studio extraction, and it is the next
-package under `orchard/packages/`, pinned by tag the same way.
+package under `orchard/packages/`, pinned by tag the same way. The audit's first run found seven more outside the tape's consumers
+(arcagi2026 and event-atoms; §8).
 
 Found on the way, left as they are:
 

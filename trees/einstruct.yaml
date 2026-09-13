@@ -278,8 +278,7 @@ producers:
   render: exprun uv run python film/render.py results/film/tapes/{tape} --seconds {seconds} --fps 30 {flags}
   figure: uv run python film/anim.py {name}
   lane: cpu
-  env:
-    SPECTRE_ROOT: /home/manuel/weichseltree/spectre
+  env: {}
 theses:
 - id: rows-read-chemistry
   question: A rule that only says "meet and vanish" runs down at half the textbook rate in two dimensions.
@@ -327,16 +326,21 @@ kill: 'Prune to the one chemistry episode, and fund no second, if E34''s held-ou
   its sweep was queued on 2026-09-12. As of that date no result in this repo shows distances beating a
   coordinate method, or a plain particle count, at anything: the invariances are properties, E32''s fluid
   observables are identities, and E33''s rows read a rate that counting also gives. If E34 passes, the
-  second episode is the rate law, not "throw away the axes".'
+  second episode is the rate law, not "throw away the axes". TRIGGERED 2026-09-13: E34 P3 failed, 3.46
+  at d = 1 and 1.0 at d = 3 against 0.25 (EXPERIMENTS.md E34). E34b, registered after that failure and
+  before its runs (091b012), reads the table at the pair''s capture probability with the dimension taken
+  from the run''s own rows and transfers (median |log ratio| 0.197 and 0.163 against 0.22), at +0.09 in-sample
+  and across density and mixing (its P9 fails). By this criterion the tree takes the one chemistry episode;
+  whether E34b, a registered follow-up to a failure, reopens a second is a ruling for Manuel.'
 potential: 8
-notes: 'Film pipeline: film/scenes.py (tape through spectre''s TapeWriter, imported from SPECTRE_ROOT),
-  film/render.py (flat matplotlib, nearest tape frame, never interpolated), film/anim.py (figure animations,
-  each with a manifest naming its summary.json or tape header hash), film/card.py, film/assemble.py; voice
-  through spectre''s core/film/audio/vo.py. Series plan docs/SERIES.md (six episodes). Every committed
-  experiment figure under results/exp*/ is light-ground and must not hang as a still (LAWS 13); the anim
-  and render previews are dark. Of the eleven anims, only row carries nothing repo-specific on screen;
-  walk, slab, bag and triangle name an experiment in the footer; counter, like, front, mechanism, dose
-  and null show check ids or "registered". The fund''s produced_by on the ab_d2 clip row is not verbatim:
+notes: 'Film pipeline: film/scenes.py (tape through the orchard-tape package''s TapeWriter, pinned by
+  tag tape-v1.0.0), film/render.py (flat matplotlib, nearest tape frame, never interpolated), film/anim.py
+  (figure animations, each with a manifest naming its summary.json or tape header hash), film/card.py,
+  film/assemble.py; voice through spectre''s core/film/audio/vo.py. Series plan docs/SERIES.md (six episodes).
+  Every committed experiment figure under results/exp*/ is light-ground and must not hang as a still (LAWS
+  13); the anim and render previews are dark. Of the eleven anims, only row carries nothing repo-specific
+  on screen; walk, slab, bag and triangle name an experiment in the footer; counter, like, front, mechanism,
+  dose and null show check ids or "registered". The fund''s produced_by on the ab_d2 clip row is not verbatim:
   the command that ran was exprun uv run python film/render.py results/film/tapes/ab_d2 --seconds 40 --fps
   30 --tag ep05 (row kept unchanged because its bundle is live); likewise the ab_d2 tape was exprun uv
   run python film/scenes.py ab-d2 --n 200000 --t-max 400 --every 10. "Throw away the axes" is no longer
@@ -347,5 +351,6 @@ notes: 'Film pipeline: film/scenes.py (tape through spectre''s TapeWriter, impor
   line (E10-E18); its plate colours are the film''s palette. It is not a harvestable kind and should not
   hang. Mechanism, a guess and untested: a point''s distances at the visitor''s scale say whether a cluster
   reads as a line, a sheet or a volume from where they stand, a level-of-detail signal for point clouds
-  as premosaic''s is for meshes. The tape format is spectre''s; einstruct only writes through it. Voice
-  takes exist as audio (results/film/vo/ep05, 12 mp3).'
+  as premosaic''s is for meshes. The tape format is the orchard-tape package (formerly spectre''s core/video/tape.py);
+  einstruct only writes through it. film/assemble.py still imports spectre''s pacing parser and vo.py
+  from ~/weichseltree/spectre. Voice takes exist as audio (results/film/vo/ep05, 12 mp3).'

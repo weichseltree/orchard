@@ -45,7 +45,7 @@ artefacts:
   approved: true
   bundle: cecbb68e2d2274af
 producers:
-  tape: EXP_PRIO=5 exprun -n phototroph-tape-<name> -l <repo>/logs/phototroph-tape-<name>.log python3
+  tape: EXP_PRIO=5 exprun -n phototroph-tape-<name> -l <repo>/logs/phototroph-tape-<name>.log uv run --locked
     experiments/video/ptvf_to_tape.py --input <dump>.ptvf --expect-sha256 <sha256 of the dump> --frames
     <a>:<b> --scalars species,alive,bond_count --run-seed <seed> --out results/tapes/<name>
   render: ''
