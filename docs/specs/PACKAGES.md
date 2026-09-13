@@ -184,6 +184,15 @@ respect existing headers would make it match.
 | lockfiles | arcedit `d5b7caa`, premosaic `a9490f8`, phototroph `8676bae` + CI on the locks `60659cb` | landed locally, unpushed |
 | lockfiles / Node pins | event-atoms `83f8c1a` (a pinned freeze), autora `5ca39d0`, ftlchess `f0cf39f` | landed locally, unpushed |
 
+All three consumers switched to orchard-tape on 2026-09-13, each byte-checked
+against tapes written by spectre's own `tape.py` at fd0f465: spectre (module
+alias), einstruct `4cf1121`, phototroph `aa91078` (a locked PEP 723 script).
+
+The one cross-repo `sys.path` import left: einstruct's `film/assemble.py`
+loads spectre's storyboard parser (`core/film/pacing.py`) from spectre's
+working tree. That is BACKLOG 31's studio extraction, and it is the next
+package under `orchard/packages/`, pinned by tag the same way.
+
 Found on the way, left as they are:
 
 - event-atoms' venv fails `pip check` (python-dotenv and charset-normalizer
