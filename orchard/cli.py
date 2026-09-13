@@ -1,5 +1,5 @@
 """orchard <verb>. Verbs are the orchard's: scout, plant, board, bundle, harvest,
-push, exhibit, sync, r2, ledger, doctor, serve."""
+push, exhibit, sync, r2, ledger, doctor, audit, serve."""
 from __future__ import annotations
 
 import argparse
@@ -129,6 +129,15 @@ def cmd_doctor(a):
     for svc, kind, present, missing in status():
         flag = "ok   " if not missing else ("part " if present else "MISS ")
         print(f"{flag}{svc:<20} {kind:<9} " + (f"missing {', '.join(missing)}" if missing else ""))
+
+
+def cmd_audit(a):
+    from .audit import audit, render, write
+    rep = audit(a.repo or None)
+    if not a.repo:
+        write(rep)                 # a partial run must not replace what the dashboard shows
+    print(json.dumps(rep, indent=1) if a.json else render(rep, show_ok=a.all))
+    sys.exit(1 if rep["summary"]["fail"] else 0)
 
 
 def cmd_bundle_tape(a):
@@ -386,6 +395,10 @@ def main(argv=None):
     s.set_defaults(fn=cmd_auth)
 
     s = sub.add_parser("doctor", help="what is wired up"); s.set_defaults(fn=cmd_doctor)
+    s = sub.add_parser("audit", help="PACKAGES.md's rules across every live repo (exit 1 on a failure)")
+    s.add_argument("repo", nargs="*", help="only these repos (results/audit.json is then left alone)")
+    s.add_argument("--json", action="store_true"); s.add_argument("--all", action="store_true", help="list the ok checks too")
+    s.set_defaults(fn=cmd_audit)
     s = sub.add_parser("serve", help="the flat dashboard"); s.add_argument("--host", default="127.0.0.1"); s.add_argument("--port", type=int, default=8787); s.add_argument("--reload", action="store_true"); s.set_defaults(fn=cmd_serve)
     a = p.parse_args(argv)
     a.fn(a)

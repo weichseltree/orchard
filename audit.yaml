@@ -1,0 +1,42 @@
+# orchard audit: which repos are checked against docs/specs/PACKAGES.md, and the
+# findings accepted with a reason. See orchard/audit.py and PACKAGES.md §8.
+
+# Every git checkout directly under a root is audited, so a new repo is covered
+# the day it is cloned; a root that is itself a checkout is audited as one repo.
+roots:
+  - ~/weichseltree
+  - ~/kaggle/arcagi2026
+
+# Listed on the report, never checked (PACKAGES.md §6 ruling 5: the lockfile rule
+# is for live repos). Last commits 2026-08-18 or earlier.
+archived:
+  - quantumflow
+  - units
+  - package
+  - ccc
+  - points
+  - HNL
+  - faye
+  - agivity
+  - lumina-consensus
+  - sudo-community
+  - stratum
+  - mosaic
+
+# The stai-social organisation's repos.
+out_of_scope:
+  - stai-app
+  - stai-admin
+
+# A waived finding still shows, as "waived: <reason>", and does not count as a
+# failure. Each names the repo, the rule, the path (relative to the repo; a glob
+# is allowed) and the reason. A waiver that matches nothing is reported, so one
+# outliving its problem is noticed and removed.
+waivers:
+  - repo: einstruct
+    rule: sibling-import
+    path: film/assemble.py
+    reason: >-
+      loads spectre's storyboard parser (core/film/pacing.py) from spectre's
+      working tree; BACKLOG 31's studio extraction moves it to a package under
+      orchard/packages/, pinned by tag
