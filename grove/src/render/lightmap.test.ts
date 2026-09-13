@@ -1,7 +1,10 @@
 import {
   BufferAttribute,
   BufferGeometry,
+  CompressedTexture,
   Group,
+  LinearFilter,
+  LinearMipmapLinearFilter,
   Mesh,
   MeshBasicMaterial,
   MeshStandardMaterial,
@@ -28,6 +31,31 @@ describe("prepareLightmap", () => {
     expect(texture.channel).toBe(1);
     expect(texture.flipY).toBe(false);
     expect(texture.colorSpace).toBe(SRGBColorSpace);
+  });
+
+  it("keeps the mip levels a KTX2 arrives with and samples them trilinearly", () => {
+    const level = (size: number) => ({ data: new Uint8Array(8), width: size, height: size });
+    const texture = prepareLightmap(new CompressedTexture([level(4), level(2), level(1)], 4, 4));
+    expect(texture.minFilter).toBe(LinearMipmapLinearFilter);
+    expect(texture.magFilter).toBe(LinearFilter);
+    expect(texture.generateMipmaps).toBe(false);
+    expect(texture.channel).toBe(1);
+    expect(texture.flipY).toBe(false);
+  });
+
+  it("stays bilinear on a KTX2 without mips, which three cannot generate", () => {
+    const texture = prepareLightmap(
+      new CompressedTexture([{ data: new Uint8Array(8), width: 4, height: 4 }], 4, 4),
+    );
+    expect(texture.minFilter).toBe(LinearFilter);
+    expect(texture.generateMipmaps).toBe(false);
+  });
+
+  it("has three generate mips for the PNG fallback", () => {
+    const texture = prepareLightmap(new Texture());
+    expect(texture.generateMipmaps).toBe(true);
+    expect(texture.minFilter).toBe(LinearMipmapLinearFilter);
+    expect(texture.magFilter).toBe(LinearFilter);
   });
 });
 

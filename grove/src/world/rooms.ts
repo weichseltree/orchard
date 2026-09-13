@@ -127,8 +127,7 @@ async function loadRoomGlb(
   const orchard = (extras.orchard ?? {}) as Record<string, unknown>;
   const meta = (orchard.lightmap ?? null) as LightmapMeta | null;
   const lightmap = applyLightmap(gltf.scene, sibling, meta);
-  // A baked room is lit; anything else is double-counting the sun.
-  group.add(...roomLights(room, lightmap.applied > 0 ? 0.12 : 1));
+  group.add(...shellLights(room, lightmap));
   return {
     group,
     provenance: {
@@ -210,7 +209,20 @@ function fallbackProvenance(room: Room): Record<string, unknown> {
   };
 }
 
-/** Hemisphere plus one soft key. Turned right down when a bake is doing the work. */
+/**
+ * The lights a glb shell brings with it: none when its lightmap took. A
+ * three.js light is global, not the room's, so eight baked rooms each adding
+ * a key put eight highlights on one polished floor; the bake already holds
+ * every light the room has, and the world's one hemisphere (world.ts) covers
+ * what is not baked. A glb that loaded without a lightmap is lit like the
+ * grey shell.
+ */
+export function shellLights(room: Room, lightmap: Pick<LightmapReport, "applied"> | null): Group[] {
+  if (lightmap && lightmap.applied > 0) return [];
+  return roomLights(room, 1);
+}
+
+/** Hemisphere plus one soft key, for a shell nothing has baked. */
 export function roomLights(room: Room, intensity: number): Group[] {
   const group = new Group();
   group.name = `${room.id}-lights`;

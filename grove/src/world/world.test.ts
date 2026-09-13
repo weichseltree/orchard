@@ -2,9 +2,10 @@ import { describe, expect, it } from "vitest";
 import { MEDIA_BASE } from "../config";
 import { BundleRefSchema, parseMansion } from "./schema";
 import mansionDocument from "./mansion.json";
-import { Quaternion, Vector3 } from "three";
-import { bundleUrl, placeStill } from "./world";
+import { DirectionalLight, HemisphereLight, Light, Quaternion, Vector3, type WebGLRenderer } from "three";
+import { buildWorld, bundleUrl, placeStill } from "./world";
 import type { ExhibitRow } from "./exhibits";
+import type { Provenance } from "../ui/provenance";
 
 // Precedence: what is hung on the tree now, else the pinned hash, else a dev
 // path. A hanging that names only an exhibit resolves to nothing until one is
@@ -79,6 +80,27 @@ describe("placeStill", () => {
     expect(place.position).toEqual(new Vector3(6.98, 3.1, 0));
     expect(place.quaternion).toBeInstanceOf(Quaternion);
     expect(place.maxHeight).toBe(3.4);
+  });
+});
+
+describe("buildWorld", () => {
+  it("carries exactly one runtime light, a hemisphere, and never a directional", () => {
+    // Nothing is loaded: the renderer is never touched before load().
+    const world = buildWorld({
+      mansion: parseMansion(mansionDocument),
+      renderer: {} as WebGLRenderer,
+      device: { tier: "desktop", touch: false, headset: false, maxPixelRatio: 2 },
+      provenance: { register() {} } as unknown as Provenance,
+      onNotice: () => {},
+    });
+    const lights: Light[] = [];
+    world.group.traverse((node) => {
+      if (node instanceof Light) lights.push(node);
+    });
+    expect(lights).toHaveLength(1);
+    expect(lights[0]).toBeInstanceOf(HemisphereLight);
+    expect(lights.some((l) => l instanceof DirectionalLight)).toBe(false);
+    expect((lights[0] as HemisphereLight).intensity).toBeCloseTo(0.35);
   });
 });
 

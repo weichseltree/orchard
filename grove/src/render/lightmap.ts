@@ -1,5 +1,7 @@
 import {
+  CompressedTexture,
   LinearFilter,
+  LinearMipmapLinearFilter,
   Mesh,
   MeshStandardMaterial,
   SRGBColorSpace,
@@ -67,14 +69,29 @@ export async function loadLightmap(
   return null;
 }
 
-/** glTF convention: no flip, sRGB-encoded, sampled off UV set 1. */
+/**
+ * glTF convention: no flip, sRGB-encoded, sampled off UV set 1. And
+ * mipmapped: a 2048 lightmap seen from across the hall is minified many
+ * times over, and without mips it shimmers. The KTX2 files are encoded with
+ * `--genmipmap` and arrive with their levels, which are kept (three cannot
+ * make mips for compressed data, so a KTX2 without any stays bilinear); the
+ * PNG fallback has three generate them.
+ */
 export function prepareLightmap(texture: Texture): Texture {
   texture.flipY = false;
   texture.colorSpace = SRGBColorSpace;
   texture.channel = 1;
-  texture.minFilter = LinearFilter;
   texture.magFilter = LinearFilter;
-  texture.generateMipmaps = false;
+  if (texture.mipmaps.length > 1) {
+    texture.minFilter = LinearMipmapLinearFilter;
+    texture.generateMipmaps = false;
+  } else if (texture instanceof CompressedTexture) {
+    texture.minFilter = LinearFilter;
+    texture.generateMipmaps = false;
+  } else {
+    texture.minFilter = LinearMipmapLinearFilter;
+    texture.generateMipmaps = true;
+  }
   texture.needsUpdate = true;
   return texture;
 }

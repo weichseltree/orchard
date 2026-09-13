@@ -1,4 +1,13 @@
-import { Box3, Euler, Group, MathUtils, Quaternion, Vector3, type WebGLRenderer } from "three";
+import {
+  Box3,
+  Euler,
+  Group,
+  HemisphereLight,
+  MathUtils,
+  Quaternion,
+  Vector3,
+  type WebGLRenderer,
+} from "three";
 import { MEDIA_BASE } from "../config";
 import type { DeviceProfile } from "../device";
 import type { DeviceTier } from "../tape/bundle";
@@ -129,6 +138,13 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
   const { mansion, renderer, device, provenance, onNotice } = options;
   const group = new Group();
   group.name = "mansion";
+  // The one runtime light. The baked rooms carry their lighting in the
+  // lightmap and bring no lights of their own (rooms.ts, shellLights); this
+  // is for what is not baked (the tape pedestals, the avatars), and a
+  // hemisphere adds no specular, so the floors keep only the bake's highlights.
+  const ambient = new HemisphereLight(0xd6dfd7, 0x4a544b, 0.35);
+  ambient.name = "mansion-ambient";
+  group.add(ambient);
   // The outside goes in first: it costs nothing to load, so the very first
   // frame already has a horizon, and the hall's windows never show the page.
   const sky: SkyDome | null = mansion.sky ? buildSky(mansion.sky) : null;

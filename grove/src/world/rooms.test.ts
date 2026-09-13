@@ -1,7 +1,7 @@
-import { Group, Object3D, Quaternion, Vector3 } from "three";
+import { DirectionalLight, Group, HemisphereLight, Light, Object3D, Quaternion, Vector3 } from "three";
 import { describe, expect, it } from "vitest";
 import mansionDocument from "./mansion.json";
-import { lightmapCandidates, readMarkers } from "./rooms";
+import { lightmapCandidates, proceduralRoom, readMarkers, shellLights } from "./rooms";
 import { parseMansion, roomById } from "./schema";
 
 // The glb's marker empties are the authority on where things are. This is
@@ -48,6 +48,38 @@ describe("readMarkers", () => {
     expect(normal.x).toBeCloseTo(-1);
     expect(normal.y).toBeCloseTo(0);
     expect(normal.z).toBeCloseTo(0);
+  });
+});
+
+function lightsUnder(root: Object3D): Light[] {
+  const lights: Light[] = [];
+  root.traverse((node) => {
+    if (node instanceof Light) lights.push(node);
+  });
+  return lights;
+}
+
+describe("shellLights", () => {
+  const hall = roomById(parseMansion(mansionDocument), "hall")!;
+
+  it("gives a baked room no lights at all: the bake is the lighting, and a light is global", () => {
+    expect(shellLights(hall, { applied: 12 })).toEqual([]);
+  });
+
+  it("lights a glb whose lightmap did not take like the grey shell", () => {
+    for (const lightmap of [{ applied: 0 }, null]) {
+      const lights = lightsUnder(new Group().add(...shellLights(hall, lightmap)));
+      expect(lights.some((l) => l instanceof HemisphereLight)).toBe(true);
+      expect(lights.some((l) => l instanceof DirectionalLight)).toBe(true);
+    }
+  });
+
+  it("leaves the grey shell its own hemisphere and key", () => {
+    const shell = proceduralRoom(hall);
+    expect(shell.getObjectByName("hall-lights")).toBeDefined();
+    const lights = lightsUnder(shell);
+    expect(lights.filter((l) => l instanceof HemisphereLight)).toHaveLength(1);
+    expect(lights.filter((l) => l instanceof DirectionalLight)).toHaveLength(1);
   });
 });
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { z } from "zod";
 import mansionDocument from "./mansion.json";
-import { BundleRefSchema, MansionSchema, parseMansion, roomById } from "./schema";
+import { BundleRefSchema, MansionSchema, parseMansion, roomById, type Doorway, type Room } from "./schema";
 
 // mansion.json is the one scene document; a bad edit has to fail here, at
 // boot, rather than as a missing wall three rooms later.
@@ -161,24 +162,94 @@ describe("BundleRefSchema", () => {
     }
   });
 
-  it("every open doorway is listed by both rooms at the same wall and opening", () => {
-    const mansion = parseMansion(mansionDocument);
+});
+
+// The walls, in glTF: "-x" is x = bounds.min[0], "+x" x = bounds.max[0],
+// "-z" z = bounds.min[2], "+z" z = bounds.max[2]. The generator (tools/palace)
+// works in Blender's Z-up and calls the z walls by Blender's y, which runs the
+// other way: its "+y" is glTF "-z" and its "-y" is glTF "+z". A poster's
+// `center` is a glTF z on the x walls and a glTF x on the others.
+type Wall = "-x" | "+x" | "-z" | "+z";
+const GENERATOR_WALL: Record<string, Wall> = { "+x": "+x", "-x": "-x", "+y": "-z", "-y": "+z" };
+
+/** How far a door's surround reaches past the opening; a poster may not sit on it. */
+const DOOR_SURROUND_M = 0.3;
+
+const PosterSchema = z.looseObject({
+  wall: z.enum(["+x", "-x", "+y", "-y"]),
+  center: z.number(),
+  width: z.number().positive(),
+});
+
+function wallOf(room: Room, door: Doorway): Wall {
+  const axis = door.axis === "x" ? 0 : 2;
+  const near = (v: number) => Math.abs(door.at - v) < 1e-6;
+  if (near(room.bounds.min[axis])) return door.axis === "x" ? "-x" : "-z";
+  if (near(room.bounds.max[axis])) return door.axis === "x" ? "+x" : "+z";
+  throw new Error(`${room.id}: doorway to ${door.to} at ${door.at} is on no wall`);
+}
+
+function postersOf(room: Room): Array<z.infer<typeof PosterSchema>> {
+  const palace = (room as { palace?: { posters?: unknown } }).palace;
+  return z.array(PosterSchema).parse(palace?.posters ?? []);
+}
+
+describe("the walls", () => {
+  const mansion = parseMansion(mansionDocument);
+
+  it("every doorway into a room of the document is listed by that room too, at the same opening", () => {
     for (const room of mansion.rooms) {
       for (const door of room.doorways) {
-        if (door.closed) continue;
-        const other = roomById(mansion, door.to)!;
+        // A closed door to a room not built yet is a promise, checked nowhere.
+        const other = roomById(mansion, door.to);
+        if (!other) continue;
         // Two rooms may share several openings (the hall's French doors, the
         // orangery's arches): match the one at the same place.
         const back = other.doorways.find(
           (d) => d.to === room.id && d.axis === door.axis && d.at === door.at && d.center === door.center,
-        )!;
-        expect(back).toBeDefined();
-        expect(back).toMatchObject({ axis: door.axis, at: door.at, center: door.center, width: door.width, height: door.height });
-        const axis = door.axis === "x" ? 0 : 2;
-        expect([room.bounds.min[axis], room.bounds.max[axis]]).toContain(door.at);
-        expect([other.bounds.min[axis], other.bounds.max[axis]]).toContain(door.at);
+        );
+        expect(back, `${room.id} -> ${door.to} at ${door.axis}=${door.at}, ${door.center}`).toBeDefined();
+        expect(back).toMatchObject({
+          axis: door.axis,
+          at: door.at,
+          center: door.center,
+          width: door.width,
+          height: door.height,
+          closed: door.closed,
+        });
+        // ...and it is a wall of both rooms.
+        wallOf(room, door);
+        wallOf(other, back!);
       }
     }
+  });
+
+  // Fails today: the gallery's posters at 25 and 55 on "+x" (4.5 m wide) run
+  // 0.45 m into the closed doors at 28 and 52, and 0.75 m into their
+  // surrounds. Those two posters are being moved in mansion.json; when that
+  // lands this passes, vitest reports it as such, and `.fails` comes off.
+  it("no poster sits on a doorway or its surround", () => {
+    const overlaps: string[] = [];
+    for (const room of mansion.rooms) {
+      const posters = postersOf(room);
+      if (posters.length === 0) continue;
+      for (const door of room.doorways) {
+        const wall = wallOf(room, door);
+        const d0 = door.center - door.width / 2 - DOOR_SURROUND_M;
+        const d1 = door.center + door.width / 2 + DOOR_SURROUND_M;
+        for (const poster of posters) {
+          if (GENERATOR_WALL[poster.wall] !== wall) continue;
+          const p0 = poster.center - poster.width / 2;
+          const p1 = poster.center + poster.width / 2;
+          if (p0 < d1 && d0 < p1) {
+            overlaps.push(
+              `${room.id}: poster at ${poster.center} on ${poster.wall} overlaps the door to ${door.to} at ${door.center} by ${Math.min(p1, d1) - Math.max(p0, d0)} m`,
+            );
+          }
+        }
+      }
+    }
+    expect(overlaps).toEqual([]);
   });
 });
 

@@ -10,6 +10,7 @@ import { deploymentTokenSource } from "./net/auth";
 import { Avatars } from "./net/avatars";
 import { Presence } from "./net/presence";
 import { installAssetMap } from "./render/asset-map";
+import { showOverdraw } from "./render/overdraw";
 import { EYE_HEIGHT, createView } from "./render/view";
 import { Hud } from "./ui/hud";
 import { PerfMeter } from "./ui/perf";
@@ -69,6 +70,9 @@ const body = createBody(
 if (query.has("pitch")) body.pitch = MathUtils.degToRad(Number(query.get("pitch")));
 if (query.has("x")) body.x = Number(query.get("x"));
 if (query.has("z")) body.z = Number(query.get("z"));
+// `&debug=overdraw` draws the room shells as faint additive white, so a
+// doubled or hidden face shows as a brighter patch (render/overdraw.ts).
+const debugView = query.get("debug");
 /** Until the visitor moves, the asset's own spawn marker may still move them. */
 let bodyPlaced = false;
 
@@ -224,7 +228,8 @@ function boot(): void {
     // The hangings wait this long for the live exhibit table, then take the
     // pinned ids: a slow link costs seconds, a dead one costs nothing.
     exhibits: () => presence.whenExhibits(EXHIBIT_WAIT_MS),
-    onRoomReady: (room) => {
+    onRoomReady: (room, shell) => {
+      if (debugView === "overdraw") showOverdraw(shell.group);
       // The asset's spawn marker is the authority; if the visitor has not
       // moved yet, put them where the bake says the room starts.
       if (room.id !== body.room || bodyPlaced) return;
