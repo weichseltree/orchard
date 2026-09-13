@@ -1,6 +1,6 @@
 """The flat dashboard: what you look at while you work. Port 8787, local only.
 
-The ledger and the portfolio are read from disk. The greenhouse panels (the
+The ledger, the portfolio and the audit are read from disk. The greenhouse panels (the
 review queue, rulings, directives, exhibits) are read from the live database
 through the `spacetime` CLI, whose login identity is the module's admin; the
 same identity signs the rulings this page writes, and the moderation panel's
@@ -15,8 +15,10 @@ answers. The page may not be framed, so nothing can trick a click on it.
 """
 from __future__ import annotations
 
+import json
 import os
 import re
+import time
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -74,6 +76,33 @@ def api_portfolio():
 @app.get("/api/ledger")
 def api_ledger(days: int = 30):
     return JSONResponse(snapshot(days=days), headers={"Cache-Control": "no-store"})
+
+
+@app.get("/api/audit")
+def api_audit():
+    """The last `orchard audit` (results/audit.json, which the timer rewrites every 15
+    minutes): the counts, the unwaived failures, and how old the report is."""
+    from .. import audit as A                                   # noqa: PLC0415
+    try:
+        rep = json.loads(A.OUT.read_text())
+    except FileNotFoundError:
+        return JSONResponse({"error": "no audit yet: `uv run orchard audit` writes results/audit.json"},
+                            status_code=404, headers={"Cache-Control": "no-store"})
+    except (OSError, ValueError) as exc:
+        return JSONResponse({"error": f"results/audit.json unreadable: {exc}"}, status_code=503,
+                            headers={"Cache-Control": "no-store"})
+    age = max(0.0, time.time() - float(rep.get("generated_at_unix") or 0))
+    pick = lambda e, f: {"repo": e["name"], "rule": f["rule"], "where": f["where"], "detail": f["detail"]}
+    return JSONResponse({
+        "generated_at": rep.get("generated_at"),
+        "generated_at_unix": rep.get("generated_at_unix"),
+        "age_s": age,
+        "stale": age > A.STALE_S,
+        "duration_s": rep.get("duration_s"),
+        "summary": rep.get("summary") or {},
+        "failures": [pick(e, f) for e in rep.get("repos", []) for f in e["results"]
+                     if f["status"] == "fail" and not f["waived"]],
+    }, headers={"Cache-Control": "no-store"})
 
 
 def _stamp(row: dict, key: str) -> dict:

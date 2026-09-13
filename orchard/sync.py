@@ -9,7 +9,7 @@ the owner's login token is the identity (admin on the module).
     uv run orchard sync snapshot   # putSnapshot("ledger", ...)
     uv run orchard sync rulings    # rulings from the greenhouse back into the manifests
     uv run orchard sync all        # the three, in that order
-    uv run orchard sync install    # a systemd user timer that runs `all` every 15 min
+    uv run orchard sync install    # a systemd user timer: `all`, then `orchard audit`, every 15 min
 
 Rulings are the one thing that flows BACK: a review item names a tree and a
 thesis, a ruling on it names a verdict, and the thesis's stage in the manifest
@@ -203,19 +203,32 @@ def sync_all() -> None:
 
 UNIT_DIR = Path.home() / ".config/systemd/user"
 UNIT_SRC = ROOT / "deploy/systemd"
+UNITS = ("orchard-sync.service", "orchard-audit.service", "orchard-sync.timer")
+
+
+def checkout_root() -> Path:
+    """The main checkout, even when this runs from a worktree: an agent's worktree
+    is deleted with its session, and a unit left pointing there would fail forever."""
+    r = subprocess.run(["git", "-C", str(ROOT), "rev-parse", "--path-format=absolute", "--git-common-dir"],
+                       capture_output=True, text=True)
+    common = Path(r.stdout.strip()) if r.returncode == 0 else None
+    return common.parent if common is not None and common.name == ".git" else ROOT
 
 
 def install_service() -> None:
-    """Copy orchard-sync.{service,timer} into the user's systemd and start the timer.
+    """Copy the units into the user's systemd and start the timer.
 
     Like expdash and lanesync, a systemd USER unit: `systemctl --user
-    restart orchard-sync.timer`, never kill + nohup. The service runs `orchard
-    sync all` once; the timer fires it every 15 minutes.
+    restart orchard-sync.timer`, never kill + nohup. The timer fires
+    orchard-sync.service every 15 minutes; it runs `orchard sync all` once and
+    pulls in orchard-audit.service, which runs `orchard audit` after it.
     """
     UNIT_DIR.mkdir(parents=True, exist_ok=True)
-    for name in ("orchard-sync.service", "orchard-sync.timer"):
-        text = (UNIT_SRC / name).read_text().replace("@ROOT@", str(ROOT)).replace("@HOME@", str(Path.home()))
+    root = checkout_root()
+    for name in UNITS:
+        text = (UNIT_SRC / name).read_text().replace("@ROOT@", str(root)).replace("@HOME@", str(Path.home()))
         (UNIT_DIR / name).write_text(text)
+    print(f"units written to {UNIT_DIR}, working directory {root}")
     subprocess.run(["systemctl", "--user", "daemon-reload"], check=True)
     subprocess.run(["systemctl", "--user", "enable", "--now", "orchard-sync.timer"], check=True)
     r = subprocess.run(["systemctl", "--user", "list-timers", "orchard-sync.timer", "--no-pager"],

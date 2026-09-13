@@ -1,6 +1,8 @@
 [Unit]
 Description=orchard sync — trees and the ledger up to SpacetimeDB, rulings back into trees/
 After=network-online.target
+# Every run also starts the audit, which orders itself after this one (orchard-audit.service).
+Wants=orchard-audit.service
 
 [Service]
 Type=oneshot

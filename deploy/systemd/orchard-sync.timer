@@ -1,5 +1,5 @@
 [Unit]
-Description=orchard sync every 15 minutes
+Description=orchard sync, then orchard audit, every 15 minutes
 
 [Timer]
 OnBootSec=3min

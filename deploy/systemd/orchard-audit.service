@@ -1,0 +1,21 @@
+[Unit]
+Description=orchard audit — PACKAGES.md's rules across every live repo, into results/audit.json
+# Started with every orchard-sync run (its Wants=), after it finishes, whether sync
+# succeeded or not: the audit reads only local checkouts, so a maincloud outage
+# must not leave the dashboard's Audit panel stale, and nothing here can stop sync.
+After=orchard-sync.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=@ROOT@
+# `-`: exit 1 means the audit found a failure, which is the report's news, not a
+# unit failure. A broken audit shows as a stale report on the dashboard (45 min).
+ExecStart=-@HOME@/.local/bin/uv run orchard audit
+TimeoutStartSec=300
+Nice=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=orchard-audit
+Environment=PYTHONUNBUFFERED=1
+# As orchard-sync.service; the audit adds nvm's node and pnpm's home itself.
+Environment=PATH=@HOME@/.local/bin:/usr/lib/wsl/lib:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin

@@ -17,6 +17,7 @@
   button { cursor:pointer; } button.verdict { padding:1px 6px; font-size:12px; } button.ok { border-color:var(--leaf); } button.bad { border-color:var(--bad); }
   td.wrap { white-space:normal; max-width:420px; }
   td.chat { white-space:pre-wrap; max-width:420px; color:var(--dim); font-size:12.5px; }
+  .fail { color:var(--bad); } .stale { color:var(--warn); }
 </style>
 <h1>orchard <span>· the fund and the studio · weichseltree</span></h1>
 <div class="muted" id="meta">loading…</div>
@@ -27,6 +28,8 @@
   <div><h2>GPU queue wait by tier</h2><div class="panel"><table id="wait"></table></div></div>
   <div><h2>Running now</h2><div class="panel"><table id="running"></table></div></div>
 </div>
+<h2>Audit · packaging rules across the repos</h2>
+<div class="panel"><div class="muted" id="audit-meta" style="margin-bottom:6px">loading…</div><table id="audit"></table></div>
 <h2>Greenhouse · review queue</h2>
 <div class="panel">
   <table id="reviews"></table>
@@ -70,6 +73,17 @@ async function main(){
     return `<div style="margin:6px 0 10px"><div style="display:flex;justify-content:space-between"><span>${esc(c.label)}</span><span class="muted">${Number(c.used||0).toLocaleString()} / ${Number(c.limit||0).toLocaleString()} ${esc(c.unit||'')}</span></div><div class="bar"><i class="${cls}" style="width:${p}%"></i></div><div class="muted" style="font-size:12px">${esc(c.note||'')}</div></div>`;}).join('') || '<span class="muted">expdash not reachable</span>';
   $('#wait').innerHTML = head(['tier','n','median min','p90 h','max h']) + Object.entries(led.queue_wait).sort().map(([t,v])=>row([t,v.n,v.median_min.toFixed(0),v.p90_h.toFixed(1),v.max_h.toFixed(1)],['','num','num','num','num'])).join('');
   $('#running').innerHTML = head(['name','repo','box','lane','status','prio']) + (led.running.map(j=>row([esc(j.name),esc(j.repo),esc(j.box),j.lane,j.status,j.prio??''])).join('') || row(['<span class="muted">nothing on the lanes</span>']));
+}
+const ago = s => s < 90 ? `${Math.round(s)} s` : s < 5400 ? `${Math.round(s/60)} min` : s < 172800 ? `${(s/3600).toFixed(1)} h` : `${Math.round(s/86400)} d`;
+// results/audit.json, rewritten by the orchard-sync timer every 15 minutes; stale past 45.
+async function audit(){
+  const a = await fetch('/api/audit').then(r=>r.json());
+  if(a.error){ $('#audit-meta').textContent = a.error; $('#audit').innerHTML = ''; return; }
+  const s = a.summary;
+  $('#audit-meta').innerHTML = `${s.repos} repos · <span class="${s.fail?'fail':'stage'}">${s.fail} fail</span> · ${s.warn} warn · ${s.waived} waived · ${s.skip} skip · ${s.ok} ok`
+    + ` · ${when(a.generated_at_unix)} (${ago(a.age_s)} ago)` + (a.stale ? ' · <span class="stale">stale: the timer has not written a report for 45 min</span>' : '');
+  $('#audit').innerHTML = head(['repo','rule','where','detail']) +
+    (a.failures.map(f=>row([esc(f.repo),`<span class="fail">${esc(f.rule)}</span>`,esc(f.where),esc(f.detail)],['','','muted','wrap'])).join('') || row(['<span class="stage">no unwaived failures</span>']));
 }
 const STAGES=['scouted','planted','thesis','styleframe','animatic','greenlit','rendering','mastered','published','exhibited'];
 const when = s => s ? new Date(s*1000).toLocaleString() : '';
@@ -133,6 +147,7 @@ document.addEventListener('click', async ev => {
 $('#review-form').addEventListener('submit', async ev => { ev.preventDefault(); const f = new FormData(ev.target); await post('/api/review', Object.fromEntries(f.entries())); ev.target.reset(); });
 $('#directive-form').addEventListener('submit', async ev => { ev.preventDefault(); const f = new FormData(ev.target); await post('/api/directive', {text:f.get('text')}); ev.target.reset(); });
 main().catch(e=>{$('#meta').textContent='error: '+e;});
+audit().catch(e=>{$('#audit-meta').textContent='audit: '+e;});
 greenhouse().catch(e=>{$('#reviews').innerHTML=row(['<span class="muted">greenhouse: '+esc(e)+'</span>']);});
 people().catch(e=>{$('#online').innerHTML=row(['<span class="muted">people: '+esc(e)+'</span>']);});
 </script>
