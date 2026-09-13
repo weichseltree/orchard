@@ -30,6 +30,10 @@ have:
 - **JS**: a committed lockfile, `packageManager`, `engines.node` and `.nvmrc`.
   Tools the repo runs (wrangler, the spacetime bindings generator's output) are
   devDependencies or checked in, not global installs.
+- **A standalone script** (no project around it) declares its dependencies in
+  a PEP 723 header and locks them beside itself: `uv lock --script x.py`
+  writes `x.py.lock`, and it runs as `uv run --locked x.py`. Unlocked, it
+  resolves afresh on every run. (phototroph's `ptvf_to_tape.py`, 2026-09-13.)
 - **Never re-sync under a running job.** A lock is written to describe what
   runs; compare `uv pip freeze` against it before the first `uv sync`.
 
@@ -84,7 +88,11 @@ A bundle's id is the first 16 hex of the sha256 of its `bundle.json`
   push index.
 - **A harvest refuses a dirty tree** (uncommitted changes to tracked files,
   the tree's own `orchard.yaml` excepted) unless `--allow-dirty`, which is
-  recorded. A `-dirty` commit cannot be rebuilt from its sha.
+  recorded. A `-dirty` commit cannot be rebuilt from its sha. In a checkout
+  shared with another session that keeps uncommitted work (phototroph's
+  engine session does), the honest options are waiting for that commit or
+  `--allow-dirty`, which records the dirt; never commit someone else's work
+  to get past the check.
 - **Tool versions are recorded and checked.** `orchard/toolchain.py` names the
   expected ffmpeg, toktx (KTX-Software 4.4.2), Blender (4.2.1 LTS), spacetime
   CLI (2.10.0), wrangler (4.131.1) and Node (22); `orchard doctor` reports
