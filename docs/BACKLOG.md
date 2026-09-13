@@ -184,10 +184,11 @@ Ordered. Items with a name in brackets wait on that person.
    band (z 0 to 1.6 between windows) are enclosed and the terrace's
    lightmap statistics flag `facade` DARK at p10. Hidden, so harmless; cut
    the band's footprint out of the wall next round and the flag goes.
-37. **AO strength is a recomposition.** `ao.png` is kept beside every
-   lightmap; a `--recompose` that divides the old mix out of lightmap.png
-   and multiplies a new one in would let the strength be re-ruled without
-   a bake. Not written yet.
+37. ~~**AO strength is a recomposition.**~~ Done 2026-09-13:
+   `palace.py --recompose --room <r> --ao-strength <s>` divides the old mix
+   out of lightmap.png in linear, multiplies the new one in, re-tiers the
+   KTX2 and updates the record; a 0.4 to 0.6 and back round trip returns
+   the original within one level. Seconds per room, no lane time.
 
 ## Security (2026-09-12, docs/SECURITY.md)
 

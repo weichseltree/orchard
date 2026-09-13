@@ -1714,6 +1714,57 @@ def bake_ao(scene, ob, mats, uv2_name, res, margin, samples, distance, hidden):
     return ao, time.time() - t0
 
 
+def recompose_ao(out_root, room, strength):
+    """A new AO strength without a bake: lightmap.png is diffuse * mix_old
+    (then normalised and sRGB-encoded); divide the old mix out in linear,
+    multiply the new one in, re-encode, re-tier, and update the record."""
+    out_dir = os.path.join(out_root, room)
+    rec_path = os.path.join(out_dir, "%s.json" % room)
+    with open(rec_path) as fh:
+        rec = json.load(fh)
+    ao_rec = rec["lightmap"].get("ao")
+    if not ao_rec:
+        raise SystemExit("%s: no AO in its record; bake it first" % room)
+    res = rec["bake"]["resolution"]
+    lm = bpy.data.images.load(os.path.join(out_dir, "lightmap.png"))
+    lm.colorspace_settings.name = "Non-Color"
+    ao_img = bpy.data.images.load(os.path.join(out_dir, "ao.png"))
+    ao_img.colorspace_settings.name = "Non-Color"
+    buf = np.empty(res * res * 4, dtype=np.float32)
+    lm.pixels.foreach_get(buf)
+    aob = np.empty(res * res * 4, dtype=np.float32)
+    ao_img.pixels.foreach_get(aob)
+    ao = aob.reshape(-1, 4)[:, 0]
+    rgba = buf.reshape(-1, 4)
+    enc = rgba[:, :3]
+    lin = np.where(enc <= 0.04045, enc / 12.92, np.power((enc + 0.055) / 1.055, 2.4))
+    s_old = float(ao_rec["strength"])
+    old_mix = (1.0 - s_old) + s_old * ao
+    new_mix = (1.0 - strength) + strength * ao
+    # the old normalisation stays (scale in the record is unchanged): the
+    # texel is diffuse * mix / white, so only the mix ratio moves
+    ratio = np.where(old_mix > 1e-4, new_mix / np.maximum(old_mix, 1e-4), 1.0)
+    out = np.clip(lin * ratio[:, None], 0.0, 1.0)
+    rgba[:, :3] = hb.srgb_encode(out)
+    img = bpy.data.images.new("recomposed", res, res, alpha=True, float_buffer=False)
+    img.colorspace_settings.name = "Non-Color"
+    img.pixels.foreach_set(rgba.reshape(-1))
+    png = os.path.join(out_dir, "lightmap.png")
+    img.filepath_raw = png
+    img.file_format = "PNG"
+    img.save()
+    tiers = ktx_tiers(png, out_dir, res)
+    ao_rec["strength"] = strength
+    ao_rec["recomposed_at_utc"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    for name in ("lightmap.png", "lightmap.ktx2", "lightmap-1024.ktx2"):
+        p = os.path.join(out_dir, name)
+        rec["files"][name] = {"bytes": os.path.getsize(p), "sha256": hb.sha256_file(p)}
+    with open(rec_path, "w") as fh:
+        json.dump(rec, fh, indent=2)
+        fh.write("\n")
+    log("recomposed %s at AO %.2f (was %.2f): tiers %s" % (room, strength, s_old, tiers))
+
+
 def write_grey_png(values, res, path):
     img = bpy.data.images.new("grey_out", res, res, alpha=False, float_buffer=False)
     img.colorspace_settings.name = "Non-Color"
@@ -1737,6 +1788,8 @@ def parse_args(argv):
     p.add_argument("--ao-strength", type=float, default=AO_STRENGTH, help="ambient occlusion multiplied into the lightmap; 0 for none")
     p.add_argument("--ao-distance", type=float, default=AO_DISTANCE)
     p.add_argument("--ao-samples", type=int, default=AO_SAMPLES)
+    p.add_argument("--recompose", action="store_true",
+                   help="with --room and --ao-strength: rewrite the room's lightmap at that strength, no bake")
     p.add_argument("--stills", action="store_true")
     p.add_argument("--still-rooms", default="hall,einstruct,spectre,gallery,orangery")
     p.add_argument("--still-yaw", type=float, default=None, help="override the spawn yaw for every still")
@@ -1769,6 +1822,11 @@ def main():
     out_root = args.out if os.path.isabs(args.out) else os.path.join(REPO, args.out)
     os.makedirs(out_root, exist_ok=True)
     t_start = time.time()
+    if args.recompose:
+        for room in [r for r in args.room.split(",") if r]:
+            recompose_ao(out_root, room, args.ao_strength)
+        log("RECOMPOSE OK")
+        return
 
     bpy.ops.wm.read_factory_settings(use_empty=True)
     scene = bpy.context.scene
