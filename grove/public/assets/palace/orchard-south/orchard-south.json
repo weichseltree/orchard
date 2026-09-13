@@ -1,0 +1,172 @@
+{
+  "schema": "orchard/room/1",
+  "asset": "orchard-south",
+  "generated_by": "grove/tools/palace/palace.py",
+  "script_sha256": "14464d45fa441d8e1f7e6c54c81c1ba3595a99635fdd21d87d711542e31420f4",
+  "blender": "4.2.1 LTS",
+  "git": {
+    "commit": "7b72921b3fab4ce76f839aa9a25f645939c15391",
+    "dirty": true
+  },
+  "generated_at_utc": "2026-09-13T02:18:15Z",
+  "look": "white, gold and marble (Naturhistorisches Museum), ruled 2026-09-12",
+  "bake": {
+    "engine": "cycles",
+    "type": "DIFFUSE",
+    "passes": [
+      "direct",
+      "indirect"
+    ],
+    "colour_pass": false,
+    "samples": 128,
+    "resolution": 2048,
+    "margin_px": 8,
+    "uv_layer": "uv2",
+    "device": "CPU",
+    "threads": 16,
+    "denoise": "OpenImageDenoise via the compositor Denoise node",
+    "seconds_bake": 332.85,
+    "seconds_denoise": 2.85,
+    "noise_metric": 0.304987,
+    "skipped": false,
+    "seconds_preview": 9.89,
+    "seconds_wall_clock": 356.15
+  },
+  "lightmap": {
+    "file": "lightmap.png",
+    "ktx2": "lightmap.ktx2",
+    "ktx2_phone": "lightmap-1024.ktx2",
+    "scale": 3.142299,
+    "three_light_map_intensity": 9.871823,
+    "coverage": 0.939,
+    "clipped_fraction": 0.0,
+    "binding": "texture.colorSpace = SRGBColorSpace, flipY = false, channel = 1, material.lightMapIntensity = three_light_map_intensity"
+  },
+  "geometry": {
+    "units": "metres",
+    "type": "cell",
+    "bounds_gltf": {
+      "min": [
+        -130,
+        0,
+        -40
+      ],
+      "max": [
+        -55,
+        8,
+        40
+      ]
+    },
+    "height": 8.0,
+    "faces": 56,
+    "surface_area_m2": 6000.0,
+    "doorways": [
+      {
+        "to": "parterre",
+        "axis": "x",
+        "at": -55,
+        "center": 0,
+        "width": 80,
+        "height": 8
+      },
+      {
+        "to": "orchard-west",
+        "axis": "z",
+        "at": -40,
+        "center": -92.5,
+        "width": 75,
+        "height": 8
+      },
+      {
+        "to": "orchard-east",
+        "axis": "z",
+        "at": 40,
+        "center": -92.5,
+        "width": 75,
+        "height": 8
+      }
+    ],
+    "windows": [],
+    "posters": [],
+    "style": {
+      "h": 8.0,
+      "wainscot": 0.0,
+      "cornice": [
+        7.0,
+        7.2
+      ],
+      "coffer": 8.0,
+      "floor": "grass",
+      "wall": "facade"
+    },
+    "floor": "grass",
+    "wall": "facade",
+    "materials": [
+      "orchard-south_ground",
+      "orchard-south_hedge",
+      "orchard-south_water",
+      "orchard-south_facade",
+      "orchard-south_slate",
+      "orchard-south_stone",
+      "orchard-south_trunk",
+      "orchard-south_leaf"
+    ]
+  },
+  "lighting": {
+    "sun_direction_blender": [
+      0.7796,
+      0.2999,
+      -0.5498
+    ],
+    "sun_strength": 3.6,
+    "world": "Nishita sky",
+    "world_strength": 0.85,
+    "fill": {
+      "lamps": 19,
+      "watts_each": 400.0,
+      "colour": [
+        1.0,
+        0.86,
+        0.68
+      ],
+      "placement": "one per 8 m along each interior room's long axis at 0.55 h"
+    },
+    "occluders": [
+      "einstruct",
+      "gallery",
+      "greenhouse",
+      "hall",
+      "orangery",
+      "orchard-east",
+      "orchard-south",
+      "orchard-west",
+      "parterre",
+      "phototroph",
+      "spectre",
+      "terrace",
+      "world-engine"
+    ]
+  },
+  "files": {
+    "orchard-south.glb": {
+      "bytes": 427216,
+      "sha256": "ac627978687b1808bfb45b9b244a6c5fe5938bd7322d2e8c09f2f5af24de95e0"
+    },
+    "lightmap.png": {
+      "bytes": 2953784,
+      "sha256": "9cb4caba64bd99257999e2020280cf0e28fa2d96d8c2d6518ae183a62107d331"
+    },
+    "lightmap.ktx2": {
+      "bytes": 2742648,
+      "sha256": "3d3629414f7e28e590b1cb96cc73244e5ecc2197aa3d1f774947596576081e45"
+    },
+    "lightmap-1024.ktx2": {
+      "bytes": 851716,
+      "sha256": "392db709e2b472409ba18e8db2c421245f6e3ff55a18ec31b13250dd6a883f18"
+    },
+    "preview.png": {
+      "bytes": 977304,
+      "sha256": "b26958dc756ef6819aad4b1932138bf1b4b4f2561bf403dc499ad925c2a37bb6"
+    }
+  }
+}
