@@ -150,6 +150,24 @@ Ordered. Items with a name in brackets wait on that person.
     than the manifest's last change to that thesis, or the tree records the
     demotion as a ruling of its own.
 
+## The palace rebuild (2026-09-13, night)
+
+32. **Greenhouse cornice at a level view.** From the spawn, looking exactly
+   level at the window corner, the cornice on one wall reads as a black band
+   and a one-pixel sky-blue line sits above the other wall's cornice. Any
+   pitch above about 10 degrees, or a step closer, shows the corner clean,
+   the mesh has every ceiling quad and every cornice face bakes bright, so
+   this is a grazing-angle rendering effect (the frieze sliver above the
+   cornice, a T-junction the 5 cm lap did not cover) and not geometry. The
+   hall and gallery are clean at a level view. Low priority; look again if
+   it shows in another room.
+33. **The moon's size is a guess.** The planet ball fills about a third of
+   its tape box, so the moon hangs at 36 m and pointSize 1500 to read as a
+   disc from the terrace; rule on it after a walk.
+34. **The window reveal heads read as gold lintels** in the hall: the marble
+   head faces down into the warm fill light and the sill bounce. Not wrong,
+   but say if it should be white.
+
 ## Security (2026-09-12, docs/SECURITY.md)
 
 25. ~~**Turn the token service on**~~ Done 2026-09-12: keys generated,
