@@ -101,6 +101,16 @@ A bundle's id is the first 16 hex of the sha256 of its `bundle.json`
   `trees/<name>.yaml` becomes a generated read-only copy, rewritten whenever
   orchard writes the canonical one and by `orchard trees refresh`. It is
   written directly only when the repo is absent from the box.
+- **The bundle kinds** are `tape`, `clip`, `master`, `still` and `figure`,
+  and, from 2026-09-13, `model`: event-atoms' baked, walk-around world model
+  (a lookup of the model's answer for every state and action, its internals
+  along a featured episode, its weights as an int8 atlas; nothing runs on the
+  client). Its layout is event-atoms/exhibit/README.md §3 until
+  `docs/specs/MODEL-BUNDLE.md` exists; the grove module is `grove/src/model/`.
+  `model` is where both orchard sessions ended up after their messages
+  crossed (`instrument` was the other candidate, keeping `model` free for a
+  kind that runs); the name is Manuel's ruling (event-atoms/exhibit/README.md
+  §9 item 9), and this line changes with it.
 - **Cleanup by reference.** `orchard bundle gc [--r2] [--apply]` deletes only
   bundles that no manifest (either copy, any tree), no pinned id in
   `grove/src/world/mansion.json` and no row of the live `exhibit` table
