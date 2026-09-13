@@ -1,0 +1,196 @@
+{
+  "schema": "orchard/room/1",
+  "asset": "parterre",
+  "generated_by": "grove/tools/palace/palace.py",
+  "script_sha256": "14464d45fa441d8e1f7e6c54c81c1ba3595a99635fdd21d87d711542e31420f4",
+  "blender": "4.2.1 LTS",
+  "git": {
+    "commit": "dd44212c2b925cda2406b7175a48c856f730582b",
+    "dirty": true
+  },
+  "generated_at_utc": "2026-09-13T02:08:04Z",
+  "look": "white, gold and marble (Naturhistorisches Museum), ruled 2026-09-12",
+  "bake": {
+    "engine": "cycles",
+    "type": "DIFFUSE",
+    "passes": [
+      "direct",
+      "indirect"
+    ],
+    "colour_pass": false,
+    "samples": 256,
+    "resolution": 4096,
+    "margin_px": 8,
+    "uv_layer": "uv2",
+    "device": "CPU",
+    "threads": 16,
+    "denoise": "OpenImageDenoise via the compositor Denoise node",
+    "seconds_bake": 1302.16,
+    "seconds_denoise": 10.94,
+    "noise_metric": 0.1712,
+    "skipped": false,
+    "seconds_preview": 12.24,
+    "seconds_wall_clock": 1352.89
+  },
+  "lightmap": {
+    "file": "lightmap.png",
+    "ktx2": "lightmap.ktx2",
+    "ktx2_phone": "lightmap-1024.ktx2",
+    "scale": 3.99567,
+    "three_light_map_intensity": 12.552768,
+    "coverage": 0.6603,
+    "clipped_fraction": 7e-06,
+    "binding": "texture.colorSpace = SRGBColorSpace, flipY = false, channel = 1, material.lightMapIntensity = three_light_map_intensity"
+  },
+  "geometry": {
+    "units": "metres",
+    "type": "cell",
+    "bounds_gltf": {
+      "min": [
+        -55,
+        0,
+        -40
+      ],
+      "max": [
+        -15,
+        8,
+        40
+      ]
+    },
+    "height": 8.0,
+    "faces": 208,
+    "surface_area_m2": 4050.9,
+    "doorways": [
+      {
+        "to": "terrace",
+        "axis": "x",
+        "at": -15,
+        "center": 0,
+        "width": 12,
+        "height": 8
+      },
+      {
+        "to": "terrace",
+        "axis": "x",
+        "at": -15,
+        "center": -36,
+        "width": 4,
+        "height": 8
+      },
+      {
+        "to": "terrace",
+        "axis": "x",
+        "at": -15,
+        "center": 36,
+        "width": 4,
+        "height": 8
+      },
+      {
+        "to": "orchard-south",
+        "axis": "x",
+        "at": -55,
+        "center": 0,
+        "width": 80,
+        "height": 8
+      },
+      {
+        "to": "orchard-west",
+        "axis": "z",
+        "at": -40,
+        "center": -35,
+        "width": 40,
+        "height": 8
+      },
+      {
+        "to": "orchard-east",
+        "axis": "z",
+        "at": 40,
+        "center": -35,
+        "width": 40,
+        "height": 8
+      }
+    ],
+    "windows": [],
+    "posters": [],
+    "style": {
+      "h": 8.0,
+      "wainscot": 0.0,
+      "cornice": [
+        7.0,
+        7.2
+      ],
+      "coffer": 8.0,
+      "floor": "grass",
+      "wall": "facade"
+    },
+    "floor": "grass",
+    "wall": "facade",
+    "materials": [
+      "parterre_ground",
+      "parterre_hedge",
+      "parterre_water",
+      "parterre_facade",
+      "parterre_slate",
+      "parterre_stone",
+      "parterre_trunk",
+      "parterre_leaf"
+    ]
+  },
+  "lighting": {
+    "sun_direction_blender": [
+      0.7796,
+      0.2999,
+      -0.5498
+    ],
+    "sun_strength": 3.6,
+    "world": "Nishita sky",
+    "world_strength": 0.85,
+    "fill": {
+      "lamps": 19,
+      "watts_each": 400.0,
+      "colour": [
+        1.0,
+        0.86,
+        0.68
+      ],
+      "placement": "one per 8 m along each interior room's long axis at 0.55 h"
+    },
+    "occluders": [
+      "einstruct",
+      "gallery",
+      "greenhouse",
+      "hall",
+      "orangery",
+      "orchard-east",
+      "orchard-south",
+      "orchard-west",
+      "parterre",
+      "phototroph",
+      "spectre",
+      "terrace",
+      "world-engine"
+    ]
+  },
+  "files": {
+    "parterre.glb": {
+      "bytes": 169056,
+      "sha256": "581f04f40b7c023c8bd78404c0c62a221900bf42df6555b9ac1d41103cd701a7"
+    },
+    "lightmap.png": {
+      "bytes": 5660952,
+      "sha256": "4ff1937da89fdff246b0729dcdc59a83ce48ae95831a69fc41d764e4e8203b64"
+    },
+    "lightmap.ktx2": {
+      "bytes": 4569523,
+      "sha256": "afd237c0bc7c9934c83473f218a2aca42332f1e65adb158de520672c3d64c246"
+    },
+    "lightmap-1024.ktx2": {
+      "bytes": 371995,
+      "sha256": "59a6cd321f0e7e145644d12da908dfc4ab8ac7b9529c1d6828ce5357c6899ff8"
+    },
+    "preview.png": {
+      "bytes": 912843,
+      "sha256": "780a1d9916db52c84fbd6d42b90883441e119cb106814740efbd7a1cfab77a97"
+    }
+  }
+}
