@@ -156,16 +156,23 @@ A bundle's id is the first 16 hex of the sha256 of its `bundle.json`
 
 ## 7. Status
 
-Filled in as the pieces land; see the git log for the commits.
+Filled in as the pieces land; see the git log for the commits. The grove went
+live with all of it at `9931579` on 2026-09-13 (orchard-66's palace deploy of
+the same commit, then `8582be1`).
+
+In production `/sw.js` comes back `max-age=14400`, not `no-cache`: the zone's
+Browser Cache TTL overrides `_headers` for `.js`. Harmless, since browsers fetch
+the worker script past the HTTP cache for update checks; setting the zone to
+respect existing headers would make it match.
 
 | piece | where | state |
 |---|---|---|
 | take-down reaches visitors | grove `cefca89` | landed |
 | hashed room assets, cache rules, grove tool pins | grove `0f07d88` | landed |
 | service worker, integrity, version stamp, 404 | grove `b2bd1e3` `54fe366` `bcb4abc` | landed; checked in headless Chromium (tampered files refused, the einstruct room played offline, the kill switch unregisters). Roll back with `GROVE_SW=off pnpm run deploy` |
-| bundle ids, R2 headers, dirty refusal, toolchain, trees mirror, gc | orchard `551751b`…`6f55ca9`; notes in `docs/impl/bundle-hygiene.md` | landed; gc dry runs found nothing to delete (39 local, 12 on R2, all live); `push --refresh-headers` over the 12 R2 prefixes not yet run |
-| orchard-tape 1.0.0 | orchard `4ea2fd5`, tag `tape-v1.0.0` | landed; tag not yet on GitHub |
-| consumers of orchard-tape | spectre (module alias shim), einstruct (`tape_export.py`), phototroph (`ptvf_to_tape.py`, PEP 723 header) | after the tag is pushed, by their sessions |
+| bundle ids, R2 headers, dirty refusal, toolchain, trees mirror, gc | orchard `551751b`…`6f55ca9`; notes in `docs/impl/bundle-hygiene.md` | landed; gc dry runs found nothing to delete (39 local, 12 on R2, all live); the 12 R2 bundles re-put with the immutable header on 2026-09-13 (309 objects, same bytes) |
+| orchard-tape 1.0.0 | orchard `4ea2fd5`, tag `tape-v1.0.0` | landed and pushed; installs from the GitHub tag |
+| consumers of orchard-tape | spectre (module alias shim), einstruct (`tape_export.py`), phototroph (`ptvf_to_tape.py`, PEP 723 header) | asked of their sessions on 2026-09-13, with the exact changes |
 | lockfiles | arcedit `d5b7caa`, premosaic `a9490f8`, phototroph `8676bae` + CI on the locks `60659cb` | landed locally, unpushed |
 | lockfiles / Node pins | event-atoms `83f8c1a` (a pinned freeze), autora `5ca39d0`, ftlchess `f0cf39f` | landed locally, unpushed |
 
