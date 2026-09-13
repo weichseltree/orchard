@@ -206,3 +206,55 @@ Found on the way, left as they are:
   the pin.
 - lanepush's sync hint counts `[tool.uv] default-groups` as omitted (reported
   to the expdash session).
+
+## 8. Enforcement
+
+`uv run orchard audit` (`orchard/audit.py`, configured by `audit.yaml`)
+checks the rules above across every live repo. GitHub Actions is off for
+billing, so this box's timer is the CI: `orchard-audit.service` runs after
+every orchard-sync run, every 15 minutes, whether sync succeeded or not. It
+blocks nothing; it names the repo, the rule and the file within 15 minutes.
+
+- **Which repos**: every git checkout directly under `~/weichseltree` (a new
+  clone is covered on the next run), plus `~/kaggle/arcagi2026`. Each
+  someotherlife-* worktree is its own entry. audit.yaml lists the archived
+  repos (§1's ten plus stratum and mosaic) and the out-of-scope ones; both
+  are listed, not checked.
+- **Where results show**: the Audit panel of `orchard serve` (counts, every
+  unwaived failure, the report's age, stale past 45 minutes);
+  `results/audit.json`, which stays on this box because repo names include
+  private repos; `journalctl --user -u orchard-audit`. `orchard audit
+  [repo…]` prints the table and exits 1 on an unwaived failure.
+- **Waiving**: add `{repo, rule, path, reason}` under `waivers:` in
+  audit.yaml. A waived finding still shows, as `waived: <reason>`, and does
+  not count as a failure. A waiver that matches nothing is reported, so it is
+  removed when its problem is.
+
+| rule | checks |
+|---|---|
+| python-lock | a tracked `[project]` has a committed `uv.lock` beside it or at its uv workspace root, and `uv lock --check` passes (offline; online when the cache lacks a package; a network failure is a skip). `requirements.txt` with no pyproject beside it needs a `requirements.lock.txt` pinned with `==` |
+| script-lock | a PEP 723 script has `<file>.lock` committed beside it, and `uv lock --check --script` passes |
+| node-pins | a project's `package.json` (not a workspace member; a dependency-free package inside another project needs nothing) has a lockfile, `engines.node`, `.nvmrc` beside it or at the repo root, and `packageManager` if pnpm. The lockfile must match: every importer's specifiers against its `package.json` (what `pnpm install --frozen-lockfile` compares), or `package-lock.json`'s root entry against `package.json` (what `npm ci` refuses on). That is read from the files, offline, in milliseconds; it does not re-resolve, so a lock whose resolved graph is wrong, overrides, catalogs and patches go unchecked |
+| sibling-import | a `.py` (outside `archive/`) that names another audited repo's checkout (`~/weichseltree/<repo>`, `/home/<user>/…`, `Path.home() / "weichseltree"`, `<REPO>_ROOT`, or `~/kaggle/arcagi2026`) and puts a path not derived from `__file__` on `sys.path`. A repo inserting its own root while reading a sibling's data does not count |
+| manifest-dirty | an artefact `commit` ending in `-dirty` in `<repo>/orchard.yaml` (warn) |
+| fund-copies | each `trees/<name>.yaml` whose repo is on the box is byte-equal to what `orchard trees refresh` writes |
+| pinned-tags | a git pin on weichseltree/orchard (`[tool.uv.sources]`, a PEP 723 header, or a direct `git+…@ref`) names a tag that exists in orchard and on origin (one `git ls-remote`, 10 s; unreachable is a skip). A branch or rev pin warns |
+| toolchain | `orchard doctor`'s tools: a mismatch fails, a missing tool warns |
+| bindings | `pnpm -C grove run check:bindings` |
+
+Still convention only: `requires-python` matching the interpreter actually
+used; GPU wheels from an explicit index and the `uv sync --group` hint for
+lanepush users; JS tools as devDependencies rather than global installs;
+`.nvmrc` agreeing with `engines.node`; never re-syncing under a running job;
+the `expmetrics.py` copies staying identical. §3's harvest refusal and R2
+headers, and §4 and §5, are enforced where they happen (harvest, push, the
+grove's build), not by the audit.
+
+The first runs (2026-09-13) found what §7 did not know about. Cross-repo
+`sys.path` imports outside the 30-repo survey: arcagi2026 loads event-atoms in
+five scripts and agivity's model in one, and event-atoms'
+`bridge/env_local.py` appends arcagi2026's venv. `trees/einstruct.yaml` and
+`trees/phototroph.yaml` had drifted, because those trees edit their own
+`orchard.yaml` by hand. §3's "rewritten whenever orchard writes the canonical
+one" does not cover that, so the mirror drifts between refreshes, and the
+audit is what shows it.
