@@ -21,3 +21,6 @@ grove/public/assets/palace/textures/
 
 # agent worktrees (Claude Code)
 .claude/worktrees/
+
+# Fresh station comparisons are local until deliberately archived or accepted.
+docs/img/stations/*.new.jpg

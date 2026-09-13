@@ -1,0 +1,43 @@
+{
+  "status": "unaccepted review candidates",
+  "archived_on": "2026-09-13",
+  "note": "Preserved from the worktree during housekeeping. Capture-time code and asset revisions were not recorded. Existing station baselines remain unchanged.",
+  "images": [
+    {
+      "file": "hall-door-terrace.new.jpg",
+      "original_path": "docs/img/stations/hall-door-terrace.new.jpg",
+      "sha256": "1671e215f8872181ed0744686fb28d89ac00ed70f351b867fa113c4acdd7367c",
+      "bytes": 35006
+    },
+    {
+      "file": "parterre-basin.new.jpg",
+      "original_path": "docs/img/stations/parterre-basin.new.jpg",
+      "sha256": "d941d4ff526e04d029a25b37709284e097c30aeeb802b6462b27ddafa8bf3364",
+      "bytes": 34363
+    },
+    {
+      "file": "parterre-hedge-corner.new.jpg",
+      "original_path": "docs/img/stations/parterre-hedge-corner.new.jpg",
+      "sha256": "0d2196aa395b28d568adcf9fc525d9024ce5e0b268b0ddd5103946f70cd8c2d0",
+      "bytes": 36614
+    },
+    {
+      "file": "terrace-facade-along.new.jpg",
+      "original_path": "docs/img/stations/terrace-facade-along.new.jpg",
+      "sha256": "8d415f4bd2bcc17b466bbbce745cdc69e070dbe51cc416fdb2f82bc1cd694cb2",
+      "bytes": 22017
+    },
+    {
+      "file": "terrace-facade-hall-door.new.jpg",
+      "original_path": "docs/img/stations/terrace-facade-hall-door.new.jpg",
+      "sha256": "5a3171d7128f3a3729f6c0a68ad95a3d25b742f2186811992416b460378a4462",
+      "bytes": 27062
+    },
+    {
+      "file": "terrace-facade-orangery.new.jpg",
+      "original_path": "docs/img/stations/terrace-facade-orangery.new.jpg",
+      "sha256": "d31e5db8d8ababc2d6ba1fdb7b764cd2b92f5d6ab95e5044fbad11b122688c05",
+      "bytes": 30666
+    }
+  ]
+}

@@ -2,6 +2,32 @@
 
 Ordered. Items with a name in brackets wait on that person.
 
+## Current priorities after the first-visit pass (2026-09-13)
+
+**Completed locally:** the public page and image source records, the
+credential-free synthetic demo, device-specific controls guide, keyboard
+and touch fixes, 3D startup recovery, safer dashboard submissions, contributor
+setup and the Checks workflow. The baked-room console error is fixed and
+missing research fixtures now skip cleanly in contributor checkouts.
+[The review](reviews/2026-09-13-ux.md) records the changes and validation:
+214 Python tests, 216 grove tests with research fixtures, and 207 grove tests
+plus nine expected skips without them. Real-device, hosted-service and
+remote CI acceptance are separate from those local results.
+
+Use this order for the next work. The numbered items below retain their
+earlier decisions and evidence; these priorities group the remaining gaps.
+
+| Priority | Work | Acceptance evidence |
+| --- | --- | --- |
+| 1. Hardware acceptance | Finish M0 item 3 on a Quest 3 and an iPhone. Test entry, walking, guide dismissal, pause/scrub, source inspection, room changes and media playback; include Quest controllers/teleport and iPhone native HLS. | Save device, OS/browser version, tested build, route and failures. Measure the M0 Quest target of 72 Hz with a 4,000-particle tape and one video decoding; retain frame-time results and any missed target. Phone touch and playback must be checked on the phone itself. |
+| 2. Production release review | Record the remote Checks result for the selected commit, then test the deployed build's landing links, live media, visitor token service, presence and updates. Recheck the hall poster and other exhibit availability against current rulings, rather than the older snapshots below. | Link the CI run to its commit and the site's `version.json`; record HTTP/media and browser-console results. Two visitors should see one another in the same room, while room changes scope presence correctly. Record remaining blank walls or unavailable services explicitly. |
+| 3. First-visit transfer and build warnings | Measure cold and warm visits on the phone tier before reducing the approximately 110 MB total room-asset build. Trace which rooms, textures, scripts and tape chunks arrive before the first useful view. Address Vite's import-extension migration and large-chunk warnings through measured loading changes. | Save transfer totals, time to a usable view, loaded rooms and frame timing for the same route before/after. Check M0's initial phone download target of under 20 MB. The build and immutable-name checks must pass; document any remaining large chunk and its measured effect. |
+| 4. Exhibit accuracy and provenance | Reconcile the scene, current exhibit rows and each tree's canonical manifest. Choose one representative tape per exhibited tree and check titles, sampling, species colours, time units, producer and source against what About this view shows. Follow the gaps in items 16–19 rather than assuming all extra channels reach the client. | Every advertised room must lead to its intended available exhibit or state what is missing. Save bundle verification and source comparisons; retain explicit synthetic/demo and architectural-render labels. Update the exhibit plan from the verified state and keep unsupported scientific claims out of public copy. |
+
+The next release decision should use those records. Spatial voice, new
+payment or membership flows, linked nodes and the shared studio keep their
+existing backlog entries; this pass did not implement them.
+
 ## Blocking the M0 definition of done
 
 1. ~~**[Manuel] Enable R2**~~ Done 2026-09-12: R2 on, bucket and domain
@@ -267,9 +293,12 @@ reviewed. What each asks next:
     invoicing paragraphs must be redone for an Estonian OÜ selling to EU
     consumers (OSS VAT, Estonian e-invoicing, the ECG duties still apply to
     the Austrian audience).
-30. **brand/**: the package exists (tokens, voice, names); the hero still,
-    the 20 s clip, the favicon and the sound cues are listed as missing and
-    are made once, from the grove, after the palace's first look ruling.
+30. **brand/**: tokens, voice and names exist. Updated 2026-09-13: the
+    public page now has a real tape poster, a labelled architectural hall
+    render, image source records and a favicon. These are implemented and
+    locally checked; the 20 s browser-capture clip and sound cues remain
+    open. A future clip needs a tested build, its tape source and a device
+    label, so its appearance does not stand in for headset validation.
 31. **The studio's first task: take spectre's film code before it goes.**
     spectre-79 is removing core/film and lanes/m03_first_film on Manuel's
     ruling and tags the last pre-removal commit `film-final`. einstruct's
@@ -307,4 +336,3 @@ PACKAGES.md is the rule set; `orchard audit` checks it every 15 minutes.
    given one colour of light, organise into something that feeds on it)
    rather than the dimer-split mechanism; phototroph-04 brings a proposal
    and its lane cost for a ruling.
-
