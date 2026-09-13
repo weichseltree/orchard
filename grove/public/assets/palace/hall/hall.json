@@ -2,13 +2,13 @@
   "schema": "orchard/room/1",
   "asset": "hall",
   "generated_by": "grove/tools/palace/palace.py",
-  "script_sha256": "b6407037c5f1c0100c666175a325cee31f9601cb22d3513180505b4143ff6c80",
+  "script_sha256": "7a208871a65fe42331c76c851e90e19f2c0f1b9fe908ca68582127a1bd2c621a",
   "blender": "4.2.1 LTS",
   "git": {
-    "commit": "bfbcfd93a737a2224876b67c2cffbce29b026903",
+    "commit": "850cb46c329d3a297884dc659ea968570f764249",
     "dirty": true
   },
-  "generated_at_utc": "2026-09-13T03:33:36Z",
+  "generated_at_utc": "2026-09-13T15:01:25Z",
   "look": "white, gold and marble (Naturhistorisches Museum), ruled 2026-09-12",
   "bake": {
     "engine": "cycles",
@@ -25,21 +25,88 @@
     "device": "CPU",
     "threads": 16,
     "denoise": "OpenImageDenoise via the compositor Denoise node",
-    "seconds_bake": 1326.06,
-    "seconds_denoise": 3.15,
-    "noise_metric": 0.126862,
+    "seconds_bake": 1313.81,
+    "seconds_denoise": 3.42,
+    "noise_metric": 0.137888,
     "skipped": false,
-    "seconds_preview": 10.29,
-    "seconds_wall_clock": 1350.92
+    "seconds_preview": 9.15,
+    "seconds_wall_clock": 1417.71
   },
   "lightmap": {
     "file": "lightmap.png",
     "ktx2": "lightmap.ktx2",
     "ktx2_phone": "lightmap-1024.ktx2",
-    "scale": 3.002571,
-    "three_light_map_intensity": 9.432855,
-    "coverage": 0.8644,
-    "clipped_fraction": 0.000106,
+    "ktx2_px": 2048,
+    "ktx2_phone_px": 1024,
+    "scale": 3.00624,
+    "three_light_map_intensity": 9.444381,
+    "coverage": 0.8605,
+    "clipped_fraction": 3e-06,
+    "ao": {
+      "strength": 0.4,
+      "distance_m": 1.0,
+      "samples": 128,
+      "file": "ao.png",
+      "seconds": 80.46,
+      "mean": 0.6273,
+      "applied": "lightmap *= (1 - strength) + strength * ao, before normalisation"
+    },
+    "stats_per_material": {
+      "floor": {
+        "faces": 1,
+        "mean": 0.2711,
+        "p10": 0.2711,
+        "p90": 0.2711
+      },
+      "wall": {
+        "faces": 91,
+        "mean": 0.1538,
+        "p10": 0.0631,
+        "p90": 0.22
+      },
+      "ceiling": {
+        "faces": 117,
+        "mean": 0.205,
+        "p10": 0.1087,
+        "p90": 0.3299
+      },
+      "trim": {
+        "faces": 204,
+        "mean": 0.1858,
+        "p10": 0.0242,
+        "p90": 0.3369
+      },
+      "wainscot": {
+        "faces": 39,
+        "mean": 0.107,
+        "p10": 0.033,
+        "p90": 0.1718
+      },
+      "pilaster": {
+        "faces": 70,
+        "mean": 0.0975,
+        "p10": 0.0,
+        "p90": 0.2382
+      },
+      "gilt": {
+        "faces": 64,
+        "mean": 0.0921,
+        "p10": 0.0,
+        "p90": 0.2027
+      },
+      "panel": {
+        "faces": 1,
+        "mean": 0.2308,
+        "p10": 0.2308,
+        "p90": 0.2308
+      },
+      "leaf": {
+        "faces": 1,
+        "mean": 0.0,
+        "p10": 0.0,
+        "p90": 0.0
+      }
+    },
     "binding": "texture.colorSpace = SRGBColorSpace, flipY = false, channel = 1, material.lightMapIntensity = three_light_map_intensity"
   },
   "geometry": {
@@ -58,8 +125,8 @@
       ]
     },
     "height": 7.0,
-    "faces": 615,
-    "surface_area_m2": 1194.7,
+    "faces": 588,
+    "surface_area_m2": 1185.9,
     "doorways": [
       {
         "to": "einstruct",
@@ -167,8 +234,8 @@
       "watts_each": 400.0,
       "colour": [
         1.0,
-        0.86,
-        0.68
+        0.91,
+        0.8
       ],
       "placement": "one per 8 m along each interior room's long axis at 0.55 h"
     },
@@ -190,24 +257,28 @@
   },
   "files": {
     "hall.glb": {
-      "bytes": 492112,
-      "sha256": "192067942ea27d545033c2de64c7054773d6abd41cda7a201dc7f3a420c2bb57"
+      "bytes": 484924,
+      "sha256": "1e868fe407221598def385d0e118b45458dc9c761cfe6cf264c28c9652f546bd"
     },
     "lightmap.png": {
-      "bytes": 4151092,
-      "sha256": "0a8e18a4f24ab4625f2b23c5f03c68aabeec1e181d5799d5679e02c73f1aab2f"
+      "bytes": 3973495,
+      "sha256": "8e1e96ba45bef6ec1fce97537d9db2d45c3de3b9959be47604fb827163fdaf78"
+    },
+    "ao.png": {
+      "bytes": 1927718,
+      "sha256": "284e34584677055949343dcf6e2ac0a1927c0caa43b54e40ffff8bc7694ca4b6"
     },
     "lightmap.ktx2": {
-      "bytes": 3360486,
-      "sha256": "895f665a5a2a4ffa2a189eee94effd4eb36936910bc45dbdecd65900121f3d49"
+      "bytes": 3277446,
+      "sha256": "b090f9b764a05e9096a9bea259f5ee7dafe344501d33f6e3bee7c6fd0d1764b5"
     },
     "lightmap-1024.ktx2": {
-      "bytes": 971793,
-      "sha256": "d9dd9d8c71425ce690f2cdf86f949d6ebe9b4c716697db2b0cdb5d76353bc4a0"
+      "bytes": 949264,
+      "sha256": "7b8d82dae248ace517007e92420742e39e38e345e56680236bb1358da548deef"
     },
     "preview.png": {
-      "bytes": 1048554,
-      "sha256": "1998cfa492ccfb30d3598d520fe28ba8772cda4d2131212ec5e2d78ed92d4c40"
+      "bytes": 1040134,
+      "sha256": "d62409d37376787b927d57edd6a6e1b53aa7ba1aa53e628d7601104dd7168695"
     }
   }
 }

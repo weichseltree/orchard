@@ -2,13 +2,13 @@
   "schema": "orchard/room/1",
   "asset": "orchard-west",
   "generated_by": "grove/tools/palace/palace.py",
-  "script_sha256": "14464d45fa441d8e1f7e6c54c81c1ba3595a99635fdd21d87d711542e31420f4",
+  "script_sha256": "7a208871a65fe42331c76c851e90e19f2c0f1b9fe908ca68582127a1bd2c621a",
   "blender": "4.2.1 LTS",
   "git": {
-    "commit": "063651f1c7237336d420c3f682d689100552878c",
+    "commit": "850cb46c329d3a297884dc659ea968570f764249",
     "dirty": true
   },
-  "generated_at_utc": "2026-09-13T02:12:17Z",
+  "generated_at_utc": "2026-09-13T16:31:49Z",
   "look": "white, gold and marble (Naturhistorisches Museum), ruled 2026-09-12",
   "bake": {
     "engine": "cycles",
@@ -25,21 +25,40 @@
     "device": "CPU",
     "threads": 16,
     "denoise": "OpenImageDenoise via the compositor Denoise node",
-    "seconds_bake": 227.6,
-    "seconds_denoise": 2.85,
-    "noise_metric": 0.317,
+    "seconds_bake": 196.01,
+    "seconds_denoise": 2.52,
+    "noise_metric": 0.317156,
     "skipped": false,
-    "seconds_preview": 10.84,
-    "seconds_wall_clock": 250.63
+    "seconds_preview": 9.86,
+    "seconds_wall_clock": 251.46
   },
   "lightmap": {
     "file": "lightmap.png",
     "ktx2": "lightmap.ktx2",
     "ktx2_phone": "lightmap-1024.ktx2",
-    "scale": 3.167318,
-    "three_light_map_intensity": 9.950423,
+    "ktx2_px": 2048,
+    "ktx2_phone_px": 1024,
+    "scale": 3.169095,
+    "three_light_map_intensity": 9.956006,
     "coverage": 0.6104,
     "clipped_fraction": 0.0,
+    "ao": {
+      "strength": 0.4,
+      "distance_m": 1.0,
+      "samples": 128,
+      "file": "ao.png",
+      "seconds": 35.35,
+      "mean": 0.6096,
+      "applied": "lightmap *= (1 - strength) + strength * ao, before normalisation"
+    },
+    "stats_per_material": {
+      "ground": {
+        "faces": 77,
+        "mean": 0.6854,
+        "p10": 0.5083,
+        "p90": 0.8859
+      }
+    },
     "binding": "texture.colorSpace = SRGBColorSpace, flipY = false, channel = 1, material.lightMapIntensity = three_light_map_intensity"
   },
   "geometry": {
@@ -118,8 +137,8 @@
       "watts_each": 400.0,
       "colour": [
         1.0,
-        0.86,
-        0.68
+        0.91,
+        0.8
       ],
       "placement": "one per 8 m along each interior room's long axis at 0.55 h"
     },
@@ -141,24 +160,28 @@
   },
   "files": {
     "orchard-west.glb": {
-      "bytes": 513508,
-      "sha256": "3a1940ddb71fd37d184a8d98d3d3eb0c3d5cfe8c70052482390ff33b1d395592"
+      "bytes": 513808,
+      "sha256": "495feef4963ce2b8d6995266bfb79d7934a14dfa9ff2d13f4d2225ab1c492b61"
     },
     "lightmap.png": {
-      "bytes": 2532592,
-      "sha256": "7b0b495b98adc85f37d4b3b1cce5f2d0dcbc2944078584db96b9080b3d1a2797"
+      "bytes": 2532687,
+      "sha256": "1526420937d04935aa40c34701077fdc2c75f19efa9028ae9a98077c06c05f29"
+    },
+    "ao.png": {
+      "bytes": 72421,
+      "sha256": "e2a454ae0f4877304683e1bc983e5fefdc90285082f3224ed8f95937f6a4144b"
     },
     "lightmap.ktx2": {
-      "bytes": 2101225,
-      "sha256": "9af6e9ace4cbefba4738e53e694b6e23bbdcb3a414c1a2bd09512fcac2740e49"
+      "bytes": 2100794,
+      "sha256": "b0889c63eb0e0da59fa6c723904a64e43daf4e87c76053210f6754cf3c628d02"
     },
     "lightmap-1024.ktx2": {
-      "bytes": 631737,
-      "sha256": "4de9ce467db95e7de5a7604519e19b8e329175b4893ff38c9cd7bd30c1c33147"
+      "bytes": 631795,
+      "sha256": "23a107d0d9cd1620d5b9a19e69bde18d3121df08261a1956277af7625df7b2c0"
     },
     "preview.png": {
-      "bytes": 960364,
-      "sha256": "b6732a66876a615e90a4135accb36af61cda92112ceb4207db34ec95963eb155"
+      "bytes": 959963,
+      "sha256": "de05cd6361a39a293c7827c412d5075bdc5775fa28dcd7c0e073dced53646c33"
     }
   }
 }
