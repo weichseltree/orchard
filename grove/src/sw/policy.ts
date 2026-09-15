@@ -43,6 +43,16 @@ export function mediaCap(tier: string | undefined): number {
 /** A bundle id: the first 16 hex of the sha256 of its bundle.json. */
 const BUNDLE_PATH = /^([0-9a-f]{16})\/([^?#]+)$/;
 
+/**
+ * An exhibit: `audio/live/<provider>/<stream-id>`, and everything under it
+ * (playlist, parts, segments). A name with no bytes behind it
+ * (`docs/specs/AUDIO-STREAM.md` §1, `PACKAGES.md`'s exhibit carve-out) —
+ * never cached, never immutable, never served from storage. This match is
+ * on the path alone, so it catches the pattern whether it is requested from
+ * the media host or the app's own origin.
+ */
+const EXHIBIT_PATH = /(?:^|\/)audio\/live\/[^/]+\/[^/]+(?:\/|$)/;
+
 export type Route =
   /** A file of a content-addressed bundle on the media host: cache-first, verified, forever. */
   | { kind: "media"; bundle: string; rel: string; key: string }
@@ -50,6 +60,12 @@ export type Route =
   | { kind: "static"; path: string }
   /** A page: network-first, the cached copy when the network is slow or gone. */
   | { kind: "page"; key: string }
+  /**
+   * A live-stream exhibit: must pass through. Never `cache.put`, never
+   * answered from a cache, whatever host it is requested from
+   * (AUDIO-STREAM.md §3).
+   */
+  | { kind: "exhibit"; url: string }
   /** Not the worker's business: the browser fetches it as if there were no worker. */
   | { kind: "network" };
 
@@ -78,6 +94,10 @@ export function classify(request: RequestFacts, scope: Scope): Route {
   } catch {
     return NETWORK;
   }
+  // Checked before the media-host and same-origin routes below: an exhibit
+  // is never a bundle and never a cached page, on whichever host it is
+  // fetched from.
+  if (EXHIBIT_PATH.test(url.pathname)) return { kind: "exhibit", url: request.url };
   const mediaBase = scope.mediaBase.replace(/\/+$/, "");
   if (mediaBase && request.url.startsWith(`${mediaBase}/`)) {
     // Ranges are what a <video> asks for; a partial body cannot be hashed

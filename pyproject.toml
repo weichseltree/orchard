@@ -12,6 +12,7 @@ dependencies = [
     "numpy>=2.5.3",
     "matplotlib>=3.11.2",
     "orchard-tape",
+    "orchard-score",
 ]
 
 [project.scripts]
@@ -33,11 +34,17 @@ packages = ["orchard"]
 # `video/tape/1` lives in packages/tape as its own distribution, so every other
 # repo can depend on the one tagged release (tape-vX.Y.Z) instead of putting
 # spectre's working tree on sys.path. Orchard takes it from the workspace.
+# `video/tape/1` lives in packages/tape as its own distribution, so every other
+# repo can depend on the one tagged release (tape-vX.Y.Z) instead of putting
+# spectre's working tree on sys.path. Orchard takes it from the workspace.
+# `orchard/score/1` (packages/score) follows the same path, so LogSwarm can
+# pin the score schema by tag the same way (PACKAGES.md §2).
 [tool.uv.workspace]
-members = ["packages/tape"]
+members = ["packages/tape", "packages/score"]
 
 [tool.uv.sources]
 orchard-tape = { workspace = true }
+orchard-score = { workspace = true }
 
 [tool.pytest.ini_options]
-testpaths = ["tests", "packages/tape/tests"]
+testpaths = ["tests", "packages/tape/tests", "packages/score/tests"]

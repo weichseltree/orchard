@@ -159,6 +159,12 @@ def cmd_bundle_still(a):
     print(out)
 
 
+def cmd_bundle_audio(a):
+    from .bundle import bundle_audio
+    out = bundle_audio(a.tracks, score=a.score, tree=a.tree, title=a.title, out_root=a.out)
+    print(out)
+
+
 def cmd_bundle_verify(a):
     from .bundle import verify_bundle
     rep = verify_bundle(a.bundle_dir)
@@ -313,6 +319,13 @@ def main(argv=None):
     b.add_argument("--title", required=True)
     b.add_argument("--out", default=str(RESULTS / "bundles"))
     b.set_defaults(fn=cmd_bundle_still)
+    b = bsub.add_parser("audio", help="one or more .opus tracks plus the score that produced them")
+    b.add_argument("tracks", nargs="+", help="one or more .opus files")
+    b.add_argument("--score", required=True, help="the score.json recorded alongside the tracks")
+    b.add_argument("--tree", required=True)
+    b.add_argument("--title", required=True)
+    b.add_argument("--out", default=str(RESULTS / "bundles"))
+    b.set_defaults(fn=cmd_bundle_audio)
     b = bsub.add_parser("verify", help="id and every digest, no token needed")
     b.add_argument("bundle_dir"); b.set_defaults(fn=cmd_bundle_verify)
     b = bsub.add_parser("gc", help="bundles no manifest, mansion.json or exhibit names (dry run)")

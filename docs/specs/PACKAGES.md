@@ -12,6 +12,20 @@ found at a seam — a rebake stuck in a year-long cache, a re-encode that kept
 its id, a tape reader that is whatever spectre has checked out — was a fixed
 name treated as if it were a hash, or the reverse.
 
+**Exhibits are the one case outside that rule, on purpose.** A live stream
+has no bytes behind it when its name is handed out, so it cannot be hashed,
+and re-checking a name whose content changes forty times a second is not a
+cache policy, it is a denial of one. Ruled 2026-09-15
+([#11](https://github.com/weichseltree/orchard/pull/11)): an **exhibit** is a
+name with no bytes behind it. It is never cached, never immutable, never
+served by the service worker from storage, and never referenced by a
+manifest that claims a digest — the rule above simply does not apply to it.
+A bundle is the only thing that may be kept; an exhibit worth keeping is
+*recorded into* a bundle, which obeys every rule in this document unchanged.
+`audio/live/<provider>/<stream-id>` is an exhibit, always fetched;
+`audio/<hash>.opus` is a bundle, kept forever. Nothing in between exists.
+Details (transport, the score, ledger treatment): `docs/specs/AUDIO-STREAM.md`.
+
 ## 1. Code inside one repo
 
 Each repo keeps its own environment, and different torch or numpy versions
@@ -121,6 +135,11 @@ A bundle's id is the first 16 hex of the sha256 of its `bundle.json`
   crossed (`instrument` was the other candidate, keeping `model` free for a
   kind that runs); the name is Manuel's ruling (event-atoms/exhibit/README.md
   §9 item 9), and this line changes with it.
+  From 2026-09-15, **`audio`**: one or more Opus tracks, a manifest, and the
+  score that produced them — the archived form of a live exhibit stream (no
+  picture, so not a `master`; not an excerpt of anything, so not a `clip`).
+  Ruled by [#11](https://github.com/weichseltree/orchard/pull/11); layout and
+  the score schema are `docs/specs/AUDIO-STREAM.md`.
 - **Cleanup by reference.** `orchard bundle gc [--r2] [--apply]` deletes only
   bundles that no manifest (either copy, any tree), no pinned id in
   `grove/src/world/mansion.json` and no row of the live `exhibit` table
@@ -181,6 +200,15 @@ A bundle's id is the first 16 hex of the sha256 of its `bundle.json`
 4. The grove gets a service worker with an offline hall.
 5. The lockfile rule applies to live repos only; archived repos stay as they
    are.
+
+### Rulings (2026-09-15)
+
+6. A live stream is an **exhibit**, not a bundle, and sits outside this
+   document's one idea rather than weakening it (see the note after the one
+   idea, above). `audio` is a bundle kind for the archived (Opus) form.
+   Ruled from [#11](https://github.com/weichseltree/orchard/pull/11); the
+   score schema's versioned home is `orchard/packages/score/`, pinned by tag
+   the same way `orchard-tape` is (§2).
 
 ## 7. Status
 

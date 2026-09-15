@@ -195,6 +195,48 @@ def api_usage(root: Path = EXP_STATUS) -> dict[str, dict]:
     return out
 
 
+def stream_usage(root: Path = EXP_STATUS) -> dict[str, dict]:
+    """Per-stream encode/TTS totals from `.audio_usage.jsonl`.
+
+    The encoder appends one JSON object per accounted interval:
+    `{"stream_id", "provider", "kind": "encode"|"tts", "hours", "cost_usd"}`.
+    This only reads and aggregates; the service that encodes a live exhibit
+    owns appending the meter entry (AUDIO-STREAM.md §6).
+    """
+    f = root / ".audio_usage.jsonl"
+    out: dict[str, dict] = {}
+    if not f.exists():
+        return out
+    for line in f.read_text().splitlines():
+        try:
+            r = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        stream_id = r.get("stream_id")
+        if not isinstance(stream_id, str) or not stream_id:
+            continue
+        kind = r.get("kind")
+        if kind not in ("encode", "tts"):
+            continue
+        try:
+            hours = float(r.get("hours") or 0)
+            cost_usd = float(r.get("cost_usd") or 0)
+        except (TypeError, ValueError):
+            continue
+        a = out.setdefault(stream_id, {
+            "provider": r.get("provider") or "",
+            "encode_hours": 0.0,
+            "encode_cost_usd": 0.0,
+            "tts_cost_usd": 0.0,
+        })
+        if kind == "encode":
+            a["encode_hours"] += hours
+            a["encode_cost_usd"] += cost_usd
+        else:
+            a["tts_cost_usd"] += cost_usd
+    return out
+
+
 def expdash_status(url: str = EXPDASH_URL, timeout: float = 3.0) -> dict | None:
     try:
         with urllib.request.urlopen(f"{url}/api/status", timeout=timeout) as resp:
@@ -240,6 +282,7 @@ def snapshot(days: int = 30) -> dict:
             "total_h": sum(j.duration_s for j in jobs) / 3600,
         },
         "api_usage": api_usage(),
+        "stream_usage": stream_usage(),
         "cards": quota_cards(st),
         "running": [asdict(j) for j in jobs if j.status in ("running", "queued")],
         "expdash_reachable": st is not None,

@@ -88,7 +88,22 @@ describe("classify", () => {
       kind: "network",
     });
   });
+
+  it("a live-stream exhibit always passes through, never as media or a page", () => {
+    const exhibitUrl = "https://media.weichseltree.com/audio/live/logswarm/repo-abc123/live.m3u8";
+    expect(classify(req(exhibitUrl), SCOPE)).toEqual({ kind: "exhibit", url: exhibitUrl });
+    // Segments and parts under the same stream are exhibit too, not media.
+    expect(classify(req(`${exhibitUrl.replace("live.m3u8", "seg-42.m4s")}`), SCOPE)).toMatchObject({ kind: "exhibit" });
+    // Same pattern from the app's own origin is exhibit as well.
+    const sameOrigin = "https://weichseltree.com/audio/live/logswarm/repo-abc123/live.m3u8";
+    expect(classify(req(sameOrigin), SCOPE)).toEqual({ kind: "exhibit", url: sameOrigin });
+    // A Range request (still no bytes to slice against a digest) is exhibit too, not silently network-only by luck.
+    expect(classify(req(exhibitUrl, { range: true }), SCOPE)).toMatchObject({ kind: "exhibit" });
+    // An archived recording of the same provider/stream is a bundle, not an exhibit.
+    expect(classify(req(`https://media.weichseltree.com/${ID}/track.opus`), SCOPE)).toMatchObject({ kind: "media" });
+  });
 });
+
 
 describe("static revisions", () => {
   it("keys a file by its revision and drops what neither of the last two builds ships", () => {
