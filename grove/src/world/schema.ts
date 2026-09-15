@@ -19,6 +19,14 @@ export const SpawnSchema = z.looseObject({
   yawDeg: z.number().default(0),
 });
 
+export const GameSurfaceSchema = z.looseObject({
+  id: z.string().min(1),
+  provider: z.literal("ftlchess"),
+  title: z.string().min(1),
+  description: z.string().default(""),
+  url: z.string().url(),
+});
+
 /**
  * A plain opening in a shared wall (M0; portals are M5). `axis` is the axis the
  * wall is perpendicular to, `at` the wall's coordinate on that axis, `center`
@@ -132,6 +140,7 @@ export const RoomSchema = z.looseObject({
   spawn: SpawnSchema,
   doorways: z.array(DoorwaySchema).default([]),
   hangings: z.array(HangingSchema).default([]),
+  gameSurfaces: z.array(GameSurfaceSchema).default([]),
   /**
    * Tone-mapping exposure while the visitor is in this room; the eye adapts
    * over about a second on crossing. The bakes are one sun for the whole
@@ -181,6 +190,7 @@ export const MansionSchema = z
       ctx.addIssue({ code: "custom", message: `start room "${doc.start}" is not in rooms` });
     }
     const hangingIds = new Set<string>();
+    const gameSurfaceIds = new Set<string>();
     for (const room of doc.rooms) {
       for (const door of room.doorways) {
         // A closed door may lead to a room that is not built yet: the door
@@ -198,11 +208,18 @@ export const MansionSchema = z
         }
         hangingIds.add(hanging.id);
       }
+      for (const surface of room.gameSurfaces) {
+        if (gameSurfaceIds.has(surface.id)) {
+          ctx.addIssue({ code: "custom", message: `duplicate game surface id "${surface.id}"` });
+        }
+        gameSurfaceIds.add(surface.id);
+      }
     }
   });
 
 export type Bounds = z.infer<typeof BoundsSchema>;
 export type Spawn = z.infer<typeof SpawnSchema>;
+export type GameSurface = z.infer<typeof GameSurfaceSchema>;
 export type Doorway = z.infer<typeof DoorwaySchema>;
 export type BundleRef = z.infer<typeof BundleRefSchema>;
 export type ExhibitRef = z.infer<typeof ExhibitRefSchema>;

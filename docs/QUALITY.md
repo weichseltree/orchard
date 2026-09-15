@@ -77,7 +77,10 @@ model. It is not a measurement of the production CDN or a mobile connection.
 Checks include automatic WCAG A/AA rules, separate manual-review findings,
 44-pixel discrete touch targets, keyboard skip and dialog focus, narrow
 layouts, transport/joystick overlap, playback shortcuts and graphics failure
-recovery. Inline prose links are not included in the 44-pixel product target.
+recovery. The synthetic demo also intercepts the trusted FTL Chess URL with a
+local fixture and verifies the ready/start/end lifecycle, dialog accessibility,
+iframe teardown, and focus restoration without contacting production. Inline
+prose links are not included in the 44-pixel product target.
 The harness blocks external connections and disables service workers so
 cache comparisons describe HTTP caching. Production mode checks the built
 site and geometry with live services unavailable; demo mode checks playable

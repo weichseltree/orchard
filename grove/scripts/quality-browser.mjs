@@ -64,6 +64,12 @@ const profiles = [
 const android = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/153.0.0.0 Mobile Safari/537.36';
 const tags = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 const check = (name, pass, details = undefined) => report.checks.push({ name, pass: Boolean(pass), ...(details === undefined ? {} : { details }) });
+const packageManager = process.env.npm_execpath;
+
+function runPackageScript(name) {
+  if (!packageManager) throw new Error('quality:browser must be run through pnpm');
+  execFileSync(process.execPath, [packageManager, 'run', name], { cwd: grove, stdio: 'pipe' });
+}
 
 async function screenshot(page, name, fullPage = false) {
   if (!args.screenshots) return;
@@ -72,16 +78,37 @@ async function screenshot(page, name, fullPage = false) {
   await page.screenshot({ path: resolve(directory, `${name}.png`), fullPage });
 }
 
-async function newPage(profile, { disableGraphics = false } = {}) {
+async function newPage(profile, { disableGraphics = false, gameFixture = false } = {}) {
   const context = await browser.newContext({
     viewport: { width: profile.width, height: profile.height },
     isMobile: profile.touch, hasTouch: profile.touch, deviceScaleFactor: 1,
     ...(profile.touch ? { userAgent: android } : {}), serviceWorkers: 'block',
   });
   const page = await context.newPage();
+  if (gameFixture) {
+    await context.route('**/*', async (route) => {
+      const url = route.request().url();
+      if (url.startsWith('https://ftlchess.com/')) {
+        await route.fulfill({
+          contentType: 'text/html',
+          body: `<!doctype html><title>FTL Chess fixture</title><button id="start">Start game</button><script>
+            parent.postMessage({ source: 'ftlchess', event: 'ready', platform: 'orchard', payload: {} }, new URL(location.href).searchParams.get('parentOrigin'));
+            document.querySelector('#start').onclick = () => {
+              parent.postMessage({ source: 'ftlchess', event: 'game-started', platform: 'orchard', payload: { mode: 'fixture' } }, new URL(location.href).searchParams.get('parentOrigin'));
+              parent.postMessage({ source: 'ftlchess', event: 'game-ended', platform: 'orchard', payload: { status: 'finished', moves: 1 } }, new URL(location.href).searchParams.get('parentOrigin'));
+            };
+          </script>`,
+        });
+      } else if (/^(https:|wss:)/.test(url)) {
+        await route.abort('blockedbyclient');
+      } else {
+        await route.continue();
+      }
+    });
+  }
   const cdp = await context.newCDPSession(page);
   await cdp.send('Network.enable');
-  await cdp.send('Network.setBlockedURLs', { urls: ['https://*', 'wss://*'] });
+  if (!gameFixture) await cdp.send('Network.setBlockedURLs', { urls: ['https://*', 'wss://*'] });
   // Do not use context.route: Playwright then disables HTTP caching, invalidating warm visits.
   const events = { pageErrors: [], consoleErrors: [], externalRequests: [], externalSockets: [] };
   page.on('pageerror', (error) => events.pageErrors.push(String(error)));
@@ -244,7 +271,7 @@ async function appAudit(profile) {
     await page.getByRole('button', { name: 'Guide', exact: true }).focus();
     const playingBefore = await page.evaluate(() => window.grove.world.tape.playing);
     await page.keyboard.press('Space');
-    check(`${name}: Space opens Guide without toggling playback`, await page.locator('dialog').evaluate((el) => el.open) && await page.evaluate(() => window.grove.world.tape.playing) === playingBefore);
+    check(`${name}: Space opens Guide without toggling playback`, await page.locator('.visitor-guide[open]').evaluate((el) => el.open) && await page.evaluate(() => window.grove.world.tape.playing) === playingBefore);
     await page.keyboard.press('Escape');
     check(`${name}: dialog returns focus to its trigger`, await page.getByRole('button', { name: 'Guide', exact: true }).evaluate((el) => document.activeElement === el));
     if (!profile.touch) {
@@ -332,12 +359,31 @@ async function recoveryAudit() {
   } finally { await context.close(); }
 }
 
+async function gameSurfaceAudit() {
+  const { context, page, events } = await newPage(profiles[0], { gameFixture: true });
+  try {
+    await ready(page, '/grove/?demo&room=gallery');
+    await page.getByRole('button', { name: 'Open FTL Chess' }).click();
+    const surface = page.locator('.game-surface[open]');
+    await surface.waitFor();
+    await page.getByText('Game ready', { exact: true }).waitFor();
+    const frame = page.frameLocator('.game-surface-frame');
+    await frame.getByRole('button', { name: 'Start game' }).evaluate((button) => button.click());
+    await page.getByText('Game ended', { exact: true }).waitFor();
+    check('game surface: lifecycle events reach the exact parent', (await page.evaluate(() => window.grove.metrics().gameSurface.lastEvent)) === 'game-ended');
+    await axeAudit(page, 'FTL Chess game surface');
+    await page.getByRole('button', { name: 'Close', exact: true }).click();
+    check('game surface: close tears down the iframe and restores the view', await page.locator('.game-surface-frame').count() === 0 && await page.locator('#stage').evaluate((el) => document.activeElement === el));
+    check('game surface: no script or console errors', events.pageErrors.length + events.consoleErrors.length === 0, events);
+  } finally { await context.close(); }
+}
+
 let base;
 try {
   if (args.dist) ownedServer = await startStaticServer(resolve(grove, args.dist), { gzip: args.gzip });
   else if (!args['base-url']) {
-    execFileSync('pnpm', ['run', 'dev:bundle'], { cwd: grove, stdio: 'pipe' });
-    execFileSync('pnpm', ['run', 'prepare:assets'], { cwd: grove, stdio: 'pipe' });
+    runPackageScript('dev:bundle');
+    runPackageScript('prepare:assets');
     const { createServer } = await import('vite');
     const vite = await createServer({ root: grove, logLevel: 'error', server: { host: '127.0.0.1', port: 0, open: false } });
     ownedServer = { close: () => vite.close() };
@@ -366,6 +412,7 @@ try {
   if (['all', 'landing'].includes(args.scope)) for (const profile of profiles.slice(0, 3)) await landingAudit(profile);
   if (!args.dist && ['all', 'app'].includes(args.scope)) {
     for (const profile of profiles) await appAudit(profile);
+    await gameSurfaceAudit();
     await recoveryAudit();
   }
 } catch (error) {

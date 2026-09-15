@@ -89,6 +89,11 @@ export default defineConfig(({ command }) => ({
     "import.meta.env.VITE_AUTH_URL": JSON.stringify(
       process.env.VITE_AUTH_URL ?? (command === "serve" ? "" : "/auth"),
     ),
+    // Keep the production entry hidden until FTL Chess admits this deployment
+    // in frame-ancestors. Dev enables it for the intercepted browser fixture.
+    "import.meta.env.VITE_FTL_CHESS_ENABLED": JSON.stringify(
+      process.env.VITE_FTL_CHESS_ENABLED ?? (command === "serve" ? "1" : ""),
+    ),
     // The site key is public, so the live one is the build's default: a build
     // without it would send no human check, and the token service, which
     // demands one, would refuse every visitor's token. (Widget "grove token

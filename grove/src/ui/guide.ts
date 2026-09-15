@@ -1,7 +1,7 @@
 import "./guide.css";
 import type { DeviceProfile } from "../device";
 import { demoEnabled } from "../demo";
-import { roomById, type Mansion, type Room } from "../world/schema";
+import { roomById, type GameSurface, type Mansion, type Room } from "../world/schema";
 import { evidenceUrl, exhibitContent, RESEARCH_ORDER, researchRooms, roomHref } from "./exhibit-content";
 
 const SEEN_KEY = "orchard.grove.guide-seen";
@@ -30,14 +30,26 @@ export class VisitorGuide {
   #roomLinks = document.createElement("div");
   #doors = document.createElement("nav");
   #doorSection = document.createElement("section");
+  #games = document.createElement("section");
+  #gameActions = document.createElement("div");
   #mansion: Mansion;
   #search: string;
   #demo: boolean;
+  #device: DeviceProfile;
+  #onGameSurface: (surface: GameSurface) => void;
 
-  constructor(root: HTMLElement, mansion: Mansion, device: DeviceProfile, onExplore: () => void) {
+  constructor(
+    root: HTMLElement,
+    mansion: Mansion,
+    device: DeviceProfile,
+    onExplore: () => void,
+    onGameSurface: (surface: GameSurface) => void = () => undefined,
+  ) {
     this.#mansion = mansion;
     this.#search = location.search;
     this.#demo = demoEnabled(import.meta.env.DEV, this.#search);
+    this.#device = device;
+    this.#onGameSurface = onGameSurface;
     this.#location.className = "location btn panel";
     this.#location.type = "button";
     this.#location.addEventListener("click", () => this.show());
@@ -117,6 +129,17 @@ export class VisitorGuide {
     this.#doorSection.className = "guide-door-section";
     this.#doorSection.append(doorHeading, doorHint, this.#doors);
 
+    const gameHeading = document.createElement("h2");
+    gameHeading.textContent = "Play here";
+    const gameHint = document.createElement("p");
+    gameHint.className = "guide-note";
+    gameHint.textContent = this.#device.headset
+      ? "Leave immersive VR before opening a browser game surface."
+      : "The game opens in a separate surface over the Grove.";
+    this.#games.className = "guide-games";
+    this.#gameActions.className = "guide-game-actions";
+    this.#games.append(gameHeading, gameHint, this.#gameActions);
+
     const controls = document.createElement("details");
     controls.className = "guide-disclosure guide-controls";
     const controlSummary = document.createElement("summary");
@@ -151,7 +174,7 @@ export class VisitorGuide {
     }
     controls.append(controlSummary, controlList);
     this.#dialog.append(this.#kicker, this.#title, mode, this.#intro, actions, this.#look,
-      this.#limitation, this.#evidence, this.#rooms, this.#doorSection, controls);
+      this.#limitation, this.#evidence, this.#rooms, this.#doorSection, this.#games, controls);
     this.#dialog.addEventListener("close", () => {
       try { localStorage.setItem(SEEN_KEY, "1"); } catch { /* Visiting does not need storage. */ }
     });
@@ -211,6 +234,19 @@ export class VisitorGuide {
       link.href = roomHref(this.#search, destination.id);
       link.textContent = destination.title || destination.id;
       return link;
+    }));
+    this.#games.hidden = room.gameSurfaces.length === 0;
+    this.#gameActions.replaceChildren(...room.gameSurfaces.map((surface) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "btn accent";
+      button.textContent = `Open ${surface.title}`;
+      button.title = surface.description;
+      button.addEventListener("click", () => {
+        this.#dialog.close();
+        queueMicrotask(() => this.#onGameSurface(surface));
+      });
+      return button;
     }));
   }
 
