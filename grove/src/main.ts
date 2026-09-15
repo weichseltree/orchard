@@ -148,6 +148,7 @@ let desktopControls: DesktopControls | null = null;
 const gameSurface = new GameSurface(hudRoot, {
   onLifecycle: (event) => console.info(`[grove] game surface ${event.event}`),
   onClose: () => {
+    activeWall = null;
     canvas.focus();
     handOverVideo(true);
   },
@@ -563,9 +564,10 @@ Object.defineProperty(window, "grove", {
 });
 
 window.addEventListener("pagehide", (event) => {
+  if (event.persisted) return;
   presence.dispose();
   gameSurface.dispose();
-  if (!event.persisted) visitMetrics.dispose();
+  visitMetrics.dispose();
 });
 
 boot();

@@ -243,11 +243,9 @@ export class VisitorGuide {
       button.textContent = `Open ${surface.title}`;
       button.title = surface.description;
       button.addEventListener("click", () => {
-        if (this.#device.headset) return;
         this.#dialog.close();
         queueMicrotask(() => this.#onGameSurface(surface));
       });
-      button.disabled = this.#device.headset;
       return button;
     }));
   }
