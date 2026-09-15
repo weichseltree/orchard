@@ -864,10 +864,18 @@ def wrangler_spawn_cost(n=10) -> float:
 # ------------------------------------------------------------- verification
 
 
+#: What the public-host checks call themselves. The media host sits behind
+#: Cloudflare's Browser Integrity Check, which answers urllib's default
+#: "Python-urllib/3.x" with 403 (error 1010) although the object is fine;
+#: measured 2026-09-15 on a push whose uploads had all landed. A named agent
+#: is served like any other client.
+USER_AGENT = "orchard-push/1 (+https://weichseltree.com)"
+
+
 def fetch_public(bid: str, path="bundle.json", host=PUBLIC_HOST,
                  timeout=15) -> tuple[int, bytes | str, dict]:
     url = f"https://{host}/{bid}/{path}"
-    req = urllib.request.Request(url, method="GET")
+    req = urllib.request.Request(url, method="GET", headers={"User-Agent": USER_AGENT})
     try:
         with urllib.request.urlopen(req, timeout=timeout) as r:
             return r.status, r.read(), dict(r.headers)
@@ -916,7 +924,8 @@ def wait_public(bid: str, path="bundle.json", host=PUBLIC_HOST,
 def cors_preflight(bid: str, path="bundle.json", host=PUBLIC_HOST,
                    origin="https://weichseltree.com") -> dict:
     """What a browser at `origin` is actually told. The header, not the config."""
-    req = urllib.request.Request(f"https://{host}/{bid}/{path}", method="OPTIONS")
+    req = urllib.request.Request(f"https://{host}/{bid}/{path}", method="OPTIONS",
+                                 headers={"User-Agent": USER_AGENT})
     req.add_header("Origin", origin)
     req.add_header("Access-Control-Request-Method", "GET")
     try:

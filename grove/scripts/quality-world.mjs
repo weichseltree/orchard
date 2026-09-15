@@ -105,7 +105,8 @@ try {
     && world.rooms.filter((room) => room.architecture === 'observatory').length === 13
     && world.rooms.filter((room) => room.architecture === 'space').length === 1, world.rooms);
   check('Architecture stays below 150 draw batches across the whole world', world.batches < 150, world.batches);
-  check('Synthetic playback fixtures loaded', world.tapes === 7, world.tapes);
+  // Six tapes: two sheets, the trio, one capture; the terrace's moon is gone (2026-09-15).
+  check('Synthetic playback fixtures loaded', world.tapes === 6, world.tapes);
   await page.evaluate(() => {
     window.grove.view.renderer.setAnimationLoop(null);
     for (const video of document.querySelectorAll('video')) video.pause();
