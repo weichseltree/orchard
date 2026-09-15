@@ -6,7 +6,6 @@ import {
   Scene,
   type Object3D,
 } from "three";
-import { WebGPURenderer } from "three/webgpu";
 import type { Renderer } from "./types";
 import { PALETTE } from "../config";
 import type { DeviceProfile } from "../device";
@@ -44,7 +43,7 @@ export async function createView(
   device: DeviceProfile,
   options: ViewOptions = {},
 ): Promise<View> {
-  const renderer = await createRenderer(canvas, device);
+  const { renderer, backend } = await createRenderer(canvas, device);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, device.maxPixelRatio));
   renderer.setSize(window.innerWidth, window.innerHeight, false);
   // Baked radiance is linear and often above 1 in sunlit rooms; without a
@@ -112,7 +111,7 @@ export async function createView(
   document.addEventListener("visibilitychange", onVisibility);
   return {
     renderer,
-    backend: renderer instanceof WebGPURenderer ? "webgpu" : "webgl2",
+    backend,
     scene,
     camera,
     rig,
@@ -148,27 +147,34 @@ export async function createView(
 async function createRenderer(
   canvas: HTMLCanvasElement,
   device: DeviceProfile,
-): Promise<Renderer> {
+): Promise<{ renderer: Renderer; backend: "webgpu" | "webgl2" }> {
   if ("gpu" in navigator) {
     try {
+      // Dynamically imported so the ~230 KB WebGPU backend never lands in the
+      // startup bundle for the WebGL2 majority; only fetched when a GPU
+      // adapter is actually present.
+      const { WebGPURenderer } = await import("three/webgpu");
       const renderer = new WebGPURenderer({
         canvas,
         antialias: !device.headset,
         alpha: false,
       });
       await renderer.init();
-      return renderer as unknown as Renderer;
+      return { renderer: renderer as unknown as Renderer, backend: "webgpu" };
     } catch (error) {
       console.info(`[render] WebGPU unavailable; using WebGL2 (${message(error)})`);
     }
   }
   const { WebGLRenderer } = await import("three");
-  return new WebGLRenderer({
-    canvas,
-    antialias: !device.headset,
-    powerPreference: "high-performance",
-    alpha: false,
-  });
+  return {
+    renderer: new WebGLRenderer({
+      canvas,
+      antialias: !device.headset,
+      powerPreference: "high-performance",
+      alpha: false,
+    }),
+    backend: "webgl2",
+  };
 }
 
 function message(error: unknown): string {
