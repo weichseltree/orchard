@@ -4,9 +4,9 @@ import {
   Group,
   PerspectiveCamera,
   Scene,
-  WebGLRenderer,
   type Object3D,
 } from "three";
+import type { Renderer } from "./types";
 import { PALETTE } from "../config";
 import type { DeviceProfile } from "../device";
 import { FrameClock } from "./frame-clock";
@@ -19,9 +19,15 @@ import { FrameClock } from "./frame-clock";
 
 /** Default eye height; an asset's spawn marker overrides it (hall.json: 1.6). */
 export const EYE_HEIGHT = 1.6;
+// The sky dome and tape volume still rely on ShaderMaterial, which Three's
+// WebGPU backend logs as incompatible during the quality run. Keep the async
+// WebGPU path available for local experiments, but make WebGL2 the default
+// until those materials are ported.
+const EXPERIMENTAL_WEBGPU = import.meta.env.VITE_ENABLE_WEBGPU === "1";
 
 export interface View {
-  renderer: WebGLRenderer;
+  renderer: Renderer;
+  backend: "webgpu" | "webgl2";
   scene: Scene;
   camera: PerspectiveCamera;
   rig: Group;
@@ -37,17 +43,12 @@ export interface ViewOptions {
   onContextLost?: (restored: boolean) => void;
 }
 
-export function createView(
+export async function createView(
   canvas: HTMLCanvasElement,
   device: DeviceProfile,
   options: ViewOptions = {},
-): View {
-  const renderer = new WebGLRenderer({
-    canvas,
-    antialias: !device.headset, // MSAA on Quest costs more than it returns here
-    powerPreference: "high-performance",
-    alpha: false,
-  });
+): Promise<View> {
+  const { renderer, backend } = await createRenderer(canvas, device);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, device.maxPixelRatio));
   renderer.setSize(window.innerWidth, window.innerHeight, false);
   // Baked radiance is linear and often above 1 in sunlit rooms; without a
@@ -115,6 +116,7 @@ export function createView(
   document.addEventListener("visibilitychange", onVisibility);
   return {
     renderer,
+    backend,
     scene,
     camera,
     rig,
@@ -145,6 +147,45 @@ export function createView(
       renderer.dispose();
     },
   };
+}
+
+async function createRenderer(
+  canvas: HTMLCanvasElement,
+  device: DeviceProfile,
+): Promise<{ renderer: Renderer; backend: "webgpu" | "webgl2" }> {
+  if (EXPERIMENTAL_WEBGPU && "gpu" in navigator) {
+    try {
+      // Dynamically imported so the ~230 KB WebGPU backend never lands in the
+      // startup bundle for the WebGL2 majority; only fetched for explicit
+      // experiments after the browser reports a real adapter.
+      const adapter = await navigator.gpu.requestAdapter();
+      if (!adapter) throw new Error("WebGPU adapter unavailable");
+      const { WebGPURenderer } = await import("three/webgpu");
+      const renderer = new WebGPURenderer({
+        canvas,
+        antialias: !device.headset,
+        alpha: false,
+      });
+      await renderer.init();
+      return { renderer: renderer as unknown as Renderer, backend: "webgpu" };
+    } catch (error) {
+      console.info(`[render] WebGPU unavailable; using WebGL2 (${message(error)})`);
+    }
+  }
+  const { WebGLRenderer } = await import("three");
+  return {
+    renderer: new WebGLRenderer({
+      canvas,
+      antialias: !device.headset,
+      powerPreference: "high-performance",
+      alpha: false,
+    }),
+    backend: "webgl2",
+  };
+}
+
+function message(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }
 
 /** Horizontal field of view, degrees: what a portrait phone has to keep. */

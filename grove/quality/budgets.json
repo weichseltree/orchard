@@ -1,12 +1,12 @@
 {
-  "description": "Observatory regression limits: all 13 areas use runtime architecture. Total build measured at 3.43 MB after replacing palace bakes; 4 MB cap prevents retired assets re-entering the release. Source media is streamed and measured separately.",
+  "description": "Observatory regression limits: all 13 areas use runtime architecture. Total build measured at 3.43 MB after replacing palace bakes; 4.3 MB cap prevents retired assets re-entering the release, with headroom for the optional, dynamically-imported three/webgpu chunk (~162 KB gzip) added alongside the WebGL2 fallback renderer. Source media is streamed and measured separately.",
   "maximum": {
     "deferredModuleViolations": 0,
     "startupJsGzipBytes": 215000,
-    "allJsGzipBytes": 520000,
+    "allJsGzipBytes": 700000,
     "largestJsGzipBytes": 240000,
     "cssGzipBytes": 10000,
     "siteImageBytes": 700000,
-    "totalBytes": 4000000
+    "totalBytes": 4300000
   }
 }

@@ -37,17 +37,23 @@ function walk(dir: string): string[] {
   return out;
 }
 
+function distPath(from: string, to: string): string {
+  return relative(from, to).replaceAll("\\", "/");
+}
+
 /** Files under dist/assets and dist/basis whose names do not change with their bytes. */
 export function unhashedFiles(outDir: string): string[] {
   const bad: string[] = [];
   for (const file of walk(join(outDir, "assets"))) {
-    const name = file.slice(file.lastIndexOf("/") + 1);
-    if (!VITE_HASHED.test(name) && !FINGERPRINTED.test(name)) bad.push(relative(outDir, file));
+    const path = distPath(outDir, file);
+    const name = path.slice(path.lastIndexOf("/") + 1);
+    if (!VITE_HASHED.test(name) && !FINGERPRINTED.test(name)) bad.push(path);
   }
   for (const file of walk(join(outDir, "basis"))) {
-    const [version] = relative(join(outDir, "basis"), file).split("/");
-    if (!version || !VERSION_DIR.test(version) || !relative(join(outDir, "basis"), file).includes("/")) {
-      bad.push(relative(outDir, file));
+    const path = distPath(join(outDir, "basis"), file);
+    const [version] = path.split("/");
+    if (!version || !VERSION_DIR.test(version) || !path.includes("/")) {
+      bad.push(distPath(outDir, file));
     }
   }
   return bad.sort();
