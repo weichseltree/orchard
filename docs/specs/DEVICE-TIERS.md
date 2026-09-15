@@ -17,9 +17,12 @@ controls to wire. This document keeps those four as the *bundle* tiers and
 adds a per-device budget on top, because a Quest 2 and a Quest 3 want the
 same variant and different everything else.
 
-The renderer now probes WebGPU asynchronously and initializes Three.js's
-`WebGPURenderer` when an adapter is available; initialization failures
-explicitly fall back to the existing WebGL2 renderer. Both paths share the
+The renderer now carries an asynchronous **experimental** WebGPU path:
+setting `VITE_ENABLE_WEBGPU=1` lets it probe for an adapter and initialize
+Three.js's `WebGPURenderer`; missing adapters or init failures explicitly fall
+back to the existing WebGL2 renderer. WebGL2 stays the default until the
+remaining `ShaderMaterial` sky and tape shaders are ported, because Three's
+current WebGPU backend logs them as incompatible. Both paths share the
 scene-facing view contract, AgX tone mapping, XR setup, and resize lifecycle.
 All binary room, lightmap, and tape payloads pass through the shared chunk
 scheduler in `grove/src/render/chunk-stream.ts`: payloads are capped at 2 MiB,

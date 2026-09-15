@@ -19,6 +19,11 @@ import { FrameClock } from "./frame-clock";
 
 /** Default eye height; an asset's spawn marker overrides it (hall.json: 1.6). */
 export const EYE_HEIGHT = 1.6;
+// The sky dome and tape volume still rely on ShaderMaterial, which Three's
+// WebGPU backend logs as incompatible during the quality run. Keep the async
+// WebGPU path available for local experiments, but make WebGL2 the default
+// until those materials are ported.
+const EXPERIMENTAL_WEBGPU = import.meta.env.VITE_ENABLE_WEBGPU === "1";
 
 export interface View {
   renderer: Renderer;
@@ -148,11 +153,13 @@ async function createRenderer(
   canvas: HTMLCanvasElement,
   device: DeviceProfile,
 ): Promise<{ renderer: Renderer; backend: "webgpu" | "webgl2" }> {
-  if ("gpu" in navigator) {
+  if (EXPERIMENTAL_WEBGPU && "gpu" in navigator) {
     try {
       // Dynamically imported so the ~230 KB WebGPU backend never lands in the
-      // startup bundle for the WebGL2 majority; only fetched when a GPU
-      // adapter is actually present.
+      // startup bundle for the WebGL2 majority; only fetched for explicit
+      // experiments after the browser reports a real adapter.
+      const adapter = await navigator.gpu.requestAdapter();
+      if (!adapter) throw new Error("WebGPU adapter unavailable");
       const { WebGPURenderer } = await import("three/webgpu");
       const renderer = new WebGPURenderer({
         canvas,
