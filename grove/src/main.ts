@@ -20,6 +20,7 @@ import { Provenance } from "./ui/provenance";
 import { startGroveUpdates } from "./ui/update";
 import { WorldNotices } from "./ui/worldnotice";
 import { VisitorGuide } from "./ui/guide";
+import { GameSurface } from "./ui/game-surface";
 import { startupFailed, startupReady } from "./ui/startup";
 import { finiteParameter, visitRoom } from "./world/visit";
 import { frameAt } from "./tape/time";
@@ -42,6 +43,11 @@ installAssetMap();
 
 const demo = demoEnabled(import.meta.env.DEV, location.search);
 const mansion = parseMansion(demo ? demoMansion(mansionDocument) : mansionDocument);
+if (import.meta.env.VITE_FTL_CHESS_ENABLED !== "1") {
+  for (const room of mansion.rooms) {
+    room.gameSurfaces = room.gameSurfaces.filter((surface) => surface.provider !== "ftlchess");
+  }
+}
 const device = detectDevice();
 hudRoot.classList.toggle("touch", device.touch);
 const input = createInput();
@@ -139,9 +145,24 @@ const hud = new Hud(hudRoot, {
 const provenance = new Provenance(hud.provenancePanel);
 view.scene.add(provenance.panel);
 let desktopControls: DesktopControls | null = null;
+const gameSurface = new GameSurface(hudRoot, {
+  onLifecycle: (event) => console.info(`[grove] game surface ${event.event}`),
+  onClose: () => {
+    canvas.focus();
+    handOverVideo(true);
+  },
+});
 const guide = new VisitorGuide(hudRoot, mansion, device, () => {
   canvas.focus();
   if (!device.headset) desktopControls?.requestLock();
+}, (surface) => {
+  if (view.renderer.xr.isPresenting) {
+    notice("Leave immersive VR before opening this browser game.");
+    return;
+  }
+  if (document.pointerLockElement) document.exitPointerLock();
+  activeWall?.release();
+  gameSurface.open(surface, canvas);
 });
 guide.setRoom(startRoom.id);
 if (query.has("room") && query.get("room") !== startRoom.id) {
@@ -532,6 +553,7 @@ Object.defineProperty(window, "grove", {
         room: exhibitRoom(tape), residentChunks: tape.stream.residentCount,
         residentBytes: tape.stream.residentBytes, waiting: tape.waiting,
       })),
+      gameSurface: gameSurface.snapshot(),
     }),
     provenance,
     get world() {
@@ -542,6 +564,7 @@ Object.defineProperty(window, "grove", {
 
 window.addEventListener("pagehide", (event) => {
   presence.dispose();
+  gameSurface.dispose();
   if (!event.persisted) visitMetrics.dispose();
 });
 

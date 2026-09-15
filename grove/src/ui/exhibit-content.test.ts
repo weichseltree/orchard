@@ -54,7 +54,7 @@ describe("the exhibit companion", () => {
   });
 
   it("links each chamber's evidence to an actual section of the exhibit record", () => {
-    const record = readFileSync(new URL("../../../docs/EXHIBIT-PLAN.md", import.meta.url), "utf8");
+    const record = readFileSync(new URL("../../../docs/EXHIBIT-PLAN.md", import.meta.url), "utf8").replaceAll("\r\n", "\n");
     for (const room of mansion.rooms) {
       const companion = exhibitContent(room);
       const link = evidenceUrl(companion);

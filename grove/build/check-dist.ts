@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync } from "node:fs";
-import { join, relative } from "node:path";
+import { basename, join, relative } from "node:path";
 import type { Plugin, ResolvedConfig } from "vite";
 
 /**
@@ -41,16 +41,20 @@ function walk(dir: string): string[] {
 export function unhashedFiles(outDir: string): string[] {
   const bad: string[] = [];
   for (const file of walk(join(outDir, "assets"))) {
-    const name = file.slice(file.lastIndexOf("/") + 1);
-    if (!VITE_HASHED.test(name) && !FINGERPRINTED.test(name)) bad.push(relative(outDir, file));
+    const name = basename(file);
+    if (!VITE_HASHED.test(name) && !FINGERPRINTED.test(name)) bad.push(relativePath(outDir, file));
   }
   for (const file of walk(join(outDir, "basis"))) {
-    const [version] = relative(join(outDir, "basis"), file).split("/");
-    if (!version || !VERSION_DIR.test(version) || !relative(join(outDir, "basis"), file).includes("/")) {
-      bad.push(relative(outDir, file));
+    const parts = relative(join(outDir, "basis"), file).split(/[\\/]/);
+    if (!parts[0] || !VERSION_DIR.test(parts[0]) || parts.length < 2) {
+      bad.push(relativePath(outDir, file));
     }
   }
   return bad.sort();
+}
+
+function relativePath(from: string, to: string): string {
+  return relative(from, to).replaceAll("\\", "/");
 }
 
 /** Every path pattern in a Cloudflare Pages `_headers` file whose rules say `immutable`. */

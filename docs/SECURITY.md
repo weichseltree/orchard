@@ -14,6 +14,7 @@ checks every rule here against a local server; run it after touching the module.
 | the token service, `/auth/*` (a Pages Function) | everyone | Turnstile, when its secret is set; same-origin only; it stores nothing |
 | the world database, `orchard` on maincloud | everyone with a websocket | the module's reducers, views and the token gate; see below |
 | bundles on R2, media.weichseltree.com | everyone | content-addressed and public by design; only approved bundles are hung |
+| embedded game surfaces | visitors who deliberately open one | an explicit provider/origin allowlist, sandboxed iframe, exact `postMessage` origin and window checks; CSP currently permits only FTL Chess |
 | the home box (SirBase): studio, ledger, dashboard, sync timer | nobody from outside | it only connects outward; the dashboard answers to localhost by name only |
 
 ## Kinds of people
@@ -63,6 +64,24 @@ still gets in, a few at a time; that is the honest limit of a no-login space.
 The home box never sees addresses and the database never stores them: the
 token service turns the network into an HMAC under `AUTH_NETWORK_KEY`, which
 lives only in Pages secrets and the home box's secrets file.
+
+## Embedded game surfaces
+
+Rooms may offer a browser game through the Guide. These surfaces are not
+arbitrary web embeds: the scene names a registered provider, and the client
+accepts only that provider's exact HTTPS origin before constructing an iframe.
+The iframe is lazy, sandboxed, removed when closed, and receives Orchard's
+origin as `parentOrigin`. Lifecycle messages are accepted only from the active
+iframe window, the validated origin, and the documented event envelope.
+
+The production CSP permits `https://ftlchess.com` in `frame-src`; Orchard itself
+retains `frame-ancestors 'none'`. The FTL Chess deployment must independently
+include Orchard's exact production origin in `FTLCHESS_FRAME_ANCESTORS`, or the
+browser correctly refuses to frame it. The production room entry is therefore
+hidden unless the Grove is built with `VITE_FTL_CHESS_ENABLED=1`; set that only
+after verifying the FTL response header. Game lifecycle state is local and
+ephemeral: it is exposed to diagnostics but is not sent to SpacetimeDB or an
+analytics service.
 
 ## Privacy and retention
 

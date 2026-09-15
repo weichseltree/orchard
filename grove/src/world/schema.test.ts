@@ -43,6 +43,17 @@ describe("mansion.json", () => {
     expect([still.widthMeters, still.heightMeters]).toEqual([6, 3.4]);
   });
 
+  it("offers FTL Chess from the Long Gallery as an explicit game surface", () => {
+    const gallery = roomById(parseMansion(mansionDocument), "gallery")!;
+    expect(gallery.gameSurfaces).toEqual([{
+      id: "ftl-chess",
+      provider: "ftlchess",
+      title: "FTL Chess",
+      description: "A fast chess game hosted by FTL Chess.",
+      url: "https://ftlchess.com/",
+    }]);
+  });
+
   it("describes einstruct as a 14 x 12 x 6 m state room with two tape sheets and two video walls", () => {
     const room = roomById(parseMansion(mansionDocument), "einstruct");
     const { min, max } = room!.bounds;
@@ -93,6 +104,15 @@ describe("MansionSchema", () => {
     const rooms = broken.rooms as Array<Record<string, unknown>>;
     rooms.push(structuredClone(rooms[0]!));
     expect(() => MansionSchema.parse(broken)).toThrow(/duplicate room id/);
+  });
+
+  it("rejects duplicate game surface ids across rooms", () => {
+    const broken = doc();
+    const rooms = broken.rooms as Array<Record<string, unknown>>;
+    const surface = { id: "same", provider: "ftlchess", title: "Game", url: "https://ftlchess.com/" };
+    rooms[0]!.gameSurfaces = [surface];
+    rooms[1]!.gameSurfaces = [surface];
+    expect(() => MansionSchema.parse(broken)).toThrow(/duplicate game surface id/);
   });
 
   it("rejects inverted bounds", () => {

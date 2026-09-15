@@ -1,0 +1,27 @@
+.game-surface {
+  width: min(96vw, 92rem);
+  height: min(92dvh, 64rem);
+  padding: 0;
+  color: #eee9df;
+  background: #09111c;
+  border: 1px solid #796b50;
+  border-radius: 4px;
+  box-shadow: 0 22px 90px #000b;
+}
+.game-surface::backdrop { background: #030811dd; }
+.game-surface-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 60px;
+  padding: 10px 14px 10px 20px;
+  border-bottom: 1px solid #796b50;
+}
+.game-surface-title { margin: 0; font: 400 21px/1.2 Georgia, "Times New Roman", serif; }
+.game-surface-status { margin: 4px 0 0; color: #a1afbd; font-size: 12px; }
+.game-surface-frame { display: block; width: 100%; height: calc(100% - 61px); border: 0; background: #05080d; }
+.game-surface-close { flex: none; min-width: 44px; min-height: 44px; }
+
+.visitor-guide.observatory-guide .guide-games { padding: 18px 0; border-top: 1px solid #e1bd823d; }
+.visitor-guide.observatory-guide .guide-game-actions { display: flex; flex-wrap: wrap; gap: 8px; }

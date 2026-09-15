@@ -652,6 +652,15 @@
         }
       ],
       "hangings": [],
+      "gameSurfaces": [
+        {
+          "id": "ftl-chess",
+          "provider": "ftlchess",
+          "title": "FTL Chess",
+          "description": "A fast chess game hosted by FTL Chess.",
+          "url": "https://ftlchess.com/"
+        }
+      ],
       "architecture": "observatory",
       "exposure": 1
     },
