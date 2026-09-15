@@ -36,6 +36,7 @@ from pathlib import Path
 
 import numpy as np
 import orchard_tape
+from orchard_score import SCHEMA as SCORE_SCHEMA
 from orchard_tape import TapeReader
 
 from . import RESULTS, WEICHSELTREE
@@ -1095,6 +1096,78 @@ def bundle_still(image, tree: str, title: str, out_root=None, *,
     if verbose:
         print(f"bundle {dest.name}  still {src_w}x{src_h}  "
               f"{'avif+jpg' if avif else 'jpg only (no libaom)'}  "
+              f"total {time.perf_counter() - t_start:.1f}s", flush=True)
+    return dest
+
+
+# ------------------------------------------------------------------- audio
+
+
+def bundle_audio(tracks, score, tree: str, title: str, out_root=None, *,
+                 verbose: bool = True, commit: str | None = None) -> Path:
+    """Write `<out_root>/<id>/` holding one or more Opus tracks and the score
+    that produced them (`docs/specs/AUDIO-STREAM.md` §2, §4). Returns the
+    directory.
+
+    The archived form of a live exhibit: `audio/live/<provider>/<stream-id>`
+    is never a bundle (PACKAGES.md's exhibit carve-out), but a recording of
+    one is, the same as every other bundle here. This packages already
+    encoded `.opus` tracks and an already recorded `score.json`; the encoder
+    and the sonification that produced them live outside orchard (LogSwarm).
+    """
+    tracks = [Path(t).resolve() for t in tracks]
+    score = Path(score).resolve()
+    if not tracks:
+        raise ValueError("bundle_audio needs at least one .opus track")
+    for t in tracks:
+        if t.suffix != ".opus":
+            raise ValueError(f"{t} is not a .opus file")
+        if not t.is_file():
+            raise ValueError(f"{t} does not exist")
+    if not score.is_file():
+        raise ValueError(f"{score} does not exist")
+    try:
+        score_doc = json.loads(score.read_text())
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"{score} is not valid JSON") from exc
+    if not isinstance(score_doc, dict) or score_doc.get("schema") != SCORE_SCHEMA:
+        got = score_doc.get("schema") if isinstance(score_doc, dict) else None
+        raise ValueError(f"{score} has schema {got!r}, expected {SCORE_SCHEMA!r}")
+    score_schema = SCORE_SCHEMA
+
+    out_root = Path(out_root) if out_root else RESULTS / "bundles"
+    t_start = time.perf_counter()
+    staging = Path(tempfile.mkdtemp(prefix=".bundle-", dir=str(_ensure(out_root))))
+    try:
+        for t in tracks:
+            shutil.copy2(t, staging / t.name)
+        shutil.copy2(score, staging / "score.json")
+
+        files = file_digests(staging)
+        doc = {
+            "schema": SCHEMA,
+            "kind": "audio",
+            "id": "",
+            "tree": tree,
+            "title": title,
+            "produced_by": (f"uv run orchard bundle audio {' '.join(str(t) for t in tracks)} "
+                            f"--score {score} --tree {tree} --title {json.dumps(title)}"),
+            "source": {
+                "tracks": [_rel_to_tree(t, tree) for t in tracks],
+                "score": _rel_to_tree(score, tree),
+                "tree_commit": commit or _git_describe(_tree_root(tree) or score.parent),
+            },
+            "tracks": [t.name for t in tracks],
+            "score_file": "score.json",
+            "score_schema": score_schema,
+            "files": files,
+        }
+        dest = _finalize(doc, staging, out_root)
+    except BaseException:
+        shutil.rmtree(staging, ignore_errors=True)
+        raise
+    if verbose:
+        print(f"bundle {dest.name}  audio {len(tracks)} track(s)  "
               f"total {time.perf_counter() - t_start:.1f}s", flush=True)
     return dest
 

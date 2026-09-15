@@ -232,6 +232,12 @@ worker.addEventListener("fetch", (event) => {
     case "page":
       event.respondWith(page(event, route.key));
       return;
+    case "exhibit":
+      // A live stream: fetched straight, never through a cache, and never
+      // stored. `event.respondWith` is intentionally not called here so the
+      // browser handles it exactly as if this worker did not exist —
+      // no `cache.put`, no stale response, no fallback to old bytes.
+      return;
     case "network":
       // A navigation still has its preload in flight; use it rather than
       // fetching the page twice. Everything else is left to the browser.

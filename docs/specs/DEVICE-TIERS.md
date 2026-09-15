@@ -62,6 +62,7 @@ GPU, including the lightmaps.
 | KTX2 transcode target | ASTC 4×4 | ASTC | ASTC | ASTC (verify with `detectSupport`) | ASTC (verify) | ASTC, ETC2 on old Mali | BC7 (BPTC), DXT on old cards |
 | video decoders at once | 1 (Meta: play a single video at a time) | 1 | 1 | 1 (no page says more; assume 1) | 1, native HLS, hardware | 1, hls.js over MSE | 1 by rule; 2 possible, unmeasured |
 | HLS rung ceiling | 1080p | 720p | 720p | 1080p | native ABR picks; ladder serves all three | 720p (`capLevelToPlayerSize`) | 1080p |
+| positioned audio sources | 16 | 16 | 16 | 32 | 8 | 8 | 32 |
 | AVIF decode | yes (Chromium 146+) | yes | yes (Chromium-based) | yes (Safari 16+) | yes, iOS 16+ | yes, Chrome 85+ | yes |
 | still tier to fetch | phone (1600) | phone | phone | full (4096) | phone | phone | full |
 | WebXR session | immersive-vr | immersive-vr | immersive-vr | immersive-vr (no AR module) | none | none | immersive-vr only with an OpenXR runtime present (not fetched, from general knowledge) |
@@ -84,6 +85,10 @@ Notes on the rows.
   by transfer, not by shared memory. Spark's default sort worker uses a
   SharedArrayBuffer (World Labs' Spark 2.0 post); the splat kind needs the
   non-shared path proven before it is a kind (BACKLOG 22).
+- **Positioned audio sources are a budget, not a measurement.** The row is
+  `AUDIO-STREAM.md` §5's proposed cap on simultaneous positioned per-node
+  sources for a live stream exhibit, with the rest folded into one
+  non-positioned bed; §7 item 2 is what turns it into a fact.
 - **Draw calls, not triangles, are the Quest ceiling.** Meta's own example:
   1000 triangles as 1000 draw calls falls under 72 Hz on CPU cost alone. The
   scene today is 7 draw calls in the einstruct room, 21 with the hall in view,

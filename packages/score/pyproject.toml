@@ -1,0 +1,24 @@
+[project]
+name = "orchard-score"
+# The release. Its git tag is score-v<this>, and `__version__` in
+# src/orchard_score/__init__.py must say the same (tests/test_version.py).
+version = "1.0.0"
+description = "orchard/score/1: the versioned, fixed-rate per-node observation stream behind an audio bundle."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "AGPL-3.0-or-later"
+license-files = ["LICENSE"]
+dependencies = []
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/orchard_score"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
