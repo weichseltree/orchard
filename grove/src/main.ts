@@ -155,7 +155,7 @@ let desktopControls: DesktopControls | null = null;
 const gameSurface = new GameSurface(hudRoot, {
   onLifecycle: (event) => console.info(`[grove] game surface ${event.event}`),
   onClose: () => {
-    activeWall = null;
+    activeScreen = null;
     canvas.focus();
     handOverVideo(true);
   },
@@ -169,7 +169,7 @@ const guide = new VisitorGuide(hudRoot, mansion, device, () => {
     return;
   }
   if (document.pointerLockElement) document.exitPointerLock();
-  activeWall?.release();
+  activeScreen?.release();
   gameSurface.open(surface, canvas);
 });
 guide.setRoom(startRoom.id);

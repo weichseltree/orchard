@@ -18,6 +18,7 @@ import {
   type Scene,
   type WebGLRenderer,
 } from "three";
+import type { Renderer } from "../render/types";
 import type { Mansion, Portal } from "./schema";
 
 // A portal is a blending of two spacetimes, not a plane with a frame. Each
@@ -182,11 +183,15 @@ export class PortalSystem {
   #target: WebGLRenderTarget | null = null;
   #blank = new DataTexture(new Uint8Array([0, 0, 0, 255]), 1, 1, RGBAFormat);
   #farCamera = new PerspectiveCamera();
-  #renderer: WebGLRenderer;
+  /** The WebGL renderer, or null on a backend without render targets: the blend then fades without a far view. */
+  #renderer: WebGLRenderer | null;
   #lastRoom: string | null = null;
 
-  constructor(mansion: Mansion, renderer: WebGLRenderer) {
-    this.#renderer = renderer;
+  constructor(mansion: Mansion, renderer: Renderer) {
+    const gl = renderer as Partial<WebGLRenderer>;
+    this.#renderer = typeof gl.setRenderTarget === "function" && typeof gl.getDrawingBufferSize === "function"
+      ? (renderer as unknown as WebGLRenderer)
+      : null;
     this.#blank.needsUpdate = true;
     this.group.name = "portals";
     this.ends = portalEnds(mansion);
@@ -250,7 +255,7 @@ export class PortalSystem {
       material.uniforms.uLive!.value = 0;
       material.side = d < end.radius ? BackSide : FrontSide;
       mesh.visible = this.#armed.get(end) === true || d > end.radius * 1.1;
-      if (frame.live && d < end.radius * LIVE_WITHIN_RADII && d < liveDistance && this.#armed.get(end)) {
+      if (frame.live && this.#renderer && d < end.radius * LIVE_WITHIN_RADII && d < liveDistance && this.#armed.get(end)) {
         live = end;
         liveDistance = d;
       }
@@ -268,6 +273,7 @@ export class PortalSystem {
 
   #renderFar(end: PortalEnd, frame: PortalFrame, t: number): void {
     const renderer = this.#renderer;
+    if (!renderer) return;
     const { camera, scene, worldRoot, setScaleVisible } = frame;
     renderer.getDrawingBufferSize(_size);
     const w = Math.max(1, Math.round(_size.x * VIEW_SCALE));
