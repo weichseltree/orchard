@@ -9,6 +9,9 @@ const SEEN_KEY = "orchard.grove.guide-seen";
 /** Only offer doors that can actually be walked through. */
 export function destinations(mansion: Mansion, room: Room): Room[] {
   const ids = new Set(room.doorways.filter((door) => !door.closed).map((door) => door.to));
+  // A portal leads somewhere too, and its far end leads back.
+  for (const portal of room.portals) ids.add(portal.to);
+  for (const other of mansion.rooms) if (other.portals.some((portal) => portal.to === room.id)) ids.add(other.id);
   return mansion.rooms.filter((candidate) => ids.has(candidate.id));
 }
 

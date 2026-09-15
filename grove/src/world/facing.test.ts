@@ -14,7 +14,7 @@ describe("wall hangings face into their room", () => {
     // The grey box is the reference whether or not the room's glb has landed.
     const centre = roomBox(room).getCenter(new Vector3());
     for (const hanging of room.hangings) {
-      if (hanging.kind === "tape") continue;
+      if (hanging.kind === "tape" || hanging.kind === "planet") continue;
       it(`${room.id}/${hanging.id}`, () => {
         const place = placeStill(
           { position: hanging.position, rotationDeg: hanging.rotationDeg, widthMeters: 6, heightMeters: 3.4 },

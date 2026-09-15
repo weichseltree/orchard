@@ -84,9 +84,13 @@ service tokens in the server-side configuration described in
 [secrets.example.env](../secrets.example.env).
 
 `src/world/mansion.json` describes the palace's rooms, doorways, spawn
-positions and hangings. A hanging names a tape, video or still. Its `exhibit`
-reference follows the live table; its pinned bundle identity is the fallback
-when the database cannot answer. To inspect a room directly, open
+positions and hangings. A hanging names a tape, video, still or planet. Its
+`exhibit` reference follows the live table; its pinned bundle identity is
+the fallback when the database cannot answer. A planet hanging pins one
+bundle that names its own atlas videos. A room may carry a `scale` and
+`portals`: a portal is a soft sphere that shows the other room's scale and
+steps the visitor through (the Meridian Garden's armillary leads to the
+Orrery; `docs/specs/OBSERVATORY.md`). To inspect a room directly, open
 `/grove/?room=einstruct`; add `&demo` for local fixtures.
 
 ## Check and build

@@ -20,7 +20,8 @@ faceted grove sculptures and garden armillary are designed architecture.
 | The Binding Chamber | What lets two atoms stay together? | One recorded three-body capture |
 | The Reconstruction Gallery | What does a new viewpoint reveal? | Three still studies of a classroom reconstruction and its limitations |
 | The Lantern Walk and Long Gallery | Space between questions | Architecture and open routes |
-| Terrace, Meridian Garden and three groves | Pause and explore outside | Designed grounds; the distant world reuses the existing spectre tape |
+| Terrace, Meridian Garden and three groves | Pause and explore outside | Designed grounds; the armillary at the garden's crossing is the portal to the Orrery |
+| The Orrery | How does a world find its middle, seen at the scale of the sky? | spectre's three cutaway worlds with their measured surfaces, eighty metres across, on a star field |
 | The Workshop | Host space | Behind a closed door; absent from visitor routes |
 
 The guide gives concrete observations and limits for each research chamber.
@@ -34,17 +35,54 @@ caused it. [EXHIBIT-PLAN.md](../EXHIBIT-PLAN.md) retains the research reports,
 unresolved questions and provenance. No new research artefacts were published
 to fill the rooms.
 
+## The Orrery and the portal
+
+Added 2026-09-15. The floating "moon" over the terrace (spectre's chi 12
+tape as a 36 m point cloud, BACKLOG 33) is gone. In its place the Meridian
+Garden's armillary is a **portal** to **the Orrery**, a room at another
+scale: its metre is a fiftieth of the palace's (`scale: 0.02` in
+`mansion.json`), it is built in space (`architecture: "space"`, a hashed
+star field and a landing ring, `space.ts`), and it holds spectre's planet
+cutaway (`orchard/planet.py`, bundle `26f78b7516170d6d`): the chi 0, 6 and
+12 worlds at 40 m radius, each with its removed quarter turned toward the
+landing, textured by the beauty atlas video (`1207b7952ce09923`) and moved
+every tape frame by the measured surface stream (`planet-exhibit.ts`).
+
+A portal is a blending of two spacetimes, not a plane with a frame
+(`portal.ts`, `PortalSchema`). Each end is a soft sphere (4.5 m here). From
+outside it is an edgeless window: the far room is rendered live from a
+camera standing where the visitor's eye would stand over there, its offset
+from the far end multiplied by the scale ratio, so the Orrery's worlds show
+as globes a metre and a half across inside the armillary. Walking in, the
+far view fades over the near one while that camera's scale slides from the
+ratio to one; at the sphere's core the body steps through, keeping its
+offset, and the far end stays quiet until the visitor has walked clear of
+it, so nobody bounces back. A portal can be crossed only from the room and
+the scale it was built for: the schema requires the two rooms to differ in
+scale and both ends to lie inside their rooms, and `crossPortal` refuses a
+body whose scale is not the end's. Rooms of one scale are drawn together;
+the other scale is visible only through a portal.
+
+Stated limits: the far view is not rendered while a headset session
+presents (the sphere is then a plain shimmer and the fade still happens);
+the far view is tone-mapped as a whole, so exhibits seen through it are
+graded once where they are not graded directly; the surface stream is
+34 MB on the wire and 74 MB decoded, fetched when the worlds first play,
+and no phone or headset measurement exists yet; the display modes
+(species, temperature, pressure) are bundled but no control switches them;
+the planet has no time slider, only play and pause (Space).
+
 ## Architecture and navigation
 
-The 13 footprints retain their room IDs, presence IDs, ground plane and
+The 13 Observatory footprints retain their room IDs, presence IDs, ground plane and
 connections. Existing room URLs remain useful. Axial interior portals are
 now 4.8 m wide and 4.6 m high, opening the view through the building. Two
 end-wall media panels were resized and moved clear of those surrounds.
 Navigation retains body and shoulder clearance. Tests probe both usable
 apertures and the actual architecture meshes.
 
-Every current room selects `architecture: "observatory"` in
-`grove/src/world/mansion.json`. `observatory.ts` builds real geometry using
+Every Observatory room selects `architecture: "observatory"` in
+`grove/src/world/mansion.json`; the Orrery selects `"space"`. `observatory.ts` builds real geometry using
 instanced primitives, shared materials and a small procedural stone shader.
 Light pools and surface washes are designed shading, not a physical lighting
 simulation. Scientific tape, still and video materials remain independent.
@@ -66,7 +104,7 @@ pnpm quality:browser --screenshots
 pnpm quality:world --screenshots
 ```
 
-The world check captures all 13 rooms at native 1600 × 900 resolution,
+The world check captures all 14 rooms at native 1600 × 900 resolution,
 records cameras and image hashes, checks the shell and draw-batch budget,
 waits for every synthetic tape to upload a frame, and detects legacy asset
 downloads and browser errors. Playback stops before each camera is rendered

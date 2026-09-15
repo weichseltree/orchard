@@ -16,12 +16,14 @@ export interface Body {
   yaw: number;
   pitch: number;
   room: string;
-  /** Set for one frame after a doorway crossing. */
+  /** The scale of the room the body is in (schema.ts); a portal is the only thing that changes it. */
+  scale: number;
+  /** Set for one frame after a doorway or portal crossing. */
   crossedInto: string | null;
 }
 
-export function createBody(x: number, z: number, yaw: number, room: string): Body {
-  return { x, z, yaw, pitch: 0, room, crossedInto: null };
+export function createBody(x: number, z: number, yaw: number, room: string, scale = 1): Body {
+  return { x, z, yaw, pitch: 0, room, scale, crossedInto: null };
 }
 
 /**

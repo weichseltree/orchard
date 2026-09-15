@@ -111,6 +111,8 @@ def mansion_refs(live: dict, mansion: Path | None = None) -> int:
                     for bid in (ref.get("id"), (ref.get("exhibit") or {}).get("bundle")):
                         if isinstance(bid, str) and ID.match(bid):
                             _add(live, bid, f"pinned in {path}")
+                            for inner in nested_refs(bid):
+                                _add(live, inner, f"named by pinned bundle {bid}")
                 for v in x.values():
                     walk(v)
             elif isinstance(x, list):
@@ -118,6 +120,30 @@ def mansion_refs(live: dict, mansion: Path | None = None) -> int:
                     walk(v)
         walk(doc)
     return n
+
+
+def nested_refs(bid: str, root: Path | None = None) -> list[str]:
+    """Bundle ids a local bundle names inside itself: a planet's atlas videos.
+
+    A planet hanging pins one id; the video bundles that texture it are named
+    in that bundle's `atlases`, so they are live for as long as it is. Read
+    from the local copy when there is one; a bundle only in the bucket keeps
+    its atlases alive by the same rule once it is pulled back.
+    """
+    root = Path(root) if root else RESULTS / "bundles"
+    doc_path = root / bid / "bundle.json"
+    if not doc_path.is_file():
+        return []
+    try:
+        doc = json.loads(doc_path.read_text())
+    except (OSError, json.JSONDecodeError):
+        return []
+    out = []
+    for row in (doc.get("atlases") or {}).values():
+        inner = row.get("bundle") if isinstance(row, dict) else None
+        if isinstance(inner, str) and ID.match(inner):
+            out.append(inner)
+    return out
 
 
 def exhibit_refs(live: dict, rows=None) -> int:

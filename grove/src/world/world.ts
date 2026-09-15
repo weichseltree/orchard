@@ -15,6 +15,7 @@ import type { ChunkScheduler } from "../render/chunk-stream";
 import type { DeviceTier } from "../tape/bundle";
 import type { StillPanel } from "../media/still";
 import type { VideoWall } from "../media/videowall";
+import type { PlanetExhibit } from "./planet-exhibit";
 import { StillBundleSchema, VideoBundleSchema } from "../tape/bundle";
 import type { Provenance } from "../ui/provenance";
 import { bundleBaseOf, pickExhibit, type ExhibitRow } from "./exhibits";
@@ -64,10 +65,18 @@ export interface BuiltWorld {
   /** The first video wall, for the audio toggle. */
   readonly video: VideoWall | null;
   stills: StillPanel[];
+  /** spectre's cutaway worlds, wherever they stand. */
+  planets: PlanetExhibit[];
   /** Streams the start room's neighbourhood in. Resolves when everything that can load has. */
   load(): Promise<void>;
   /** Loads more rooms (a doorway crossing widens the neighbourhood); rooms already loaded are skipped. */
   ensureRooms(ids: readonly string[]): Promise<void>;
+  /**
+   * Draw the rooms of one scale and hide the rest. Rooms of different scales
+   * share one coordinate space but never one view: a portal's far view shows
+   * the other scale, and stepping through it switches this.
+   */
+  setScaleVisible(scale: number): void;
   dispose(): void;
 }
 
@@ -87,11 +96,16 @@ export function neighbourhood(mansion: Mansion, roomId: string, depth = 2): stri
     const d = dist.get(id)!;
     if (d >= depth) continue;
     const room = mansion.rooms.find((r) => r.id === id);
-    for (const door of room?.doorways ?? []) {
-      if (door.closed || dist.has(door.to)) continue;
-      if (!mansion.rooms.some((r) => r.id === door.to)) continue;
-      dist.set(door.to, d + 1);
-      queue.push(door.to);
+    const next: string[] = [];
+    for (const door of room?.doorways ?? []) if (!door.closed) next.push(door.to);
+    // A portal is a neighbour too, both ways: its far view is the other room.
+    for (const portal of room?.portals ?? []) next.push(portal.to);
+    for (const other of mansion.rooms) if (other.portals.some((p) => p.to === id)) next.push(other.id);
+    for (const to of next) {
+      if (dist.has(to)) continue;
+      if (!mansion.rooms.some((r) => r.id === to)) continue;
+      dist.set(to, d + 1);
+      queue.push(to);
     }
   }
   const out = [...dist.keys()];
@@ -160,6 +174,26 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
   // frame already has a horizon, and the hall's windows never show the page.
   const sky: SkyDome | null = mansion.sky ? buildSky(mansion.sky) : null;
   if (sky) group.add(sky.mesh);
+  // The sky belongs to the palace's scale; the Orrery brings its own stars.
+  const skyScale = mansion.rooms.find((r) => r.id === mansion.start)?.scale ?? 1;
+
+  // Everything of a room, shell and hangings, under one group, so a scale can
+  // be shown or hidden as a whole.
+  const roomGroups = new Map<string, Group>();
+  function groupFor(room: Room): Group {
+    let roomGroup = roomGroups.get(room.id);
+    if (!roomGroup) {
+      roomGroup = new Group();
+      roomGroup.name = `room-${room.id}`;
+      roomGroup.userData = { scale: room.scale };
+      roomGroup.visible = room.scale === visibleScale;
+      roomGroups.set(room.id, roomGroup);
+      group.add(roomGroup);
+    }
+    return roomGroup;
+  }
+  let visibleScale = mansion.rooms.find((r) => r.id === (options.startRoom ?? mansion.start))?.scale ?? 1;
+  if (sky) sky.mesh.visible = visibleScale === skyScale;
 
   const shells = new Map<string, RoomShell>();
   const shellLoads = new Map<string, Promise<void>>();
@@ -178,9 +212,11 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
     // downloads. Legacy scene documents can still use their original assets.
     const shell = room.architecture === "observatory"
       ? (await import("./observatory")).buildObservatory(room)
-      : await (await import("./rooms")).buildRoom({ room, renderer, tier: device.tier, onNotice, scheduler: options.scheduler });
+      : room.architecture === "space"
+        ? (await import("./space")).buildSpace(room)
+        : await (await import("./rooms")).buildRoom({ room, renderer, tier: device.tier, onNotice, scheduler: options.scheduler });
     shells.set(room.id, shell);
-    group.add(shell.group);
+    groupFor(room).add(shell.group);
     applyMarkers(room, shell);
     // A baked room knows where its sun was; the dome follows the asset.
     const assetSun = sunFromAsset(shell.provenance);
@@ -228,7 +264,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
             .then((tape) => {
               world.tapes.push(tape);
               roomOf.set(tape, room.id);
-              group.add(tape.group);
+              groupFor(room).add(tape.group);
               provenance.register({
                 id: `tape:${hanging.id}`,
                 title: hanging.title || tape.bundle.title,
@@ -251,9 +287,25 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
             .then((still) => {
               world.stills.push(still);
               roomOf.set(still, room.id);
-              group.add(still.mesh);
+              groupFor(room).add(still.mesh);
             })
             .catch((error: unknown) => onNotice(`still ${hanging.id}: ${message(error)}`)),
+        );
+      } else if (hanging.kind === "planet") {
+        pending.push(
+          import("./planet-exhibit").then(({ PlanetExhibit }) => PlanetExhibit.load({ hanging, baseUrl: base, onNotice }))
+            .then((planet) => {
+              world.planets.push(planet);
+              roomOf.set(planet, room.id);
+              groupFor(room).add(planet.group);
+              provenance.register({
+                id: `planet:${hanging.id}`,
+                title: hanging.title || planet.bundle.title,
+                bounds: planet.bounds,
+                read: () => planet.provenance(),
+              });
+            })
+            .catch((error: unknown) => onNotice(`planet ${hanging.id}: ${message(error)}`)),
         );
       } else {
         pending.push(
@@ -262,7 +314,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
               if (!video) return;
               world.videos.push(video);
               roomOf.set(video, room.id);
-              group.add(video.mesh);
+              groupFor(room).add(video.mesh);
             })
             .catch((error: unknown) => onNotice(`video ${hanging.id}: ${message(error)}`)),
         );
@@ -307,13 +359,20 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
       return this.videos.find((v) => v !== null) ?? null;
     },
     stills: [],
+    planets: [],
     load: () => ensureRooms(neighbourhood(mansion, options.startRoom ?? mansion.start)),
     ensureRooms: (ids) => ensureRooms(ids),
+    setScaleVisible(scale) {
+      visibleScale = scale;
+      for (const roomGroup of roomGroups.values()) roomGroup.visible = roomGroup.userData.scale === scale;
+      if (sky) sky.mesh.visible = scale === skyScale;
+    },
     dispose() {
       sky?.dispose();
       for (const tape of world.tapes) tape?.dispose();
       for (const video of world.videos) video.dispose();
       for (const still of world.stills) still.dispose();
+      for (const planet of world.planets) planet.dispose();
     },
   };
   return world;

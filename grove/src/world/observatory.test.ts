@@ -6,7 +6,7 @@ import { buildObservatory } from "./observatory";
 import { buildRoom } from "./rooms";
 
 const mansion = parseMansion(mansionDocument);
-const shells = mansion.rooms.map(room => ({ room, shell: buildObservatory(room) }));
+const shells = mansion.rooms.filter(room => room.architecture === "observatory").map(room => ({ room, shell: buildObservatory(room) }));
 for (const { shell } of shells) shell.group.updateMatrixWorld(true);
 
 describe("the designed observatory", () => {

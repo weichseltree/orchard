@@ -34,6 +34,7 @@ const stations = [
   ['orchard-west', -30, -50, 90, 5],
   ['orchard-south', -60, 0, 90, 5],
   ['orchard-east', -30, 50, 90, 5],
+  ['orrery', 0, -400, 0, 8],
 ];
 const report = {
   schema: 'orchard/observatory-quality/1', measuredAt: new Date().toISOString(),
@@ -100,7 +101,9 @@ try {
     return { rooms, batches, instances, tapes: app.world.tapes.filter(Boolean).length };
   });
   report.world = world;
-  check('All 13 rooms use the Observatory architecture', world.rooms.length === 13 && world.rooms.every((room) => room.architecture === 'observatory'), world.rooms);
+  check('All 14 rooms use runtime architecture (13 Observatory, the Orrery in space)', world.rooms.length === 14
+    && world.rooms.filter((room) => room.architecture === 'observatory').length === 13
+    && world.rooms.filter((room) => room.architecture === 'space').length === 1, world.rooms);
   check('Architecture stays below 150 draw batches across the whole world', world.batches < 150, world.batches);
   check('Synthetic playback fixtures loaded', world.tapes === 7, world.tapes);
   await page.evaluate(() => {

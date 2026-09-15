@@ -6,16 +6,19 @@ import {
   Texture,
   TextureLoader,
   VideoTexture,
+  type Vector3,
 } from "three";
+import { claimDecoder, holdsDecoder, releaseDecoder } from "./decoder-lease";
+import type { Screen, ScreenMode } from "./screen";
 
 // One wall, one decoder. Quest 3 will decode exactly one HLS stream without
 // complaint and fall over on two (grove/README.md: "One screen plays at a
 // time"). Every wall is built showing its poster frame; the decoder is handed
 // to ONE wall at a time by `attach()`, and `release()` hands it back, so a
 // mansion with several walls plays the one the visitor is nearest and the
-// others stay pictures.
+// others stay pictures. The lease itself lives in decoder-lease.ts, because a
+// planet (world/planet-exhibit.ts) is a video texture too.
 
-let decoderOwner: VideoWall | null = null;
 let hlsModule: Promise<typeof import("hls.js")> | null = null;
 
 function loadHls(): Promise<typeof import("hls.js")> {
@@ -36,14 +39,15 @@ export interface VideoWallOptions {
   onNotice?: (message: string) => void;
 }
 
-export type VideoWallMode = "hls.js" | "native" | "poster";
+export type VideoWallMode = ScreenMode;
 
 const POSTER_FALLBACK = 0x1b241d;
 
-export class VideoWall {
+export class VideoWall implements Screen {
   readonly mesh: Mesh;
   readonly video: HTMLVideoElement;
   readonly master: string;
+  readonly hasAudio = true;
 
   #mode: VideoWallMode = "poster";
   #texture: VideoTexture | null = null;
@@ -71,6 +75,10 @@ export class VideoWall {
   /** "poster" until `attach()` hands this wall the decoder. */
   get mode(): VideoWallMode {
     return this.#mode;
+  }
+
+  get position(): Vector3 {
+    return this.mesh.position;
   }
 
   get playing(): boolean {
@@ -129,8 +137,7 @@ export class VideoWall {
   attach(): Promise<boolean> {
     if (this.#disposed || this.#mode !== "poster") return Promise.resolve(this.#mode !== "poster");
     if (this.#attaching) return this.#attaching;
-    if (decoderOwner !== null) return Promise.resolve(false);
-    decoderOwner = this;
+    if (!claimDecoder(this)) return Promise.resolve(false);
     const attachment = ++this.#attachment;
     const pending = this.#start(attachment).finally(() => {
       if (attachment === this.#attachment) this.#attaching = null;
@@ -154,7 +161,7 @@ export class VideoWall {
         const { default: Hls } = await loadHls();
         // A doorway crossing may have released this wall while its code loaded.
         // Never let that late completion take the next room's decoder.
-        if (this.#disposed || attachment !== this.#attachment || decoderOwner !== this) return false;
+        if (this.#disposed || attachment !== this.#attachment || !holdsDecoder(this)) return false;
         if (Hls.isSupported()) {
           const instance = new Hls({ enableWorker: true, lowLatencyMode: false });
           this.#hls = instance;
@@ -182,7 +189,7 @@ export class VideoWall {
       void this.video.play().catch(() => undefined);
       return true;
     } catch (error) {
-      if (attachment !== this.#attachment || decoderOwner !== this) return false;
+      if (attachment !== this.#attachment || !holdsDecoder(this)) return false;
       this.release();
       const detail = error instanceof Error ? error.message : String(error);
       this.#onNotice?.(`The video could not start (${detail}); showing the poster.`);
@@ -194,7 +201,7 @@ export class VideoWall {
   release(): void {
     ++this.#attachment;
     this.#attaching = null;
-    if (decoderOwner === this) decoderOwner = null;
+    releaseDecoder(this);
     if (this.#mode === "poster" && !this.#hls) return;
     this.#hls?.destroy();
     this.#hls = null;

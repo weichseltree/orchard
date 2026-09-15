@@ -28,7 +28,8 @@ import { frameAt } from "./tape/time";
 import mansionDocument from "./world/mansion.json";
 import { parseMansion, roomById } from "./world/schema";
 import { buildWorld, exhibitRoom, neighbourhood, type BuiltWorld } from "./world/world";
-import type { VideoWall } from "./media/videowall";
+import { PortalSystem } from "./world/portal";
+import type { Screen } from "./media/screen";
 import type { TapeExhibit } from "./world/tape-exhibit";
 
 // The grove. Boot order matters: the canvas renders within a frame of the
@@ -86,6 +87,7 @@ const body = createBody(
   startRoom.spawn.position[2],
   MathUtils.degToRad(startYaw),
   startRoom.id,
+  startRoom.scale,
 );
 // `&pitch=<deg>` looks up or down from the start, for a link to something high;
 // `&x=&z=` stand somewhere else in the room, and then the marker leaves them be.
@@ -212,7 +214,11 @@ let scrubbingUntil = 0;
 const commands: Commands = {
   togglePlay: () => {
     const tape = nearestTape();
-    if (!tape) return;
+    if (!tape) {
+      // No tape here: the room's playing screen (a planet) takes the key.
+      if (activeScreen?.togglePlay && exhibitRoom(activeScreen) === body.room) hud.setPlaying(activeScreen.togglePlay());
+      return;
+    }
     const playing = tape.togglePlay();
     for (const other of world?.tapes ?? []) other?.setPlaying(playing);
     hud.setPlaying(playing);
@@ -247,6 +253,13 @@ const xr = new XrControls({
   onNotice: (text) => notice(text),
 });
 view.scene.add(xr.marker);
+
+// The portals: soft spheres that show the other scale and step the body
+// through. Their meshes live beside the world, not in it, so a far view can
+// hide them while it renders.
+const portals = new PortalSystem(mansion, view.renderer);
+portals.setScale(startRoom.scale);
+view.world.add(portals.group);
 
 const HINT = "Click the view to look around · W A S D to walk · Escape releases the pointer";
 if (device.touch) {
@@ -300,6 +313,7 @@ function boot(): void {
     },
   });
   world = built;
+  built.setScaleVisible(body.scale);
   // The group goes into the scene empty: the first frame is a room, not a
   // black page, and each shell appears as it lands.
   view.world.add(built.group);
@@ -327,39 +341,43 @@ async function enterVr(): Promise<void> {
   }
 }
 
-// One screen plays at a time (videowall.ts): the wall nearest the visitor
-// holds the decoder, and walking to another hands it over. Re-checked a few
-// times a second, not every frame; a hand-over restarts the stream.
-let activeWall: VideoWall | null = null;
+// One screen plays at a time (media/screen.ts): the wall or planet nearest
+// the visitor holds the decoder, and walking to another hands it over.
+// Re-checked a few times a second, not every frame; a hand-over restarts the
+// stream.
+let activeScreen: Screen | null = null;
 let nextWallCheck = 0;
 function handOverVideo(force = false): void {
   const now = performance.now();
   if (!force && now < nextWallCheck) return;
   nextWallCheck = now + 400;
-  // Only the walls of the room the visitor is in are candidates: a wall seen
+  // Only the screens of the room the visitor is in are candidates: a wall seen
   // through a doorway stays a poster, and leaving a room releases its decoder.
-  const walls = (world?.videos ?? []).filter(
-    (w): w is VideoWall => w !== null && exhibitRoom(w) === body.room,
+  const screens: Screen[] = [...(world?.videos ?? []), ...(world?.planets ?? [])].filter(
+    (s) => exhibitRoom(s) === body.room,
   );
-  let nearest: VideoWall | null = null;
+  let nearest: Screen | null = null;
   let best = Infinity;
-  for (const wall of walls) {
-    const dx = wall.mesh.position.x - body.x;
-    const dz = wall.mesh.position.z - body.z;
+  for (const screen of screens) {
+    const dx = screen.position.x - body.x;
+    const dz = screen.position.z - body.z;
     const d = dx * dx + dz * dz;
     if (d < best) {
       best = d;
-      nearest = wall;
+      nearest = screen;
     }
   }
-  if (nearest === activeWall) return;
-  activeWall?.release();
-  activeWall = nearest;
+  if (nearest === activeScreen) return;
+  activeScreen?.release();
+  activeScreen = nearest;
   hud.setUnmuteAvailable(false);
   hud.setMuted(nearest?.muted ?? true);
   if (!nearest) return;
   void nearest.attach().then((playing) => {
-    if (playing && activeWall === nearest) hud.setUnmuteAvailable(true);
+    if (playing && activeScreen === nearest) {
+      hud.setUnmuteAvailable(nearest.hasAudio);
+      if (nearest.togglePlay) hud.setPlaying(true);
+    }
   });
 }
 
@@ -390,8 +408,8 @@ function nearestTape(): TapeExhibit | null {
 }
 
 async function toggleAudio(): Promise<void> {
-  const video = activeWall;
-  if (!video || video.mode === "poster") return;
+  const video = activeScreen;
+  if (!video || video.mode === "poster" || !video.hasAudio) return;
   if (video.muted) await video.unmute();
   else video.mute();
   hud.setMuted(video.muted);
@@ -440,6 +458,30 @@ view.start((dt, time, rawDt) => {
     view.camera.rotation.set(body.pitch, 0, 0);
     view.camera.position.set(0, EYE_HEIGHT, 0);
   }
+
+  // The portals see this frame's eye: a far view for the one in reach, and
+  // the step through when the eye is at a portal's core.
+  view.rig.updateMatrixWorld(true);
+  const crossing = portals.update({
+    body,
+    camera: view.camera,
+    scene: view.scene,
+    worldRoot: view.world,
+    live: !presenting,
+    setScaleVisible: (scale) => world?.setScaleVisible(scale),
+  });
+  if (crossing) {
+    body.x = crossing.x;
+    body.z = crossing.z;
+    body.room = crossing.room;
+    body.scale = crossing.scale;
+    body.crossedInto = crossing.room;
+    view.rig.position.set(body.x, 0, body.z);
+    world?.setScaleVisible(body.scale);
+    portals.setScale(body.scale);
+    handOverVideo(true);
+  }
+  for (const planet of world?.planets ?? []) planet.update();
 
   const tape = nearestTape();
   hud.setScrubberVisible(tape !== null);

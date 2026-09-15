@@ -79,6 +79,66 @@ export const VideoBundleSchema = z.looseObject({
   poster: z.string().default("poster.jpg"),
 });
 
+/** One segment of a planet's surface stream: a second of video's worth of vertex radii. */
+export const SurfaceSegmentSchema = z.looseObject({
+  file: z.string().min(1),
+  first_frame: z.number().int().nonnegative(),
+  frames: z.number().int().positive(),
+  bytes: z.number().int().positive(),
+  sha256: z.string().regex(/^[0-9a-f]{64}$/),
+});
+
+/**
+ * spectre's cutaway worlds (orchard/planet.py): a glTF whose vertices carry
+ * a placement recipe, a stream of per-frame radii, and the video bundles that
+ * texture it, named by id per display mode. `worlds` is in atlas-column
+ * order; `surface` is the stream's own format description, checked by the
+ * client against what it can decode.
+ */
+export const PlanetBundleSchema = z.looseObject({
+  schema: z.literal("orchard/bundle/1"),
+  kind: z.literal("planet"),
+  id: z.string(),
+  tree: z.string().default(""),
+  title: z.string().default(""),
+  produced_by: z.string().default(""),
+  source: z.looseObject({}).default({}),
+  mesh: z.string().default("planet_cutaway.glb"),
+  poster: z.string().default("poster.jpg"),
+  fps: z.number().positive(),
+  frames: z.number().int().positive(),
+  R_REF_sigma: z.number().positive(),
+  worlds: z.array(z.looseObject({
+    world: z.string().min(1),
+    chi: z.number(),
+    column: z.number().int().nonnegative(),
+    node: z.string().min(1),
+  })).min(1),
+  cut: z.looseObject({ bisector: z.tuple([z.number(), z.number(), z.number()]) }),
+  atlases: z.record(z.string(), z.looseObject({
+    bundle: z.string().regex(/^[0-9a-f]{16}$/),
+    legend: z.string().default(""),
+    description: z.string().default(""),
+  })),
+  surface: z.looseObject({
+    format: z.string(),
+    frames: z.number().int().positive(),
+    bytes: z.number().int().positive(),
+    worlds: z.array(z.string()),
+    vertices_per_world: z.number().int().positive(),
+    grid: z.looseObject({ shape: z.tuple([z.number().int().positive(), z.number().int().positive()]) }),
+    quantisation_sigma: z.number().positive(),
+    zero_code: z.number().int().nonnegative().max(255),
+    segment_frames: z.number().int().positive(),
+    segments: z.array(SurfaceSegmentSchema).min(1),
+  }),
+  honesty: z.array(z.string()).default([]),
+  files: z.record(z.string(), z.looseObject({ sha256: z.string(), bytes: z.number() })).default({}),
+});
+
+export type PlanetBundle = z.infer<typeof PlanetBundleSchema>;
+export type SurfaceSegment = z.infer<typeof SurfaceSegmentSchema>;
+
 export const StillTierSchema = z.looseObject({
   name: z.string(),
   width: z.number().int().positive(),

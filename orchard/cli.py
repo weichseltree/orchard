@@ -153,6 +153,19 @@ def cmd_bundle_video(a):
     print(out)
 
 
+def cmd_bundle_planet(a):
+    from .planet import bundle_planet
+    atlases = {}
+    for spec in a.atlas or []:
+        mode, sep, bid = spec.partition("=")
+        if not sep:
+            raise SystemExit(f"--atlas wants mode=<video bundle id>, not {spec!r}")
+        atlases[mode] = bid
+    out = bundle_planet(a.delivery, tree=a.tree, title=a.title, out_root=a.out,
+                        atlases=atlases or None)
+    print(out)
+
+
 def cmd_bundle_still(a):
     from .bundle import bundle_still
     out = bundle_still(a.image, tree=a.tree, title=a.title, out_root=a.out)
@@ -314,6 +327,13 @@ def main(argv=None):
     b.add_argument("--title", required=True)
     b.add_argument("--out", default=str(RESULTS / "bundles"))
     b.set_defaults(fn=cmd_bundle_video)
+    b = bsub.add_parser("planet", help="spectre's cutaway worlds: mesh, surface stream, legends")
+    b.add_argument("delivery", help="a completed exhibit bake directory (manifest.json)")
+    b.add_argument("--tree", required=True); b.add_argument("--title", required=True)
+    b.add_argument("--atlas", action="append", metavar="MODE=ID",
+                   help="video bundle id per atlas mode (default: the delivery's hls/index.json)")
+    b.add_argument("--out", default=str(RESULTS / "bundles"))
+    b.set_defaults(fn=cmd_bundle_planet)
     b = bsub.add_parser("still", help="an image as AVIF + JPEG at three widths")
     b.add_argument("image"); b.add_argument("--tree", required=True)
     b.add_argument("--title", required=True)

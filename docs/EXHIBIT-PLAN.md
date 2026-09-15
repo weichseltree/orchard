@@ -475,8 +475,12 @@ housekeeping commits.
 - **spectre, the trio.** Hang chi0, chi6, chi12 in the room once chi6
   completes and the harvest lands, with the shared scrubber and the cut
   plane as grove work. Recommended yes; it is the exhibit of this round.
-- **spectre, the moon.** The chi12 ball above the orchard. A look ruling
-  when the grounds exist; noted for the palace.
+- **spectre, the moon.** ~~The chi12 ball above the orchard.~~ Replaced
+  2026-09-15 by the Orrery: spectre's cutaway delivery (exhibit-v2, the
+  measured surfaces) as a `planet` bundle behind the garden's armillary
+  portal (OBSERVATORY.md). Open ruling: whether the cutaway trio also
+  replaces the three point-cloud tapes in the Gravity Chamber, or stands
+  beside them.
 - **premosaic, two posters.** On a wall of pruned trees, if the hall grows
   one; and commit the frozen JAX file as the reproduction pin.
 - **someotherlife, fund Spike C now?** One hour of your shooting, half a

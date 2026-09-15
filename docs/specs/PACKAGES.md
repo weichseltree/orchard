@@ -125,8 +125,13 @@ A bundle's id is the first 16 hex of the sha256 of its `bundle.json`
   `trees/<name>.yaml` becomes a generated read-only copy, rewritten whenever
   orchard writes the canonical one and by `orchard trees refresh`. It is
   written directly only when the repo is absent from the box.
-- **The bundle kinds** are `tape`, `clip`, `master`, `still` and `figure`,
-  and, from 2026-09-13, `model`: event-atoms' baked, walk-around world model
+- **The bundle kinds** are `tape`, `clip`, `master`, `still` and `figure`;
+  from 2026-09-15 `planet` (spectre's cutaway worlds: a glTF whose vertices
+  carry a placement recipe, a surface stream of per-frame radii, legends and
+  a poster, naming its atlas videos, which are ordinary video bundles, by id;
+  `orchard bundle planet <delivery>`, `orchard/planet.py`, consumed by
+  `grove/src/world/planet-exhibit.ts`; a pinned planet keeps its atlases
+  alive for `gc`); and, from 2026-09-13, `model`: event-atoms' baked, walk-around world model
   (a lookup of the model's answer for every state and action, its internals
   along a featured episode, its weights as an int8 atlas; nothing runs on the
   client). Its layout is event-atoms/exhibit/README.md §3 until

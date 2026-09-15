@@ -113,17 +113,76 @@ export const StillHangingSchema = z.looseObject({
   heightMeters: z.number().positive().default(3.4),
 });
 
+/**
+ * spectre's cutaway worlds (a `planet` bundle, orchard/planet.py) placed in
+ * a room. One hanging draws every world the bundle carries: `worlds` says
+ * where each goes, keyed by the bundle's world name, and `radiusMeters` is
+ * what one reference radius (the bundle's R_REF) measures here, so the same
+ * bundle stands at walking scale in a chamber and at solar scale in the
+ * Orrery. `cutToward` turns a world's removed quarter to face a point (the
+ * visitor's landing); `rotationDeg` is the alternative for an explicit turn.
+ * The bundle names its own atlas videos by id, so the hanging pins one id;
+ * `atlas` chooses the display mode.
+ */
+export const PlanetWorldSchema = z.looseObject({
+  world: z.string().min(1),
+  position: Vec3,
+  rotationDeg: Vec3.default([0, 0, 0]),
+  cutToward: Vec3.optional(),
+});
+
+export const PlanetHangingSchema = z.looseObject({
+  ...HangingCommon,
+  kind: z.literal("planet"),
+  radiusMeters: z.number().positive().default(1),
+  atlas: z.enum(["beauty", "species", "temperature", "pressure"]).default("beauty"),
+  worlds: z.array(PlanetWorldSchema).min(1),
+});
+
 export const HangingSchema = z.discriminatedUnion("kind", [
   TapeHangingSchema,
   VideoHangingSchema,
   StillHangingSchema,
+  PlanetHangingSchema,
 ]);
+
+/**
+ * A portal: not an opening in a wall but a blending of two spacetimes at
+ * different scales. It is a soft sphere in this room; walking into it fades
+ * the destination in and steps the visitor through, scaled. The other end
+ * is a sphere of the same kind in the destination room, at `exit`, and
+ * brings the visitor back. A portal can only be entered from the room and
+ * the scale it was built for: `to` must be a room of a different scale,
+ * both ends must lie inside their rooms, and the client refuses a crossing
+ * from a body at the wrong scale (portal.ts).
+ */
+export const PortalSchema = z.looseObject({
+  id: z.string().min(1),
+  to: z.string().min(1),
+  /** The centre of the blend, metres; put it at eye height so the eye passes its middle. */
+  position: Vec3,
+  radius: z.number().positive().default(3),
+  exit: z.looseObject({
+    position: Vec3,
+    radius: z.number().positive().default(3),
+  }),
+});
 
 export const RoomSchema = z.looseObject({
   id: z.string().min(1),
   title: z.string().default(""),
-  /** Designed runtime geometry or the original asset/fallback loader. */
-  architecture: z.enum(["legacy", "observatory"]).default("legacy"),
+  /** Designed runtime geometry ("observatory" rooms, "space" for the Orrery) or the original asset/fallback loader. */
+  architecture: z.enum(["legacy", "observatory", "space"]).default("legacy"),
+  /**
+   * How large this room's metre is, seen from the palace, whose rooms are 1.
+   * The Orrery is 0.02: through the portal its eighty-metre worlds are globes
+   * a metre and a half across, hanging inside the armillary, and a visitor
+   * who steps in shrinks fifty times to match. Rooms of one scale are drawn
+   * together; a portal is the only way between scales.
+   */
+  scale: z.number().positive().default(1),
+  /** Portals out of this room; each implies its return end in the destination. */
+  portals: z.array(PortalSchema).default([]),
   /** The SpacetimeDB room name this room joins ("grove" for the hall). */
   presence: z.string().min(1),
   /** Empty means "no glb, build the fallback". */
@@ -214,8 +273,31 @@ export const MansionSchema = z
         }
         gameSurfaceIds.add(surface.id);
       }
+      for (const portal of room.portals) {
+        const target = doc.rooms.find((r) => r.id === portal.to);
+        if (!target) {
+          ctx.addIssue({ code: "custom", message: `room "${room.id}" has a portal to unknown room "${portal.to}"` });
+          continue;
+        }
+        if (target.scale === room.scale) {
+          ctx.addIssue({
+            code: "custom",
+            message: `portal "${portal.id}" joins "${room.id}" and "${portal.to}" at the same scale; a same-scale link is a doorway`,
+          });
+        }
+        if (!withinFootprint(room, portal.position)) {
+          ctx.addIssue({ code: "custom", message: `portal "${portal.id}" is outside "${room.id}"` });
+        }
+        if (!withinFootprint(target, portal.exit.position)) {
+          ctx.addIssue({ code: "custom", message: `portal "${portal.id}" exits outside "${portal.to}"` });
+        }
+      }
     }
   });
+
+function withinFootprint(room: { bounds: { min: [number, number, number]; max: [number, number, number] } }, p: [number, number, number]): boolean {
+  return p[0] >= room.bounds.min[0] && p[0] <= room.bounds.max[0] && p[2] >= room.bounds.min[2] && p[2] <= room.bounds.max[2];
+}
 
 export type Bounds = z.infer<typeof BoundsSchema>;
 export type Spawn = z.infer<typeof SpawnSchema>;
@@ -226,6 +308,9 @@ export type ExhibitRef = z.infer<typeof ExhibitRefSchema>;
 export type TapeHanging = z.infer<typeof TapeHangingSchema>;
 export type VideoHanging = z.infer<typeof VideoHangingSchema>;
 export type StillHanging = z.infer<typeof StillHangingSchema>;
+export type PlanetHanging = z.infer<typeof PlanetHangingSchema>;
+export type PlanetWorld = z.infer<typeof PlanetWorldSchema>;
+export type Portal = z.infer<typeof PortalSchema>;
 export type Hanging = z.infer<typeof HangingSchema>;
 export type Room = z.infer<typeof RoomSchema>;
 export type Sky = z.infer<typeof SkySchema>;

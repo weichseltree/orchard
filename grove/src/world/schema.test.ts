@@ -13,7 +13,7 @@ describe("mansion.json", () => {
   it("parses", () => {
     const mansion = parseMansion(mansionDocument);
     expect(mansion.schema).toBe("orchard/mansion/1");
-    expect(mansion.rooms.map((room) => room.id)).toEqual(["hall", "einstruct", "world-engine", "orangery", "phototroph", "gallery", "spectre", "greenhouse", "terrace", "parterre", "orchard-west", "orchard-south", "orchard-east"]);
+    expect(mansion.rooms.map((room) => room.id)).toEqual(["hall", "einstruct", "world-engine", "orangery", "phototroph", "gallery", "spectre", "greenhouse", "terrace", "parterre", "orchard-west", "orchard-south", "orchard-east", "orrery"]);
     expect(mansion.start).toBe("hall");
   });
 
@@ -170,8 +170,15 @@ describe("BundleRefSchema", () => {
   it("every hanging in mansion.json names an exhibit on its room's tree and keeps a pinned id", () => {
     for (const room of parseMansion(mansionDocument).rooms) {
       for (const hanging of room.hangings) {
-        // The hall's poster wall shows einstruct; the terrace's moon is spectre's chi12 ball.
-        const guest: Record<string, string> = { hall: "einstruct", terrace: "spectre" };
+        // A planet bundle names its own atlas videos, and the exhibit table has
+        // no row kind for it: it stands on its pinned id alone.
+        if (hanging.kind === "planet") {
+          expect(hanging.bundle.id).toMatch(/^[0-9a-f]{16}$/);
+          expect(hanging.bundle.exhibit).toBeUndefined();
+          continue;
+        }
+        // The hall's poster wall shows einstruct; the Orrery's worlds are spectre's.
+        const guest: Record<string, string> = { hall: "einstruct", orrery: "spectre" };
         expect(hanging.bundle.exhibit?.tree).toBe(guest[room.id] ?? room.id);
         expect(hanging.bundle.exhibit?.kind).toBe(hanging.kind);
         expect(hanging.bundle.id).toMatch(/^[0-9a-f]{16}$/);
@@ -199,7 +206,7 @@ function wallOf(room: Room, door: Doorway): Wall {
 
 function postersOf(room: Room): Array<{ wall: Wall; center: number; width: number }> {
   return room.hangings.flatMap((hanging) => {
-    if (hanging.kind === "tape") return [];
+    if (hanging.kind === "tape" || hanging.kind === "planet") return [];
     const [x, , z] = hanging.position;
     const candidates: Array<[Wall, number, number]> = [
       ["-x", Math.abs(x - room.bounds.min[0]), z], ["+x", Math.abs(x - room.bounds.max[0]), z],

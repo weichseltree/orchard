@@ -70,12 +70,21 @@ const content: Readonly<Record<string, ExhibitContent>> = {
     evidenceAnchor: "world-engine",
   },
   terrace: {
+    question: "Step out under the sky.",
+    introduction: "The Horizon Terrace runs along the Observatory's garden side. Follow it to the Lantern Walk, or cross into the Meridian Garden, where the armillary holds the way to the Orrery.",
+    lookFor: [],
+  },
+  orrery: {
     source: "spectre",
-    question: "A world, seen from outside.",
-    introduction: "The world above the terrace is the strongest-interaction ball from spectre, shown again at a different scale. Pause here before returning to the chambers.",
-    lookFor: ["Watch the whole shape, then visit the Gravity Chamber to compare it with the other two runs."],
-    limitation: "A view of the surface hides the centre. This is another view of the same tape, not an additional experiment.",
-    species: "Warm, dark particles mark the heavy kind; pale particles mark the light kind.",
+    question: "How does a world find its middle?",
+    introduction: "Three worlds from spectre, cut open and grown to the scale of the sky. Each began as the same mixture of heavy and light particles; the strength with which the two kinds repel each other differs across the three. Their surface is the measured edge of the particles, and every frame of the interior is measured from them.",
+    lookFor: [
+      "Walk toward a world and watch its cut faces. The glow marks the hottest matter, an encoding of temperature rather than light.",
+      "Compare the three at the same moment. Where the two kinds repel most, the heavy kind gathers at the centre soonest.",
+      "The way back is the ring you arrived on: walk into it and the garden returns around you.",
+    ],
+    limitation: "One recorded run per world, and no interpolation: what moves is the record. A heavy centre here does not by itself separate unmixing from shared cooling as its cause.",
+    species: "Iron-warm regions hold more of the heavy kind; pale regions more of the light kind. The glow encodes temperature and is not emitted light.",
     evidenceAnchor: "spectre",
   },
   orangery: {
@@ -90,8 +99,8 @@ const content: Readonly<Record<string, ExhibitContent>> = {
   },
   parterre: {
     question: "Find your bearings under the sky.",
-    introduction: "Pause in the Meridian Garden, walk out into the groves, or return towards the terrace and the research chambers.",
-    lookFor: [],
+    introduction: "Pause in the Meridian Garden, walk out into the groves, or return towards the terrace and the research chambers. The armillary at the crossing is a portal: through it the Orrery's worlds show as globes, and walking into it takes you to their scale.",
+    lookFor: ["Approach the armillary and look through it before you step in: what looks like a globe there is eighty metres across on the other side."],
   },
 };
 

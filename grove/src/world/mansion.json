@@ -953,38 +953,7 @@
           "height": 8
         }
       ],
-      "hangings": [
-        {
-          "id": "moon",
-          "kind": "tape",
-          "title": "The chi 12 world, as a moon",
-          "bundle": {
-            "exhibit": {
-              "tree": "spectre",
-              "kind": "tape",
-              "bundle": "64546061a0b52660"
-            },
-            "id": "64546061a0b52660"
-          },
-          "position": [
-            -105,
-            55,
-            -60
-          ],
-          "rotationDeg": [
-            0,
-            0,
-            0
-          ],
-          "longSideMeters": 36,
-          "pointSize": 1500,
-          "variant": "phone",
-          "palette": [
-            "#5e4b3e",
-            "#ebe6de"
-          ]
-        }
-      ],
+      "hangings": [],
       "exposure": 1,
       "architecture": "observatory"
     },
@@ -1068,7 +1037,27 @@
       ],
       "hangings": [],
       "exposure": 1,
-      "architecture": "observatory"
+      "architecture": "observatory",
+      "portals": [
+        {
+          "id": "armillary",
+          "to": "orrery",
+          "position": [
+            -35,
+            1.6,
+            0
+          ],
+          "radius": 4.5,
+          "exit": {
+            "position": [
+              0,
+              1.6,
+              -400
+            ],
+            "radius": 4.5
+          }
+        }
+      ]
     },
     {
       "id": "orchard-west",
@@ -1227,6 +1216,97 @@
       "hangings": [],
       "exposure": 1,
       "architecture": "observatory"
+    },
+    {
+      "id": "orrery",
+      "title": "The Orrery",
+      "presence": "orrery",
+      "architecture": "space",
+      "scale": 0.02,
+      "fallback": {
+        "kind": "box",
+        "color": "#03060c"
+      },
+      "bounds": {
+        "min": [
+          -160,
+          0,
+          -560
+        ],
+        "max": [
+          160,
+          30,
+          -240
+        ]
+      },
+      "spawn": {
+        "position": [
+          0,
+          0,
+          -400
+        ],
+        "yawDeg": 0
+      },
+      "doorways": [],
+      "hangings": [
+        {
+          "id": "orrery-worlds",
+          "kind": "planet",
+          "title": "Planet from scratch: three worlds cut open, with their measured surfaces",
+          "bundle": {
+            "id": "26f78b7516170d6d"
+          },
+          "position": [
+            0,
+            0,
+            -400
+          ],
+          "radiusMeters": 40,
+          "atlas": "beauty",
+          "worlds": [
+            {
+              "world": "adiabat-chi0",
+              "position": [
+                -150,
+                48,
+                -420
+              ],
+              "cutToward": [
+                0,
+                1.6,
+                -400
+              ]
+            },
+            {
+              "world": "adiabat-chi6",
+              "position": [
+                0,
+                60,
+                -555
+              ],
+              "cutToward": [
+                0,
+                1.6,
+                -400
+              ]
+            },
+            {
+              "world": "adiabat-chi12",
+              "position": [
+                150,
+                48,
+                -420
+              ],
+              "cutToward": [
+                0,
+                1.6,
+                -400
+              ]
+            }
+          ]
+        }
+      ],
+      "exposure": 1
     }
   ]
 }

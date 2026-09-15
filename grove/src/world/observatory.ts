@@ -148,6 +148,11 @@ class Builder {
   }
 }
 
+/** How wide a hanging is along its wall, for keeping the wall panels clear of it. */
+function hangingWidth(h: Room["hangings"][number]): number {
+  return h.kind === "tape" ? h.longSideMeters : h.kind === "planet" ? h.radiusMeters * 2 : h.widthMeters;
+}
+
 interface Wall { axis: "x" | "z"; at: number; inward: number; min: number; max: number }
 function walls(room: Room): Wall[] {
   const [x0, , z0] = room.bounds.min, [x1, , z1] = room.bounds.max;
@@ -180,7 +185,7 @@ function chamberWalls(b: Builder): void {
       // Recessed vertical panels add rhythm while keeping wall hangings visible.
       for (let p = left + 0.65; p < right - 0.6; p += 1.4) {
         const obstructsHanging = room.hangings.some(h => Math.abs(h.position[wall.axis === "x" ? 0 : 2] - wall.at) < 0.6
-          && Math.abs(h.position[wall.axis === "x" ? 2 : 0] - p) < (h.kind === "tape" ? h.longSideMeters : h.widthMeters) / 2 + 0.3);
+          && Math.abs(h.position[wall.axis === "x" ? 2 : 0] - p) < hangingWidth(h) / 2 + 0.3);
         if (!obstructsHanging) {
           wallBox(b, wall, "inset", p, y0 + (y1 - y0) * 0.48, 0.65, (y1 - y0) * 0.78, 0.012, 0.162);
           wallBox(b, wall, "stone", p + 0.36, y0 + (y1 - y0) * 0.48, 0.12, (y1 - y0) * 0.85, 0.18, 0.17);
