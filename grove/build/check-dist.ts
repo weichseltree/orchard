@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync } from "node:fs";
-import { basename, join, relative } from "node:path";
+import { join, relative } from "node:path";
 import type { Plugin, ResolvedConfig } from "vite";
 
 /**
@@ -37,24 +37,26 @@ function walk(dir: string): string[] {
   return out;
 }
 
+function distPath(from: string, to: string): string {
+  return relative(from, to).replaceAll("\\", "/");
+}
+
 /** Files under dist/assets and dist/basis whose names do not change with their bytes. */
 export function unhashedFiles(outDir: string): string[] {
   const bad: string[] = [];
   for (const file of walk(join(outDir, "assets"))) {
-    const name = basename(file);
-    if (!VITE_HASHED.test(name) && !FINGERPRINTED.test(name)) bad.push(relativePath(outDir, file));
+    const path = distPath(outDir, file);
+    const name = path.slice(path.lastIndexOf("/") + 1);
+    if (!VITE_HASHED.test(name) && !FINGERPRINTED.test(name)) bad.push(path);
   }
   for (const file of walk(join(outDir, "basis"))) {
-    const parts = relative(join(outDir, "basis"), file).split(/[\\/]/);
-    if (!parts[0] || !VERSION_DIR.test(parts[0]) || parts.length < 2) {
-      bad.push(relativePath(outDir, file));
+    const path = distPath(join(outDir, "basis"), file);
+    const [version] = path.split("/");
+    if (!version || !VERSION_DIR.test(version) || !path.includes("/")) {
+      bad.push(distPath(outDir, file));
     }
   }
   return bad.sort();
-}
-
-function relativePath(from: string, to: string): string {
-  return relative(from, to).replaceAll("\\", "/");
 }
 
 /** Every path pattern in a Cloudflare Pages `_headers` file whose rules say `immutable`. */

@@ -7,10 +7,11 @@ import {
   MathUtils,
   Quaternion,
   Vector3,
-  type WebGLRenderer,
 } from "three";
+import type { Renderer } from "../render/types";
 import { MEDIA_BASE } from "../config";
 import type { DeviceProfile } from "../device";
+import type { ChunkScheduler } from "../render/chunk-stream";
 import type { DeviceTier } from "../tape/bundle";
 import type { StillPanel } from "../media/still";
 import type { VideoWall } from "../media/videowall";
@@ -28,7 +29,7 @@ import type { BundleRef, Mansion, Room, StillHanging } from "./schema";
 
 export interface BuildWorldOptions {
   mansion: Mansion;
-  renderer: WebGLRenderer;
+  renderer: Renderer;
   device: DeviceProfile;
   provenance: Provenance;
   onNotice: (message: string) => void;
@@ -46,6 +47,7 @@ export interface BuildWorldOptions {
   exhibits?: () => Promise<ExhibitRow[] | null>;
   /** The room the visitor starts in; `mansion.start` when absent. */
   startRoom?: string;
+  scheduler?: ChunkScheduler;
 }
 
 export interface BuiltWorld {
@@ -176,7 +178,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
     // downloads. Legacy scene documents can still use their original assets.
     const shell = room.architecture === "observatory"
       ? (await import("./observatory")).buildObservatory(room)
-      : await (await import("./rooms")).buildRoom({ room, renderer, tier: device.tier, onNotice });
+      : await (await import("./rooms")).buildRoom({ room, renderer, tier: device.tier, onNotice, scheduler: options.scheduler });
     shells.set(room.id, shell);
     group.add(shell.group);
     applyMarkers(room, shell);
@@ -221,6 +223,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
             tier: device.tier,
             pixelRatio: Math.min(window.devicePixelRatio, device.maxPixelRatio),
             onNotice,
+            ...(options.scheduler ? { scheduler: options.scheduler } : {}),
           }))
             .then((tape) => {
               world.tapes.push(tape);

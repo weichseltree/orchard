@@ -1,4 +1,4 @@
-import type { WebGLRenderer } from "three";
+import type { Renderer } from "../render/types";
 
 export interface FrameMetrics {
   samples: number;
@@ -81,7 +81,7 @@ export class PerfMeter {
   get frameMs(): number { return this.snapshot().meanMs; }
   get worstMs(): number { return this.snapshot().maxMs; }
 
-  report(renderer: WebGLRenderer, extra: Record<string, string | number> = {}): string {
+  report(renderer: Renderer, extra: Record<string, string | number> = {}): string {
     const info = renderer.info;
     const m = this.snapshot();
     const lines = [
@@ -89,7 +89,7 @@ export class PerfMeter {
       `p50 ${m.p50Ms.toFixed(2)}  p95 ${m.p95Ms.toFixed(2)}  p99 ${m.p99Ms.toFixed(2)} ms`,
       `${m.targetHz} Hz target  over ${m.overBudgetPercent.toFixed(1)}%  stalls >50 ms ${m.stalls}/${m.samples}`,
       `calls ${info.render.calls}  tris ${info.render.triangles}  pts ${info.render.points}`,
-      `geom ${info.memory.geometries}  tex ${info.memory.textures}  progs ${info.programs?.length ?? 0}`,
+      `geom ${info.memory.geometries}  tex ${info.memory.textures}  progs ${("programs" in info ? (info as { programs?: unknown[] }).programs?.length : 0) ?? 0}`,
       `dpr ${renderer.getPixelRatio().toFixed(2)}${renderer.xr.isPresenting ? "  xr" : ""}`,
     ];
     for (const [key, value] of Object.entries(extra)) lines.push(`${key} ${value}`);

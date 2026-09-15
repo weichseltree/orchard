@@ -1,5 +1,6 @@
 import { canHash, isSha256, sha256Hex } from "../sw/digest";
 import { pageIsControlled } from "../sw/register";
+import type { ChunkScheduler } from "../render/chunk-stream";
 import type { ChunkRef, TapeVariant } from "./bundle";
 import { TapeChunk, type TapeFrame } from "./decode";
 
@@ -27,6 +28,7 @@ export interface TapeStreamOptions {
    * stream hashes the chunk itself (a chunk is ~0.5 MB; cheap).
    */
   transportVerifies?: () => boolean;
+  scheduler?: ChunkScheduler;
 }
 
 interface Resident {
@@ -43,6 +45,7 @@ export class TapeStream {
   readonly #fetch: typeof fetch;
   readonly #onError: ((error: Error) => void) | undefined;
   readonly #transportVerifies: () => boolean;
+  readonly #scheduler: ChunkScheduler | undefined;
   readonly #resident = new Map<number, Resident>();
   readonly #inflight = new Map<number, AbortController>();
   /**
@@ -65,6 +68,7 @@ export class TapeStream {
     this.#fetch = options.fetchImpl ?? globalThis.fetch.bind(globalThis);
     this.#onError = options.onError;
     this.#transportVerifies = options.transportVerifies ?? pageIsControlled;
+    this.#scheduler = options.scheduler;
   }
 
   /** Index into `variant.chunks` for a tape-wide frame, or -1. */
@@ -143,17 +147,18 @@ export class TapeStream {
 
   async #load(index: number, ref: ChunkRef, controller: AbortController): Promise<void> {
     try {
-      const response = await this.#fetch(`${this.#baseUrl}${ref.file}`, {
-        signal: controller.signal,
-        // Chunks are content-addressed; the browser may keep them forever.
-        cache: "force-cache",
-      }).catch((error: unknown) => {
-        // A network error (and the service worker's refusal of a bad digest
-        // is one) says only "Failed to fetch"; say which chunk.
-        throw new Error(`chunk ${ref.file}: ${error instanceof Error ? error.message : String(error)}`);
-      });
-      if (!response.ok) throw new Error(`chunk ${ref.file}: HTTP ${response.status}`);
-      const buffer = await response.arrayBuffer();
+      const url = `${this.#baseUrl}${ref.file}`;
+      const buffer = this.#scheduler
+        ? await this.#scheduler.load(url, { priority: 10, signal: controller.signal })
+        : await this.#fetch(url, {
+            signal: controller.signal,
+            cache: "force-cache",
+          }).then(async (response) => {
+            if (!response.ok) throw new Error(`chunk ${ref.file}: HTTP ${response.status}`);
+            return response.arrayBuffer();
+          }).catch((error: unknown) => {
+            throw new Error(`chunk ${ref.file}: ${error instanceof Error ? error.message : String(error)}`);
+          });
       if (this.#disposed) return;
       await this.#verify(ref, buffer);
       if (this.#disposed) return;

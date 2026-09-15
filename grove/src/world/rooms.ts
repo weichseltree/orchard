@@ -10,8 +10,9 @@ import {
   PlaneGeometry,
   Quaternion,
   Vector3,
-  type WebGLRenderer,
 } from "three";
+import type { Renderer } from "../render/types";
+import type { ChunkScheduler } from "../render/chunk-stream";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import {
   applyLightmap,
@@ -64,12 +65,13 @@ export interface RoomShell {
 
 export interface BuildRoomOptions {
   room: Room;
-  renderer: WebGLRenderer;
+  renderer: Renderer;
   /** Base URL the room's glb and lightmap siblings hang off, e.g. "/". */
   assetBase?: string;
   /** Picks the lightmap tier; the phone gets `lightmapPhone` when the room has one. */
   tier?: DeviceTier;
   onNotice?: (message: string) => void;
+  scheduler?: ChunkScheduler;
 }
 
 /**
@@ -81,8 +83,9 @@ export function lightmapCandidates(
   room: Pick<Room, "lightmap" | "lightmapPhone">,
   tier: DeviceTier | undefined,
 ): string[] {
-  if (tier === "phone" && room.lightmapPhone.length > 0) return room.lightmapPhone;
-  return room.lightmap;
+  if (room.lightmapPhone.length === 0) return room.lightmap;
+  if (tier === "phone" || tier === "vr-quest") return room.lightmapPhone;
+  return [...room.lightmap, ...room.lightmapPhone.filter((path) => !room.lightmap.includes(path))];
 }
 
 export async function buildRoom(options: BuildRoomOptions): Promise<RoomShell> {
@@ -91,7 +94,7 @@ export async function buildRoom(options: BuildRoomOptions): Promise<RoomShell> {
   const base = options.assetBase ?? "/";
   if (room.glb) {
     try {
-      const shell = await loadRoomGlb(room, base, renderer, lightmapCandidates(room, options.tier));
+      const shell = await loadRoomGlb(room, base, renderer, lightmapCandidates(room, options.tier), options.scheduler);
       return shell;
     } catch (error) {
       options.onNotice?.(
@@ -110,19 +113,23 @@ export async function buildRoom(options: BuildRoomOptions): Promise<RoomShell> {
 async function loadRoomGlb(
   room: Room,
   base: string,
-  renderer: WebGLRenderer,
+  renderer: Renderer,
   lightmaps: readonly string[],
+  scheduler?: ChunkScheduler,
 ): Promise<RoomShell> {
   const loader = new GLTFLoader();
   // A KTX2-textured glb needs the transcoder wired up before parse.
   loader.setKTX2Loader(ktx2Loader(renderer));
-  const gltf = await loader.loadAsync(base + room.glb);
+  const gltf = scheduler
+    ? await loader.parseAsync(await scheduler.load(base + room.glb, { priority: 100 }), base)
+    : await loader.loadAsync(base + room.glb);
   const group = new Group();
   group.name = `${room.id}-glb`;
   group.add(gltf.scene);
   const sibling = await loadLightmap(
     lightmaps.map((path) => base + path),
     renderer,
+    scheduler,
   );
   const asset = gltf.parser.json.asset as Record<string, unknown> | undefined;
   const extras = (asset?.extras ?? {}) as Record<string, unknown>;

@@ -13,6 +13,7 @@ import { Presence } from "./net/presence";
 import { installAssetMap } from "./render/asset-map";
 import { showOverdraw } from "./render/overdraw";
 import { EYE_HEIGHT, createView } from "./render/view";
+import { ChunkScheduler, RESIDENT_BUDGET_BYTES } from "./render/chunk-stream";
 import { Hud } from "./ui/hud";
 import { PerfMeter } from "./ui/perf";
 import { VisitMetrics } from "./ui/diagnostics";
@@ -55,8 +56,12 @@ const perf = new PerfMeter();
 const visitMetrics = new VisitMetrics();
 const avatars = new Avatars();
 const worldNotices = new WorldNotices();
+const chunks = new ChunkScheduler({
+  maxResidentBytes: RESIDENT_BUDGET_BYTES[device.tier],
+  onError: (error) => console.info(`[stream] ${error.message}`),
+});
 
-const view = createView(canvas, device, {
+const view = await createView(canvas, device, {
   onContextLost: (restored) =>
     notice(
       restored
@@ -269,6 +274,7 @@ function boot(): void {
     startRoom: body.room,
     renderer: view.renderer,
     device,
+    scheduler: chunks,
     provenance,
     onNotice: (text) => notice(text),
     // The hangings wait this long for the live exhibit table, then take the
@@ -503,6 +509,7 @@ view.start((dt, time, rawDt) => {
         chunks: tape
           ? `${tape.stream.residentCount}/${tape.stream.maxResident} (${(tape.stream.residentBytes / 1e6).toFixed(1)} MB)`
           : "-",
+        stream: `${chunks.residentCount} resident, ${chunks.inflightCount} fetching`,
         peers: presence.peers.size,
       }),
     );
@@ -546,10 +553,12 @@ Object.defineProperty(window, "grove", {
       demo,
       room: body.room,
       device: { ...device },
+      backend: view.backend,
       viewport: { width: window.innerWidth, height: window.innerHeight, dpr: view.renderer.getPixelRatio() },
       visit: visitMetrics.snapshot(),
       frames: perf.snapshot(),
-      rendering: { ...view.renderer.info.render, ...view.renderer.info.memory, programs: view.renderer.info.programs?.length ?? 0 },
+      rendering: { ...view.renderer.info.render, ...view.renderer.info.memory, programs: ("programs" in view.renderer.info ? (view.renderer.info as { programs?: unknown[] }).programs?.length : 0) ?? 0 },
+      streaming: { residentBytes: chunks.residentBytes, residentCount: chunks.residentCount, inflightCount: chunks.inflightCount },
       tapes: (world?.tapes ?? []).filter((tape) => tape !== null).map((tape) => ({
         room: exhibitRoom(tape), residentChunks: tape.stream.residentCount,
         residentBytes: tape.stream.residentBytes, waiting: tape.waiting,
@@ -567,6 +576,7 @@ window.addEventListener("pagehide", (event) => {
   if (event.persisted) return;
   presence.dispose();
   gameSurface.dispose();
+  chunks.dispose();
   visitMetrics.dispose();
 });
 

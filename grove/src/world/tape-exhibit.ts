@@ -15,6 +15,7 @@ import { PALETTE } from "../config";
 import type { DeviceTier } from "../tape/bundle";
 import { TapeBundleSchema, pickVariant, tapeTimeUnit, variantSlots, type TapeBundle } from "../tape/bundle";
 import { TapeStream } from "../tape/stream";
+import type { ChunkScheduler } from "../render/chunk-stream";
 import {
   advance,
   clampTau,
@@ -43,6 +44,7 @@ export interface TapeExhibitOptions {
   tier: DeviceTier;
   pixelRatio: number;
   onNotice?: (message: string) => void;
+  scheduler?: ChunkScheduler;
 }
 
 /**
@@ -171,6 +173,7 @@ export class TapeExhibit {
       variant: picked.variant,
       maxResident: 3,
       ...(options.onNotice ? { onError: (e: Error) => options.onNotice?.(e.message) } : {}),
+      ...(options.scheduler ? { scheduler: options.scheduler } : {}),
     });
     const volume = new TapeVolume({
       slots,

@@ -10,8 +10,8 @@ import {
   Raycaster,
   RingGeometry,
   Vector3,
-  type WebGLRenderer,
 } from "three";
+import type { Renderer } from "../render/types";
 import { PALETTE } from "../config";
 import { deadzone, type Commands, type InputState } from "./input";
 
@@ -75,7 +75,7 @@ export function requestXrSession(): Promise<XRSession> {
 }
 
 export interface XrControlsOptions {
-  renderer: WebGLRenderer;
+  renderer: Renderer;
   /** The body's group; controllers hang off it so they move with the visitor. */
   rig: Group;
   input: InputState;
@@ -88,7 +88,7 @@ export interface XrControlsOptions {
 export class XrControls {
   readonly marker: Mesh;
 
-  #renderer: WebGLRenderer;
+  #renderer: Renderer;
   #rig: Group;
   #input: InputState;
   #commands: Commands;
