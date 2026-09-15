@@ -17,6 +17,15 @@ controls to wire. This document keeps those four as the *bundle* tiers and
 adds a per-device budget on top, because a Quest 2 and a Quest 3 want the
 same variant and different everything else.
 
+The renderer now probes WebGPU asynchronously and initializes Three.js's
+`WebGPURenderer` when an adapter is available; initialization failures
+explicitly fall back to the existing WebGL2 renderer. Both paths share the
+scene-facing view contract, AgX tone mapping, XR setup, and resize lifecycle.
+All binary room, lightmap, and tape payloads pass through the shared chunk
+scheduler in `grove/src/render/chunk-stream.ts`: payloads are capped at 2 MiB,
+requests are priority ordered and deduplicated, and resident bytes are evicted
+against the tier budget without using `SharedArrayBuffer`.
+
 ## 1. The tier table
 
 Hardware, from the pages fetched (sources at the end):

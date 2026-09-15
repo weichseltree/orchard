@@ -4,9 +4,10 @@ import {
   Group,
   PerspectiveCamera,
   Scene,
-  WebGLRenderer,
   type Object3D,
 } from "three";
+import { WebGPURenderer } from "three/webgpu";
+import type { Renderer } from "./types";
 import { PALETTE } from "../config";
 import type { DeviceProfile } from "../device";
 import { FrameClock } from "./frame-clock";
@@ -21,7 +22,8 @@ import { FrameClock } from "./frame-clock";
 export const EYE_HEIGHT = 1.6;
 
 export interface View {
-  renderer: WebGLRenderer;
+  renderer: Renderer;
+  backend: "webgpu" | "webgl2";
   scene: Scene;
   camera: PerspectiveCamera;
   rig: Group;
@@ -37,17 +39,12 @@ export interface ViewOptions {
   onContextLost?: (restored: boolean) => void;
 }
 
-export function createView(
+export async function createView(
   canvas: HTMLCanvasElement,
   device: DeviceProfile,
   options: ViewOptions = {},
-): View {
-  const renderer = new WebGLRenderer({
-    canvas,
-    antialias: !device.headset, // MSAA on Quest costs more than it returns here
-    powerPreference: "high-performance",
-    alpha: false,
-  });
+): Promise<View> {
+  const renderer = await createRenderer(canvas, device);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, device.maxPixelRatio));
   renderer.setSize(window.innerWidth, window.innerHeight, false);
   // Baked radiance is linear and often above 1 in sunlit rooms; without a
@@ -115,6 +112,7 @@ export function createView(
   document.addEventListener("visibilitychange", onVisibility);
   return {
     renderer,
+    backend: renderer instanceof WebGPURenderer ? "webgpu" : "webgl2",
     scene,
     camera,
     rig,
@@ -145,6 +143,36 @@ export function createView(
       renderer.dispose();
     },
   };
+}
+
+async function createRenderer(
+  canvas: HTMLCanvasElement,
+  device: DeviceProfile,
+): Promise<Renderer> {
+  if ("gpu" in navigator) {
+    try {
+      const renderer = new WebGPURenderer({
+        canvas,
+        antialias: !device.headset,
+        alpha: false,
+      });
+      await renderer.init();
+      return renderer as unknown as Renderer;
+    } catch (error) {
+      console.info(`[render] WebGPU unavailable; using WebGL2 (${message(error)})`);
+    }
+  }
+  const { WebGLRenderer } = await import("three");
+  return new WebGLRenderer({
+    canvas,
+    antialias: !device.headset,
+    powerPreference: "high-performance",
+    alpha: false,
+  });
+}
+
+function message(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }
 
 /** Horizontal field of view, degrees: what a portrait phone has to keep. */

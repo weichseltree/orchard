@@ -121,10 +121,15 @@ describe("lightmapCandidates", () => {
       "assets/palace/hall/lightmap-1024.ktx2",
       "assets/palace/hall/lightmap.png",
     ]);
-    for (const tier of ["desktop", "vr-quest", "vr-high", undefined] as const) {
+    expect(lightmapCandidates(hall, "vr-quest")).toEqual([
+      "assets/palace/hall/lightmap-1024.ktx2",
+      "assets/palace/hall/lightmap.png",
+    ]);
+    for (const tier of ["desktop", "vr-high", undefined] as const) {
       expect(lightmapCandidates(hall, tier)).toEqual([
         "assets/palace/hall/lightmap.ktx2",
         "assets/palace/hall/lightmap.png",
+        "assets/palace/hall/lightmap-1024.ktx2",
       ]);
     }
   });

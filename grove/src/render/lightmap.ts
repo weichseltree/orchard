@@ -8,9 +8,12 @@ import {
   Texture,
   TextureLoader,
   type Object3D,
-  type WebGLRenderer,
 } from "three";
 import { KTX2Loader } from "three/examples/jsm/loaders/KTX2Loader.js";
+import type { WebGPURenderer } from "three/webgpu";
+import type { WebGLRenderer } from "three";
+import type { Renderer } from "./types";
+import type { ChunkScheduler } from "./chunk-stream";
 
 // WP3 bakes Cycles diffuse+indirect to a 2048 lightmap on UV2 and exports
 // hall.glb. glTF has no lightmap slot, so the texture arrives one of three
@@ -30,9 +33,11 @@ export const TRANSCODER_PATH: string = import.meta.env.VITE_BASIS_PATH ?? "/basi
 
 let ktx2: KTX2Loader | null = null;
 
-export function ktx2Loader(renderer: WebGLRenderer): KTX2Loader {
+export function ktx2Loader(renderer: Renderer): KTX2Loader {
   if (!ktx2) {
-    ktx2 = new KTX2Loader().setTranscoderPath(TRANSCODER_PATH).detectSupport(renderer);
+    ktx2 = new KTX2Loader()
+      .setTranscoderPath(TRANSCODER_PATH)
+      .detectSupport(renderer as unknown as WebGLRenderer | WebGPURenderer);
   }
   return ktx2;
 }
@@ -50,13 +55,21 @@ export function disposeKtx2(): void {
  */
 export async function loadLightmap(
   urls: readonly string[],
-  renderer: WebGLRenderer,
+  renderer: Renderer,
+  scheduler?: ChunkScheduler,
 ): Promise<Texture | null> {
   for (const url of urls) {
+    let objectUrl: string | undefined;
     try {
+      let source = url;
+      if (scheduler) {
+        const bytes = await scheduler.load(url, { priority: 40 });
+        objectUrl = URL.createObjectURL(new Blob([bytes]));
+        source = objectUrl;
+      }
       const texture = url.endsWith(".ktx2")
-        ? await ktx2Loader(renderer).loadAsync(url)
-        : await new TextureLoader().loadAsync(url);
+        ? await ktx2Loader(renderer).loadAsync(source)
+        : await new TextureLoader().loadAsync(source);
       prepareLightmap(texture);
       // For the provenance panel, and the console: which file actually loaded.
       texture.userData.orchardUrl = url;
@@ -64,6 +77,8 @@ export async function loadLightmap(
       return texture;
     } catch {
       // Try the next candidate; a missing lightmap is expected before WP3 lands.
+    } finally {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
     }
   }
   return null;
