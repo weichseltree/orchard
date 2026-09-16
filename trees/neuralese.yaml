@@ -1,0 +1,58 @@
+name: neuralese
+title: ''
+path: /home/manuel/weichseltree/neuralese
+remote: ''
+question: Can many local models cooperate without ever inspecting one another, if all that crosses between
+  them is a few bits of decision per round, and each is paid only for how much worse everyone else predicts
+  without it?
+status: active
+stage: scouted
+gpu: none
+phenomena: []
+artefacts:
+- kind: still
+  path: frames/f.png
+  title: f
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+  bundle: ''
+- kind: still
+  path: frames/f-diverged.png
+  title: f-diverged
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+  bundle: ''
+- kind: still
+  path: frames/f-hoarded.png
+  title: f-hoarded
+  produced_by: ''
+  commit: ''
+  sha256: ''
+  approved: false
+  bundle: ''
+producers:
+  tape: ''
+  render: ''
+  figure: ''
+  lane: cpu
+  env: {}
+theses: []
+budget:
+  gpu_h: 0.0
+  cpu_h: 0.0
+  tts_chars: 0
+  llm_usd: 0.0
+  disk_gb: 0.0
+  prio_cap: 10
+kill: ''
+potential: 0
+notes: 'Drafted 2026-09-16, not planted. Half of a new pair with the tree `spectre`, whose repository
+  directory is now coarsen: neuralese is the protocol, coarsen is the physics that runs under it and supplies
+  a realised outcome to score against. Manuel, 2026-09-16: both are new and have to work together, so
+  neither is the other''s successor. Status is the scout''s guess; the repo is a skeleton with the protocol
+  unimplemented, and its own docs rank about forty-five known holes, fourteen of them fatal, collapsing
+  into four root decisions.'
