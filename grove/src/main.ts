@@ -923,8 +923,19 @@ Object.defineProperty(window, "grove", {
       const z = (room.bounds.min[2] + room.bounds.max[2]) / 2;
       return teleport(body, mansion, x, z, lockedRoom, { walls: false });
     },
-    /** Resolves once everything the world is loading has landed (world.ts `settled`); the room tour waits on it after each visit. */
-    settled: (): Promise<void> => world?.settled() ?? Promise.resolve(),
+    /**
+     * Resolves once everything the world is loading has landed (world.ts
+     * `settled`); the room tour waits on it after each visit. A visit only
+     * marks the crossing and the frame loop starts the loads, so this first
+     * lets the loop consume the crossing (a bounded wait, should the loop
+     * be stopped), and only then follows what is in flight.
+     */
+    settled: async (): Promise<void> => {
+      const frame = (): Promise<void> => new Promise((resolve) => requestAnimationFrame(() => resolve()));
+      for (let frames = 0; body.crossedInto && frames < 120; frames++) await frame();
+      await frame();
+      await world?.settled();
+    },
     get world() {
       return world;
     },
