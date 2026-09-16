@@ -588,3 +588,23 @@ meets one in SANDBOX-TRUST.md, that document's ruling is the one about trust.
   4. **A splat far view stays a still on every device** until
      someotherlife's bench measures host room plus portal view together.
      It goes live only where that combined budget holds.
+  5. **A splat room needs a variant of the portal, and the area model's ratio
+     has a ceiling.** someotherlife-ad derived this and I verified it by brute
+     force. With the far eye at `exit + (eye − centre) · ratio^(1−t)` and a
+     visitor walking straight in, the far eye's distance from the station is
+     not monotonic. On a linear blend it peaks at `R / (e · ln(1/ratio))` and
+     leaves the lean radius L unless `ratio ≤ exp(−R / (e · L))`. For R = 4.5 m
+     that means ratio ≤ 0.19 at L = 1 m, and ≤ 0.036 at L = 0.5 m. (For ratios
+     above 1/e the edge value R · ratio binds instead, but no safe ratio is
+     that large.)
+
+     orchard's portal as built fails a splat room before that bound even
+     applies. Its blend reaches t = 1 at the **core boundary**, d = core · R
+     (core 0.3, and up to 0.55 with full intent), not at the centre. So at the
+     end of the blend the far eye is still 1.35–2.48 m from the station,
+     whatever the ratio, and `crossPortal` lands the body carrying that same
+     offset. A splat portal must therefore collapse both the far-eye offset
+     and the landing offset to the station as t → 1. The ceiling above is
+     then recomputed with orchard's real distance, `R · (1 − t · (1 − core))`.
+     someotherlife's bench (apps/spike-c `?portal=`) reports the peak and the
+     largest safe ratio for each run.
