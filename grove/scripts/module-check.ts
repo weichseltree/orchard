@@ -286,6 +286,65 @@ async function main(): Promise<void> {
   check("remove_admin takes back a grant", admin("remove_admin", JSON.stringify(`0x${ann.hex}`)).ok && !cli("sql", "-s", "local", DB, "SELECT * FROM admin").out.includes(ann.hex));
   check("the last admin cannot be removed", admin("remove_admin", JSON.stringify(`0x${myHex}`)).out.includes("the last admin cannot be removed"));
 
+  // --- areas: a linked repository's admins rule inside it, and nowhere else (SANDBOX-TRUST.md §1) ---
+  const hex = (v: Visitor) => JSON.stringify(`0x${v.hex}`);
+  admin("set_room", '"probe"', '"probe"', "false", "true", "24");
+  check("a guest cannot link an area", (await refusal(ann.conn.reducers.linkArea({ tree: "probe", repo: "", commit: "", licence: "MIT" }))).includes("admin only"));
+  check("an area must be a tree the database knows", admin("link_area", '"nosuch"', '""', '""', '"MIT"').out.includes("no such tree"));
+  check("the licence gate: no redistributable licence, no link", admin("link_area", '"probe"', '""', '""', '"proprietary"').out.includes("licence must be")
+    && admin("link_area", '"probe"', '""', '""', '""').out.includes("licence must be"));
+  check("the host links an area", admin("link_area", '"probe"', '"https://example.com/probe.git"', '"abc1234"', '"MIT"').ok
+    && cli("sql", "-s", "local", DB, "SELECT state FROM area WHERE tree = 'probe'").out.includes("draft"));
+  check("a new area opens in an admin-only room: a visitor is turned away while it is a draft",
+    (await refusal(bob.conn.reducers.join({ name: "bob", room: "probe" }))).includes("not open yet"));
+  check("a guest cannot make themselves an area admin", (await refusal(ann.conn.reducers.addAreaAdmin({ tree: "probe", who: ann.identity }))).includes("admin of this area only"));
+  admin("add_area_admin", '"probe"', hex(ann));
+  check("...but the host can, and the area admin gets into the draft", (await refusal(ann.conn.reducers.join({ name: "ann", room: "probe" }))) === "");
+  check("an area admin cannot open the area to the public", (await refusal(ann.conn.reducers.setAreaState({ tree: "probe", state: "live" }))).includes("host's call"));
+  admin("set_area_state", '"probe"', '"live"');
+  check("the host opens it, and a visitor gets in", (await refusal(bob.conn.reducers.join({ name: "bob", room: "probe" }))) === "");
+  await ann.conn.reducers.areaMute({ tree: "probe", who: bob.identity, muted: true });
+  check("an area admin's mute holds in the area", (await refusal(bob.conn.reducers.say({ text: "hello" }))).includes("muted"));
+  await bob.conn.reducers.join({ name: "bob", room: "grove" });
+  await sleep(1200);
+  check("...and nowhere else", (await refusal(bob.conn.reducers.say({ text: "hello" }))) === "");
+  await ann.conn.reducers.areaMute({ tree: "probe", who: bob.identity, muted: false });
+  await ann.conn.reducers.areaBan({ tree: "probe", who: bob.identity, minutes: 0, reason: "test" });
+  check("an area admin's ban keeps a visitor out of the area", (await refusal(bob.conn.reducers.join({ name: "bob", room: "probe" }))).includes("banned from this area"));
+  check("...and out of nothing else", (await refusal(bob.conn.reducers.join({ name: "bob", room: "einstruct" }))) === "");
+  await ann.conn.reducers.areaUnban({ tree: "probe", who: bob.identity });
+  check("an area unban lifts it", (await refusal(bob.conn.reducers.join({ name: "bob", room: "probe" }))) === "");
+  await ann.conn.reducers.areaKick({ tree: "probe", who: bob.identity });
+  await sleep(200);
+  check("an area kick takes the visitor out of the area's room", !names(ann).includes("bob"));
+  check("an area admin cannot touch an admin of the world", (await refusal(ann.conn.reducers.areaBan({ tree: "probe", who: boss.identity, minutes: 0, reason: "x" }))).includes("cannot be sanctioned"));
+  admin("upsert_tree", '"probe2"', '"q"', '"active"', '"thesis"', "5");
+  admin("link_area", '"probe2"', '""', '""', '"MIT"');
+  check("an area admin has no say in another area", (await refusal(ann.conn.reducers.setAreaState({ tree: "probe2", state: "paused" }))).includes("admin of this area only"));
+  check("an area admin can pause their own area", (await refusal(ann.conn.reducers.setAreaState({ tree: "probe", state: "paused" }))) === "");
+  const eve = await connect();
+  check("...and nobody gets in while it is paused", (await refusal(eve.conn.reducers.join({ name: "eve", room: "probe" }))).includes("paused"));
+  await ann.conn.reducers.setAreaState({ tree: "probe", state: "live" });
+  admin("host_pause_area", '"probe"', "true");
+  check("an area admin cannot resume out of a host pause", (await refusal(ann.conn.reducers.setAreaState({ tree: "probe", state: "live" }))).includes("paused by the host"));
+  check("the area table is readable, its admins and sanctions are not",
+    cli("sql", "-s", "local", "--anonymous", DB, "SELECT tree FROM area").ok
+    && !cli("sql", "-s", "local", "--anonymous", DB, "SELECT * FROM area_admin").ok
+    && !cli("sql", "-s", "local", "--anonymous", DB, "SELECT * FROM area_sanction").ok);
+  admin("host_pause_area", '"probe"', "false");
+  admin("set_area_state", '"probe"', '"live"');
+  await eve.conn.reducers.join({ name: "eve", room: "probe" });
+  await sleep(200);
+  const standing = () => cli("sql", "-s", "local", DB, "SELECT * FROM whereabouts WHERE room = 'probe'").out;
+  check("a visitor stands in the live area", standing().includes(eve.hex));
+  await ann.conn.reducers.setAreaState({ tree: "probe", state: "paused" });
+  await sleep(300);
+  check("a pause puts whoever stands in the area out", !standing().includes(eve.hex));
+  check("remove_tree refuses a tree whose area is linked", admin("remove_tree", '"probe"').out.includes("unlink the area first"));
+  admin("unlink_area", '"probe"');
+  check("unlinking takes the area's admins with it", !cli("sql", "-s", "local", DB, "SELECT * FROM area_admin WHERE tree = 'probe'").out.includes(ann.hex));
+  check("...and shuts its room, so it is not an ordinary room afterwards", (await refusal(eve.conn.reducers.join({ name: "eve", room: "probe" }))).includes("room closed"));
+
   // --- the token gate and the per-network cap ---
   if (!AUTH) {
     console.log("skip  per-network checks (no --auth)");

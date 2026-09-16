@@ -35,11 +35,19 @@ import {
 
 // Import all reducer arg schemas
 import AddAdminReducer from "./add_admin_reducer";
+import AddAreaAdminReducer from "./add_area_admin_reducer";
+import AreaBanReducer from "./area_ban_reducer";
+import AreaKickReducer from "./area_kick_reducer";
+import AreaMuteReducer from "./area_mute_reducer";
+import AreaUnbanReducer from "./area_unban_reducer";
 import BanVisitorReducer from "./ban_visitor_reducer";
+import DropAreaAdminReducer from "./drop_area_admin_reducer";
 import HangReducer from "./hang_reducer";
+import HostPauseAreaReducer from "./host_pause_area_reducer";
 import JoinReducer from "./join_reducer";
 import KickReducer from "./kick_reducer";
 import LeaveReducer from "./leave_reducer";
+import LinkAreaReducer from "./link_area_reducer";
 import MoveReducer from "./move_reducer";
 import MuteReducer from "./mute_reducer";
 import PutSnapshotReducer from "./put_snapshot_reducer";
@@ -51,6 +59,7 @@ import RetireDirectiveReducer from "./retire_directive_reducer";
 import RuleReducer from "./rule_reducer";
 import SayReducer from "./say_reducer";
 import SendBroadcastReducer from "./send_broadcast_reducer";
+import SetAreaStateReducer from "./set_area_state_reducer";
 import SetAuthReducer from "./set_auth_reducer";
 import SetDirectiveReducer from "./set_directive_reducer";
 import SetRoomReducer from "./set_room_reducer";
@@ -58,11 +67,13 @@ import SubmitReviewReducer from "./submit_review_reducer";
 import SweepNowReducer from "./sweep_now_reducer";
 import TakeDownReducer from "./take_down_reducer";
 import UnbanReducer from "./unban_reducer";
+import UnlinkAreaReducer from "./unlink_area_reducer";
 import UpsertTreeReducer from "./upsert_tree_reducer";
 
 // Import all procedure arg schemas
 
 // Import all table schema definitions
+import AreaRow from "./area_table";
 import BroadcastRow from "./broadcast_table";
 import ChatHereRow from "./chat_here_table";
 import ExhibitRow from "./exhibit_table";
@@ -75,6 +86,17 @@ import TreeRow from "./tree_table";
 
 /** The schema information for all tables in this module. This is defined the same was as the tables would have been defined in the server. */
 const tablesSchema = __schema({
+  area: __table({
+    name: 'area',
+    indexes: [
+      { accessor: 'tree', name: 'area_tree_idx_btree', algorithm: 'btree', columns: [
+        'tree',
+      ] },
+    ],
+    constraints: [
+      { name: 'area_tree_key', constraint: 'unique', columns: ['tree'] },
+    ],
+  }, AreaRow),
   broadcast: __table({
     name: 'broadcast',
     indexes: [
@@ -151,11 +173,19 @@ const tablesSchema = __schema({
 /** The schema information for all reducers in this module. This is defined the same way as the reducers would have been defined in the server, except the body of the reducer is omitted in code generation. */
 const reducersSchema = __reducers(
   __reducerSchema("add_admin", AddAdminReducer),
+  __reducerSchema("add_area_admin", AddAreaAdminReducer),
+  __reducerSchema("area_ban", AreaBanReducer),
+  __reducerSchema("area_kick", AreaKickReducer),
+  __reducerSchema("area_mute", AreaMuteReducer),
+  __reducerSchema("area_unban", AreaUnbanReducer),
   __reducerSchema("ban_visitor", BanVisitorReducer),
+  __reducerSchema("drop_area_admin", DropAreaAdminReducer),
   __reducerSchema("hang", HangReducer),
+  __reducerSchema("host_pause_area", HostPauseAreaReducer),
   __reducerSchema("join", JoinReducer),
   __reducerSchema("kick", KickReducer),
   __reducerSchema("leave", LeaveReducer),
+  __reducerSchema("link_area", LinkAreaReducer),
   __reducerSchema("move", MoveReducer),
   __reducerSchema("mute", MuteReducer),
   __reducerSchema("put_snapshot", PutSnapshotReducer),
@@ -167,6 +197,7 @@ const reducersSchema = __reducers(
   __reducerSchema("rule", RuleReducer),
   __reducerSchema("say", SayReducer),
   __reducerSchema("send_broadcast", SendBroadcastReducer),
+  __reducerSchema("set_area_state", SetAreaStateReducer),
   __reducerSchema("set_auth", SetAuthReducer),
   __reducerSchema("set_directive", SetDirectiveReducer),
   __reducerSchema("set_room", SetRoomReducer),
@@ -174,6 +205,7 @@ const reducersSchema = __reducers(
   __reducerSchema("sweep_now", SweepNowReducer),
   __reducerSchema("take_down", TakeDownReducer),
   __reducerSchema("unban", UnbanReducer),
+  __reducerSchema("unlink_area", UnlinkAreaReducer),
   __reducerSchema("upsert_tree", UpsertTreeReducer),
 );
 

@@ -344,3 +344,22 @@ Append-only. A decision names the day, the ruling, and the alternative it beat.
   deploy the client, since a client with the ref and no row shows nothing.
   The two recorded clips whose bundles are not on disk (fb20f1408eec97c8,
   8e86f967de15c1ea) stay as they are, unapproved.
+
+- **2026-09-16 · The trust layer's first step: areas and their admins in the
+  module.** Manuel: "you take over the missing agent's job", the session
+  that held SANDBOX-TRUST.md's build order. Built as ruled: `area` (public;
+  `draft` is the admin-only first venue, `live`, `paused`; `host_paused` the
+  host's own pause), `area_admin` (a row, never `add_admin`) and
+  `area_sanction` (an area admin's mute, kick and ban, applied by `join` and
+  `say` in that area's room only, never on an admin of the world), with the
+  host-only `link_area`, `unlink_area`, `host_pause_area`, the shared
+  `set_area_state` (an area admin only between `live` and `paused`) and the
+  admin-of-the-area reducers for membership and moderation. An area's
+  presence room carries the tree's name, so the same name scopes joins,
+  sanctions and, later, the plan. The licence gate of ruling 7 is on the
+  link: `link_area` takes an SPDX identifier and refuses any that is not on
+  the module's list of licences permitting redistribution, so no licence
+  means no link. Additive: no table of the old module
+  changes, so the publish keeps every row. `orchard area ...` is the host's
+  command line. Live revocation in the client, the licence gate and the
+  fetcher follow, in that order.
