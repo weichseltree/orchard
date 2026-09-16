@@ -134,7 +134,8 @@ artefacts:
   bundle: 22883e6f89040d8d
 - kind: clip
   path: results/m04_planet/exhibit-v2/planet_hero_chi12.mp4
-  title: 'Planet cutaway with its measured surface: chi 12, orbiting camera, full 1,129-frame record; 37.633 s at 1080p30'
+  title: 'Planet cutaway with its measured surface: chi 12, orbiting camera, full 1,129-frame record;
+    37.633 s at 1080p30'
   produced_by: .venv/bin/python -u -m lanes.m04_planet.exhibit.bake --workers 10 --out results/m04_planet/exhibit-v2
   commit: f5412e86191c493129e2997368396e3e43880dab
   sha256: bc17c308731ea8d7d2525eea7d45f7e121e13bfb60feefd8ac072f11fff687ed
@@ -142,12 +143,71 @@ artefacts:
   bundle: fb20f1408eec97c8
 - kind: clip
   path: results/m04_planet/exhibit-v2/planet_preview.mp4
-  title: 'Planet cutaway comparison with measured surfaces: chi 0, 6, 12 at matched times; full 1,129-frame record, 1080p30'
+  title: 'Planet cutaway comparison with measured surfaces: chi 0, 6, 12 at matched times; full 1,129-frame
+    record, 1080p30'
   produced_by: .venv/bin/python -u -m lanes.m04_planet.exhibit.bake --workers 10 --out results/m04_planet/exhibit-v2
   commit: f5412e86191c493129e2997368396e3e43880dab
   sha256: fed59d3cdc2926ee3e9bfb2d337bbe9c1bb45a7a58765f8717aead127a6e56a4
   approved: false
   bundle: 8e86f967de15c1ea
+- kind: summary
+  path: results/m06_earth_system/globe-v1/manifest.json
+  title: 'Infiverse globe v1 (schema m06/infiverse-globe/2): the v0 planet as four switchable surface-property
+    textures over 1095 daily frames, three model years; verified 45/45'
+  produced_by: .venv/bin/python -u -m lanes.m06_earth_system.delivery.manifest --run results/m06_earth_system/planet-v0
+    --out results/m06_earth_system/globe-v1  (EXP_NAME m06-globe-v1, CPU lane); legends added by .venv/bin/python
+    -u -m lanes.m06_earth_system.delivery.amend --out results/m06_earth_system/globe-v1 --add legends  (EXP_NAME
+    m06-globe-v1-legends, at 543a5460)
+  commit: 470ffe7d7cc83d71c4d2bc6c471cba97149a89e7
+  sha256: 1acb44feadc9e1f75295d706c4e458cd7c8a7bdc9a159099f2d069b393da8ea4
+  approved: false
+  bundle: ''
+- kind: planet
+  path: results/m04_planet/exhibit-v2
+  title: 'Planet from scratch: three worlds cut open, with their measured surfaces'
+  produced_by: 'uv run orchard bundle planet results/m04_planet/exhibit-v2 --tree spectre --title "Planet
+    from scratch: three worlds cut open, with their measured surfaces" --atlas beauty=1207b7952ce09923
+    --atlas pressure=18016416183d4549 --atlas species=686fc9ff74ed9b3b --atlas temperature=6f8baecf3bb2acac'
+  commit: ccf26a3
+  sha256: 8e5792bc962f4d767df70ff3d3cddf37a3c63996c03633557568851600d66bc8
+  approved: true
+  bundle: 26f78b7516170d6d
+- kind: clip
+  path: results/m04_planet/exhibit-v2/planet_beauty.mp4
+  title: 'R55 planet cutaway: beauty atlas'
+  produced_by: 'uv run orchard bundle video results/m04_planet/exhibit-v2/planet_beauty.mp4 --tree spectre
+    --title "R55 planet cutaway: beauty atlas"'
+  commit: film-final-11-gf5412e8
+  sha256: 39210368f2f3889fc96e2907992e6d73cda9445446a00f8c6319ac9d5f3dd1b9
+  approved: true
+  bundle: 1207b7952ce09923
+- kind: clip
+  path: results/m04_planet/exhibit-v2/planet_pressure.mp4
+  title: 'R55 planet cutaway: local pair virial pressure atlas'
+  produced_by: 'uv run orchard bundle video results/m04_planet/exhibit-v2/planet_pressure.mp4 --tree spectre
+    --title "R55 planet cutaway: local pair virial pressure atlas"'
+  commit: film-final-11-gf5412e8
+  sha256: 28fdbf43ca11d0ef6a1fc8ae17378916d7cf20e479cd7e5f6a400630de260268
+  approved: true
+  bundle: 18016416183d4549
+- kind: clip
+  path: results/m04_planet/exhibit-v2/planet_species.mp4
+  title: 'R55 planet cutaway: species atlas'
+  produced_by: 'uv run orchard bundle video results/m04_planet/exhibit-v2/planet_species.mp4 --tree spectre
+    --title "R55 planet cutaway: species atlas"'
+  commit: film-final-11-gf5412e8
+  sha256: bf33c79b81b1ed534f9239280ffd799c815ef2ffe33ff382b487fb142ff74521
+  approved: true
+  bundle: 686fc9ff74ed9b3b
+- kind: clip
+  path: results/m04_planet/exhibit-v2/planet_temperature.mp4
+  title: 'R55 planet cutaway: kinetic temperature atlas'
+  produced_by: 'uv run orchard bundle video results/m04_planet/exhibit-v2/planet_temperature.mp4 --tree
+    spectre --title "R55 planet cutaway: kinetic temperature atlas"'
+  commit: film-final-11-gf5412e8
+  sha256: 5e28d2348531e083b9ca7a8bd3737874f722a15c810887de61b6b6c8d7dd153a
+  approved: true
+  bundle: 6f8baecf3bb2acac
 producers:
   tape: ''
   render: ''
@@ -170,16 +230,16 @@ theses:
   blocked_by: Rendering and episodes left spectre on 2026-09-12 (68239c4, ruling); the orchard studio
     makes this episode from spectre's tapes and spectre supplies the tapes and the measured numbers. The
     episode's code is at tag film-final (9721bf8), lanes/m03_first_film/episodes/ep03. v6 animatic rejected
-    2026-09-11; the style B look is locked and the episode is redeclared as 18 shots (17 distinct pictures, 11 moving cameras, variety check clean), but only 4 of them have
-    plates (9 smoke plates, all of one tape frame), so the 18-shot contact sheet has never been rendered
-    or ruled on (LAWS 15). The v6 narration was written for a collapsing cloud and this world is built
-    as a ball, so the script needs a rewrite before new takes. The sweep's final verdict at 96 dynamical
-    times (df1f3f3, results/m04_planet/sweep-verdict/VERDICT.md) converged at its last row on a 1.2 % margin,
-    nothing degraded; by then the middles read 60, 97 and 99 % heavy. The rewrite must respect two limits
-    it recorded. Whether the unmixing or a shared cooling drives the core is not separable from this record
-    (the control check sits at 0.0494 against 0.05 and its plain-language condition is met), and the chi
-    6 and 12 cores carry real angular structure through 8-32 dynamical times, so a radial number there is
-    a mean over domains and must say so.
+    2026-09-11; the style B look is locked and the episode is redeclared as 18 shots (17 distinct pictures,
+    11 moving cameras, variety check clean), but only 4 of them have plates (9 smoke plates, all of one
+    tape frame), so the 18-shot contact sheet has never been rendered or ruled on (LAWS 15). The v6 narration
+    was written for a collapsing cloud and this world is built as a ball, so the script needs a rewrite
+    before new takes. The sweep's final verdict at 96 dynamical times (df1f3f3, results/m04_planet/sweep-verdict/VERDICT.md)
+    converged at its last row on a 1.2 % margin, nothing degraded; by then the middles read 60, 97 and
+    99 % heavy. The rewrite must respect two limits it recorded. Whether the unmixing or a shared cooling
+    drives the core is not separable from this record (the control check sits at 0.0494 against 0.05 and
+    its plain-language condition is met), and the chi 6 and 12 cores carry real angular structure through
+    8-32 dynamical times, so a radial number there is a mean over domains and must say so.
 budget:
   gpu_h: 0.0
   cpu_h: 2.0
@@ -191,38 +251,37 @@ kill: 'The episode clause this criterion began with was enacted by ruling on 202
   rendering and episodes left spectre (68239c4), which now supplies tapes and measured numbers only. Prune
   the tree from the slate if, by the end of round two, Planet from scratch made by the studio from these
   tapes has no style B animatic with measured narration that passes the 18-shot contact sheet, or if the
-  studio needs a tape spectre cannot write inside its budget. The physics clause this criterion carried is spent:
-  the final verdict (2026-09-12) fired neither chemistry check, drop-the-chemistry at 0.232 against 0.5
-  and cooling-not-chemistry at 0.0494 against 0.05. Because the second sits on its line, no narration may
-  say the unmixing CAUSED the core until saturation and a shared cooling driver are separated; if that
-  bill is paid in cooling''s favour, the thesis is rewritten before any take is recorded. The flywheel
-  question stays open on its own clock; no coarse model has yet taken a longer stable step than the fine
-  engine, and no episode may claim one.'
+  studio needs a tape spectre cannot write inside its budget. The physics clause this criterion carried
+  is spent: the final verdict (2026-09-12) fired neither chemistry check, drop-the-chemistry at 0.232
+  against 0.5 and cooling-not-chemistry at 0.0494 against 0.05. Because the second sits on its line, no
+  narration may say the unmixing CAUSED the core until saturation and a shared cooling driver are separated;
+  if that bill is paid in cooling''s favour, the thesis is rewritten before any take is recorded. The
+  flywheel question stays open on its own clock; no coarse model has yet taken a longer stable step than
+  the fine engine, and no episode may claim one.'
 potential: 9
-notes: 'Paired with neuralese from 2026-09-16 (Manuel): both repositories are new and have to work
-  together. This one is the physics, the fine simulator and the ladder of coarse models measured
-  against it; neuralese is the cooperation protocol that runs on top and scores its nodes against a
-  realised outcome. Neither supersedes the other. The directory was renamed spectre -> coarsen the
-  same day; this tree keeps the name `spectre`, which is inside the bytes every bundle id hashes.
-  Tapes are the stock-in-trade: video/tape/1 is written by core/video/tape.py and einstruct and
-  orchard both import it from this working tree, unpinned. The planet trio (chi 0, 6, 12) shares one frame
-  clock: identical (step, t) for all 1,129 frames, so frame index scrubs them in step. Probes, not exhibits:
-  opening-chi0/6/12 (114 frames, 1.2 dynamical times, the swelling of core_breathes), firststeps-chi0
-  and fine-chi0 (the lattice melt), adiabat-smoke (32,000 particles), v00-tape/T0.8 (12,288 particles
-  in a periodic slab, 43,750 frames; the first film''s source, would need a frame window to bundle). The
-  e10-mixture tapes are header and trailer only; their data was deleted. No stock sidecar exists on any
-  declared still; each carries a render sidecar <stem>.json. No git remote configured for this checkout.
-  The video pipeline (core/film, lanes/m03_first_film) left spectre at 68239c4; tag film-final (9721bf8)
-  holds it whole (git archive film-final core/film lanes/m03_first_film). core/film/pacing.py stays only
-  as a stub for einstruct''s sys.path import, to be deleted once einstruct carries its own copy. The tape
-  format''s wish list moved to core/video/TAPE_WISHLIST.md. Every results path above survived the removal.
-  The budget covers spectre''s own side only (harvests, verdict reruns); narration and render spend is
-  the studio''s. The user-requested planet cutaway delivery was completed on 2026-09-14 from the existing
-  M04 field arrays, at 018634d. Its mesh, four shared video-texture modes, local viewer and evidence are
-  documented in lanes/m04_planet/exhibit/README.md. On 2026-09-15 (f5412e8) v2 replaced the sphere with
-  the measured surface (a per-frame height field; fixed-topology mesh plus a vertex-radius stream under
-  results/m04_planet/exhibit-v2/surface/seg*.bin). Its six verified HLS bundles live locally under
-  results/m04_planet/exhibit-v2/hls/ (v1''s under exhibit-v1/hls/); index.json maps their IDs. None of
-  these bundles has been published.
-  The two flat clips above have source provenance sidecars; atlas modes are textures for the new
-  cutaway consumer, not flat wall exhibits. The original pressure-check failures remain published.'
+notes: 'Paired with neuralese from 2026-09-16 (Manuel): both repositories are new and have to work together.
+  This one is the physics, the fine simulator and the ladder of coarse models measured against it; neuralese
+  is the cooperation protocol that runs on top and scores its nodes against a realised outcome. Neither
+  supersedes the other. The directory was renamed spectre -> coarsen the same day; this tree keeps the
+  name `spectre`, which is inside the bytes every bundle id hashes. Tapes are the stock-in-trade: video/tape/1
+  is written by core/video/tape.py and einstruct and orchard both import it from this working tree, unpinned.
+  The planet trio (chi 0, 6, 12) shares one frame clock: identical (step, t) for all 1,129 frames, so
+  frame index scrubs them in step. Probes, not exhibits: opening-chi0/6/12 (114 frames, 1.2 dynamical
+  times, the swelling of core_breathes), firststeps-chi0 and fine-chi0 (the lattice melt), adiabat-smoke
+  (32,000 particles), v00-tape/T0.8 (12,288 particles in a periodic slab, 43,750 frames; the first film''s
+  source, would need a frame window to bundle). The e10-mixture tapes are header and trailer only; their
+  data was deleted. No stock sidecar exists on any declared still; each carries a render sidecar <stem>.json.
+  No git remote configured for this checkout. The video pipeline (core/film, lanes/m03_first_film) left
+  spectre at 68239c4; tag film-final (9721bf8) holds it whole (git archive film-final core/film lanes/m03_first_film).
+  core/film/pacing.py stays only as a stub for einstruct''s sys.path import, to be deleted once einstruct
+  carries its own copy. The tape format''s wish list moved to core/video/TAPE_WISHLIST.md. Every results
+  path above survived the removal. The budget covers spectre''s own side only (harvests, verdict reruns);
+  narration and render spend is the studio''s. The user-requested planet cutaway delivery was completed
+  on 2026-09-14 from the existing M04 field arrays, at 018634d. Its mesh, four shared video-texture modes,
+  local viewer and evidence are documented in lanes/m04_planet/exhibit/README.md. On 2026-09-15 (f5412e8)
+  v2 replaced the sphere with the measured surface (a per-frame height field; fixed-topology mesh plus
+  a vertex-radius stream under results/m04_planet/exhibit-v2/surface/seg*.bin). Its six verified HLS bundles
+  live locally under results/m04_planet/exhibit-v2/hls/ (v1''s under exhibit-v1/hls/); index.json maps
+  their IDs. None of these bundles has been published. The two flat clips above have source provenance
+  sidecars; atlas modes are textures for the new cutaway consumer, not flat wall exhibits. The original
+  pressure-check failures remain published.'

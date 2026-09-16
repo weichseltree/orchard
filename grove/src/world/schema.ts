@@ -55,7 +55,7 @@ export const DoorwaySchema = z.looseObject({
  */
 export const ExhibitRefSchema = z.looseObject({
   tree: z.string().min(1),
-  kind: z.enum(["tape", "video", "still"]),
+  kind: z.enum(["tape", "video", "still", "planet"]),
   bundle: z.string().default(""),
 });
 

@@ -196,13 +196,8 @@ describe("BundleRefSchema", () => {
   it("every hanging in mansion.json names an exhibit on its room's tree and keeps a pinned id", () => {
     for (const room of parseMansion(mansionDocument).rooms) {
       for (const hanging of room.hangings) {
-        // A planet bundle names its own atlas videos, and the exhibit table has
-        // no row kind for it: it stands on its pinned id alone.
-        if (hanging.kind === "planet") {
-          expect(hanging.bundle.id).toMatch(/^[0-9a-f]{16}$/);
-          expect(hanging.bundle.exhibit).toBeUndefined();
-          continue;
-        }
+        // A planet hangs through an exhibit row like everything else (issue
+        // #20); its bundle names its own atlas videos, which need no row.
         // A live audio exhibit is a name with no bytes and no exhibit row
         // (AUDIO-STREAM.md §1); nothing below is a claim about it.
         if (hanging.kind === "audio") continue;

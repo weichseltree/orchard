@@ -47,7 +47,7 @@ const LABEL_MAX = 32;
 const URL_MAX = 2048;
 const ROOM_CAPACITY_MAX = 200;
 const POTENTIAL_MAX = 10;
-const EXHIBIT_KINDS = ['clip', 'still', 'master', 'tape'] as const;
+const EXHIBIT_KINDS = ['clip', 'still', 'master', 'tape', 'planet'] as const;
 /** Room and tree names: they are ids in URLs, presence strings and bundle paths. */
 const IDENT = /^[a-z0-9][a-z0-9_.-]{0,63}$/;
 /**
@@ -210,7 +210,7 @@ const exhibit = table(
   {
     id: t.u64().primaryKey().autoInc(),
     tree: t.string().index('btree'),
-    kind: t.string(),          // clip | still | master | tape
+    kind: t.string(),          // clip | still | master | tape | planet
     title: t.string(),
     url: t.string(),           // R2, media.weichseltree.com
     thumb_url: t.string(),

@@ -22,6 +22,7 @@ const rows = [
   row(3, "spectre", "master", `${M}/cccccccccccccccc/master.m3u8`),
   row(4, "einstruct", "master", `${M}/dddddddddddddddd/master.m3u8`),
   row(5, "einstruct", "still", `${M}/eeeeeeeeeeeeeeee/full.avif`),
+  row(6, "spectre", "planet", `${M}/ffffffffffffffff/bundle.json`),
 ];
 
 describe("pickExhibit", () => {
@@ -36,6 +37,12 @@ describe("pickExhibit", () => {
     expect(pickExhibit(rows, "einstruct", "video", "dddddddddddddddd")?.id).toBe(4n);
     expect(pickExhibit(rows, "einstruct", "tape", "bbbbbbbbbbbbbbbb")?.id).toBe(2n);
     expect(pickExhibit(rows, "einstruct", "tape", "0000000000000000")).toBeNull();
+  });
+
+  it("takes a planet row for a planet hanging, and never for a video wall", () => {
+    expect(pickExhibit(rows, "spectre", "planet")?.id).toBe(6n);
+    expect(pickExhibit(rows, "spectre", "planet", "ffffffffffffffff")?.id).toBe(6n);
+    expect(pickExhibit(rows, "spectre", "video")?.id).toBe(3n);
   });
 
   it("is null when nothing of that kind hangs on that tree", () => {

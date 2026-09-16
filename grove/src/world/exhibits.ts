@@ -15,11 +15,12 @@ export interface ExhibitRow {
   tapeUrl: string;
 }
 
-/** The exhibit kinds a hanging of each kind may take (module: clip | still | master | tape). */
+/** The exhibit kinds a hanging of each kind may take (module: clip | still | master | tape | planet). */
 export const EXHIBIT_KINDS_FOR = {
   tape: ["tape"],
   video: ["clip", "master"],
   still: ["still"],
+  planet: ["planet"],
 } as const;
 
 /**

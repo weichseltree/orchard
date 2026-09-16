@@ -43,7 +43,9 @@ class Stage(StrEnum):
 
 STAGE_ORDER = list(Stage)
 
-ArtefactKind = Literal["tape", "clip", "still", "figure", "summary", "master", "audio"]
+#: `planet` is spectre's cutaway worlds (orchard/planet.py): bundled by `orchard bundle planet`,
+#: not by harvest, and recorded by hand with the bake manifest's digest.
+ArtefactKind = Literal["tape", "clip", "still", "figure", "summary", "master", "audio", "planet"]
 
 
 class Artefact(BaseModel):

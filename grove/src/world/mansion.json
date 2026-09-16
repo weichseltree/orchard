@@ -389,6 +389,11 @@
           "kind": "planet",
           "title": "Planet from scratch: three worlds cut open, with their measured surfaces",
           "bundle": {
+            "exhibit": {
+              "tree": "spectre",
+              "kind": "planet",
+              "bundle": "26f78b7516170d6d"
+            },
             "id": "26f78b7516170d6d"
           },
           "position": [
@@ -1381,6 +1386,11 @@
           "kind": "planet",
           "title": "Planet from scratch: three worlds cut open, with their measured surfaces",
           "bundle": {
+            "exhibit": {
+              "tree": "spectre",
+              "kind": "planet",
+              "bundle": "26f78b7516170d6d"
+            },
             "id": "26f78b7516170d6d"
           },
           "position": [
