@@ -243,6 +243,11 @@ function wallObstacles(room: Room, wall: Wall, except?: string): Span[] {
   return spans;
 }
 
+/** The middle of a doorway's opening, on the floor. */
+function doorPointOf(d: Doorway): Vector3 {
+  return d.axis === "x" ? new Vector3(d.at, 0, d.center) : new Vector3(d.center, 0, d.at);
+}
+
 /**
  * The wall the introduction panel hangs on, and the door it stands beside.
  * A chamber's is the open doorway nearest the hall by graph distance (ties
@@ -251,11 +256,6 @@ function wallObstacles(room: Room, wall: Wall, except?: string): Span[] {
  * those, since that is still how its host comes in. Null means no wall:
  * the grounds and the Orrery get a lectern instead.
  */
-/** The middle of a doorway's opening, on the floor. */
-function doorPointOf(d: Doorway): Vector3 {
-  return d.axis === "x" ? new Vector3(d.at, 0, d.center) : new Vector3(d.center, 0, d.at);
-}
-
 export function entranceWall(room: Room, mansion: Mansion): { wall: Wall; door: Doorway | null } | null {
   if (room.fallback.kind === "ground" || room.architecture === "space") return null;
   const spawn = new Vector3(...room.spawn.position);

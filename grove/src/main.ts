@@ -923,6 +923,8 @@ Object.defineProperty(window, "grove", {
       const z = (room.bounds.min[2] + room.bounds.max[2]) / 2;
       return teleport(body, mansion, x, z, lockedRoom, { walls: false });
     },
+    /** Resolves once everything the world is loading has landed (world.ts `settled`); the room tour waits on it after each visit. */
+    settled: (): Promise<void> => world?.settled() ?? Promise.resolve(),
     get world() {
       return world;
     },

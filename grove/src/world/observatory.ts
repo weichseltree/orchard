@@ -349,7 +349,8 @@ function chamberWalls(b: Builder): void {
         if (!hangingNear(room, wall, p, 0.3)) {
           wallBox(b, wall, "inset", p, y0 + (y1 - y0) * 0.48, 0.65, (y1 - y0) * 0.78, 0.012, 0.162);
           wallBox(b, wall, "stone", p + 0.36, y0 + (y1 - y0) * 0.48, 0.12, (y1 - y0) * 0.85, 0.18, 0.17);
-          if (SCONCED.includes(room.id) || (b.area && room.doorways.length >= 3)) {
+          // An area's corridors, the rooms with three or more open doors, carry sconces too.
+          if (SCONCED.includes(room.id) || (b.area && room.doorways.filter(d => !d.closed).length >= 3)) {
             const sconceY = Math.min(y0 + 2.8, y1 - 0.75);
             wallBox(b, wall, "brass", p - 0.02, sconceY, 0.16, 0.95, 0.09, 0.19);
             wallBox(b, wall, "light", p - 0.02, sconceY, 0.055, 0.74, 0.025, 0.285);

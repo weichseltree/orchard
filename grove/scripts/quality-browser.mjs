@@ -387,7 +387,30 @@ async function settledRendering(page, { quietMs = 1000, timeoutMs = 20000 } = {}
  * never disposed, which is a leak whose size is the number of crossings.
  * Counted in renderer objects, so the check is the same on a CI runner and a
  * headset; frame times are only recorded, per this report's limits.
+ *
+ * A room's wall text, door names and reading stands land after its shell,
+ * and the renderer counts a geometry only once it has been in view: a
+ * plaque built after the tour left its room, in a chamber the fixed heading
+ * never faces again, would be counted on the next lap as if it were new.
+ * So each visit waits for the world to settle (`grove.settled`), and a lap
+ * ends with a full turn on the spot, so that everything a lap built is
+ * drawn before it is counted.
  */
+/** A full turn on the spot, a frame per heading, so everything around the body has been in view. */
+async function lookAround(page) {
+  await page.evaluate(async () => {
+    const frame = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const body = window.grove.body;
+    const yaw = body.yaw;
+    for (let k = 1; k <= 8; k++) {
+      body.yaw = yaw + (k * Math.PI) / 4;
+      await frame();
+    }
+    body.yaw = yaw;
+    await frame();
+  });
+}
+
 async function roomTourAudit() {
   const profile = profiles[0];
   const { context, page, events } = await newPage(profile);
@@ -403,10 +426,13 @@ async function roomTourAudit() {
       const unsettled = [];
       for (const room of rooms) {
         if (!(await page.evaluate((id) => window.grove.visit(id), room))) refused.push(room);
+        await page.evaluate(() => window.grove.settled());
         const counts = await settledRendering(page);
         if (!counts.settled) unsettled.push(room);
       }
       await page.evaluate((id) => window.grove.visit(id), start);
+      await page.evaluate(() => window.grove.settled());
+      await lookAround(page);
       const end = await settledRendering(page);
       laps.push({ lap, refused, unsettled, ...end });
     }
