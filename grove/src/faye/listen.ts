@@ -90,8 +90,10 @@ export class Speaker {
   }
 
   /**
-   * The module's clock for this speaker started now: `join` stamps
-   * `last_said`, so the first line after joining waits out the gap too.
+   * Treat `at` as the last line sent. Called right after joining: a first
+   * join stamps `last_said`, and a rejoin keeps the previous run's, which may
+   * be moments old after a restart. Neither is visible from here, so the
+   * first line waits out the gap whichever it was.
    */
   heldUntilGap(at: number): void {
     this.#lastAt = Math.max(this.#lastAt, at);
@@ -103,12 +105,15 @@ export class Speaker {
       const { gapMs, now, sleep, onRefused } = this.#options;
       const wait = this.#lastAt + gapMs - now();
       if (wait > 0) await sleep(wait);
-      this.#lastAt = now();
       try {
         await this.#send(text);
       } catch (error) {
         onRefused(text, error);
       }
+      // From the COMPLETED call, refused or not: stamped before the send, a
+      // slow round trip would bring the next call to the module inside the
+      // gap it measures from its own commit.
+      this.#lastAt = now();
     });
     return this.#chain;
   }

@@ -220,11 +220,13 @@ async function main(): Promise<void> {
       console.warn(`faye: "${text}" refused (${error instanceof Error ? error.message : String(error)})`);
     },
   });
-  // Set once THIS run's join has landed. Before that her row can still be the
-  // previous run's -- a restart after a crash reuses the identity, and the
-  // module may not have seen the old socket close -- whose `last_seen` would
-  // let through lines that run already answered.
-  let joined = false;
+  // Her row's `last_seen` as it stood before THIS run's join. A restart after a
+  // crash reuses the identity and the module may not have seen the old socket
+  // close, so a row can already be in the view; its `last_seen` would let
+  // through lines that run already answered. The cut is the first `last_seen`
+  // that differs from it -- which is the join's own commit, visible as soon as
+  // the join's rows land, rather than when its acknowledgement is processed.
+  let before: bigint | null | undefined;
 
   // Every line already in the room when she arrives is history; she hears
   // only what is said after her own join, by the module's clock
@@ -232,13 +234,17 @@ async function main(): Promise<void> {
   // no feed she still answers, and says she has not heard from it. Registered
   // BEFORE `join`: a line said between the join and a later registration --
   // the greeting's wait alone is 0.9 s -- would be inserted with no handler
-  // and never replayed. Until this run's join has landed, nothing is new.
-  const joinedAt = (): bigint | null => {
-    if (!joined) return null;
+  // and never replayed. Until this run's join is in the view, nothing is new.
+  const ownLastSeen = (): bigint | null => {
     for (const person of conn.db.peopleHere.iter()) {
       if (person.identity.isEqual(identity)) return person.lastSeen.microsSinceUnixEpoch;
     }
     return null;
+  };
+  const joinedAt = (): bigint | null => {
+    if (before === undefined) return null; // not asked to join yet
+    const seen = ownLastSeen();
+    return seen === null || seen === before ? null : seen;
   };
   conn.db.chatHere.onInsert((_ctx, row) => {
     if (life.leaving) return;
@@ -250,8 +256,8 @@ async function main(): Promise<void> {
     void speaker.say(answer);
   });
 
+  before = ownLastSeen();
   await conn.reducers.join({ name: args.name, room: args.room });
-  joined = true;
   console.log(`faye: standing in "${args.room}" as "${args.name}"`);
   if (args.name.length > 24) {
     console.warn(`faye: the module clips names at 24 characters, so this shows as "${args.name.slice(0, 24)}"`);

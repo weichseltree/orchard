@@ -68,6 +68,20 @@ describe("Speaker", () => {
     expect(sent).toEqual([[900, "I am here."], [1800, "I cannot see a peer from here."]]);
   });
 
+  it("measures the gap from when a send completed, not when it began", async () => {
+    let clock = 0;
+    const sent: Array<[number, string]> = [];
+    const speaker = new Speaker(
+      async (text) => {
+        sent.push([clock, text]);
+        clock += 500; // a slow round trip
+      },
+      { gapMs: 900, now: () => clock, sleep: async (ms) => void (clock += ms), onRefused: () => undefined },
+    );
+    await Promise.all([speaker.say("one"), speaker.say("two")]);
+    expect(sent).toEqual([[0, "one"], [1400, "two"]]);
+  });
+
   it("does not wait when the gap has already passed", async () => {
     const { speaker, sent, advance } = harness();
     speaker.heldUntilGap(0);
