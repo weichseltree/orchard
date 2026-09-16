@@ -1,5 +1,6 @@
+import type { BroadcastAction } from "../world/broadcast";
 import type { ExhibitRow } from "../world/exhibits";
-import type { ChatLine, ChatRow } from "./presence";
+import type { BroadcastRowish, ChatLine, ChatRow } from "./presence";
 import { describe, expect, it, vi } from "vitest";
 import {
   Presence,
@@ -58,6 +59,7 @@ function stubConnection(options: {
   moderation: string[];
   said: string[];
   chatInserts: Array<(ctx: unknown, row: ChatRow) => void>;
+  broadcastInserts: Array<(ctx: unknown, row: BroadcastRowish) => void>;
   applyNow: () => void;
 } {
   const joins: string[] = [];
@@ -65,6 +67,7 @@ function stubConnection(options: {
   const said: string[] = [];
   const pendingApplied: Array<() => void> = [];
   const chatInserts: Array<(ctx: unknown, row: ChatRow) => void> = [];
+  const broadcastInserts: Array<(ctx: unknown, row: BroadcastRowish) => void> = [];
   const moderation: string[] = [];
   const queries: string[][] = [];
   const reports: Array<[string, string]> = [];
@@ -84,6 +87,7 @@ function stubConnection(options: {
     said,
     chatInserts,
     pendingJoins,
+    broadcastInserts,
     moderation,
     queries,
     reports,
@@ -109,6 +113,9 @@ function stubConnection(options: {
         iter: () => [],
         onInsert: (cb: (ctx: unknown, row: ChatRow) => void) => { chatInserts.push(cb); },
         onDelete: () => {},
+      },
+      broadcast: {
+        onInsert: (cb: (ctx: unknown, row: BroadcastRowish) => void) => { broadcastInserts.push(cb); },
       },
       room: {
         iter: () =>
@@ -188,6 +195,7 @@ function stubConnection(options: {
     moderation: string[];
     said: string[];
     chatInserts: Array<(ctx: unknown, row: ChatRow) => void>;
+    broadcastInserts: Array<(ctx: unknown, row: BroadcastRowish) => void>;
     applyNow: () => void;
   };
 }
@@ -535,6 +543,7 @@ describe("join refusal", () => {
       "SELECT * FROM people_here",
       "SELECT * FROM poses_here",
       "SELECT * FROM chat_here",
+      "SELECT * FROM broadcast",
       "SELECT * FROM room",
     ]);
     presence.join("grove");
@@ -1063,5 +1072,79 @@ describe("chat", () => {
     await settle(20);
     await expect(presence.say("too fast")).rejects.toThrow(/slow down/);
     presence.dispose();
+  });
+});
+
+describe("world events", () => {
+  /** A broadcast row in the shape the bindings deliver. */
+  function stamp(ms: number) {
+    return { microsSinceUnixEpoch: BigInt(ms) * 1000n };
+  }
+  function event(over: Partial<{ id: string; kind: string; cue: string; text: string; room: string; at: number; expires: number }> = {}) {
+    const at = over.at ?? 1_000_000;
+    return {
+      id: BigInt(over.id ?? "1"),
+      kind: over.kind ?? "notice",
+      cue: over.cue ?? "",
+      text: over.text ?? "the orchard is updating",
+      room: over.room ?? "",
+      at: stamp(at),
+      expiresAt: stamp(over.expires ?? at + 60_000),
+    } as BroadcastRowish;
+  }
+
+  async function connected(): Promise<{
+    connection: ReturnType<typeof stubConnection>;
+    presence: Presence;
+    actions: BroadcastAction[];
+  }> {
+    const connection = stubConnection({});
+    const actions: BroadcastAction[] = [];
+    let handlers!: TransportHandlers;
+    const presence = new Presence(
+      { onBroadcast: (action) => actions.push(action) },
+      { transport: (h) => (handlers = h), storage: memoryStorage() },
+    );
+    presence.connect("grove");
+    handlers.onConnect(connection, "abc", "token");
+    await settle(20);
+    return { connection, presence, actions };
+  }
+
+  it("delivers a world event that arrives after the backlog", async () => {
+    const { connection, actions } = await connected();
+    for (const fire of connection.broadcastInserts) fire({}, event({ text: "a turnstile opens" }));
+    expect(actions).toEqual([
+      { kind: "notice", id: "1", text: "a turnstile opens", holdMs: 60_000 },
+    ]);
+  });
+
+  it("ignores a repeat, so a reconnect does not fire the same cue twice", async () => {
+    const { connection, actions } = await connected();
+    for (const fire of connection.broadcastInserts) fire({}, event({ id: "5" }));
+    for (const fire of connection.broadcastInserts) fire({}, event({ id: "5" }));
+    expect(actions).toHaveLength(1);
+  });
+
+  it("ignores an event for another room", async () => {
+    const { connection, actions } = await connected();
+    for (const fire of connection.broadcastInserts) fire({}, event({ room: "greenhouse" }));
+    expect(actions).toEqual([]);
+  });
+
+  it("does not cost the visitor the room when the module has no broadcast table", async () => {
+    // An older module. A throw here would be caught by the join's .catch and
+    // reported as a REFUSED ROOM, which is a wildly misleading way to say the
+    // build has no broadcasts.
+    const connection = stubConnection({});
+    delete (connection.db as { broadcast?: unknown }).broadcast;
+    let handlers!: TransportHandlers;
+    const presence = new Presence({}, { transport: (h) => (handlers = h), storage: memoryStorage() });
+    presence.connect("grove");
+    handlers.onConnect(connection, "abc", "token");
+    await settle(20);
+    presence.join("grove");
+    await settle(20);
+    expect(presence.joinedRoom).toBe("grove");
   });
 });

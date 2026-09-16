@@ -8,6 +8,7 @@ import {
   TOKEN_KEY,
 } from "../config";
 import type { ExhibitRow } from "../world/exhibits";
+import { BroadcastGate, type BroadcastAction } from "../world/broadcast";
 
 // Presence over SpacetimeDB. Five rules shape this file:
 //
@@ -90,6 +91,21 @@ interface PoseRow {
   yaw: number;
 }
 
+/** A world event, as the module's public `broadcast` table holds it. */
+export interface BroadcastRowish {
+  id: bigint | number;
+  kind: string;
+  cue: string;
+  text: string;
+  room: string;
+  at: { microsSinceUnixEpoch: bigint };
+  expiresAt: { microsSinceUnixEpoch: bigint };
+}
+
+export interface BroadcastTableEvents {
+  onInsert(cb: (ctx: unknown, row: BroadcastRowish) => void): void;
+}
+
 export interface ChatRow {
   id: bigint;
   room: string;
@@ -132,6 +148,8 @@ export interface PresenceConnection {
     posesHere: TableEvents<PoseRow>;
     /** What was said in our room: likewise, scoped by the server. */
     chatHere: ChatTableEvents;
+    /** World events for every room; the gate decides which are ours. */
+    broadcast: BroadcastTableEvents;
     room: { iter(): Iterable<{ name: string; open: boolean; admin_only: boolean }> };
     exhibit: { iter(): Iterable<ExhibitRow> };
   };
@@ -197,6 +215,8 @@ export interface PresenceCallbacks {
   onPeersChanged?: (peers: ReadonlyMap<string, Peer>) => void;
   /** A line said in the room we are standing in, ours included. */
   onChat?: (line: ChatLine) => void;
+  /** A world event to act on: already filtered for room, expiry and repeats. */
+  onBroadcast?: (action: BroadcastAction) => void;
 }
 
 /** One line of room chat, in the shape the HUD wants. */
@@ -277,6 +297,8 @@ export class Presence {
   #refused = new Set<string>();
   /** False until the subscription's backlog has landed; see `#subscribe`. */
   #hearing = false;
+  /** Refuses the backlog, repeats, expired rows and other rooms (world/broadcast.ts). */
+  readonly #broadcasts = new BroadcastGate();
   #transport: PresenceTransport;
   #random: () => number;
   #setTimer: (fn: () => void, ms: number) => ReturnType<typeof setTimeout>;
@@ -821,6 +843,9 @@ export class Presence {
     // without this the day's chat replays as new lines every time the socket
     // comes back.
     this.#hearing = false;
+    // Same boundary, same reason: a reconnect re-delivers every row, and a cue
+    // that fires again on every reconnect is worse than one that is missed.
+    this.#broadcasts.close();
     this.#subscription = connection
       .subscriptionBuilder()
       .onApplied(() => {
@@ -831,6 +856,7 @@ export class Presence {
         // timers are asserting the reconnect backoff, and a stray 0 ms timer
         // here is indistinguishable from one.
         this.#hearing = true;
+        this.#broadcasts.open();
       })
       .onError(() => {
         this.#callbacks.onNotice?.("presence: the room subscription failed");
@@ -839,6 +865,7 @@ export class Presence {
         "SELECT * FROM people_here",
         "SELECT * FROM poses_here",
         "SELECT * FROM chat_here",
+        "SELECT * FROM broadcast",
         "SELECT * FROM room",
       ]);
     // Only lines that arrive from here on. The subscription hands over every
@@ -863,6 +890,28 @@ export class Presence {
         mine: row.sender.toHexString() === this.#identityHex,
         at: Number(row.at.microsSinceUnixEpoch / 1000n),
       });
+    });
+
+    // World events. Missing for the same reason chat can be missing -- an
+    // older module -- and refused the same way: a throw here is caught by the
+    // join's .catch and reported to the visitor as a refused room, which is a
+    // wildly misleading way to say "this build has no broadcasts".
+    const broadcasts = connection.db.broadcast as BroadcastTableEvents | undefined;
+    if (!broadcasts) return;
+    broadcasts.onInsert((_ctx, row) => {
+      const action = this.#broadcasts.admit(
+        {
+          id: String(row.id),
+          kind: row.kind,
+          cue: row.cue,
+          text: row.text,
+          room: row.room,
+          at: Number(row.at.microsSinceUnixEpoch / 1000n),
+          expiresAt: Number(row.expiresAt.microsSinceUnixEpoch / 1000n),
+        },
+        this.joinedRoom ?? "",
+      );
+      if (action) this.#callbacks.onBroadcast?.(action);
     });
   }
 

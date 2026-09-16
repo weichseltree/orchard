@@ -9,6 +9,7 @@ import { attachTouchControls } from "./control/touch";
 import { XrControls, requestXrSession, watchXrSupport } from "./control/xr";
 import { deploymentTokenSource } from "./net/auth";
 import { Avatars } from "./net/avatars";
+import { knowsCue } from "./world/broadcast";
 import { Presence } from "./net/presence";
 import { ChatPanel } from "./ui/chat";
 import { installAssetMap } from "./render/asset-map";
@@ -234,6 +235,20 @@ const presence = new Presence(
           if (peer.name === line.name) avatars.speak(peer.identity, line.text);
         }
       }
+    },
+    // A world event the gate has already vouched for: it arrived after we
+    // subscribed, it is for this room, it has not expired and we have not
+    // acted on it before (world/broadcast.ts). All that is left is to show it.
+    onBroadcast: (action) => {
+      if (action.kind === "notice") {
+        notice(action.text);
+        return;
+      }
+      // A cue we cannot draw is silence. Firing the words instead would turn a
+      // missing animation into a notice nobody asked for, and the host who
+      // sent it would have no way to tell it had not played.
+      if (!knowsCue(action.cue)) return;
+      if (action.text.trim() !== "") notice(action.text);
     },
   },
   // The grove's token service, when this build has one (a human check, then
