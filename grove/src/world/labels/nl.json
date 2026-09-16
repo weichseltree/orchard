@@ -1,0 +1,157 @@
+{
+  "common": {
+    "entrance": "Inleiding",
+    "exhibit": "Werk",
+    "lookFor": "Kijk goed",
+    "limit": "Wat dit niet laat zien",
+    "source": "Bron"
+  },
+  "rooms": {
+    "hall": {
+      "title": "hal",
+      "kicker": "Welke vraag trekt u aan?",
+      "intro": "Welkom in de grove, een klein onderzoeksmuseum, gebouwd door één persoon. Vier zalen komen uit op deze hal, elk genoemd naar de open-source-repository waarvan ze het werk tonen: einstruct, coarsen, world-engine en phototroph. Niets hier is een illustratie. De bewegende beelden zijn opgenomen simulaties, beeld voor beeld afgespeeld; de stilstaande beelden zijn studies, gerenderd uit gemeten gegevens, en elk werk noemt het bestand waaruit het komt. De architectuur zet alleen het decor. Het onderzoek is het lopende werk van één persoon, niet het oordeel van een instituut, en elke zaal eindigt met een regel over wat haar bewijs nog niet kan laten zien.",
+      "lookFor": "Lees het paneel bij de deur van elke zaal vóór het werk, en daarna het kleine bordje naast elk stuk.",
+      "limit": "Het gebouw zet het decor; alleen de banden en de stilstaande beelden dragen bewijs, en \"About this view\" noemt precies wat u ziet."
+    },
+    "einstruct": {
+      "title": "einstruct",
+      "kicker": "Wanneer houden twee soorten op met mengen?",
+      "intro": "einstruct is het open onderzoek van één persoon naar wat een wolk deeltjes over zichzelf kan weten uit afstanden alleen, zonder coördinaten. Deze zaal toont het eenvoudigste experiment. Tweehonderdduizend deeltjes van twee soorten, A en B, dwalen over een vel; telkens als een A een B ontmoet, verdwijnen beide. Dat is de hele regel. Op de vloer ligt de opgenomen run, beeld voor beeld afgespeeld zonder enige interpolatie. Ernaast ligt de controle, dezelfde run waarin de soorten elke twintig stappen opnieuw worden geschud. In de ene groeien gebieden van één soort tot het vel een lappendeken is; in de andere ontstaan ze nooit.",
+      "lookFor": "Pauzeer beide banden tegen het einde en vergelijk de grootte van de vlekken van één soort; spoel dan terug om ze te zien ontstaan.",
+      "limit": "De browser tekent een steekproef van de deeltjes en kan dus niet elk leeg gebied van de volledige simulatie meten; de getallen op de bordjes komen uit de opgenomen bestanden."
+    },
+    "spectre": {
+      "title": "coarsen",
+      "kicker": "Hoe vindt een wereld haar midden?",
+      "intro": "coarsen is het open onderzoek van één persoon naar hoe groot en hoe lang een wereld die uit niets dan deeltjes bestaat kan draaien voordat ze ophoudt te meten als echte materie. De drie bollen hier zijn één experiment. Elke wereld begon als dezelfde bal van 508.744 deeltjes, een gelijkmatig mengsel van een zware en een lichte soort, bijeengehouden door haar eigen zwaartekracht onder een koude hemel. Het enige verschil is hoe sterk de twee soorten elkaar afstoten. Elke wereld is opengesneden: het oppervlak is de gemeten rand van de deeltjes, en het binnenste is daaruit gemeten, beeld voor beeld, over 96 dynamische tijden.",
+      "lookFor": "Laat de opname lopen en vergelijk de drie snijvlakken op hetzelfde moment; waar de twee soorten elkaar het sterkst afstoten, verzamelt de zware soort zich het eerst in het midden.",
+      "limit": "Eén opgenomen run per wereld, niets geïnterpoleerd. Deze runs scheiden ontmenging niet van gedeelde afkoeling als oorzaak van een zwaar midden, dus geen bordje hier zegt dat de ontmenging het veroorzaakte."
+    },
+    "world-engine": {
+      "title": "world-engine",
+      "kicker": "Wat onthult een nieuw gezichtspunt?",
+      "intro": "world-engine is het open onderzoek van één persoon naar hoe weinig opgeslagen geometrie een wereld nodig heeft voordat een kijker het merkt. Het ligt stil: op de grondvraag was het antwoord nee, en deze drie stilstaande studies zijn wat overblijft. De ruimte die ze tonen is het klaslokaal uit de vrije demoscène van Blender, herbouwd uit een compacte beschrijving en daarna bekeken vanaf plekken die nooit gefotografeerd zijn. Begin met het hele lokaal, kijk dan achter de stoel, waar een nieuw gezichtspunt het beeld openscheurt, en ten slotte naar de rafelrand om een stoelpoot, waar dezelfde rand op zes manieren is getekend.",
+      "lookFor": "Vergelijk het ware beeld met de uitgerekte; de gaten zijn magenta gemarkeerd, en de rafelstudie toont wat een overtuigend beeld van het hele lokaal verbergt.",
+      "limit": "Dit zijn stilstaande studies uit opgeslagen gegevens, geen live reconstructie en geen werkende lensdeur; de resterende vraag van de repository is niet gemeten."
+    },
+    "phototroph": {
+      "title": "phototroph",
+      "kicker": "Wat laat twee atomen bij elkaar blijven?",
+      "intro": "phototroph is het open onderzoek van één persoon naar de vraag of materie onder een gestage bundel licht van één kleur zich ordent tot structuren die die kleur absorberen. Die vraag staat nog open. Wat hier hangt is het enige eerlijke dat de repository te tonen heeft: een opgenomen ontmoeting tussen drie atomen. Twee atomen die naar elkaar vallen kunnen elkaar niet vangen; ze vliegen precies zo snel uiteen als ze kwamen. Ze blijven alleen als een derde komt en de overtollige snelheid meeneemt. De band bevat 801 beelden van acht atomen in een kleine periodieke doos, omgezet uit het eigen verslag van de simulatie zonder iets toe te voegen.",
+      "lookFor": "Pauzeer rond de vangst, volg het vertrekkende atoom, spoel dan terug en speel dezelfde ontmoeting langzaam opnieuw af; het is één opgenomen gebeurtenis, niet een nieuwe bij elke druk op afspelen.",
+      "limit": "Eén vangst bewijst evenwicht noch bindingssnelheden en toetst geen selectie door licht; het licht waar dit onderzoek over gaat zit helemaal niet in de band."
+    },
+    "orangery": {
+      "title": "oranjerie",
+      "kicker": "Laat uw ogen reizen.",
+      "intro": "De oranjerie verbindt de zaal van world-engine met het terras. Het is een plek tussen de werken: volg de open deuren, kijk terug naar de zalen, of stap naar buiten onder de hemel. Er is hier een partij schaak, geopend vanuit de Gids over de ruimte heen.",
+      "lookFor": "De drie deuren aan de tuinkant komen alle uit op het terras."
+    },
+    "gallery": {
+      "title": "galerij",
+      "kicker": "Een rustiger stuk van de grove.",
+      "intro": "De galerij loopt van de zaal van phototroph naar het belvedère. De gesloten deuren langs de binnenmuur horen bij onderzoeksprojecten die nog geen zaal hebben verdiend; een zaal verdien je door iets eerlijks op te hangen. Loop, blijf staan, en kom terug wanneer u er klaar voor bent.",
+      "lookFor": "De brede opening aan het einde leidt omhoog naar het belvedère; de smalle deuren aan de tuinkant leiden naar het terras."
+    },
+    "belvedere": {
+      "title": "belvedère",
+      "kicker": "Het einde van de galerij, een trede hoger.",
+      "intro": "Het belvedère is een verhoogd platform aan het einde van de galerij, een plek om over de hele lengte van het gebouw terug te kijken. Zijn twee gesloten deuren zijn beloofd aan projecten die nog geen zaal hebben, neuralese en someotherlife; ze gaan open wanneer die repositories iets te tonen hebben.",
+      "lookFor": "Draai u om: de hele galerij ligt onder u, terug tot aan de zalen."
+    },
+    "greenhouse": {
+      "title": "werkplaats",
+      "kicker": "Waar het museum wordt onderhouden.",
+      "intro": "De werkplaats is de kamer van de gastheer, naast de hal achter een deur die alleen voor hem opengaat. Hiervandaan worden werken opgehangen, gecontroleerd en weggehaald, en wat een bezoeker in de zalen ziet is eerst in deze kamer goedgekeurd. Ze hoort niet bij de openbare rondgang.",
+      "lookFor": "Als u dit paneel kunt lezen, bent u de gastheer."
+    },
+    "terrace": {
+      "title": "terras",
+      "kicker": "Stap naar buiten onder de hemel.",
+      "intro": "Het terras loopt langs de hele tuinkant van het gebouw. Deuren leiden terug naar de hal, de oranjerie en de galerij; vóór u ligt de tuin, en daarachter de bosjes. De hemel is een ontworpen schemering, geen astronomische.",
+      "lookFor": "Volg het terras in een van beide richtingen naar een deur naar binnen, of steek over naar de tuin."
+    },
+    "parterre": {
+      "title": "tuin",
+      "kicker": "Oriënteer u onder de hemel.",
+      "intro": "De tuin ligt tussen het terras en de bosjes. Op het kruispunt staat een armillarium, en dat armillarium is een portaal: erdoorheen verschijnen de drie werelden van coarsen als bollen, en erin stappen brengt u naar hun schaal. Voorbij de tuin liggen het westelijke, het verre en het oostelijke bosje.",
+      "lookFor": "Kijk door het armillarium voordat u erin stapt; wat daar een bol lijkt, is aan de andere kant tachtig meter breed."
+    },
+    "orchard-west": {
+      "title": "westelijk bosje",
+      "kicker": "De gronden, ten westen van de tuin.",
+      "intro": "Het westelijke bosje hoort bij de gronden die deze wereld haar naam geven. Er wordt hier niets tentoongesteld; het is een plek om onder de bomen te lopen en terug te kijken naar het gebouw. De tuin ligt aan de ene kant, het verre bosje aan de andere.",
+      "lookFor": "De grond loopt zacht op naar de achterkant van het bosje; de weg terug is de open rand naar de tuin."
+    },
+    "orchard-south": {
+      "title": "verre bosje",
+      "kicker": "De gronden, aan het einde van de tuin.",
+      "intro": "Het verre bosje sluit de gronden af tegenover het terras. Van hieruit staat het hele gebouw aan de overkant van de tuin, met het armillarium in het midden. Aan weerszijden sluit het aan op het westelijke en het oostelijke bosje; hier valt niets te lezen behalve het uitzicht.",
+      "lookFor": "Ga aan de rand van het bosje staan en kijk over de tuin terug naar de daklijn van het gebouw."
+    },
+    "orchard-east": {
+      "title": "oostelijk bosje",
+      "kicker": "De gronden, ten oosten van de tuin.",
+      "intro": "Het oostelijke bosje spiegelt het westelijke aan de overkant van de tuin. Het zijn gronden, geen zaal: bomen, een helling en het uitzicht terug naar het terras en de galerij. Loop er voor de rust, en keer via de tuin terug wanneer u klaar bent voor een volgende vraag.",
+      "lookFor": "De weg terug naar binnen loopt over de tuin en omhoog naar het terras."
+    },
+    "orrery": {
+      "title": "orrery",
+      "kicker": "Hoe vindt een wereld haar midden?",
+      "intro": "Het orrery toont de drie werelden van coarsen op de schaal van de hemel, bereikt via het armillarium in de tuin. U bent vijftig keer gekrompen om hier te staan; elke bol is tachtig meter breed. Het zijn dezelfde opgenomen runs als in de zaal van coarsen: 508.744 deeltjes elk, hetzelfde gelijkmatige mengsel van een zware en een lichte soort, alleen verschillend in hoe sterk de twee elkaar afstoten. Elke wereld is opengesneden naar de plek waar u staat, met het oppervlak als gemeten rand van de deeltjes en het binnenste daaruit gemeten. De sterren zijn een ontworpen achtergrond, geen catalogus.",
+      "lookFor": "Loop naar een wereld toe en bekijk het snijvlak; de gloed markeert de heetste materie, een codering van temperatuur, geen licht.",
+      "limit": "Eén opgenomen run per wereld, niets geïnterpoleerd. Een zwaar midden scheidt op zichzelf ontmenging niet van gedeelde afkoeling als oorzaak."
+    }
+  },
+  "exhibits": {
+    "hall-poster": {
+      "title": "A + B → niets: één beeld van het vel",
+      "caption": "Een stilstaande render van één laat beeld uit de opgenomen run van einstruct: 200.000 deeltjes van twee soorten op een vlak vel, waarbij elke A die een B ontmoet met hem verdwijnt. Kleur onderscheidt de twee soorten en niets anders; de gebieden zijn niet getekend, ze zijn ontstaan."
+    },
+    "einstruct-tape": {
+      "title": "A + B-annihilatie op een vel",
+      "caption": "De opgenomen run zelf, plat op de vloer gelegd: 801 beelden over 400 eenheden simulatietijd, 200.000 deeltjes aan het begin en 2.634 aan het einde, vanuit één vaste beginopstelling (zaad 0). Kleur benoemt de soort, A of B; ze toont geen temperatuur of snelheid."
+    },
+    "einstruct-tape-stirred": {
+      "title": "De controle: soorten elke twintig stappen geschud",
+      "caption": "Dezelfde deeltjes en dezelfde regel, behalve dat elke twintig stappen de twee soorten over de plaatsen worden geschud. 801 beelden over 400 eenheden simulatietijd; 200.000 deeltjes zakken naar 292, negen keer minder dan ernaast, en gebieden ontstaan nooit. Kleur benoemt de soort."
+    },
+    "einstruct-wall": {
+      "title": "Het vel als film, 40 seconden",
+      "caption": "Een platte render van de vloerband als film van 40 seconden, tien eenheden simulatietijd per seconde, elk beeld het dichtstbijzijnde opgenomen beeld en geen enkel verzonnen. Zie hoe de twee soorten zich ordenen in gebieden die niemand heeft getekend. Kleur benoemt de soort."
+    },
+    "einstruct-wall-row": {
+      "title": "Een rij weet niet welke kant boven is",
+      "caption": "Een animatie van 16 seconden over het idee achter einstruct: de gesorteerde afstanden van één punt tot zijn acht naaste buren, getekend als staven. Draai de wolk, spiegel haar, nummer haar opnieuw, en de staven bewegen niet; zoom in, en elke staaf groeit. Een getekende figuur, zonder gemeten kleur."
+    },
+    "spectre-worlds": {
+      "title": "Drie opengesneden werelden",
+      "caption": "Het planetentrio van coarsen op loopschaal: drie ballen van 508.744 deeltjes uit één beginopstelling, elk 1.129 beelden over 96 dynamische tijden, met de twee soorten onverschillig, matig en sterk afkerig van dichtbij naar veraf. IJzerwarme gebieden bevatten meer zware deeltjes, bleke meer lichte; de gloed codeert temperatuur."
+    },
+    "spectre-wall": {
+      "title": "Uit de eerste film: 42,8 seconden, stil",
+      "caption": "Een fragment uit de eerste film van coarsen, 2.568 beelden in 1080p60, beeld voor beeld op de CPU gerenderd uit een opgenomen band van 12.288 deeltjes in een periodieke plak. Het is een belicht beeld van het verslag, geen meting: de schaduwen zijn het licht van de render, en er is geen geluid."
+    },
+    "world-engine-classroom": {
+      "title": "Het klaslokaal in 2,1 megabyte",
+      "caption": "Het demoklaslokaal van Blender, herbouwd uit 28.112 bollen in 2,1 MB opgeslagen gegevens, gezien vanaf een hoofdpositie die de reconstructie nooit heeft gezien. Een stilstaande studie: hoe een hele ruimte eruitziet wanneer bijna al haar geometrie is weggegooid. De kleuren zijn de eigen texturen van de scène."
+    },
+    "world-engine-behind-the-chair": {
+      "title": "Achter de stoel, op vier manieren",
+      "caption": "Eén beeld van het klaslokaal, op vier manieren gerenderd: het ware beeld, dan het beeld opengescheurd waar een nieuw gezichtspunt onthult wat verborgen was, uitgerekt om de scheur te bedekken, en alleen binnen elk voorwerp uitgerekt. Magenta markeert gaten, plekken waar geen opgeslagen gegevens reiken; elke andere kleur is die van de scène."
+    },
+    "world-engine-fringe": {
+      "title": "De rafelrand om een stoelpoot, op zes manieren",
+      "caption": "Een uitsnede van 56 pixels om één stoelpoot, negen keer vergroot en op zes manieren getekend: het ware beeld, gescheurd, met fijnere kleur, met een tweelaagse rand, uitgerekt, en binnen voorwerpen uitgerekt. Kleine rafels onthullen wat een overtuigend beeld van het hele lokaal verbergt. De helderheid is verdrievoudigd om ze zichtbaar te maken."
+    },
+    "phototroph-tape": {
+      "title": "Twee atomen kunnen elkaar niet vangen",
+      "caption": "801 beelden van acht atomen in een kleine periodieke doos, omgezet uit het verslag van de simulatie: twee vallen naar elkaar en blijven pas als een derde komt en de overtollige snelheid meeneemt. Alle atomen zijn van één soort en delen één kleur; de band tekent alleen posities, geen bindingen en geen licht."
+    },
+    "orrery-worlds": {
+      "title": "Het planetentrio op de schaal van de hemel",
+      "caption": "Dezelfde drie opgenomen werelden als in de zaal van coarsen, elk tachtig meter breed: 508.744 deeltjes, 1.129 beelden over 96 dynamische tijden, één beginopstelling, drie sterktes van afstoting tussen de zware en de lichte soort. IJzerwarme gebieden bevatten meer zware deeltjes, bleke meer lichte; de gloed codeert temperatuur."
+    }
+  }
+}

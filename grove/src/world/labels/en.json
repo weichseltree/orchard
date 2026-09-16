@@ -8,11 +8,11 @@
   },
   "rooms": {
     "hall": {
-      "title": "The Observatory",
+      "title": "hall",
       "kicker": "Which question draws you in?",
-      "intro": "Welcome to the Observatory, a small research museum built by one person. Four chambers open off this hall, each named after the open-source repository whose work it shows: einstruct, coarsen, world-engine and phototroph. Nothing here is an illustration. The moving pictures are recorded simulations played back frame by frame, the stills are studies rendered from measured data, and every exhibit names the file it came from. The architecture only sets the scene. The research is one person's ongoing work, not an institution's verdict, and each chamber ends with a line about what its evidence cannot yet show.",
+      "intro": "Welcome to the grove, a small research museum built by one person. Four chambers open off this hall, each named after the open-source repository whose work it shows: einstruct, coarsen, world-engine and phototroph. Nothing here is an illustration. The moving pictures are recorded simulations played back frame by frame, the stills are studies rendered from measured data, and every exhibit names the file it came from. The architecture only sets the scene. The research is one person's ongoing work, not an institution's verdict, and each chamber ends with a line about what its evidence cannot yet show.",
       "lookFor": "Read the panel at each chamber's door before the exhibit, then the small label beside each piece.",
-      "limit": "The Observatory sets the scene; only the tapes and stills carry evidence, and \"About this view\" names exactly what you are looking at."
+      "limit": "The building sets the scene; only the tapes and stills carry evidence, and \"About this view\" names exactly what you are looking at."
     },
     "einstruct": {
       "title": "einstruct",
@@ -43,63 +43,63 @@
       "limit": "One capture establishes neither equilibrium nor binding rates, and it does not test light-driven selection; the light this research is about is not in the tape at all."
     },
     "orangery": {
-      "title": "The Lantern Walk",
+      "title": "orangery",
       "kicker": "Let your eyes travel.",
-      "intro": "The Lantern Walk joins the world-engine chamber to the terrace. It is a place between exhibits: follow the open doors, look back towards the chambers, or step out under the sky. There is a game of chess here, opened from the Guide over the room.",
-      "lookFor": "The three doors on the garden side all open onto the Horizon Terrace."
+      "intro": "The orangery joins the world-engine chamber to the terrace. It is a place between exhibits: follow the open doors, look back towards the chambers, or step out under the sky. There is a game of chess here, opened from the Guide over the room.",
+      "lookFor": "The three doors on the garden side all open onto the terrace."
     },
     "gallery": {
-      "title": "The Long Gallery",
-      "kicker": "A quieter stretch of the Observatory.",
-      "intro": "The Long Gallery runs from the phototroph chamber to the Belvedere. The closed doors along its inner wall belong to research trees that have not yet earned a room; a tree earns one by having something honest to hang. Walk, pause, and return when you are ready.",
-      "lookFor": "The wide opening at the end leads up to the Belvedere; the narrow doors on the garden side lead out to the terrace."
+      "title": "gallery",
+      "kicker": "A quieter stretch of the grove.",
+      "intro": "The gallery runs from the phototroph chamber to the belvedere. The closed doors along its inner wall belong to research trees that have not yet earned a room; a tree earns one by having something honest to hang. Walk, pause, and return when you are ready.",
+      "lookFor": "The wide opening at the end leads up to the belvedere; the narrow doors on the garden side lead out to the terrace."
     },
     "belvedere": {
-      "title": "The Belvedere",
+      "title": "belvedere",
       "kicker": "The end of the gallery, a step above it.",
-      "intro": "The Belvedere is a raised platform at the far end of the Long Gallery, a place to look back down the whole length of the Observatory. Its two closed doors are promised to trees without rooms yet, neuralese and someotherlife; they will open when those repositories have something to show.",
+      "intro": "The belvedere is a raised platform at the far end of the gallery, a place to look back down the whole length of the building. Its two closed doors are promised to trees without rooms yet, neuralese and someotherlife; they will open when those repositories have something to show.",
       "lookFor": "Turn round: the whole gallery lies below you, back to the chambers."
     },
     "greenhouse": {
-      "title": "The Workshop",
+      "title": "workshop",
       "kicker": "Where the museum is tended.",
-      "intro": "The Workshop is the host's room, off the hall behind a door that opens only for them. Exhibits are hung, checked and taken down from here, and what a visitor sees in the chambers was approved in this room first. It is not part of the public tour.",
+      "intro": "The workshop is the host's room, off the hall behind a door that opens only for them. Exhibits are hung, checked and taken down from here, and what a visitor sees in the chambers was approved in this room first. It is not part of the public tour.",
       "lookFor": "If you can read this panel, you are the host."
     },
     "terrace": {
-      "title": "The Horizon Terrace",
+      "title": "terrace",
       "kicker": "Step out under the sky.",
-      "intro": "The Horizon Terrace runs the whole garden side of the Observatory. Doors lead back into the hall, the Lantern Walk and the Long Gallery; ahead lies the Meridian Garden, and beyond it the groves. The sky is a designed twilight, not an astronomical one.",
+      "intro": "The terrace runs the whole garden side of the building. Doors lead back into the hall, the orangery and the gallery; ahead lies the garden, and beyond it the groves. The sky is a designed twilight, not an astronomical one.",
       "lookFor": "Follow the terrace either way for a door back inside, or cross into the garden."
     },
     "parterre": {
-      "title": "The Meridian Garden",
+      "title": "garden",
       "kicker": "Find your bearings under the sky.",
-      "intro": "The Meridian Garden lies between the terrace and the groves. At its crossing stands an armillary, and the armillary is a portal: through it, coarsen's three worlds show as globes, and walking into it takes you to their scale. Beyond the garden lie the Western, Far and Eastern Groves.",
+      "intro": "The garden lies between the terrace and the groves. At its crossing stands an armillary, and the armillary is a portal: through it, coarsen's three worlds show as globes, and walking into it takes you to their scale. Beyond the garden lie the west, far and east groves.",
       "lookFor": "Look through the armillary before you step in; what appears as a globe there is eighty metres across on the other side."
     },
     "orchard-west": {
-      "title": "The Western Grove",
+      "title": "west grove",
       "kicker": "The grounds, west of the garden.",
-      "intro": "The Western Grove is part of the grounds that give this world its name. Nothing is exhibited here; it is a place to walk under the trees and look back at the Observatory. The garden lies to one side, the Far Grove to the other.",
+      "intro": "The west grove is part of the grounds that give this world its name. Nothing is exhibited here; it is a place to walk under the trees and look back at the building. The garden lies to one side, the far grove to the other.",
       "lookFor": "The ground rises gently toward the back of the grove; the way back is the open edge toward the garden."
     },
     "orchard-south": {
-      "title": "The Far Grove",
+      "title": "far grove",
       "kicker": "The grounds, at the garden's end.",
-      "intro": "The Far Grove closes the grounds opposite the Observatory. From here the whole palace stands across the garden, with the armillary at its centre. It joins the Western and Eastern Groves along its sides; there is nothing to read here but the view.",
-      "lookFor": "Stand at the grove's edge and look back across the garden at the Observatory's roofline."
+      "intro": "The far grove closes the grounds opposite the terrace. From here the whole building stands across the garden, with the armillary at its centre. It joins the west and east groves along its sides; there is nothing to read here but the view.",
+      "lookFor": "Stand at the grove's edge and look back across the garden at the building's roofline."
     },
     "orchard-east": {
-      "title": "The Eastern Grove",
+      "title": "east grove",
       "kicker": "The grounds, east of the garden.",
-      "intro": "The Eastern Grove mirrors the Western one across the garden. It is grounds, not a chamber: trees, a slope, and the view back to the terrace and the Long Gallery. Walk it for the quiet, and return by the garden when you are ready for another question.",
+      "intro": "The east grove mirrors the west grove across the garden. It is grounds, not a chamber: trees, a slope, and the view back to the terrace and the gallery. Walk it for the quiet, and return by the garden when you are ready for another question.",
       "lookFor": "The way back inside is across the garden and up onto the terrace."
     },
     "orrery": {
-      "title": "The Orrery",
+      "title": "orrery",
       "kicker": "How does a world find its middle?",
-      "intro": "The Orrery is coarsen's three worlds at the scale of the sky, reached through the garden's armillary. You have shrunk fifty times to stand here; each globe is eighty metres across. They are the same recorded runs as in the coarsen chamber: 508,744 particles each, the same even mixture of a heavy and a light kind, differing only in how strongly the two kinds repel. Each is cut open toward where you stand, its surface the measured edge of the particles and its interior measured from them. The stars are a designed backdrop, not a catalogue.",
+      "intro": "The orrery is coarsen's three worlds at the scale of the sky, reached through the garden's armillary. You have shrunk fifty times to stand here; each globe is eighty metres across. They are the same recorded runs as in the coarsen chamber: 508,744 particles each, the same even mixture of a heavy and a light kind, differing only in how strongly the two kinds repel. Each is cut open toward where you stand, its surface the measured edge of the particles and its interior measured from them. The stars are a designed backdrop, not a catalogue.",
       "lookFor": "Walk toward a world and watch its cut face; the glow marks the hottest matter, an encoding of temperature, not light.",
       "limit": "One recorded run per world, nothing interpolated. A heavy centre does not by itself separate unmixing from shared cooling as its cause."
     }

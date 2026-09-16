@@ -3,6 +3,12 @@ import mansionDocument from "../mansion.json";
 import { parseMansion } from "../schema";
 import en from "./en.json";
 import de from "./de.json";
+import fr from "./fr.json";
+import es from "./es.json";
+import italian from "./it.json";
+import pt from "./pt.json";
+import nl from "./nl.json";
+import ja from "./ja.json";
 import { AVAILABLE_LOCALES, labelsFor, labelsLoaded, parseLabels, roomTitle, type Labels } from "./index";
 
 // Every language file names every room and every hanging of mansion.json, in
@@ -11,8 +17,17 @@ import { AVAILABLE_LOCALES, labelsFor, labelsLoaded, parseLabels, roomTitle, typ
 // without, and a caption of 25 to 50 per exhibit.
 
 const mansion = parseMansion(mansionDocument);
-const files: Array<[string, unknown]> = [["en", en], ["de", de]];
-const words = (s: string) => s.trim().split(/\s+/).length;
+const files: Array<[string, unknown]> = [["en", en], ["de", de], ["fr", fr], ["es", es], ["it", italian], ["pt", pt], ["nl", nl], ["ja", ja]];
+/**
+ * The bounds are English word counts. A faithful translation runs longer in
+ * the Romance languages and Dutch, so a language's count is divided by how
+ * much it expands; Japanese has no word spaces and is measured in characters,
+ * about 3.3 of them to an English word. The plaques fit their type to the
+ * text, so longer copy costs legibility, not layout.
+ */
+const EXPANSION: Record<string, number> = { fr: 1.35, es: 1.35, pt: 1.35, it: 1.2, nl: 1.1, ja: 3.3 };
+const measure = (locale: string, s: string) =>
+  (locale === "ja" ? s.trim().length : s.trim().split(/\s+/).length) / (EXPANSION[locale] ?? 1);
 
 /** The tree rooms are titled after their repositories in every language. */
 const REPOSITORY_TITLES: Record<string, string> = {
@@ -48,7 +63,7 @@ describe.each(files)("labels/%s.json", (locale, raw) => {
     if (!copy) continue;
     const exhibits = room.hangings.length > 0;
     it(`${room.id}: an introduction of ${exhibits ? "60 to 110" : "25 to 50"} words, a look-for line${exhibits ? ", a limit" : ""}`, () => {
-      const n = words(copy.intro);
+      const n = measure(locale, copy.intro);
       if (exhibits) {
         expect(n).toBeGreaterThanOrEqual(60);
         expect(n).toBeLessThanOrEqual(110);
@@ -67,7 +82,7 @@ describe.each(files)("labels/%s.json", (locale, raw) => {
       const copy = labels.exhibits[hanging.id];
       if (!copy) continue;
       it(`${hanging.id}: a caption of 25 to 50 words`, () => {
-        const n = words(copy.caption);
+        const n = measure(locale, copy.caption);
         expect(n).toBeGreaterThanOrEqual(25);
         expect(n).toBeLessThanOrEqual(50);
         expect(copy.title).toBeTruthy();
@@ -100,8 +115,8 @@ describe("labelsFor", () => {
   it("roomTitle reads the visitor's title, and nothing for an unknown room or no labels", async () => {
     const labels = await labelsFor("en");
     expect(roomTitle(labels, "spectre")).toBe("coarsen");
-    expect(roomTitle(labels, "hall")).toBe("The Observatory");
-    expect(roomTitle(await labelsFor("de"), "hall")).toBe("Das Observatorium");
+    expect(roomTitle(labels, "hall")).toBe("hall");
+    expect(roomTitle(await labelsFor("de"), "hall")).toBe("Halle");
     expect(roomTitle(labels, "nowhere")).toBeUndefined();
     expect(roomTitle(null, "hall")).toBeUndefined();
   });

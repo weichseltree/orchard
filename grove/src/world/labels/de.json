@@ -8,11 +8,11 @@
   },
   "rooms": {
     "hall": {
-      "title": "Das Observatorium",
+      "title": "Halle",
       "kicker": "Welche Frage zieht Sie an?",
-      "intro": "Willkommen im Observatorium, einem kleinen Forschungsmuseum, das eine einzelne Person gebaut hat. Von dieser Halle gehen vier Kammern ab, jede nach dem quelloffenen Repositorium benannt, dessen Arbeit sie zeigt: einstruct, coarsen, world-engine und phototroph. Nichts hier ist eine Illustration. Die bewegten Bilder sind aufgezeichnete Simulationen, Bild für Bild abgespielt; die Standbilder sind Studien, aus gemessenen Daten gerendert; und jedes Exponat nennt die Datei, aus der es stammt. Die Architektur setzt nur den Rahmen. Die Forschung ist die laufende Arbeit einer Person, kein Urteil einer Institution, und jede Kammer endet mit einem Satz darüber, was ihre Belege noch nicht zeigen können.",
+      "intro": "Willkommen im Hain, einem kleinen Forschungsmuseum, das eine einzelne Person gebaut hat. Von dieser Halle gehen vier Kammern ab, jede nach dem quelloffenen Repositorium benannt, dessen Arbeit sie zeigt: einstruct, coarsen, world-engine und phototroph. Nichts hier ist eine Illustration. Die bewegten Bilder sind aufgezeichnete Simulationen, Bild für Bild abgespielt; die Standbilder sind Studien, aus gemessenen Daten gerendert; und jedes Exponat nennt die Datei, aus der es stammt. Die Architektur setzt nur den Rahmen. Die Forschung ist die laufende Arbeit einer Person, kein Urteil einer Institution, und jede Kammer endet mit einem Satz darüber, was ihre Belege noch nicht zeigen können.",
       "lookFor": "Lesen Sie an jeder Kammertür zuerst die Tafel, dann das kleine Schild neben jedem Stück.",
-      "limit": "Das Observatorium setzt den Rahmen; nur die Bänder und Standbilder tragen Belege, und „About this view“ nennt genau, was Sie gerade sehen."
+      "limit": "Das Gebäude setzt den Rahmen; nur die Bänder und Standbilder tragen Belege, und „About this view“ nennt genau, was Sie gerade sehen."
     },
     "einstruct": {
       "title": "einstruct",
@@ -43,63 +43,63 @@
       "limit": "Ein einzelner Einfang belegt weder ein Gleichgewicht noch Bindungsraten und prüft keine Auslese durch Licht; das Licht, um das es dieser Forschung geht, ist im Band gar nicht enthalten."
     },
     "orangery": {
-      "title": "Der Laternengang",
+      "title": "Orangerie",
       "kicker": "Lassen Sie den Blick wandern.",
-      "intro": "Der Laternengang verbindet die Kammer von world-engine mit der Terrasse. Er ist ein Ort zwischen den Exponaten: Folgen Sie den offenen Türen, blicken Sie zu den Kammern zurück oder treten Sie hinaus unter den Himmel. Hier gibt es ein Schachspiel; der Guide öffnet es über dem Raum.",
-      "lookFor": "Die drei Türen zur Gartenseite führen alle auf die Horizontterrasse."
+      "intro": "Die Orangerie verbindet die Kammer von world-engine mit der Terrasse. Sie ist ein Ort zwischen den Exponaten: Folgen Sie den offenen Türen, blicken Sie zu den Kammern zurück oder treten Sie hinaus unter den Himmel. Hier gibt es ein Schachspiel; der Guide öffnet es über dem Raum.",
+      "lookFor": "Die drei Türen zur Gartenseite führen alle auf die Terrasse."
     },
     "gallery": {
-      "title": "Die Lange Galerie",
-      "kicker": "Ein ruhigerer Abschnitt des Observatoriums.",
-      "intro": "Die Lange Galerie führt von der Kammer von phototroph zum Belvedere. Die geschlossenen Türen an der Innenwand gehören Forschungsbäumen, die sich noch keinen Raum verdient haben; einen Raum verdient sich ein Baum, indem er etwas Ehrliches zu hängen hat. Gehen Sie, verweilen Sie, kehren Sie zurück, wenn Sie bereit sind.",
+      "title": "Galerie",
+      "kicker": "Ein ruhigerer Abschnitt des Hains.",
+      "intro": "Die Galerie führt von der Kammer von phototroph zum Belvedere. Die geschlossenen Türen an der Innenwand gehören Forschungsbäumen, die sich noch keinen Raum verdient haben; einen Raum verdient sich ein Baum, indem er etwas Ehrliches zu hängen hat. Gehen Sie, verweilen Sie, kehren Sie zurück, wenn Sie bereit sind.",
       "lookFor": "Die breite Öffnung am Ende führt hinauf zum Belvedere; die schmalen Türen zur Gartenseite hinaus auf die Terrasse."
     },
     "belvedere": {
-      "title": "Das Belvedere",
+      "title": "Belvedere",
       "kicker": "Das Ende der Galerie, eine Stufe darüber.",
-      "intro": "Das Belvedere ist eine erhöhte Plattform am Ende der Langen Galerie, ein Ort, um die ganze Länge des Observatoriums zurückzublicken. Seine beiden geschlossenen Türen sind Bäumen ohne Raum versprochen, neuralese und someotherlife; sie öffnen sich, sobald diese Repositorien etwas zu zeigen haben.",
+      "intro": "Das Belvedere ist eine erhöhte Plattform am Ende der Galerie, ein Ort, um über die ganze Länge des Gebäudes zurückzublicken. Seine beiden geschlossenen Türen sind Bäumen ohne Raum versprochen, neuralese und someotherlife; sie öffnen sich, sobald diese Repositorien etwas zu zeigen haben.",
       "lookFor": "Drehen Sie sich um: Die ganze Galerie liegt unter Ihnen, zurück bis zu den Kammern."
     },
     "greenhouse": {
-      "title": "Die Werkstatt",
+      "title": "Werkstatt",
       "kicker": "Wo das Museum gepflegt wird.",
       "intro": "Die Werkstatt ist der Raum des Gastgebers, neben der Halle hinter einer Tür, die sich nur für ihn öffnet. Von hier aus werden Exponate gehängt, geprüft und abgenommen, und was Besucher in den Kammern sehen, wurde zuerst in diesem Raum freigegeben. Sie gehört nicht zum öffentlichen Rundgang.",
       "lookFor": "Wenn Sie diese Tafel lesen können, sind Sie der Gastgeber."
     },
     "terrace": {
-      "title": "Die Horizontterrasse",
+      "title": "Terrasse",
       "kicker": "Treten Sie hinaus unter den Himmel.",
-      "intro": "Die Horizontterrasse zieht sich über die ganze Gartenseite des Observatoriums. Türen führen zurück in die Halle, in den Laternengang und in die Lange Galerie; voraus liegt der Meridiangarten, dahinter die Haine. Der Himmel ist ein gestaltetes Zwielicht, kein astronomischer.",
+      "intro": "Die Terrasse zieht sich über die ganze Gartenseite des Gebäudes. Türen führen zurück in die Halle, in die Orangerie und in die Galerie; voraus liegt der Garten, dahinter die Haine. Der Himmel ist ein gestaltetes Zwielicht, kein astronomischer.",
       "lookFor": "Folgen Sie der Terrasse in eine der beiden Richtungen zu einer Tür nach innen, oder gehen Sie hinüber in den Garten."
     },
     "parterre": {
-      "title": "Der Meridiangarten",
+      "title": "Garten",
       "kicker": "Orientieren Sie sich unter dem Himmel.",
-      "intro": "Der Meridiangarten liegt zwischen der Terrasse und den Hainen. An seiner Kreuzung steht eine Armillarsphäre, und sie ist ein Portal: Durch sie erscheinen die drei Welten von coarsen als Globen, und wer hineingeht, gelangt in ihren Maßstab. Jenseits des Gartens liegen der Westliche, der Ferne und der Östliche Hain.",
+      "intro": "Der Garten liegt zwischen der Terrasse und den Hainen. An seiner Kreuzung steht eine Armillarsphäre, und sie ist ein Portal: Durch sie erscheinen die drei Welten von coarsen als Globen, und wer hineingeht, gelangt in ihren Maßstab. Jenseits des Gartens liegen der Westhain, der Ferne Hain und der Osthain.",
       "lookFor": "Sehen Sie durch die Armillarsphäre, bevor Sie hineintreten; was dort wie ein Globus wirkt, misst auf der anderen Seite achtzig Meter."
     },
     "orchard-west": {
-      "title": "Der Westliche Hain",
+      "title": "Westhain",
       "kicker": "Das Gelände, westlich des Gartens.",
-      "intro": "Der Westliche Hain gehört zum Gelände, das dieser Welt ihren Namen gibt. Hier wird nichts ausgestellt; es ist ein Ort, um unter den Bäumen zu gehen und zum Observatorium zurückzublicken. Auf der einen Seite liegt der Garten, auf der anderen der Ferne Hain.",
+      "intro": "Der Westhain gehört zum Gelände, das dieser Welt ihren Namen gibt. Hier wird nichts ausgestellt; es ist ein Ort, um unter den Bäumen zu gehen und zum Gebäude zurückzublicken. Auf der einen Seite liegt der Garten, auf der anderen der Ferne Hain.",
       "lookFor": "Der Boden steigt zum hinteren Teil des Hains sanft an; der Weg zurück ist die offene Seite zum Garten."
     },
     "orchard-south": {
-      "title": "Der Ferne Hain",
+      "title": "Ferner Hain",
       "kicker": "Das Gelände, am Ende des Gartens.",
-      "intro": "Der Ferne Hain schließt das Gelände gegenüber dem Observatorium ab. Von hier aus steht der ganze Palast jenseits des Gartens, mit der Armillarsphäre in seiner Mitte. An seinen Seiten grenzt er an den Westlichen und den Östlichen Hain; zu lesen gibt es hier nichts als die Aussicht.",
-      "lookFor": "Stellen Sie sich an den Rand des Hains und blicken Sie über den Garten zurück auf die Dachlinie des Observatoriums."
+      "intro": "Der Ferne Hain schließt das Gelände gegenüber der Terrasse ab. Von hier aus steht das ganze Gebäude jenseits des Gartens, mit der Armillarsphäre in seiner Mitte. An seinen Seiten grenzt er an den Westhain und den Osthain; zu lesen gibt es hier nichts als die Aussicht.",
+      "lookFor": "Stellen Sie sich an den Rand des Hains und blicken Sie über den Garten zurück auf die Dachlinie des Gebäudes."
     },
     "orchard-east": {
-      "title": "Der Östliche Hain",
+      "title": "Osthain",
       "kicker": "Das Gelände, östlich des Gartens.",
-      "intro": "Der Östliche Hain spiegelt den Westlichen jenseits des Gartens. Er ist Gelände, keine Kammer: Bäume, ein Hang und der Blick zurück zur Terrasse und zur Langen Galerie. Gehen Sie ihn der Ruhe wegen, und kehren Sie durch den Garten zurück, wenn Sie bereit für eine neue Frage sind.",
+      "intro": "Der Osthain spiegelt den Westhain jenseits des Gartens. Er ist Gelände, keine Kammer: Bäume, ein Hang und der Blick zurück zur Terrasse und zur Galerie. Gehen Sie ihn der Ruhe wegen, und kehren Sie durch den Garten zurück, wenn Sie bereit für eine neue Frage sind.",
       "lookFor": "Der Weg zurück ins Haus führt über den Garten und hinauf auf die Terrasse."
     },
     "orrery": {
-      "title": "Die Planetenmaschine",
+      "title": "Orrery",
       "kicker": "Wie findet eine Welt ihre Mitte?",
-      "intro": "Die Planetenmaschine zeigt die drei Welten von coarsen im Maßstab des Himmels, erreichbar durch die Armillarsphäre des Gartens. Sie sind fünfzigfach geschrumpft, um hier zu stehen; jeder Globus misst achtzig Meter. Es sind dieselben aufgezeichneten Läufe wie in der Kammer von coarsen: je 508.744 Teilchen, dieselbe gleichmäßige Mischung einer schweren und einer leichten Sorte, verschieden nur darin, wie stark sich die beiden Sorten abstoßen. Jede ist zu Ihrem Standort hin aufgeschnitten, ihre Oberfläche der gemessene Rand der Teilchen, ihr Inneres aus ihnen gemessen. Die Sterne sind eine gestaltete Kulisse, kein Katalog.",
+      "intro": "Das Orrery zeigt die drei Welten von coarsen im Maßstab des Himmels, erreichbar durch die Armillarsphäre des Gartens. Sie sind fünfzigfach geschrumpft, um hier zu stehen; jeder Globus misst achtzig Meter. Es sind dieselben aufgezeichneten Läufe wie in der Kammer von coarsen: je 508.744 Teilchen, dieselbe gleichmäßige Mischung einer schweren und einer leichten Sorte, verschieden nur darin, wie stark sich die beiden Sorten abstoßen. Jede ist zu Ihrem Standort hin aufgeschnitten, ihre Oberfläche der gemessene Rand der Teilchen, ihr Inneres aus ihnen gemessen. Die Sterne sind eine gestaltete Kulisse, kein Katalog.",
       "lookFor": "Gehen Sie auf eine Welt zu und beobachten Sie ihre Schnittfläche; das Glühen markiert die heißeste Materie, eine Kodierung der Temperatur, kein Licht.",
       "limit": "Ein aufgezeichneter Lauf pro Welt, nichts interpoliert. Eine schwere Mitte trennt für sich genommen nicht, ob Entmischung oder gemeinsame Abkühlung ihre Ursache ist."
     }

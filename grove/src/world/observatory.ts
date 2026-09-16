@@ -526,7 +526,8 @@ function terrainMesh(b: Builder): void {
     positions.setY(i, y0 + h - 0.02);
     const slope = rolling ? Math.hypot(moundHeight(mounds, x + 0.5, z) - h, moundHeight(mounds, x, z + 0.5) - h) : 0;
     const grain = 0.9 + 0.2 * hash2(Math.floor(x / 3), Math.floor(z / 3));
-    tint.copy(earth).lerp(grass, Math.min(1, h * 0.18 + slope * 0.6)).multiplyScalar(grain);
+    // Lawn over earth: a third of the way to the grove green on the flat, greener up a slope and on a crown.
+    tint.copy(earth).lerp(grass, Math.min(1, 0.38 + h * 0.14 + slope * 0.6)).multiplyScalar(grain);
     colors.push(tint.r, tint.g, tint.b);
   }
   geometry.setAttribute("color", new Float32BufferAttribute(colors, 3));

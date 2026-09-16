@@ -14,17 +14,17 @@ faceted grove sculptures and garden armillary are designed architecture.
 
 | Place | Question or purpose | Available content |
 | --- | --- | --- |
-| The Observatory | Which question draws you in? | Arrival, guide and routes into the chambers |
+| hall | Which question draws you in? | Arrival, guide and routes into the chambers |
 | einstruct | When do two kinds stop mixing? | An annihilation tape beside its shuffled control; two video panels |
 | coarsen (room id `spectre`) | How does a world find its middle? | spectre's three worlds cut open at walking scale, with lit, composition, temperature and pressure views; a silent excerpt |
 | phototroph | What lets two atoms stay together? | One recorded three-body capture |
 | world-engine | What does a new viewpoint reveal? | Three still studies of a classroom reconstruction and its limitations |
-| The Lantern Walk | Space between questions, and a game | Architecture, the three terrace arches, and the FTL Chess surface (ruled here 2026-09-16, moved out of the Long Gallery) |
-| The Long Gallery | Space between questions | Architecture, statuary and open routes; its closed doors are the trees without rooms; a broad stair climbs to the Belvedere at its end |
-| The Belvedere | The long view back | A raised platform over the gallery; closed doors for neuralese and someotherlife |
-| Terrace, Meridian Garden and three groves | Pause and explore outside | Designed grounds; the armillary at the garden's crossing is the portal to the Orrery |
-| The Orrery | How does a world find its middle, seen at the scale of the sky? | spectre's three cutaway worlds with their measured surfaces, eighty metres across, on a star field |
-| The Workshop | Host space | Behind a closed door; absent from visitor routes |
+| orangery | Space between questions, and a game | Architecture, the three terrace arches, and the FTL Chess surface (ruled here 2026-09-16, moved out of the Long Gallery) |
+| gallery | Space between questions | Architecture, statuary and open routes; its closed doors are the trees without rooms; a broad stair climbs to the Belvedere at its end |
+| belvedere | The long view back | A raised platform over the gallery; closed doors for neuralese and someotherlife |
+| terrace, garden and the three groves | Pause and explore outside | Designed grounds; the armillary at the garden's crossing is the portal to the Orrery |
+| orrery | How does a world find its middle, seen at the scale of the sky? | spectre's three cutaway worlds with their measured surfaces, eighty metres across, on a star field |
+| workshop | Host space | Behind a closed door; absent from visitor routes |
 
 The guide gives concrete observations and limits for each research chamber.
 Sources, species meaning and controls are in disclosures. Routes use only
@@ -156,7 +156,7 @@ three garden stairs, its four quarters edged in box hedge, a basin under
 the armillary, lanterns along the axis and obelisks at the corners. The
 three groves roll over authored mounds, up to 3.4 m, with rows of grove
 sculptures and lanterns. Room titles: einstruct, coarsen, world-engine,
-phototroph (ids, presence names and links unchanged, NAMING.md's rule).
+phototroph; the circulation rooms are plain words (hall, orangery, gallery, belvedere, workshop, terrace, garden, the groves, orrery) and the world is titled weichseltree: Manuel's ruling of the same night, "bare repo names; it should be a local map of the internet" (ids, presence names and links unchanged, NAMING.md's rule).
 
 **Heights.** A room's floor is its `bounds.min[1]`; a doorway joining two
 floors gets a flight of steps in the lower room, generated from the

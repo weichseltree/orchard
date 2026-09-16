@@ -54,6 +54,12 @@ export type Labels = z.infer<typeof LabelsSchema>;
 const loaders: Record<string, () => Promise<{ default: unknown }>> = {
   en: () => import("./en.json"),
   de: () => import("./de.json"),
+  fr: () => import("./fr.json"),
+  es: () => import("./es.json"),
+  it: () => import("./it.json"),
+  pt: () => import("./pt.json"),
+  nl: () => import("./nl.json"),
+  ja: () => import("./ja.json"),
 };
 
 export const AVAILABLE_LOCALES: readonly string[] = Object.keys(loaders);
