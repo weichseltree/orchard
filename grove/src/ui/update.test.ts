@@ -4,6 +4,7 @@ import {
   createUpdater,
   isNewer,
   parseVersion,
+  planForCue,
   planUpdate,
   preloadReloadAllowed,
   PRELOAD_RELOAD_GUARD_MS,
@@ -128,5 +129,23 @@ describe("a forced update", () => {
     offered.isConnected = false; // the visitor took it; a later build may offer again
     update("offer");
     expect(hud.offer).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("planForCue", () => {
+  const own = { commit: "aaa", builtAt: "2026-09-16T10:00:00Z" };
+
+  it("requires a newer build even when its stamp does not say forced", () => {
+    // The cue is a host saying everyone onto the new build now.
+    expect(planForCue(own, { commit: "bbb", builtAt: "2026-09-16T11:00:00Z" })).toBe("forced");
+  });
+
+  it("does nothing to a page that is already current", () => {
+    // Otherwise the cue throws every visitor out of the room for no reason.
+    expect(planForCue(own, { ...own })).toBe("none");
+  });
+
+  it("does nothing when the version cannot be read", () => {
+    expect(planForCue(own, null)).toBe("none");
   });
 });

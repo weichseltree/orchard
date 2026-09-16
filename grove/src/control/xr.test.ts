@@ -8,7 +8,7 @@ function pad() {
   return { buttons: Array.from({ length: 6 }, () => ({ pressed: false })), axes: [0, 0, 0, 0] };
 }
 
-function harness(menuOpen: { value: boolean } | null) {
+function harness(menuOpen: { value: boolean } | null, talk?: string[]) {
   const left = { handedness: "left", gamepad: pad() };
   const right = { handedness: "right", gamepad: pad() };
   const renderer = {
@@ -30,10 +30,12 @@ function harness(menuOpen: { value: boolean } | null) {
     askMenu: menuOpen
       ? { isOpen: () => menuOpen.value, onEvent: (event) => events.push(event) }
       : undefined,
+    voice: talk ? { begin: () => talk.push("begin"), end: () => talk.push("end") } : undefined,
   });
   /** One frame with these buttons held; everything else released. */
-  const frame = (held: { leftAsk?: boolean; trigger?: boolean; stickY?: number } = {}) => {
+  const frame = (held: { leftAsk?: boolean; trigger?: boolean; stickY?: number; stickPress?: boolean } = {}) => {
     left.gamepad.buttons[5]!.pressed = held.leftAsk ?? false;
+    right.gamepad.buttons[3]!.pressed = held.stickPress ?? false;
     right.gamepad.buttons[0]!.pressed = held.trigger ?? false;
     right.gamepad.axes[3] = held.stickY ?? 0;
     controls.update();
@@ -90,5 +92,33 @@ describe("the ask menu on the controllers", () => {
     const h = harness(null);
     h.frame({ leftAsk: true, trigger: true });
     expect(h.commands.togglePlay).toHaveBeenCalledOnce();
+  });
+});
+
+describe("push-to-talk in a headset", () => {
+  it("opens the microphone for exactly as long as the stick is held", () => {
+    const talk: string[] = [];
+    const h = harness(null, talk);
+    h.frame({ stickPress: true });
+    h.frame({ stickPress: true });
+    h.frame({ stickPress: true });
+    h.frame();
+    expect(talk).toEqual(["begin", "end"]);
+  });
+
+  it("closes the microphone when the session ends mid-sentence", () => {
+    const talk: string[] = [];
+    const h = harness(null, talk);
+    h.frame({ stickPress: true });
+    h.controls.reset();
+    expect(talk).toEqual(["begin", "end"]);
+  });
+
+  it("does not end a turn that never began", () => {
+    const talk: string[] = [];
+    const h = harness(null, talk);
+    h.controls.reset();
+    h.frame();
+    expect(talk).toEqual([]);
   });
 });

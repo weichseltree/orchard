@@ -34,6 +34,7 @@
     <tr><td>The name you choose, and the room you are in</td><td>People in the same room</td><td>30 days after your last visit</td></tr>
     <tr><td>Where you stand in the room</td><td>People in the same room</td><td>Only while you are there</td></tr>
     <tr><td>What you say in chat</td><td>People in the same room</td><td>24 hours</td></tr>
+    <tr><td>Your voice, while you hold the talk button</td><td>Nobody here: it goes to Deepgram to be written down, and the words become a chat line</td><td>We keep no audio. The words are kept as chat, 24 hours</td></tr>
     <tr><td>A report someone makes about you: their reason and your last five lines of chat in that room</td><td>The host only</td><td>90 days</td></tr>
     <tr><td>A ban, if you get one</td><td>The host only</td><td>Until it ends</td></tr>
     <tr><td>A scrambled code for your network (see below)</td><td>Nobody reads it; the world uses it to count and to ban</td><td>30 days after your last visit</td></tr>
@@ -44,12 +45,16 @@
   <p>When you enter the Mind Palace, your browser asks our token service (at <code>/auth</code> on this site) for a token. The service may first run Cloudflare's human check, Turnstile, which usually shows nothing. The token names a random identity for you. Your browser keeps it for 30 days and renews it, so you are the same visitor next time. Clearing this site's data in your browser makes you a new visitor.</p>
   <p>The token service sees your IP address, as every website does. It does not store it. It turns your network (your IPv4 address, or the first half of an IPv6 address) into a scrambled code using a secret key that only the service holds. That code goes into the token. It lets the world notice that eight visitors came from one network, or keep a banned network out, without ever learning the address.</p>
 
+  <h2>Speaking</h2>
+  <p>You can talk instead of type. Nothing is heard until you hold the talk button, or press the thumbstick in a headset, and your browser asks your permission the first time. While you hold it, your browser sends the sound straight to Deepgram, which turns it into text; the text is said in the room as an ordinary chat line, under your name. We never receive or keep the audio. Your browser gets a key for this from our site that works for 30 seconds, so the connection cannot be reused by anyone else. If you never press the button, no sound leaves your device.</p>
+
   <h2>What your browser stores</h2>
   <p>We set no cookies. The Mind Palace keeps up to four entries in your browser's local storage: <code>orchard.grove.pass</code> (the token), <code>orchard.grove.name</code> (the name you picked), <code>orchard.grove.guide-seen</code> (whether you have dismissed the first-visit guide) and, from older visits, <code>orchard.grove.token</code>. The guide preference stays in your browser until you clear this site's data. Cloudflare may set cookies of its own that the human check needs.</p>
 
   <h2>Who else handles data</h2>
   <ul>
     <li><b>Cloudflare</b> serves this site, the media and the token service, and runs the human check. <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare's privacy policy</a>.</li>
+    <li><b>Deepgram</b> (Deepgram, Inc., USA) turns what you say into text, only while you hold the talk button. The audio goes from your browser to Deepgram, not through us. <a href="https://deepgram.com/privacy">Deepgram's privacy policy</a>.</li>
     <li><b>Clockwork Labs</b> hosts the world's database (SpacetimeDB). Names, rooms, positions, chat, reports and bans live there. <a href="https://spacetimedb.com/privacy">Their privacy policy</a>.</li>
   </ul>
 

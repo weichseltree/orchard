@@ -125,9 +125,13 @@ export class VoiceCapture {
         return;
       }
       const grant = await this.#deps.grant();
-      // Deepgram takes its token as a websocket subprotocol, because a
-      // browser cannot set an Authorization header on a WebSocket.
-      const socket = this.#deps.connect(grant.url, ["token", grant.token]);
+      // Deepgram takes its credential as a websocket subprotocol, because a
+      // browser cannot set an Authorization header on a WebSocket -- and the
+      // SCHEME matters: `token` is for an account API key, `bearer` for the
+      // short-lived access token a grant returns. Sending a grant as `token`
+      // is refused at the handshake, which surfaces as a dropped connection
+      // with nothing to say why (deepgram-js-sdk's browser tests pin both).
+      const socket = this.#deps.connect(grant.url, ["bearer", grant.token]);
       socket.addEventListener("message", (event) => this.#hear(event.data));
       socket.addEventListener("error", () => this.#fail("the transcriber dropped the connection"));
       socket.addEventListener("close", () => {

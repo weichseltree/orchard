@@ -37,6 +37,8 @@ const BUTTON_SQUEEZE = 1;
 const BUTTON_MENU = 4;
 /** B/Y: the ask menu (ui/ask-menu.ts). The only face button left free. */
 const BUTTON_ASK = 5;
+/** Thumbstick press: push-to-talk, held on either hand. */
+const BUTTON_STICK = 3;
 
 export async function isXrSupported(): Promise<boolean> {
   if (!navigator.xr) return false;
@@ -95,6 +97,15 @@ export interface XrControlsOptions {
     isOpen(): boolean;
     onEvent(event: AskEvent): void;
   };
+  /**
+   * Push-to-talk in a headset, when this page has voice. The microphone
+   * button is DOM and invisible here, so without this a visitor in VR can
+   * only choose from the ask menu.
+   */
+  voice?: {
+    begin(): void;
+    end(): void;
+  };
 }
 
 export class XrControls {
@@ -117,6 +128,9 @@ export class XrControls {
   #warnedNoGamepad = false;
   #onNotice: ((message: string) => void) | undefined;
   #askMenu: XrControlsOptions["askMenu"];
+  #voice: XrControlsOptions["voice"];
+  /** Whether a talk turn is open, so release ends exactly the turn a press began. */
+  #talking = false;
   /** The right stick's vertical axis last frame, for one step per push. */
   #askAxis = 0;
   #origin = new Vector3();
@@ -130,6 +144,7 @@ export class XrControls {
     this.#onTeleport = options.onTeleport;
     this.#onNotice = options.onNotice;
     this.#askMenu = options.askMenu;
+    this.#voice = options.voice;
 
     for (let i = 0; i < 2; i++) {
       const controller = options.renderer.xr.getController(i);
@@ -211,6 +226,16 @@ export class XrControls {
     // Snap turn on the right stick's vertical is a nausea trap; turning is
     // done with the neck in XR, so the right stick only scrubs.
 
+    // Held, not toggled: the microphone is open exactly while the stick is
+    // pressed in, which is the only honest way to show someone when they are
+    // being heard when they cannot see a button.
+    const talk = pressed(left, BUTTON_STICK) || pressed(right, BUTTON_STICK);
+    if (this.#voice && talk !== this.#talking) {
+      this.#talking = talk;
+      if (talk) this.#voice.begin();
+      else this.#voice.end();
+    }
+
     const askMenu = this.#askMenu;
     if (askMenu && this.#edge("ask", pressed(left, BUTTON_ASK) || pressed(right, BUTTON_ASK))) {
       askMenu.onEvent("toggle");
@@ -257,6 +282,11 @@ export class XrControls {
     for (const ray of this.#rays) ray.visible = false;
     this.#pressed.clear();
     this.#askAxis = 0;
+    // Leaving the session mid-sentence must not leave the microphone open.
+    if (this.#talking) {
+      this.#talking = false;
+      this.#voice?.end();
+    }
     // A menu left open across sessions would come back holding a highlight
     // nobody remembers choosing.
     this.#askMenu?.onEvent("close");

@@ -58,7 +58,7 @@ artefacts:
   produced_by: CUDA_VISIBLE_DEVICES="" exprun -n grove-exhibit .venv/bin/python scripts/grove_exhibit.py
   commit: 2b8bbb4
   sha256: 0c32a040440d9fcb1c8168922d0b637797fdb2bb038a6ca88c697534026d5228
-  approved: false
+  approved: true
   bundle: 52299c62b54fb773
 - kind: clip
   path: results/grove/policy_side3/clip.mp4
@@ -66,7 +66,7 @@ artefacts:
   produced_by: CUDA_VISIBLE_DEVICES="" exprun -n grove-exhibit .venv/bin/python scripts/grove_exhibit.py
   commit: 2b8bbb4
   sha256: 88d50097c86e3c6d7444ff84d463a6713d747f2a6811b8df01fc2d9c71b3b15b
-  approved: false
+  approved: true
   bundle: e842d1420b50798a
 - kind: still
   path: results/grove/policy_side3/hero.png
@@ -74,7 +74,7 @@ artefacts:
   produced_by: CUDA_VISIBLE_DEVICES="" exprun -n grove-exhibit .venv/bin/python scripts/grove_exhibit.py
   commit: 2b8bbb4
   sha256: 127586bd2a68ba6e5458d442911d3dcaf1674b0dc4b3fd6ae8ee60b063ea7745
-  approved: false
+  approved: true
   bundle: c5b19626a8e2f6f1
 - kind: still
   path: results/grove/policy_side3/pyramid.png
@@ -82,7 +82,7 @@ artefacts:
   produced_by: CUDA_VISIBLE_DEVICES="" exprun -n grove-exhibit .venv/bin/python scripts/grove_exhibit.py
   commit: 2b8bbb4
   sha256: bec688b1a324985cb0070678368881d9e5d712a2602df8ea35ab75c5e7d5f07c
-  approved: false
+  approved: true
   bundle: 0b0b812dc41608b2
 - kind: tape
   path: results/grove/oracle_side5/tape
@@ -90,7 +90,7 @@ artefacts:
   produced_by: CUDA_VISIBLE_DEVICES="" exprun -n grove-exhibit .venv/bin/python scripts/grove_exhibit.py
   commit: 2b8bbb4
   sha256: 8a7c0ff4d28b40f3b0cdc26c61e60794519e212edf1962b9eefc3597f9ec1606
-  approved: false
+  approved: true
   bundle: 080a665e625afc10
 - kind: clip
   path: results/grove/oracle_side5/clip.mp4
@@ -98,7 +98,7 @@ artefacts:
   produced_by: CUDA_VISIBLE_DEVICES="" exprun -n grove-exhibit .venv/bin/python scripts/grove_exhibit.py
   commit: 2b8bbb4
   sha256: d8faf3d9aeee6a8ab570eeb1007495fe8898ad8e406032d5db734af98b725386
-  approved: false
+  approved: true
   bundle: c598636cd2ac1451
 - kind: still
   path: results/grove/oracle_side5/layout.png
@@ -106,7 +106,7 @@ artefacts:
   produced_by: CUDA_VISIBLE_DEVICES="" exprun -n grove-exhibit .venv/bin/python scripts/grove_exhibit.py
   commit: 2b8bbb4
   sha256: 2fcac45fea151f51a314223ee65832e4c81906756493857f4c5008e1924f59af
-  approved: false
+  approved: true
   bundle: 7e7cba7bf72e332f
 - kind: still
   path: results/grove/env_render.png
@@ -116,7 +116,7 @@ artefacts:
     -- --scene results/grove/oracle_side5/scene.json --out results/grove --samples 96
   commit: 2b8bbb4
   sha256: 40ad9da5de5b3b543b2791a609fe1f081729b4690a70de5d1528aac639cc8aa2
-  approved: false
+  approved: true
   bundle: 83d786cba7a501eb
 producers:
   tape: CUDA_VISIBLE_DEVICES="" exprun -n grove-exhibit .venv/bin/python scripts/grove_exhibit.py --out

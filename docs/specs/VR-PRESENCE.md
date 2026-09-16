@@ -206,8 +206,24 @@ not local.
   trigger does NOT toggle playback, or choosing a question would also pause the
   tape behind it. A test holds every entry to the intent `intentOf` reads.
 
-Not landed: every cue but `notice`, and free speech in a headset, which is
-§6 option 3 (voice without the DOM button) and still to come.
+- Voice made live-ready, ruled by Manuel on 2026-09-16: `microphone=(self)`
+  and `wss://api.deepgram.com` in `public/_headers`, Deepgram named on the
+  privacy page, and the grant sent as a `bearer` subprotocol (it had been
+  `token`, which Deepgram reserves for account keys and refuses for a grant).
+- Push-to-talk in a headset: hold either thumbstick in. A permission prompt
+  cannot be raised in an immersive session, so an ungranted microphone says so
+  in the headset log instead of doing nothing.
+- The `update` cue: every open page checks for a new build now and requires it,
+  still only at a safe moment (#16).
+
+- The `turnstile` cue, ruled by Manuel on 2026-09-16 as "close the doorways":
+  for the broadcast's lifetime every way out of the room -- doorway, teleport,
+  portal -- is held, through the same `lockedRoom` question the ordinary locks
+  use, capped at ten minutes on the client as well as in the module. The room
+  says why when a visitor tries a door, and says once when the doors open.
+
+Not landed: the `DEEPGRAM_API_KEY` Pages secret, which only Manuel holds. Until that secret is
+set, `/voice/grant` answers 503 and the button stays hidden.
 
 Nothing here is published to maincloud, `DEEPGRAM_API_KEY` is not in secrets,
 and the CSP does not yet allow the Deepgram socket.

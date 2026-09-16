@@ -56,6 +56,19 @@ export function planUpdate(own: VersionStamp, remote: VersionStamp | null): Upda
  * Whether the server has a build this page is not. Two builds of one dirty
  * tree share a commit, so for those the build time decides.
  */
+/**
+ * What an `update` cue asks of this page (world/broadcast.ts).
+ *
+ * The cue is a host saying "everyone onto the new build now", so a newer stamp
+ * is FORCED whatever the stamp itself says -- and an older or identical one is
+ * nothing at all. A cue that reloaded pages already current would throw every
+ * visitor out of the room for no reason; one sent before the deploy finished
+ * would do it twice.
+ */
+export function planForCue(own: VersionStamp, remote: VersionStamp | null): UpdatePlan {
+  return remote && isNewer(own, remote) ? "forced" : "none";
+}
+
 export function isNewer(own: VersionStamp, remote: VersionStamp): boolean {
   if (!own.commit || !remote.commit) return false;
   if (remote.commit !== own.commit) return true;
@@ -133,13 +146,22 @@ export function createUpdater({ hud, whenFree, reload }: UpdaterDeps): (plan: Up
   };
 }
 
+export interface GroveUpdates {
+  /**
+   * Checks for a new build now, and requires it if there is one: the `update`
+   * cue. Still reloads only at a safe moment -- a forced update never pulls a
+   * visitor out of a headset (issue #16).
+   */
+  checkNow(): void;
+}
+
 /** Registers the service worker (or removes it), watches for new builds, recovers stale lazy imports. */
-export function startGroveUpdates(options: GroveUpdatesOptions): void {
+export function startGroveUpdates(options: GroveUpdatesOptions): GroveUpdates {
   const { hud, xr } = options;
   const whenFree = safeMoment(xr);
 
   recoverStaleImports(xr, whenFree);
-  if (import.meta.env.DEV) return;
+  if (import.meta.env.DEV) return { checkNow: () => undefined };
 
   const update = createUpdater({ hud, whenFree, reload: () => location.reload() });
 
@@ -169,6 +191,11 @@ export function startGroveUpdates(options: GroveUpdatesOptions): void {
   window.setInterval(() => {
     if (document.visibilityState === "visible") void check();
   }, VERSION_POLL_MS);
+  return {
+    checkNow: () => {
+      void fetchVersion().then((stamp) => update(planForCue(OWN_VERSION, stamp)));
+    },
+  };
 }
 
 async function fetchVersion(): Promise<VersionStamp | null> {

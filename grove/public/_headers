@@ -5,13 +5,17 @@
 # the client never connects (found on the first production deploy, 2026-09-12).
 # challenges.cloudflare.com is Turnstile, the human check in front of the token
 # service (/auth, a Pages Function on this same origin): its script and its frame.
+# wss://api.deepgram.com is the transcriber, and the only host outside Cloudflare
+# and SpacetimeDB the client may reach (ruled by Manuel, 2026-09-16). The browser
+# opens it itself with a 30-second token from /voice/grant; the account key stays
+# in the Pages Function. microphone=(self) lets this origin ask, on a press.
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'unsafe-eval' blob: https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com https://ftlchess.com; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://media.weichseltree.com; media-src 'self' blob: https://media.weichseltree.com; connect-src 'self' blob: https://media.weichseltree.com https://maincloud.spacetimedb.com wss://maincloud.spacetimedb.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'unsafe-eval' blob: https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com https://ftlchess.com; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://media.weichseltree.com; media-src 'self' blob: https://media.weichseltree.com; connect-src 'self' blob: https://media.weichseltree.com https://maincloud.spacetimedb.com wss://maincloud.spacetimedb.com wss://api.deepgram.com; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
   Referrer-Policy: strict-origin-when-cross-origin
   X-Content-Type-Options: nosniff
   Cross-Origin-Opener-Policy: same-origin
-  Permissions-Policy: xr-spatial-tracking=(self), camera=(), microphone=(), geolocation=()
+  Permissions-Policy: xr-spatial-tracking=(self), camera=(), microphone=(self), geolocation=()
 
 # Caching has one rule: a URL whose name carries its content hash is kept
 # forever; a fixed name is always revalidated. Never mark a fixed name
