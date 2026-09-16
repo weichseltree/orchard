@@ -54,9 +54,9 @@ describe("classify", () => {
   });
 
   it("answers navigations network-first, one key per path whatever the query", () => {
-    expect(classify(req("https://weichseltree.com/grove/?room=hall&yaw=90", { mode: "navigate" }), SCOPE)).toEqual({
+    expect(classify(req("https://weichseltree.com/mind/?room=hall&yaw=90", { mode: "navigate" }), SCOPE)).toEqual({
       kind: "page",
-      key: "https://weichseltree.com/grove/",
+      key: "https://weichseltree.com/mind/",
     });
     expect(classify(req("https://weichseltree.com/", { mode: "navigate" }), SCOPE)).toMatchObject({ kind: "page" });
   });
@@ -75,7 +75,7 @@ describe("classify", () => {
     ]) {
       expect(classify(req(url), SCOPE), url).toEqual(network);
     }
-    expect(classify(req("https://weichseltree.com/grove/?nosw", { mode: "navigate" }), SCOPE)).toEqual(network);
+    expect(classify(req("https://weichseltree.com/mind/?nosw", { mode: "navigate" }), SCOPE)).toEqual(network);
     expect(classify(req("https://weichseltree.com/auth/", { mode: "navigate" }), SCOPE)).toEqual(network);
     expect(classify(req("https://weichseltree.com/assets/x.js", { method: "POST" }), SCOPE)).toEqual(network);
   });

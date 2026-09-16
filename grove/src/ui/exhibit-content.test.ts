@@ -46,7 +46,7 @@ describe("the exhibit companion", () => {
 
   it("keeps mode flags on room links without carrying a previous camera location", () => {
     const link = new URL(roomHref("?demo&nosw&room=hall&x=1&z=2&yaw=30&pitch=-5", "spectre"), "https://example.test");
-    expect(link.pathname).toBe("/grove/");
+    expect(link.pathname).toBe("/mind/");
     expect(link.searchParams.has("demo")).toBe(true);
     expect(link.searchParams.has("nosw")).toBe(true);
     expect(link.searchParams.get("room")).toBe("spectre");

@@ -1,12 +1,12 @@
 # The Observatory visual identity
 
-The Observatory is the current place you enter in **the grove**, the
+The Observatory is the current place you enter in **Weichselmind**, the
 orchard's browser world. Its public presentation uses dark mineral colours,
 warm ivory type, brass entrances and a cool nocturnal atmosphere. This
 inventory follows the implemented Observatory rebuild, dated 2026-09-14.
 
 weichseltree remains Manuel Weichselbaum's research channel. The orchard is
-the open source platform behind the grove. The Observatory names the museum
+the open source platform behind Weichselmind. The Observatory names the museum
 and its first room; it does not rename the research trees.
 
 ## Where the current design lives
@@ -71,7 +71,7 @@ numerals. The timing panel uses a system monospace stack. Follow the actual
 CSS for component sizes and breakpoints rather than applying the landing's
 large typography inside the world.
 
-The landing wordmark is **grove**, with **by the orchard** underneath and a
+The landing wordmark is **weichselmind**, with **by weichseltree** underneath and a
 small inline SVG made of three portal outlines. This architectural mark is
 part of the page source. The existing green seed remains the
 [favicon](../grove/public/favicon.svg) and appears on the older legal pages;

@@ -4,11 +4,11 @@ Walk inside a particle simulation. Pause it, move through it, and see where
 the picture came from.
 
 The orchard turns research outputs into rooms you can visit in a browser.
-Its public world, **the grove**, brings particle tapes, videos and figures
+Its public world, **Weichselmind**, brings particle tapes, videos and figures
 into **the Observatory**, a nocturnal museum and its gardens. Its local tools collect those outputs, keep
 their provenance, and let the host choose what hangs.
 
-[Visit the grove](https://www.weichseltree.com/grove/) ·
+[Visit Weichselmind](https://weichseltree.com/mind/) ·
 [Run the local demo](#run-the-local-demo) ·
 [Bring your research](#bring-your-research) ·
 [Contribute](CONTRIBUTING.md)
@@ -54,7 +54,7 @@ pnpm install --frozen-lockfile
 pnpm demo
 ```
 
-Open [localhost:5173/grove/?demo](http://localhost:5173/grove/?demo). You land
+Open [localhost:5173/mind/?demo](http://localhost:5173/mind/?demo). You land
 beside moving particles in the Mixing Chamber. Click the view, use **WASD**
 or the arrow keys to walk, move the mouse to look, and press **Space** to
 pause. **Esc** releases the pointer so you can use the on-screen controls.

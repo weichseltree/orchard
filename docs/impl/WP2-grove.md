@@ -130,10 +130,10 @@ About 5,500 lines of TypeScript, no React, no framework.
 ```bash
 cd grove
 pnpm install
-pnpm dev            # http://localhost:5173/  and  http://localhost:5173/grove/
+pnpm dev            # http://localhost:5173/  and  http://localhost:5173/mind/
 pnpm test           # vitest, 89 tests
 pnpm typecheck
-pnpm build          # -> grove/dist/index.html and grove/dist/grove/index.html
+pnpm build          # -> grove/dist/index.html and grove/dist/mind/index.html
 pnpm dev:bundle     # optional: a synthetic bundle in grove/dev/ (ffmpeg for the video)
 ```
 
@@ -268,7 +268,7 @@ renders at 1.5), 1.0 on a headset, 2.0 on the desktop.
 **Desktop Chromium 141, for real** (Playwright, SwiftShader, 1280×800 and
 1024×640), driven through the real UI:
 
-- both pages build and serve; `/` links to `/grove/`;
+- both pages build and serve; `/` links to `/mind/`;
 - with no `assets/hall/hall.glb` the grey 14 × 20 × 7 m shell with the
   2.4 × 3.2 m opening appears and the HUD says why;
 - **WP3's final bake** at `assets/hall/hall.glb`: the glb loads, all 5 hall

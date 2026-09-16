@@ -1,5 +1,10 @@
 # Naming: spectre, orchard, and the grove
 
+> **Superseded for the public world on 2026-09-16:** the world is now
+> **Weichselmind** at `https://weichseltree.com/mind/`. The references to
+> “the grove” below record the earlier name and its rename analysis; internal
+> implementation identifiers and archival records remain unchanged.
+
 Written 2026-09-16, after Manuel said the two repos might not be named well.
 Nothing was renamed to write this. No code was touched.
 
