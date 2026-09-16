@@ -257,6 +257,10 @@ async function main(): Promise<void> {
   });
 
   before = ownLastSeen();
+  // The hold starts BEFORE the join: the handler is live, and a reply to a
+  // line said after the join commits but before its acknowledgement would
+  // otherwise go straight out inside the gap `join` just stamped.
+  speaker.heldUntilGap(Date.now());
   await conn.reducers.join({ name: args.name, room: args.room });
   console.log(`faye: standing in "${args.room}" as "${args.name}"`);
   if (args.name.length > 24) {
