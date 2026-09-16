@@ -10,7 +10,7 @@
     "hall": {
       "title": "hall",
       "kicker": "Quelle question vous attire ?",
-      "intro": "Bienvenue dans le Mind Palace, un petit musée de recherche construit par une seule personne. Quatre salles ouvrent sur ce hall, chacune portant le nom du dépôt open source dont elle montre le travail : einstruct, coarsen, world-engine et phototroph. Rien ici n'est une illustration. Les images animées sont des simulations enregistrées, rejouées image par image, les images fixes sont des études rendues à partir de données mesurées, et chaque pièce nomme le fichier dont elle provient. L'architecture ne fait que planter le décor. La recherche est le travail en cours d'une personne, non le verdict d'une institution, et chaque salle se termine par une ligne sur ce que ses preuves ne peuvent pas encore montrer.",
+      "intro": "Bienvenue dans le Mind Palace, un petit musée de recherche construit par une seule personne. Trois salles ouvrent sur ce hall, chacune portant le nom du dépôt open source dont elle montre le travail : einstruct, world-engine et phototroph. Le quatrième dépôt, coarsen, garde ses mondes dans l'orrery, atteint par la sphère armillaire du jardin. Rien ici n'est une illustration. Les images animées sont des simulations enregistrées, rejouées image par image, les images fixes sont des études rendues à partir de données mesurées, et chaque pièce nomme le fichier dont elle provient. L'architecture ne fait que planter le décor. La recherche est le travail en cours d'une personne, non le verdict d'une institution, et chaque salle se termine par une ligne sur ce que ses preuves ne peuvent pas encore montrer.",
       "lookFor": "Lisez le panneau à la porte de chaque salle avant l'exposition, puis la petite étiquette à côté de chaque pièce.",
       "limit": "Le bâtiment plante le décor ; seuls les enregistrements et les images fixes portent des preuves, et « About this view » nomme exactement ce que vous regardez."
     },
@@ -20,13 +20,6 @@
       "intro": "einstruct est la recherche ouverte d'une seule personne sur ce qu'un nuage de particules peut savoir de lui-même à partir des seules distances, sans aucune coordonnée. Cette salle montre son expérience la plus simple. Deux cent mille particules de deux espèces, A et B, errent sur une feuille ; chaque fois qu'un A rencontre un B, les deux disparaissent. C'est toute la règle. Au sol repose la simulation enregistrée, rejouée image par image sans aucune interpolation. À côté repose son témoin, la même simulation dont les espèces sont remélangées tous les vingt pas. Dans l'une, des régions d'une seule espèce grandissent jusqu'à ce que la feuille soit un patchwork ; dans l'autre, elles ne se forment jamais.",
       "lookFor": "Mettez les deux bandes en pause vers la fin et comparez la taille des taches d'une seule espèce, puis revenez en arrière pour les voir apparaître.",
       "limit": "Le navigateur ne dessine qu'un échantillon des particules et ne peut donc pas mesurer chaque région vide de la simulation complète ; les nombres des étiquettes viennent des fichiers enregistrés."
-    },
-    "spectre": {
-      "title": "coarsen",
-      "kicker": "Comment un monde trouve-t-il son centre ?",
-      "intro": "coarsen est la recherche ouverte d'une seule personne sur la taille et la durée qu'un monde fait uniquement de particules peut atteindre avant de cesser de se mesurer comme de la matière réelle. Les trois globes ici sont une seule expérience. Chaque monde a commencé comme la même boule de 508 744 particules, un mélange uniforme d'une espèce lourde et d'une espèce légère, tenu par sa propre gravité sous un ciel froid. La seule différence entre eux est la force avec laquelle les deux espèces se repoussent. Chacun est ouvert : la surface est le bord mesuré des particules, et l'intérieur est mesuré à partir d'elles, image par image, sur 96 temps dynamiques.",
-      "lookFor": "Laissez l'enregistrement se dérouler et comparez les trois faces coupées au même instant ; là où les deux espèces se repoussent le plus, l'espèce lourde se rassemble au centre le plus tôt.",
-      "limit": "Une seule simulation enregistrée par monde, rien d'interpolé. Ces simulations ne distinguent pas le démélange du refroidissement commun comme cause d'un centre lourd ; aucune plaque ici n'affirme donc que le démélange l'a causé."
     },
     "world-engine": {
       "title": "world-engine",
@@ -45,7 +38,7 @@
     "orangery": {
       "title": "orangerie",
       "kicker": "Laissez vos yeux voyager.",
-      "intro": "L'orangerie relie la salle de world-engine à la terrasse. C'est un lieu entre les expositions : suivez les portes ouvertes, regardez vers les salles, ou sortez sous le ciel. Il y a ici une partie d'échecs, ouverte depuis le Guide par-dessus la pièce.",
+      "intro": "L'orangerie relie la salle de world-engine à la terrasse. C'est un lieu entre les expositions : suivez les portes ouvertes, regardez vers les salles, ou sortez sous le ciel. Au fond se trouve une table d'échecs : approchez-vous pour jouer, ou ouvrez la partie depuis le Guide.",
       "lookFor": "Les trois portes côté jardin donnent toutes sur la terrasse."
     },
     "gallery": {
@@ -99,7 +92,7 @@
     "orrery": {
       "title": "orrery",
       "kicker": "Comment un monde trouve-t-il son centre ?",
-      "intro": "L'orrery présente les trois mondes de coarsen à l'échelle du ciel, atteints par la sphère armillaire du jardin. Vous avez rétréci cinquante fois pour vous tenir ici ; chaque globe mesure quatre-vingts mètres. Ce sont les mêmes simulations enregistrées que dans la salle de coarsen : 508 744 particules chacune, le même mélange uniforme d'une espèce lourde et d'une espèce légère, ne différant que par la force avec laquelle les deux se repoussent. Chacune est ouverte vers l'endroit où vous vous tenez, sa surface étant le bord mesuré des particules et son intérieur mesuré à partir d'elles. Les étoiles sont un décor dessiné, non un catalogue.",
+      "intro": "L'orrery présente les trois mondes de coarsen à l'échelle du ciel, atteints par la sphère armillaire du jardin. Vous avez rétréci cinquante fois pour vous tenir ici ; chaque globe mesure quatre-vingts mètres. Ce sont les simulations enregistrées de coarsen : 508 744 particules chacune, le même mélange uniforme d'une espèce lourde et d'une espèce légère, ne différant que par la force avec laquelle les deux se repoussent. Chacune est ouverte vers l'endroit où vous vous tenez, sa surface étant le bord mesuré des particules et son intérieur mesuré à partir d'elles. Les étoiles sont un décor dessiné, non un catalogue.",
       "lookFor": "Avancez vers un monde et observez sa face coupée ; la lueur marque la matière la plus chaude, un codage de la température, non de la lumière.",
       "limit": "Une seule simulation enregistrée par monde, rien d'interpolé. Un centre lourd ne permet pas à lui seul de distinguer le démélange du refroidissement commun comme cause."
     },
@@ -217,10 +210,6 @@
     }
   },
   "exhibits": {
-    "hall-poster": {
-      "title": "A + B → rien : une image de la feuille",
-      "caption": "Un rendu fixe d'une image tardive de la simulation enregistrée d'einstruct : 200 000 particules de deux espèces sur une feuille plane, tout A rencontrant un B disparaissant avec lui. La couleur distingue les deux espèces et rien d'autre ; les régions n'ont pas été dessinées, elles se sont formées."
-    },
     "einstruct-tape": {
       "title": "Annihilation A + B sur une feuille",
       "caption": "La simulation enregistrée elle-même, posée à plat sur le sol : 801 images sur 400 unités de temps simulé, 200 000 particules au départ et 2 634 à la fin, à partir d'un seul arrangement initial fixe (graine 0). La couleur nomme l'espèce, A ou B ; elle ne montre ni température ni vitesse."
@@ -236,10 +225,6 @@
     "einstruct-wall-row": {
       "title": "Une rangée ne sait pas où est le haut",
       "caption": "Une animation de 16 secondes de l'idée derrière einstruct : les distances triées d'un point à ses huit plus proches voisins, dessinées en barres. Tournez le nuage, reflétez-le, renumérotez-le, et les barres ne bougent pas ; agrandissez-le, et chaque barre grandit. Une figure dessinée, sans couleur mesurée."
-    },
-    "spectre-worlds": {
-      "title": "Trois mondes ouverts",
-      "caption": "Le trio de planètes de coarsen à l'échelle du promeneur : trois boules de 508 744 particules issues d'un même arrangement initial, 1 129 images sur 96 temps dynamiques chacune, les deux espèces indifférentes, modérément puis fortement répulsives du plus proche au plus lointain. Les régions couleur de fer contiennent plus de particules lourdes, les pâles plus de légères ; la lueur code la température."
     },
     "spectre-wall": {
       "title": "Extrait du premier film : 42,8 secondes, muet",

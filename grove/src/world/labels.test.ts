@@ -179,8 +179,6 @@ describe("entranceWall", () => {
     expect(entranceWall(room("world-engine"), mansion)?.door?.to).toBe("hall");
     expect(entranceWall(room("orangery"), mansion)?.door?.to).toBe("world-engine");
     expect(entranceWall(room("belvedere"), mansion)?.door?.to).toBe("gallery");
-    // coarsen's two doors both lead to rooms one step from the hall: the one nearer its spawn wins.
-    expect(entranceWall(room("spectre"), mansion)?.door?.to).toBe("einstruct");
   });
 
   it("uses the wall behind the spawn for the hall", () => {
@@ -204,7 +202,7 @@ describe("entranceWall", () => {
     const d = hallDistances(mansion);
     expect(d.get("hall")).toBe(0);
     expect(d.get("einstruct")).toBe(1);
-    expect(d.get("spectre")).toBe(2);
+    expect(d.get("orangery")).toBe(2);
     expect(d.get("greenhouse")).toBeUndefined();
     expect(d.get("orrery")).toBeUndefined();
   });
@@ -234,10 +232,8 @@ describe("creditFor", () => {
 
   it("names the repository the visitor reads and the bundle id, untranslated", () => {
     expect(creditFor(room("einstruct"), hanging("einstruct", "einstruct-tape"))).toBe("einstruct · 2dd0038799b2db15");
-    expect(creditFor(room("hall"), hanging("hall", "hall-poster"))).toBe("einstruct · c59c7baa6fd15489");
-    // The tree is spectre inside the bytes; the visitor reads coarsen.
-    expect(creditFor(room("spectre"), hanging("spectre", "spectre-wall"))).toBe("coarsen · 0462efca96af7297");
-    expect(creditFor(room("spectre"), hanging("spectre", "spectre-worlds"))).toBe("coarsen · 26f78b7516170d6d");
+    // The tree is spectre inside the bytes; the visitor reads coarsen. Its film hangs in the hall.
+    expect(creditFor(room("hall"), hanging("hall", "spectre-wall"))).toBe("coarsen · 0462efca96af7297");
     expect(creditFor(room("orrery"), hanging("orrery", "orrery-worlds"))).toBe("coarsen · 26f78b7516170d6d");
   });
 });
@@ -266,11 +262,11 @@ describe("buildRoomLabels", () => {
   });
 
   it("reads the same text in both languages", () => {
-    const room = mansion.rooms.find((r) => r.id === "spectre")!;
+    const room = mansion.rooms.find((r) => r.id === "einstruct")!;
     const [en1] = planRoomLabels(room, labels, mansion);
     const [de1] = planRoomLabels(room, labelsDe, mansion);
-    expect(en1!.text.title).toBe("coarsen");
-    expect(de1!.text.title).toBe("coarsen");
+    expect(en1!.text.title).toBe("einstruct");
+    expect(de1!.text.title).toBe("einstruct");
     expect(de1!.text.heading).toBe("Einführung");
     expect(en1!.position.equals(de1!.position)).toBe(true);
   });

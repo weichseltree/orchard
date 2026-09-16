@@ -11,8 +11,8 @@ for (const { shell } of shells) shell.group.updateMatrixWorld(true);
 
 describe("the designed observatory", () => {
   it("builds every footprint with explicit architectural provenance, no textures or lights", () => {
-    // The palace's fourteen chambers and cells, and arcedit's area of eighteen (TREE-AREAS.md).
-    expect(shells).toHaveLength(32);
+    // The palace's thirteen chambers and cells (coarsen's chamber went on 2026-09-16), and arcedit's area of eighteen (TREE-AREAS.md).
+    expect(shells).toHaveLength(31);
     for (const { room, shell } of shells) {
       expect(shell.group.name).toBe(`${room.id}-shell`);
       expect(shell.group.userData.architecture).toBe("observatory");

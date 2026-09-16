@@ -66,6 +66,9 @@ export function attachDesktopControls(
       case "KeyC":
         commands.cycleAtlas();
         return;
+      case "KeyG":
+        commands.openGame();
+        return;
       default:
         held.add(event.code);
         applyMotion();

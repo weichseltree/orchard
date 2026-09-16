@@ -59,10 +59,11 @@ const REPOSITORY_NAME: Readonly<Record<string, string>> = { spectre: "coarsen" }
 /**
  * Every hanging carries its tree in `bundle.exhibit` (since #20 the planets
  * too); this is the fallback for a hanging that pins a bundle id alone, as
- * the two rooms of coarsen's cutaway worlds did before, so a credit line
- * never goes missing.
+ * the Orrery's cutaway worlds did before, so a credit line never goes
+ * missing. (coarsen's chamber, which also hung them, is gone: ruled
+ * 2026-09-16.)
  */
-const TREE_OF_ROOM: Readonly<Record<string, string>> = { spectre: "spectre", orrery: "spectre" };
+const TREE_OF_ROOM: Readonly<Record<string, string>> = { orrery: "spectre" };
 
 export type PlaqueKind = "entrance" | "label";
 export type PlaqueMount = "wall" | "lectern" | "stand";

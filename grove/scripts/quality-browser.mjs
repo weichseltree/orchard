@@ -209,8 +209,12 @@ async function landingAudit(profile) {
   const { context, page, events } = await newPage(profile);
   try {
     await ready(page, '/');
-    await page.locator('img[loading=lazy]').scrollIntoViewIfNeeded();
-    await page.locator('img[loading=lazy]').evaluate((image) => image.decode());
+    // The landing page may carry a lazy image below the fold; bring any it
+    // has into view so "images load" measures them too, not only the hero.
+    for (const lazy of await page.locator('img[loading=lazy]').all()) {
+      await lazy.scrollIntoViewIfNeeded();
+      await lazy.evaluate((image) => image.decode());
+    }
     await page.evaluate(() => scrollTo(0, 0));
     if (['desktop', 'phone'].includes(profile.name)) await screenshot(page, `landing-${profile.name}`, true);
     const layout = await page.evaluate(() => {

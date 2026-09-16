@@ -14,16 +14,15 @@ faceted grove sculptures and garden armillary are designed architecture.
 
 | Place | Question or purpose | Available content |
 | --- | --- | --- |
-| hall | Which question draws you in? | Arrival, guide and routes into the chambers |
+| hall | Which question draws you in? | Arrival, guide and routes into the chambers; coarsen's first film on the east wall, looping at a quarter speed |
 | einstruct | When do two kinds stop mixing? | An annihilation tape beside its shuffled control; two video panels |
-| coarsen (room id `spectre`) | How does a world find its middle? | spectre's three worlds cut open at walking scale, with lit, composition, temperature and pressure views; a silent excerpt |
 | phototroph | What lets two atoms stay together? | One recorded three-body capture |
 | world-engine | What does a new viewpoint reveal? | Three still studies of a classroom reconstruction and its limitations |
-| orangery | Space between questions, and a game | Architecture, the three terrace arches, and the FTL Chess surface (ruled here 2026-09-16, moved out of the Long Gallery) |
+| orangery | Space between questions, and a game | Architecture, the three terrace arches, and the chess table at the far end, where the FTL Chess surface opens (ruled 2026-09-16: moved here out of the Long Gallery, then given its table) |
 | gallery | Space between questions | Architecture, statuary and open routes; its closed doors are the trees without rooms; a broad stair climbs to the Belvedere at its end |
 | belvedere | The long view back | A raised platform over the gallery; closed doors for neuralese and someotherlife |
 | terrace, garden and the three groves | Pause and explore outside | Designed grounds; the armillary at the garden's crossing is the portal to the Orrery |
-| orrery | How does a world find its middle, seen at the scale of the sky? | spectre's three cutaway worlds with their measured surfaces, eighty metres across, on a star field |
+| orrery (coarsen's room, through the garden's armillary) | How does a world find its middle, seen at the scale of the sky? | spectre's three cutaway worlds with their measured surfaces, eighty metres across, on a star field |
 | workshop | Host space | Behind a closed door; absent from visitor routes |
 
 The guide gives concrete observations and limits for each research chamber.
@@ -72,6 +71,15 @@ control: buttons with the current mode's legend where the scrubber would
 be, and C cycles them. A switch changes the video's source under the same
 texture, measures the new stream's clock origin afresh and seeks back to
 the frame the visitor was on (`PlanetExhibit.setAtlas`).
+
+Ruled later on 2026-09-16: the Gravity Chamber is gone. coarsen's room is
+the Orrery, reached through the garden's armillary, and the Guide's suggested
+sequence follows the portal there. The chamber's doors from einstruct and
+world-engine are wall again. Its film hangs in the hall on the east wall in
+place of einstruct's styleframe, looping at a quarter speed (`playbackRate`
+on a video hanging; Firefox goes no slower). The FTL Chess surface has a
+place: a table at the far end of the orangery (`position` on a game
+surface), offered when the visitor stands at it, G on a keyboard.
 
 Stated limits: the far view is not rendered while a headset session
 presents (the sphere is then a plain shimmer and the fade still happens);

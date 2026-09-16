@@ -23,7 +23,6 @@ const shotDir = output.replace(/\.json$/, '') + '-screenshots';
 const stations = [
   ['hall', 0, 9, 0, 12],
   ['einstruct', 12, -5, -90, 5],
-  ['spectre', 12, -20, -50, 5],
   ['phototroph', 0, 14, 180, -8],
   ['world-engine', 0, -14, 0, 5],
   ['orangery', 0, -36, 0, 12],
@@ -102,8 +101,8 @@ try {
     return { rooms, batches, instances, tapes: app.world.tapes.filter(Boolean).length };
   });
   report.world = world;
-  check('All 33 rooms use runtime architecture (32 Observatory, the Orrery in space)', world.rooms.length === 33
-    && world.rooms.filter((room) => room.architecture === 'observatory').length === 32
+  check('All 32 rooms use runtime architecture (31 Observatory, the Orrery in space)', world.rooms.length === 32
+    && world.rooms.filter((room) => room.architecture === 'observatory').length === 31
     && world.rooms.filter((room) => room.architecture === 'space').length === 1, world.rooms);
   check('Architecture stays near fifteen draw batches a room across the whole world', world.batches < world.rooms.length * 16, world.batches);
   // Six tapes: einstruct's two sheets, phototroph's capture, and arcedit's three

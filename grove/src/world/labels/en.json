@@ -10,7 +10,7 @@
     "hall": {
       "title": "hall",
       "kicker": "Which question draws you in?",
-      "intro": "Welcome to the Mind Palace, a small research museum built by one person. Four chambers open off this hall, each named after the open-source repository whose work it shows: einstruct, coarsen, world-engine and phototroph. Nothing here is an illustration. The moving pictures are recorded simulations played back frame by frame, the stills are studies rendered from measured data, and every exhibit names the file it came from. The architecture only sets the scene. The research is one person's ongoing work, not an institution's verdict, and each chamber ends with a line about what its evidence cannot yet show.",
+      "intro": "Welcome to the Mind Palace, a small research museum built by one person. Three chambers open off this hall, each named after the open-source repository whose work it shows: einstruct, world-engine and phototroph; coarsen's worlds stand in the orrery, through the garden's armillary. Nothing here is an illustration. The moving pictures are recorded simulations played back frame by frame, the stills are studies rendered from measured data, and every exhibit names the file it came from. The architecture only sets the scene. The research is one person's ongoing work, not an institution's verdict, and each chamber ends with a line about what its evidence cannot yet show.",
       "lookFor": "Read the panel at each chamber's door before the exhibit, then the small label beside each piece.",
       "limit": "The building sets the scene; only the tapes and stills carry evidence, and \"About this view\" names exactly what you are looking at."
     },
@@ -20,13 +20,6 @@
       "intro": "einstruct is one person's open research into what a cloud of particles can know about itself from distances alone, with no coordinates. This chamber shows its simplest experiment. Two hundred thousand particles of two kinds, A and B, wander across a sheet; whenever an A meets a B, both vanish. That is the whole rule. On the floor lies the recorded run, played back frame by frame with nothing interpolated. Beside it lies its control, the same run with the kinds reshuffled every twenty steps. In one, regions of a single kind grow until the sheet is patchwork; in the other they never form.",
       "lookFor": "Pause late in both tapes and compare the size of the single-kind patches, then scrub back to watch them emerge.",
       "limit": "The browser draws a sample of the particles, so it cannot measure every empty region of the full simulation; the counts on the labels come from the recorded files."
-    },
-    "spectre": {
-      "title": "coarsen",
-      "kicker": "How does a world find its middle?",
-      "intro": "coarsen is one person's open research into how large and how long a world made of nothing but particles can be run before it stops measuring like real matter. The three globes here are one experiment. Each world began as the same ball of 508,744 particles, an even mixture of a heavy kind and a light kind, held together by its own gravity under a cold sky. The only difference between them is how strongly the two kinds repel each other. Each is cut open: the surface is the measured edge of the particles, and the interior is measured from them, frame by frame, over 96 dynamical times.",
-      "lookFor": "Let the record run and compare the three cut faces at the same moment; where the two kinds repel most, the heavy kind gathers at the centre soonest.",
-      "limit": "One recorded run per world, nothing interpolated. These runs do not separate unmixing from shared cooling as the cause of a heavy centre, so no plaque here says the unmixing caused it."
     },
     "world-engine": {
       "title": "world-engine",
@@ -45,7 +38,7 @@
     "orangery": {
       "title": "orangery",
       "kicker": "Let your eyes travel.",
-      "intro": "The orangery joins the world-engine chamber to the terrace. It is a place between exhibits: follow the open doors, look back towards the chambers, or step out under the sky. There is a game of chess here, opened from the Guide over the room.",
+      "intro": "The orangery joins the world-engine chamber to the terrace. It is a place between exhibits: follow the open doors, look back towards the chambers, or step out under the sky. At the far end stands a chess table: walk up to play, or open it from the Guide.",
       "lookFor": "The three doors on the garden side all open onto the terrace."
     },
     "gallery": {
@@ -99,7 +92,7 @@
     "orrery": {
       "title": "orrery",
       "kicker": "How does a world find its middle?",
-      "intro": "The orrery is coarsen's three worlds at the scale of the sky, reached through the garden's armillary. You have shrunk fifty times to stand here; each globe is eighty metres across. They are the same recorded runs as in the coarsen chamber: 508,744 particles each, the same even mixture of a heavy and a light kind, differing only in how strongly the two kinds repel. Each is cut open toward where you stand, its surface the measured edge of the particles and its interior measured from them. The stars are a designed backdrop, not a catalogue.",
+      "intro": "The orrery is coarsen's three worlds at the scale of the sky, reached through the garden's armillary. You have shrunk fifty times to stand here; each globe is eighty metres across. They are coarsen's recorded runs: 508,744 particles each, the same even mixture of a heavy and a light kind, differing only in how strongly the two kinds repel. Each is cut open toward where you stand, its surface the measured edge of the particles and its interior measured from them. The stars are a designed backdrop, not a catalogue.",
       "lookFor": "Walk toward a world and watch its cut face; the glow marks the hottest matter, an encoding of temperature, not light.",
       "limit": "One recorded run per world, nothing interpolated. A heavy centre does not by itself separate unmixing from shared cooling as its cause."
     },
@@ -217,10 +210,6 @@
     }
   },
   "exhibits": {
-    "hall-poster": {
-      "title": "A + B → nothing: one frame of the sheet",
-      "caption": "A still render of one late frame from einstruct's recorded run: 200,000 particles of two kinds on a flat sheet, any A that meets a B vanishing with it. Colour tells the two kinds apart and nothing else; the regions were not drawn, they formed."
-    },
     "einstruct-tape": {
       "title": "A + B annihilation on a sheet",
       "caption": "The recorded run itself, laid flat on the floor: 801 frames over 400 units of simulation time, 200,000 particles at the start and 2,634 at the end, from one fixed starting arrangement (seed 0). Colour names the kind, A or B; it does not show temperature or speed."
@@ -236,10 +225,6 @@
     "einstruct-wall-row": {
       "title": "A row does not know which way is up",
       "caption": "A 16-second animation of the idea behind einstruct: one point's sorted distances to its eight nearest neighbours, drawn as bars. Rotate the cloud, mirror it, renumber it, and the bars do not move; zoom it, and every bar grows. A drawn figure, with no measured colour."
-    },
-    "spectre-worlds": {
-      "title": "Three worlds cut open",
-      "caption": "coarsen's planet trio at walking scale: three balls of 508,744 particles from one starting arrangement, 1,129 frames over 96 dynamical times each, the two kinds indifferent, moderately averse and strongly averse from nearest to farthest. Iron-warm regions hold more heavy particles, pale ones more light; the glow encodes temperature."
     },
     "spectre-wall": {
       "title": "From the first film: 42.8 seconds, silent",

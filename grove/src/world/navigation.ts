@@ -169,7 +169,12 @@ export function reachableRooms(
   const seen = new Set([from]);
   const queue = [from];
   while (queue.length) {
-    const room = mansion.rooms.find((r) => r.id === queue.pop());
+    // Popped once per visit: inside the predicate it ran once per room
+    // compared and drained the queue mid-search, so the walk from the hall
+    // stopped at the terrace (found 2026-09-16 when the chamber it happened
+    // to reach first was removed).
+    const next = queue.pop();
+    const room = mansion.rooms.find((r) => r.id === next);
     if (!room) continue;
     for (const door of room.doorways) {
       if (door.closed || seen.has(door.to) || locked?.(door.to)) continue;

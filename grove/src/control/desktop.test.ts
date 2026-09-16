@@ -29,7 +29,7 @@ beforeEach(() => {
   commands = {
     togglePlay: vi.fn(), nudgeFrames: vi.fn(), cycleSpeed: vi.fn(),
     cycleAtlas: vi.fn(),
-    toggleProvenance: vi.fn(), togglePerf: vi.fn(), toggleUnmute: vi.fn(),
+    toggleProvenance: vi.fn(), togglePerf: vi.fn(), toggleUnmute: vi.fn(), openGame: vi.fn(),
   };
   vi.stubGlobal("HTMLElement", ElementStub);
   vi.stubGlobal("document", doc);

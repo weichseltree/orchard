@@ -37,7 +37,7 @@ import { startupFailed, startupReady } from "./ui/startup";
 import { finiteParameter, visitRoom } from "./world/visit";
 import { frameAt } from "./tape/time";
 import mansionDocument from "./world/mansion.json";
-import { parseMansion, roomById } from "./world/schema";
+import { parseMansion, roomById, type GameSurface as GameSurfaceConfig } from "./world/schema";
 import { buildWorld, exhibitRoom, neighbourhood, type BuiltWorld } from "./world/world";
 import { PortalSystem } from "./world/portal";
 import { pickLocale } from "./ui/locale";
@@ -135,6 +135,7 @@ const hud = new Hud(hudRoot, {
   onUnmute: () => void toggleAudio(),
   onAtlas: (mode) => void chooseAtlas(mode),
   onProvenance: () => provenance.toggle(view.camera),
+  onOpenGame: () => commands.openGame(),
   onReport: (identity, reason) =>
     presence.report(identity, reason).then(
       () => notice("Report sent to the host. Thank you."),
@@ -182,15 +183,20 @@ const gameSurface = new GameSurface(hudRoot, {
 const guide = new VisitorGuide(hudRoot, mansion, device, () => {
   canvas.focus();
   if (!device.headset) desktopControls?.requestLock();
-}, (surface) => {
+}, (surface) => openGameSurface(surface));
+
+/** A browser game over the world: from the Guide anywhere in its room, or at its table (G, or the offer). */
+function openGameSurface(surface: GameSurfaceConfig): void {
   if (view.renderer.xr.isPresenting) {
     notice("Leave immersive VR before opening this browser game.");
     return;
   }
   if (document.pointerLockElement) document.exitPointerLock();
   activeScreen?.release();
+  offeredSurface = null;
+  hud.setGameOffer(null);
   gameSurface.open(surface, canvas);
-});
+}
 guide.setRoom(startRoom.id);
 if (query.has("room") && query.get("room") !== startRoom.id) {
   hud.notice(`That room is not here. You have arrived in ${startRoom.title.replace(/^The /, "the ") || startRoom.id} instead.`);
@@ -383,6 +389,10 @@ let nextAudioReassign = 0;
 let scrubbingUntil = 0;
 
 const commands: Commands = {
+  openGame: () => {
+    const surface = nearbyGameSurface();
+    if (surface) openGameSurface(surface);
+  },
   togglePlay: () => {
     const tape = nearestTape();
     if (!tape) {
@@ -630,6 +640,38 @@ function handOverVideo(force = false): void {
   });
 }
 
+// The chess table: a game surface with a place in its room (observatory.ts
+// builds the table) offers itself while the visitor stands at it. Re-checked
+// a few times a second, like the decoder above.
+/** How near the table's centre counts as standing at it: a step past its stools. */
+const GAME_TABLE_REACH_M = 2.6;
+let offeredSurface: GameSurfaceConfig | null = null;
+let nextTableCheck = 0;
+function nearbyGameSurface(): GameSurfaceConfig | null {
+  let nearest: GameSurfaceConfig | null = null;
+  let best = GAME_TABLE_REACH_M * GAME_TABLE_REACH_M;
+  for (const surface of roomById(mansion, body.room)?.gameSurfaces ?? []) {
+    if (!surface.position) continue;
+    const dx = surface.position[0] - body.x;
+    const dz = surface.position[2] - body.z;
+    const d = dx * dx + dz * dz;
+    if (d < best) {
+      best = d;
+      nearest = surface;
+    }
+  }
+  return nearest;
+}
+function offerGameTable(): void {
+  const now = performance.now();
+  if (now < nextTableCheck) return;
+  nextTableCheck = now + 400;
+  const surface = gameSurface.snapshot().open ? null : nearbyGameSurface();
+  if (surface === offeredSurface) return;
+  offeredSurface = surface;
+  hud.setGameOffer(surface ? { title: surface.title, key: device.touch ? null : "G" } : null);
+}
+
 /** The mode buttons follow the screen that holds the decoder: a planet's modes, or nothing. */
 function syncAtlasHud(): void {
   const screen = activeScreen;
@@ -721,6 +763,7 @@ view.start((dt, time, rawDt) => {
   view.rig.position.set(body.x, body.y, body.z);
   adaptExposure(dt);
   handOverVideo();
+  offerGameTable();
   if (presenting) {
     // Room-scale walking can take the head through a wall the rig never met.
     view.camera.getWorldPosition(headWorld);

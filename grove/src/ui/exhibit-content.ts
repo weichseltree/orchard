@@ -19,7 +19,8 @@ export interface ExhibitContent {
   demo?: boolean;
 }
 
-export const RESEARCH_ORDER = ["einstruct", "spectre", "phototroph", "world-engine"] as const;
+/** The research rooms in the order the Guide suggests them. coarsen's room is the Orrery (ruled 2026-09-16), reached through the garden's armillary. */
+export const RESEARCH_ORDER = ["einstruct", "orrery", "phototroph", "world-engine"] as const;
 const NOTES = "https://github.com/weichseltree/orchard/blob/main/docs/EXHIBIT-PLAN.md";
 
 const content: Readonly<Record<string, ExhibitContent>> = {
@@ -40,19 +41,6 @@ const content: Readonly<Record<string, ExhibitContent>> = {
     limitation: "A sampled browser view cannot measure every empty region in the full simulation.",
     species: "A and B name the two particle kinds. Colour identifies kind; it does not show temperature.",
     evidenceAnchor: "einstruct",
-  },
-  spectre: {
-    source: "coarsen",
-    question: "How does a world find its middle?",
-    introduction: "Three self-gravitating worlds start with the same mixture of heavy and light particles; the strength with which the two kinds repel each other differs across the trio. Each is cut open, its surface the measured edge of the particles and its interior measured from them, frame by frame.",
-    lookFor: [
-      "Let the record run and compare the three cut faces at the same moment. Where the two kinds repel most, the heavy kind gathers at the centre soonest.",
-      "Switch what the faces show: composition, temperature or pressure. The lit view adds a glow that encodes temperature; it is not emitted light.",
-      "Walk round a world and back to its cut. The surface alone would hide the centre; the cut is the evidence.",
-    ],
-    limitation: "One recorded run per world, and nothing interpolated. These runs do not separate unmixing from shared cooling as the cause of a heavy centre.",
-    species: "Iron-warm regions hold more of the heavy kind, pale regions more of the light kind; their masses are in a two-to-one ratio. In the temperature and pressure views, colour is the measured field on the legend's scale.",
-    evidenceAnchor: "spectre",
   },
   phototroph: {
     source: "phototroph",
@@ -97,7 +85,7 @@ const content: Readonly<Record<string, ExhibitContent>> = {
   },
   orangery: {
     question: "Let your eyes travel.",
-    introduction: "The orangery is a place between exhibits. Follow the open doors, look back towards the chambers, or continue out to the terrace. There is a game of chess here: Guide opens it over the room, and closing it puts you back where you stood.",
+    introduction: "The orangery is a place between exhibits. Follow the open doors, look back towards the chambers, or continue out to the terrace. There is a chess table at the far end: walk up to it to play, or open the game from Guide anywhere in the room. Closing it puts you back where you stood.",
     lookFor: [],
   },
   gallery: {
@@ -154,17 +142,21 @@ export function roomHref(search: string, id: string): string {
   return `/mind/?${params}`;
 }
 
-/** Keep the suggested sequence within the rooms reachable through open doors. */
+/** Keep the suggested sequence within the rooms reachable through open doors, or a portal (the Orrery). */
 export function researchRooms(mansion: Mansion): Room[] {
   const reachable = new Set([mansion.start]);
   const pending = [mansion.start];
   while (pending.length > 0) {
     const id = pending.shift();
     const room = mansion.rooms.find((candidate) => candidate.id === id);
-    for (const door of room?.doorways ?? []) {
-      if (!door.closed && !reachable.has(door.to)) {
-        reachable.add(door.to);
-        pending.push(door.to);
+    const next = [
+      ...(room?.doorways ?? []).filter((door) => !door.closed).map((door) => door.to),
+      ...(room?.portals ?? []).map((portal) => portal.to),
+    ];
+    for (const to of next) {
+      if (!reachable.has(to)) {
+        reachable.add(to);
+        pending.push(to);
       }
     }
   }

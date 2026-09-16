@@ -527,7 +527,7 @@ async function buildVideo(
   id: string,
   title: string,
   base: string,
-  hanging: { position: readonly [number, number, number]; rotationDeg: readonly [number, number, number]; widthMeters: number },
+  hanging: { position: readonly [number, number, number]; rotationDeg: readonly [number, number, number]; widthMeters: number; playbackRate: number },
   provenance: Provenance,
   onNotice: (message: string) => void,
 ): Promise<VideoWall | null> {
@@ -540,6 +540,7 @@ async function buildVideo(
     poster: base + bundle.poster,
     widthMeters: hanging.widthMeters,
     aspect: bundle.width / bundle.height,
+    playbackRate: hanging.playbackRate,
     onNotice,
   });
   const [x, y, z] = hanging.position;
@@ -562,6 +563,7 @@ async function buildVideo(
       tree: bundle.tree,
       bundle_id: bundle.id,
       playback: wall.mode,
+      playback_rate: `${wall.playbackRate}x, looping`,
       resolution: `${bundle.width}x${bundle.height}`,
       duration_s: bundle.duration_s,
       produced_by: bundle.produced_by,

@@ -110,14 +110,14 @@ describe("neighbourhood", () => {
     const { neighbourhood } = await import("./world");
     const mansion = parseMansion(mansionDocument);
     const fromHall = neighbourhood(mansion, "hall");
-    for (const id of ["hall", "einstruct", "phototroph", "terrace", "world-engine", "spectre", "gallery", "parterre"]) {
+    for (const id of ["hall", "einstruct", "phototroph", "terrace", "world-engine", "gallery", "parterre"]) {
       expect(fromHall).toContain(id);
     }
     // the terrace is a cell, so every cell comes along; the greenhouse door is closed
     for (const id of ["orchard-west", "orchard-south", "orchard-east"]) expect(fromHall).toContain(id);
     expect(fromHall).not.toContain("greenhouse");
-    // coarsen's cabinet is two doors from the hall and the orangery, and sees no grounds
-    const fromSpectre = neighbourhood(mansion, "spectre");
-    expect(fromSpectre.sort()).toEqual(["einstruct", "hall", "orangery", "spectre", "world-engine"]);
+    // The orangery is two doors from the hall and the gallery, and its terrace doors bring every cell of the grounds.
+    const fromOrangery = neighbourhood(mansion, "orangery");
+    expect(fromOrangery.sort()).toEqual(["gallery", "hall", "orangery", "orchard-east", "orchard-south", "orchard-west", "parterre", "terrace", "world-engine"]);
   });
 });

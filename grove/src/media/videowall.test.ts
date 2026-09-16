@@ -18,6 +18,8 @@ vi.mock("hls.js", () => ({
 class VideoStub {
   style = { cssText: "" };
   muted = true;
+  defaultPlaybackRate = 1;
+  playbackRate = 1;
   src = "";
   native: CanPlayTypeResult = "";
   play = vi.fn().mockResolvedValue(undefined);
@@ -121,5 +123,23 @@ describe("the one video decoder", () => {
     expect(hls.created).toBe(0);
     const next = await wall();
     expect(await next.attach()).toBe(true);
+  });
+});
+
+describe("playback rate", () => {
+  it("runs at the hanging's rate, and keeps it through a reload, which resets the element to its default", async () => {
+    const video = new VideoStub();
+    vi.stubGlobal("document", { createElement: () => video, body: { append() {} } });
+    const slow = await VideoWall.create({ master: "/test/master.m3u8", widthMeters: 6, playbackRate: 0.25 });
+    walls.push(slow);
+    expect(slow.playbackRate).toBe(0.25);
+    expect(video.defaultPlaybackRate).toBe(0.25);
+    expect(video.playbackRate).toBe(0.25);
+    expect(await slow.attach()).toBe(true);
+    expect(video.playbackRate).toBe(0.25);
+    slow.release();
+    // As recorded when the document says nothing.
+    const plain = await wall();
+    expect(plain.playbackRate).toBe(1);
   });
 });

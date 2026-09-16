@@ -13,7 +13,7 @@ describe("mansion.json", () => {
   it("parses", () => {
     const mansion = parseMansion(mansionDocument);
     expect(mansion.schema).toBe("orchard/mansion/1");
-    const palace = ["hall", "einstruct", "spectre", "world-engine", "orangery", "phototroph", "gallery", "belvedere", "greenhouse", "terrace", "parterre", "orchard-west", "orchard-south", "orchard-east", "orrery"];
+    const palace = ["hall", "einstruct", "world-engine", "orangery", "phototroph", "gallery", "belvedere", "greenhouse", "terrace", "parterre", "orchard-west", "orchard-south", "orchard-east", "orrery"];
     // arcedit's area (results/grove/area.json in that tree): its entrance and seventeen chambers, the last at a tenth of the scale.
     const arcedit = ["arcedit", "arcedit/arcedit", "arcedit/arcedit/serve", "arcedit/docs", "arcedit/mental", "arcedit/results", "arcedit/results/grove", "arcedit/results/grove/oracle_side5", "arcedit/results/grove/policy_side3", "arcedit/results/i15_perception_under_reward", "arcedit/results/i17_full_campaign", "arcedit/results/i2_encoder", "arcedit/results/i3_action", "arcedit/results/i9_restriction", "arcedit/results/interface_v1", "arcedit/scripts", "arcedit/tests", "arcedit/inside"];
     expect(mansion.rooms.map((room) => room.id)).toEqual([...palace, ...arcedit]);
@@ -41,25 +41,14 @@ describe("mansion.json", () => {
 
   it("titles the tree rooms after their repositories and stands the grounds below the terrace", () => {
     const mansion = parseMansion(mansionDocument);
-    expect(mansion.rooms.filter((r) => ["einstruct", "spectre", "world-engine", "phototroph"].includes(r.id)).map((r) => r.title))
-      .toEqual(["einstruct", "coarsen", "world-engine", "phototroph"]);
+    expect(mansion.rooms.filter((r) => ["einstruct", "world-engine", "phototroph"].includes(r.id)).map((r) => r.title))
+      .toEqual(["einstruct", "world-engine", "phototroph"]);
     expect(roomById(mansion, "terrace")!.bounds.min[1]).toBe(0);
     expect(roomById(mansion, "parterre")!.bounds.min[1]).toBeCloseTo(-1.6);
     expect(roomById(mansion, "belvedere")!.bounds.min[1]).toBeCloseTo(1.8);
     expect(mansion.terrain.mounds.length).toBeGreaterThan(3);
     // The portal's centre sits at eye height above the sunken garden.
     expect(roomById(mansion, "parterre")!.portals[0]!.position[1]).toBeCloseTo(-1.6 + 1.6);
-  });
-
-  it("hangs a still on the hall's poster wall, taken from the exhibit table", () => {
-    const hall = roomById(parseMansion(mansionDocument), "hall")!;
-    expect(hall.hangings).toHaveLength(1);
-    const still = hall.hangings[0]!;
-    expect(still.kind).toBe("still");
-    if (still.kind !== "still") return;
-    expect(still.marker).toBe("");
-    expect(still.bundle.exhibit).toEqual({ tree: "einstruct", kind: "still", bundle: "" });
-    expect([still.widthMeters, still.heightMeters]).toEqual([6, 3.4]);
   });
 
   it("offers FTL Chess from the Lantern Walk, and from nowhere else", () => {
@@ -71,6 +60,8 @@ describe("mansion.json", () => {
       title: "FTL Chess",
       description: "A fast chess game hosted by FTL Chess.",
       url: "https://ftlchess.com/",
+      position: [0, 1.5, -73],
+      yawDeg: 0,
     }]);
     // Ruled 2026-09-16: the game moved out of the Long Gallery, which keeps
     // its closed doors for trees that have no room yet.
@@ -91,8 +82,8 @@ describe("mansion.json", () => {
     const tapes = room!.hangings.filter((h) => h.kind === "tape");
     expect(tapes.map((h) => h.bundle.exhibit?.bundle)).toEqual(["2dd0038799b2db15", "903d0c5a939b0ba1"]);
     expect(tapes.map((h) => h.position[0])).toEqual([14.5, 21.5]);
-    // Its own room: one door from the hall, one on to coarsen's cabinet; the enfilade no longer runs through it.
-    expect(room!.doorways.map((d) => d.to).sort()).toEqual(["hall", "spectre"]);
+    // Its own room: one door, from the hall. coarsen's cabinet beside it is gone (2026-09-16); its worlds stand in the Orrery.
+    expect(room!.doorways.map((d) => d.to).sort()).toEqual(["hall"]);
     const tape = tapes[0];
     expect(tape).toMatchObject({ longSideMeters: 6 });
     expect(tape!.position[1]).toBeCloseTo(1.0);
@@ -201,9 +192,9 @@ describe("BundleRefSchema", () => {
         // A live audio exhibit is a name with no bytes and no exhibit row
         // (AUDIO-STREAM.md §1); nothing below is a claim about it.
         if (hanging.kind === "audio") continue;
-        // The hall's poster wall shows einstruct; the Orrery's worlds are spectre's.
+        // The hall's wall shows coarsen's film; the Orrery's worlds are spectre's.
         // A room of a tree's area ("arcedit/results/grove") shows its tree's.
-        const guest: Record<string, string> = { hall: "einstruct", orrery: "spectre" };
+        const guest: Record<string, string> = { hall: "spectre", orrery: "spectre" };
         expect(hanging.bundle.exhibit?.tree).toBe(guest[room.id] ?? room.id.split("/")[0]);
         expect(hanging.bundle.exhibit?.kind).toBe(hanging.kind);
         expect(hanging.bundle.id).toMatch(/^[0-9a-f]{16}$/);
@@ -305,5 +296,44 @@ describe("exposure", () => {
     const m = parseMansion(mansionDocument);
     expect(m.rooms.find((r) => r.id === "hall")?.exposure).toBe(1);
     for (const r of m.rooms) expect(r.exposure).toBe(1);
+  });
+});
+
+describe("coarsen without a chamber (ruled 2026-09-16)", () => {
+  const mansion = parseMansion(mansionDocument);
+
+  it("has no spectre room: its worlds stand in the Orrery, through the garden's armillary", () => {
+    expect(roomById(mansion, "spectre")).toBeUndefined();
+    for (const room of mansion.rooms) expect(room.doorways.map((d) => d.to), room.id).not.toContain("spectre");
+    expect(roomById(mansion, "parterre")!.portals.map((p) => p.to)).toEqual(["orrery"]);
+  });
+
+  it("hangs the chamber's film on the hall's east wall, looping at a quarter speed", () => {
+    const hall = roomById(mansion, "hall")!;
+    expect(hall.hangings.map((h) => h.kind)).toEqual(["video"]);
+    const wall = hall.hangings[0]!;
+    if (wall.kind !== "video") return;
+    expect(wall.id).toBe("spectre-wall");
+    expect(wall.bundle.id).toBe("0462efca96af7297");
+    expect(wall.playbackRate).toBe(0.25);
+    expect(wall.position).toEqual([9.74, 3.6, 1.2]);
+    expect(wall.widthMeters).toBe(6);
+  });
+
+  it("plays every other wall as recorded", () => {
+    for (const room of mansion.rooms) {
+      for (const hanging of room.hangings) {
+        if (hanging.kind === "video" && hanging.id !== "spectre-wall") expect(hanging.playbackRate, hanging.id).toBe(1);
+      }
+    }
+  });
+
+  it("stands the chess table at the far end of the orangery, and refuses a table outside its room", () => {
+    const orangery = roomById(mansion, "orangery")!;
+    expect(orangery.gameSurfaces[0]!.position).toEqual([0, 1.5, -73]);
+    expect(orangery.gameSurfaces[0]!.position![2]).toBeLessThan(orangery.spawn.position[2] - 30);
+    const doc = structuredClone(mansionDocument) as { rooms: Array<{ id: string; gameSurfaces?: Array<{ position?: number[] }> }> };
+    doc.rooms.find((r) => r.id === "orangery")!.gameSurfaces![0]!.position = [40, 1.5, -73];
+    expect(() => parseMansion(doc)).toThrow(/stands outside/);
   });
 });

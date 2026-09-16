@@ -139,15 +139,16 @@
       ],
       "hangings": [
         {
-          "id": "hall-poster",
-          "kind": "still",
-          "title": "ab_d2 segregation, styleframe",
+          "id": "spectre-wall",
+          "kind": "video",
+          "title": "EP02 S4 excerpt, 42.8 s, silent",
           "bundle": {
             "exhibit": {
-              "tree": "einstruct",
-              "kind": "still"
+              "tree": "spectre",
+              "kind": "video",
+              "bundle": "0462efca96af7297"
             },
-            "id": "c59c7baa6fd15489"
+            "id": "0462efca96af7297"
           },
           "position": [
             9.74,
@@ -160,7 +161,7 @@
             0
           ],
           "widthMeters": 6,
-          "heightMeters": 3.4
+          "playbackRate": 0.25
         }
       ],
       "architecture": "observatory",
@@ -202,15 +203,8 @@
           "center": -5,
           "width": 3,
           "height": 4
-        },
-        {
-          "to": "spectre",
-          "axis": "z",
-          "at": -18,
-          "center": 13,
-          "width": 2.4,
-          "height": 3.2
         }
+
       ],
       "hangings": [
         {
@@ -338,142 +332,6 @@
       "exposure": 1
     },
     {
-      "id": "spectre",
-      "title": "coarsen",
-      "presence": "spectre",
-      "fallback": {
-        "kind": "box",
-        "color": "#101c2b"
-      },
-      "bounds": {
-        "min": [
-          10,
-          0,
-          -34
-        ],
-        "max": [
-          26,
-          7,
-          -18
-        ]
-      },
-      "spawn": {
-        "position": [
-          13,
-          0,
-          -20
-        ],
-        "yawDeg": 0
-      },
-      "doorways": [
-        {
-          "to": "einstruct",
-          "axis": "z",
-          "at": -18,
-          "center": 13,
-          "width": 2.4,
-          "height": 3.2
-        },
-        {
-          "to": "world-engine",
-          "axis": "x",
-          "at": 10,
-          "center": -26,
-          "width": 2.4,
-          "height": 3.2
-        }
-      ],
-      "hangings": [
-        {
-          "id": "spectre-worlds",
-          "kind": "planet",
-          "title": "Planet from scratch: three worlds cut open, with their measured surfaces",
-          "bundle": {
-            "exhibit": {
-              "tree": "spectre",
-              "kind": "planet",
-              "bundle": "26f78b7516170d6d"
-            },
-            "id": "26f78b7516170d6d"
-          },
-          "position": [
-            19,
-            0,
-            -26
-          ],
-          "radiusMeters": 1.5,
-          "atlas": "beauty",
-          "worlds": [
-            {
-              "world": "adiabat-chi0",
-              "position": [
-                19,
-                1.75,
-                -22
-              ],
-              "cutToward": [
-                13,
-                1.6,
-                -20
-              ]
-            },
-            {
-              "world": "adiabat-chi6",
-              "position": [
-                19,
-                1.75,
-                -26
-              ],
-              "cutToward": [
-                13,
-                1.6,
-                -20
-              ]
-            },
-            {
-              "world": "adiabat-chi12",
-              "position": [
-                19,
-                1.75,
-                -30
-              ],
-              "cutToward": [
-                13,
-                1.6,
-                -20
-              ]
-            }
-          ]
-        },
-        {
-          "id": "spectre-wall",
-          "kind": "video",
-          "title": "EP02 S4 excerpt, 42.8 s, silent",
-          "bundle": {
-            "exhibit": {
-              "tree": "spectre",
-              "kind": "video",
-              "bundle": "0462efca96af7297"
-            },
-            "id": "0462efca96af7297"
-          },
-          "position": [
-            25.74,
-            2.7,
-            -26
-          ],
-          "rotationDeg": [
-            0,
-            -90,
-            0
-          ],
-          "widthMeters": 7
-        }
-      ],
-      "architecture": "observatory",
-      "exposure": 1
-    },
-    {
       "id": "world-engine",
       "title": "world-engine",
       "presence": "world-engine",
@@ -517,15 +375,8 @@
           "center": 0,
           "width": 4.8,
           "height": 4.6
-        },
-        {
-          "to": "spectre",
-          "axis": "x",
-          "at": 10,
-          "center": -26,
-          "width": 2.4,
-          "height": 3.2
         }
+
       ],
       "hangings": [
         {
@@ -678,7 +529,13 @@
           "provider": "ftlchess",
           "title": "FTL Chess",
           "description": "A fast chess game hosted by FTL Chess.",
-          "url": "https://ftlchess.com/"
+          "url": "https://ftlchess.com/",
+          "position": [
+            0,
+            1.5,
+            -73
+          ],
+          "yawDeg": 0
         }
       ]
     },
