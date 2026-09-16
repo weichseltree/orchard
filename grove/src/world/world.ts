@@ -9,7 +9,7 @@ import {
   Vector3,
 } from "three";
 import type { Renderer } from "../render/types";
-import { MEDIA_BASE } from "../config";
+import { MEDIA_BASE, PALETTE } from "../config";
 import type { DeviceProfile } from "../device";
 import type { ChunkScheduler } from "../render/chunk-stream";
 import type { DeviceTier } from "../tape/bundle";
@@ -243,6 +243,17 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
       read: () => shell.provenance,
     });
     options.onRoomReady?.(room, shell);
+    // A reading stand at every tape, from the document alone, so it stands
+    // whether or not the tape loads and the wall text has a plate to face.
+    for (const hanging of room.hangings) {
+      if (hanging.kind !== "tape" || stands.has(hanging.id)) continue;
+      stands.set(hanging.id, import("./stand").then(({ buildStand, standFoot, standFrame }) => {
+        const foot = standFoot(hanging, room.bounds.min[1]);
+        const stand = buildStand(standFrame(foot.position, foot.rotationDeg), PALETTE.accent);
+        groupFor(room).add(stand.group);
+        return stand;
+      }));
+    }
     // The museum's wall text: an introduction panel and one label per
     // exhibit, in the visitor's language. Text on the walls is not a room,
     // so it never holds a room up; it lands when the language file has.
@@ -252,12 +263,20 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
         const group = buildRoomLabels(room, labels, locale, { mansion });
         labelGroups.set(room.id, group);
         groupFor(room).add(group);
+        // The names over the doors, in brass letters; the typeface loads once, with the first room.
+        return import("./door-signs").then(async ({ planDoorSigns, fontOnce, buildDoorSigns }) => {
+          const signs = planDoorSigns(room, labels, mansion);
+          if (signs.length === 0) return;
+          const font = await fontOnce();
+          if (labelGroups.get(room.id) === group) group.add(buildDoorSigns(room, signs, font));
+        });
       });
     }).catch((error: unknown) => onNotice(`labels ${room.id}: ${message(error)}`));
   }
 
   const locale = options.locale ?? "en";
   const labelGroups = new Map<string, Group>();
+  const stands = new Map<string, Promise<import("./stand").Stand>>();
   let labelsPromise: Promise<Labels | null> | null = null;
   const labelsOnce = () =>
     (labelsPromise ??= import("./labels/index").then(({ labelsFor }) =>
@@ -323,12 +342,14 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
       }
       if (hanging.kind === "tape") {
         pending.push(
-          import("./tape-exhibit").then(({ TapeExhibit }) => TapeExhibit.load({
+          import("./tape-exhibit").then(async ({ TapeExhibit }) => TapeExhibit.load({
             hanging,
+            ...(stands.has(hanging.id) ? { stand: await stands.get(hanging.id)! } : {}),
             baseUrl: base,
             tier: device.tier,
             pixelRatio: Math.min(window.devicePixelRatio, device.maxPixelRatio),
             onNotice,
+            floorY: room.bounds.min[1],
             ...(options.scheduler ? { scheduler: options.scheduler } : {}),
           }))
             .then((tape) => {
@@ -447,6 +468,8 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
       for (const still of world.stills) still.dispose();
       for (const planet of world.planets) planet.dispose();
       for (const audio of world.audios) audio.dispose();
+      for (const stand of stands.values()) void stand.then((s) => s.dispose());
+      stands.clear();
       if (labelGroups.size) {
         void import("./labels").then(({ disposeRoomLabels }) => {
           for (const group of labelGroups.values()) disposeRoomLabels(group);

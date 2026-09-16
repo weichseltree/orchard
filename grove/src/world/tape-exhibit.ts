@@ -1,17 +1,6 @@
-import {
-  Box3,
-  Color,
-  CylinderGeometry,
-  Group,
-  MathUtils,
-  Mesh,
-  MeshBasicMaterial,
-  MeshStandardMaterial,
-  Object3D,
-  PlaneGeometry,
-  Vector3,
-} from "three";
+import { Box3, Color, Group, MathUtils, Mesh, MeshBasicMaterial, Object3D, Vector3 } from "three";
 import { PALETTE } from "../config";
+import { buildStand, standFoot, standFrame, type Stand } from "./stand";
 import type { DeviceTier } from "../tape/bundle";
 import { TapeBundleSchema, pickVariant, tapeTimeUnit, variantSlots, type TapeBundle } from "../tape/bundle";
 import { TapeStream } from "../tape/stream";
@@ -34,8 +23,9 @@ import { TapeVolume } from "../tape/volume";
 import type { TapeHanging } from "./schema";
 
 // The signature feature: the tape as points you walk into, on a clock you can
-// scrub. The volume, its stream and the pedestal that shows where in the tape
-// you are, as one object the room can add and the controls can talk to.
+// scrub. The volume, its stream and the reading stand whose lit bar shows
+// where in the tape you are, as one object the room can add and the controls
+// can talk to. The stand's face carries the wall text (labels.ts).
 
 export interface TapeExhibitOptions {
   hanging: TapeHanging;
@@ -45,6 +35,13 @@ export interface TapeExhibitOptions {
   pixelRatio: number;
   onNotice?: (message: string) => void;
   scheduler?: ChunkScheduler;
+  /** The room's floor (`bounds.min[1]`), where the reading stand's foot goes; 0 when absent. */
+  floorY?: number;
+  /**
+   * The reading stand the room built for this hanging (world.ts), whose
+   * strip the tape drives. Absent, the tape builds one of its own and owns it.
+   */
+  stand?: Stand;
 }
 
 /**
@@ -144,17 +141,20 @@ export class TapeExhibit {
       ),
     );
 
-    const pedestal = buildPedestal();
-    const at = options.hanging.pedestal?.position ?? this.#edgeOfSheet();
-    pedestal.group.position.set(at[0], at[1], at[2]);
-    const yaw = options.hanging.pedestal?.rotationDeg?.[1] ?? 0;
-    pedestal.group.rotation.y = (yaw * Math.PI) / 180;
-    this.group.add(pedestal.group);
-    this.#progress = pedestal.progress;
-    this.#light = pedestal.light;
-    this.#progressWidth = pedestal.progressWidth;
+    // The room's stand, or one of this tape's own on the same foot the wall text uses (stand.ts).
+    const foot = standFoot(options.hanging, options.floorY ?? 0);
+    const stand = options.stand ?? buildStand(standFrame(foot.position, foot.rotationDeg), PALETTE.accent);
+    if (!options.stand) {
+      this.group.add(stand.group);
+      this.#ownStand = stand;
+    }
+    this.#progress = stand.progress;
+    this.#light = stand.light;
+    this.#progressWidth = stand.progressWidth;
     this.#applyProgress();
   }
+  /** The stand this tape built for itself, to dispose; null when the room owns it. */
+  #ownStand: Stand | null = null;
 
   static async load(options: TapeExhibitOptions): Promise<TapeExhibit> {
     const base = options.baseUrl.endsWith("/") ? options.baseUrl : `${options.baseUrl}/`;
@@ -279,11 +279,6 @@ export class TapeExhibit {
     this.volume.setPixelRatio(ratio);
   }
 
-  /** Default pedestal spot: the near edge of the sheet, if none is authored. */
-  #edgeOfSheet(): [number, number, number] {
-    return [(this.bounds.min.x + this.bounds.max.x) / 2, 0, this.bounds.max.z];
-  }
-
   provenance(): Record<string, unknown> {
     return {
       title: this.bundle.title,
@@ -311,6 +306,7 @@ export class TapeExhibit {
     (this.#progress.material as MeshBasicMaterial).dispose();
     this.#light.geometry.dispose();
     (this.#light.material as MeshBasicMaterial).dispose();
+    this.#ownStand?.dispose();
   }
 
   /** Called every frame, so it allocates nothing and writes nothing unchanged. */
@@ -323,53 +319,4 @@ export class TapeExhibit {
     this.#lampState = state;
     (this.#light.material as MeshBasicMaterial).color.copy(this.#lampColours[state]);
   }
-}
-
-interface Pedestal {
-  group: Group;
-  progress: Mesh;
-  light: Mesh;
-  progressWidth: number;
-}
-
-/** A waist-high plinth with a lit bar: where you are in the tape, readable in VR. */
-function buildPedestal(): Pedestal {
-  const group = new Group();
-  group.name = "pedestal";
-  const height = 1.05;
-  const body = new Mesh(
-    new CylinderGeometry(0.26, 0.32, height, 24),
-    new MeshStandardMaterial({ color: 0x2a332c, roughness: 0.85, metalness: 0.05 }),
-  );
-  body.position.y = height / 2;
-  group.add(body);
-
-  const width = 0.42;
-  const top = new Group();
-  top.position.set(0, height + 0.005, 0);
-  top.rotation.x = -Math.PI / 2 + 0.5; // tilted towards the visitor
-  group.add(top);
-
-  const track = new Mesh(
-    new PlaneGeometry(width, 0.035),
-    new MeshBasicMaterial({ color: 0x1a221c }),
-  );
-  top.add(track);
-
-  const progress = new Mesh(
-    new PlaneGeometry(width, 0.035),
-    new MeshBasicMaterial({ color: PALETTE.accent }),
-  );
-  progress.position.z = 0.002;
-  progress.scale.x = 0.001;
-  top.add(progress);
-
-  const light = new Mesh(
-    new PlaneGeometry(0.05, 0.05),
-    new MeshBasicMaterial({ color: PALETTE.accent }),
-  );
-  light.position.set(width / 2 + 0.06, 0, 0.002);
-  top.add(light);
-
-  return { group, progress, light, progressWidth: width };
 }

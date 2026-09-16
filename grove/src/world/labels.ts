@@ -13,8 +13,9 @@ import {
 } from "three";
 import { wrap } from "../ui/worldnotice";
 import { OBSERVATORY_PALETTE } from "./observatory";
+import { STAND, standFoot, standFrame } from "./stand";
 import type { Labels } from "./labels/index";
-import type { Doorway, Hanging, Mansion, Room, TapeHanging } from "./schema";
+import type { Doorway, Hanging, Mansion, Room } from "./schema";
 
 // Museum wall text, in the room. One introduction panel by the doorway a
 // visitor most likely enters through, and one label beside every exhibit,
@@ -44,16 +45,14 @@ const HANGING_GAP_M = 0.25;
 /** A plaque keeps this far from a wall's end. */
 const CORNER_MARGIN_M = 0.3;
 
-export const PANEL = { width: 1.4, height: 1.05, top: 2.2, texture: [1024, 768] as const };
-export const LABEL = { width: 0.5, height: 0.375, centre: 1.45, texture: [512, 384] as const };
+export const PANEL = { width: 1.8, height: 1.35, top: 2.25, texture: [1024, 768] as const };
+export const LABEL = { width: 0.7, height: 0.525, centre: 1.45, texture: [768, 576] as const };
 /** An exhibit's reading stand: a plate tilted 30° from horizontal, its top edge a metre up. */
-export const LECTERN = { width: 0.6, height: 0.45, top: 1.0, tiltDeg: 30, texture: [512, 384] as const };
+export const LECTERN = { width: 0.85, height: 0.6375, top: 1.05, tiltDeg: 30, texture: [1024, 768] as const };
 /** A room's reading stand, for the grounds and the Orrery, which have no wall to hang a panel on. */
-export const ENTRANCE_LECTERN = { width: 0.9, height: 0.675, top: 1.1, tiltDeg: 30, texture: [1024, 768] as const };
+export const ENTRANCE_LECTERN = { width: 1.1, height: 0.825, top: 1.1, tiltDeg: 30, texture: [1024, 768] as const };
 /** A lectern stands this far in front of a floor exhibit's footprint. */
 const LECTERN_STANDOFF_M = 1.2;
-/** ...or this far beside a tape's pedestal (pedestal radius 0.32, tape-exhibit.ts). */
-const PEDESTAL_SIDE_M = 0.8;
 
 /** What the visitor reads for a tree: the room and tree stay `spectre`, the repository is coarsen (docs/specs/NAMING.md). */
 const REPOSITORY_NAME: Readonly<Record<string, string>> = { spectre: "coarsen" };
@@ -65,9 +64,9 @@ const REPOSITORY_NAME: Readonly<Record<string, string>> = { spectre: "coarsen" }
 const TREE_OF_ROOM: Readonly<Record<string, string>> = { spectre: "spectre", orrery: "spectre" };
 
 export type PlaqueKind = "entrance" | "label";
-export type PlaqueMount = "wall" | "lectern";
-/** What a plaque faces: the room's centre from its wall, the spawn, or the way its tape's pedestal faces. */
-export type PlaqueFacing = "room" | "spawn" | "pedestal";
+export type PlaqueMount = "wall" | "lectern" | "stand";
+/** What a plaque faces: the room's centre from its wall, the spawn, or the way its tape's stand faces. */
+export type PlaqueFacing = "room" | "spawn" | "stand";
 
 export interface PlaqueText {
   heading: string;
@@ -94,7 +93,7 @@ export interface PlaquePlan {
   width: number;
   height: number;
   texture: readonly [number, number];
-  /** A lectern's foot on the floor. */
+  /** A lectern's or a stand's foot on the floor. */
   foot?: Vector3;
   text: PlaqueText;
 }
@@ -359,16 +358,6 @@ function footprint(h: Hanging): { min: Vector3; max: Vector3 } {
   return { min: new Vector3(p.x - half, 0, p.z - half), max: new Vector3(p.x + half, 0, p.z + half) };
 }
 
-function pedestalFrame(pedestal: NonNullable<TapeHanging["pedestal"]>): { at: Vector3; right: Vector3; front: Vector3 } {
-  const yaw = MathUtils.degToRad(pedestal.rotationDeg[1]);
-  return {
-    at: new Vector3(...pedestal.position),
-    // The pedestal's top tilts toward its local +Z (tape-exhibit.ts); a reader there has local +X on their right.
-    right: new Vector3(Math.cos(yaw), 0, -Math.sin(yaw)),
-    front: new Vector3(Math.sin(yaw), 0, Math.cos(yaw)),
-  };
-}
-
 function textForRoom(room: Room, labels: Labels): PlaqueText | null {
   const copy = labels.rooms[room.id];
   if (!copy) return null;
@@ -463,13 +452,19 @@ export function planRoomLabels(room: Room, labels: Labels, mansion: Mansion): Pl
       }
       continue;
     }
-    // A floor exhibit: a reading stand beside the tape's pedestal, else in
-    // front of the footprint on the spawn's side.
-    if (hanging.kind === "tape" && hanging.pedestal) {
-      const frame = pedestalFrame(hanging.pedestal);
-      const foot = frame.at.clone().addScaledVector(frame.right, PEDESTAL_SIDE_M);
-      foot.y = floor;
-      plans.push(lecternPlaque(foot, frame.front, LECTERN, { kind: "label", facing: "pedestal", hangingId: hanging.id, text }));
+    // A tape: its text is the face of the reading stand the tape builds at
+    // its near edge (tape-exhibit.ts), placed from the same frame (stand.ts).
+    // Any other floor exhibit gets a lectern in front of its footprint on the
+    // spawn's side.
+    if (hanging.kind === "tape") {
+      const foot = standFoot(hanging, floor);
+      const frame = standFrame(foot.position, foot.rotationDeg);
+      plans.push({
+        kind: "label", mount: "stand", facing: "stand", hangingId: hanging.id,
+        position: frame.faceCentre, quaternion: frame.quaternion,
+        width: STAND.width, height: STAND.faceHeight, texture: STAND.texture,
+        foot: frame.foot.clone(), text,
+      });
       continue;
     }
     const box = footprint(hanging);
@@ -657,6 +652,8 @@ export function paintPlaque(text: PlaqueText, kind: PlaqueKind, texture: readonl
 
 let brass: MeshBasicMaterial | null = null;
 let slab: MeshBasicMaterial | null = null;
+/** Turns a plate's back toward the far side. */
+const ABOUT_FACE = new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), Math.PI);
 function brassMaterial(): MeshBasicMaterial {
   return (brass ??= new MeshBasicMaterial({ color: OBSERVATORY_PALETTE.brass }));
 }
@@ -670,12 +667,25 @@ function buildPlaque(plan: PlaquePlan, locale: string): Group {
   group.userData = { plaque: plan.kind, mount: plan.mount, facing: plan.facing, hangingId: plan.hangingId ?? null, locale };
   const disposables: Array<{ dispose(): void }> = [];
 
-  const back = new Mesh(new BoxGeometry(plan.width, plan.height, PLAQUE_THICKNESS_M), slabMaterial());
-  back.name = "plaque-slab";
-  back.position.copy(plan.position);
-  back.quaternion.copy(plan.quaternion);
-  disposables.push(back.geometry);
-  group.add(back);
+  const normal = new Vector3(0, 0, 1).applyQuaternion(plan.quaternion);
+  // A stand's body is the tape's (tape-exhibit.ts); the text is only its face.
+  const thickness = plan.mount === "stand" ? STAND.thickness : PLAQUE_THICKNESS_M;
+  if (plan.mount !== "stand") {
+    // The body: a brass box a hair larger than the face, its edge the frame,
+    // and the dark back a hair off it, so no two faces share a plane.
+    const rim = new Mesh(new BoxGeometry(plan.width + 0.03, plan.height + 0.03, PLAQUE_THICKNESS_M), brassMaterial());
+    rim.name = "plaque-rim";
+    rim.position.copy(plan.position);
+    rim.quaternion.copy(plan.quaternion);
+    disposables.push(rim.geometry);
+    group.add(rim);
+    const back = new Mesh(new PlaneGeometry(plan.width, plan.height), slabMaterial());
+    back.name = "plaque-slab";
+    back.position.copy(plan.position).addScaledVector(normal, -(PLAQUE_THICKNESS_M / 2 + 0.002));
+    back.quaternion.copy(plan.quaternion).multiply(ABOUT_FACE);
+    disposables.push(back.geometry);
+    group.add(back);
+  }
 
   const canvas = paintPlaque(plan.text, plan.kind, plan.texture);
   const face = new Mesh(
@@ -691,19 +701,10 @@ function buildPlaque(plan: PlaquePlan, locale: string): Group {
       : new MeshBasicMaterial({ color: OBSERVATORY_PALETTE.inset, toneMapped: false }),
   );
   face.name = "plaque-face";
-  const normal = new Vector3(0, 0, 1).applyQuaternion(plan.quaternion);
-  face.position.copy(plan.position).addScaledVector(normal, PLAQUE_THICKNESS_M / 2 + 0.001);
+  face.position.copy(plan.position).addScaledVector(normal, thickness / 2 + 0.002);
   face.quaternion.copy(plan.quaternion);
   disposables.push(face.geometry, face.material);
   group.add(face);
-
-  // A brass frame line round the slab: the slab's own edge, drawn once more a hair wider, reads as a fillet.
-  const rim = new Mesh(new BoxGeometry(plan.width + 0.02, plan.height + 0.02, PLAQUE_THICKNESS_M * 0.6), brassMaterial());
-  rim.name = "plaque-rim";
-  rim.position.copy(plan.position).addScaledVector(normal, -PLAQUE_THICKNESS_M * 0.2);
-  rim.quaternion.copy(plan.quaternion);
-  disposables.push(rim.geometry);
-  group.add(rim);
 
   if (plan.mount === "lectern" && plan.foot) {
     const stemHeight = Math.max(0.1, plan.position.y - plan.foot.y - 0.05);

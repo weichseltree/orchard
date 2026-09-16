@@ -39,6 +39,7 @@ import {
   type IntentState,
 } from "./portal-intent";
 import { PORTAL_FRAGMENT, PORTAL_MELD, PORTAL_TINT, PORTAL_VERTEX } from "./portal-shader";
+import { SEALED_TINT, sealedLens } from "./sealed";
 
 // A portal is a blending of two spacetimes, not a plane with a frame. Each
 // end is a soft sphere: from outside it is a lens with no edge onto the
@@ -175,6 +176,18 @@ const _quatInverse = new Quaternion();
 const _size = new Vector2();
 const _frustum = new Frustum();
 const _viewProjection = new Matrix4();
+const _zAxis = new Vector3(0, 0, 1);
+let sealedShape: SphereGeometry | null = null;
+/** A shallow cap with its pole toward +z: the sealed doors' lens at unit radius, a third as deep as it is wide. */
+function sealedGeometry(): SphereGeometry {
+  if (!sealedShape) {
+    sealedShape = new SphereGeometry(1, 32, 12, 0, Math.PI * 2, 0, Math.PI / 2);
+    sealedShape.rotateX(Math.PI / 2);
+    sealedShape.scale(1, 1, 0.3);
+    sealedShape.computeVertexNormals();
+  }
+  return sealedShape;
+}
 const _sphere = new Sphere();
 
 export interface PortalFrame {
@@ -265,11 +278,71 @@ export class PortalSystem {
       this.#inside.set(end, false);
       this.#intents.set(end, createIntentState());
     }
+    // A closed doorway is a portal not yet lit: the same glass, dimmed, as a
+    // shallow lens over the dark recess the architecture leaves there. One
+    // material for all of them; nothing behind them is ever rendered.
+    for (const room of mansion.rooms) {
+      for (const door of room.doorways) {
+        const lens = sealedLens(room, door);
+        if (!lens) continue;
+        const mesh = new Mesh(sealedGeometry(), this.#sealed);
+        mesh.name = `sealed-${room.id}-${door.to}`;
+        mesh.position.copy(lens.center);
+        mesh.quaternion.setFromUnitVectors(_zAxis, lens.normal);
+        mesh.scale.setScalar(lens.radius);
+        mesh.renderOrder = 900;
+        // Hidden until the room's shell stands: a lens without its recess would float.
+        mesh.visible = false;
+        mesh.userData = { scale: room.scale ?? 1, room: room.id, sealed: door.to };
+        this.group.add(mesh);
+        this.#sealedMeshes.push(mesh);
+      }
+    }
+  }
+
+  /** Rooms whose architecture has landed; a sealed lens shows only over its recess. */
+  readonly #readyRooms = new Set<string>();
+  #scale = 1;
+
+  /** A room's shell is in the scene: its sealed lenses may show. */
+  roomReady(roomId: string): void {
+    this.#readyRooms.add(roomId);
+    for (const mesh of this.#sealedMeshes) if (mesh.userData.room === roomId) mesh.visible = mesh.userData.scale === this.#scale;
+  }
+
+  /** The sealed doors' glass: the portal shader with no far view, no blend, and a dimmer tint. */
+  readonly #sealed = new ShaderMaterial({
+    vertexShader: PORTAL_VERTEX,
+    fragmentShader: PORTAL_FRAGMENT,
+    uniforms: {
+      uView: { value: null },
+      uResolution: { value: new Vector2(1, 1) },
+      uViewScale: { value: new Vector2(1, 1) },
+      uBlend: { value: 0 },
+      uLive: { value: 0 },
+      uInside: { value: 0 },
+      uIntent: { value: 0 },
+      uFade: { value: 0.9 },
+      uTime: { value: 0 },
+      uTravel: { value: new Vector2(0, 0) },
+      uTint: { value: new Color(SEALED_TINT) },
+    },
+    transparent: true,
+    depthWrite: false,
+    side: FrontSide,
+  });
+  readonly #sealedMeshes: Mesh[] = [];
+
+  /** The lenses over closed doorways, one per doorway that lists as closed. */
+  get sealed(): readonly Mesh[] {
+    return this.#sealedMeshes;
   }
 
   /** Show the ends that belong to rooms of this scale. */
   setScale(scale: number): void {
+    this.#scale = scale;
     for (const [end, mesh] of this.#meshes) mesh.visible = end.scale === scale;
+    for (const mesh of this.#sealedMeshes) mesh.visible = mesh.userData.scale === scale && this.#readyRooms.has(mesh.userData.room);
   }
 
   /** This system's own end matching `end` (the same portal and room), so callers may hold ends from another `portalEnds`. */
@@ -311,6 +384,7 @@ export class PortalSystem {
   update(frame: PortalFrame): Crossing | null {
     const { body, camera, dt } = frame;
     this.#time += dt;
+    this.#sealed.uniforms.uTime!.value = this.#time;
     camera.getWorldPosition(_eye);
     camera.getWorldQuaternion(_quat);
     _forward.set(0, 0, -1).applyQuaternion(_quat);
@@ -518,8 +592,15 @@ export class PortalSystem {
         hidden.push(child);
       }
     }
-    const portalsWereVisible = this.group.visible;
-    this.group.visible = false;
+    // The ends go, not the group: a sealed door's lens is part of the far
+    // room's look, so the lenses of the far scale show and the rest hide.
+    const endsWereVisible: Mesh[] = [];
+    for (const mesh of this.#meshes.values()) {
+      if (mesh.visible) endsWereVisible.push(mesh);
+      mesh.visible = false;
+    }
+    const lensesWereVisible = this.#sealedMeshes.filter((mesh) => mesh.visible);
+    for (const mesh of this.#sealedMeshes) mesh.visible = mesh.userData.scale === end.toScale && this.#readyRooms.has(mesh.userData.room);
     setScaleVisible(end.toScale);
     const previous = renderer.getRenderTarget();
     renderer.setRenderTarget(target);
@@ -527,7 +608,9 @@ export class PortalSystem {
     renderer.render(scene, far);
     renderer.setRenderTarget(previous);
     setScaleVisible(end.scale);
-    this.group.visible = portalsWereVisible;
+    for (const mesh of this.#sealedMeshes) mesh.visible = false;
+    for (const mesh of lensesWereVisible) mesh.visible = true;
+    for (const mesh of endsWereVisible) mesh.visible = true;
     for (const child of hidden) child.visible = true;
     this.#farRenders += 1;
 
@@ -545,5 +628,10 @@ export class PortalSystem {
       mesh.geometry.dispose();
       (mesh.material as ShaderMaterial).dispose();
     }
+    // The lenses share one material and one cap; the cap is rebuilt by the next system.
+    this.#sealed.dispose();
+    sealedShape?.dispose();
+    sealedShape = null;
+    this.#sealedMeshes.length = 0;
   }
 }

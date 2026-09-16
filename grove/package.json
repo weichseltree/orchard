@@ -30,6 +30,7 @@
     "quality:world": "node scripts/quality-world.mjs"
   },
   "dependencies": {
+    "earcut": "^3.2.3",
     "hls.js": "^1.7.3",
     "spacetimedb": "2.10.*",
     "three": "^0.186.0",

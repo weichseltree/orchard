@@ -491,6 +491,8 @@ function boot(): void {
     // pinned ids: a slow link costs seconds, a dead one costs nothing.
     exhibits: demo ? undefined : () => presence.whenExhibits(EXHIBIT_WAIT_MS),
     onRoomReady: (room, shell) => {
+      // The sealed lenses over this room's closed doors may show now that their recesses stand.
+      portals.roomReady(room.id);
       if (room.id === startRoom.id) {
         visitMetrics.roomReady();
         startupReady();

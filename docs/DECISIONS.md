@@ -258,3 +258,45 @@ Append-only. A decision names the day, the ruling, and the alternative it beat.
   portal and eight harvested bundles, all unapproved) gets a closed door on
   the gallery's east wall; the area is placed once Manuel rules on its
   bundles, under the rule that a tree earns its room.
+
+- **2026-09-16 · The palace, third pass: sealed doors, door names, reading
+  stands, a baked light field, the portal court.** Manuel's brief: the
+  placeholder doors were ugly (the piers and panels ran across them) and
+  should be deactivated portals; the doors should carry the rooms' names
+  in a 3D typeface; the wall text's backs z-fought and the old pedestals
+  should go, the tape's progress moving on to bigger, better placed signs;
+  the old bake no longer made sense and light should be re-baked so the
+  portal glows into the rooms; the garden portal should move off the
+  crossing to the far side, with the park's objects redistributed off the
+  walks; the light system rethought without going overboard. Ruled and
+  built: (1) a closed doorway is a real aperture, no pier or sconce
+  crosses it, with a dark recess and a brass halo behind a shallow lens
+  drawn by the portal shader with no far view and a dimmer tint
+  (`sealedLens` in sealed.ts, portal.ts's sealed material): a portal not yet lit, one
+  material for all of them; (2) every doorway with surrounds carries the
+  name of the room beyond in brass letters extruded from Cinzel (SIL OFL,
+  `fonts/cinzel.json` made by `tools/typeface.py`, loaded lazily), in the
+  visitor's language, falling back to the identifier where the typeface
+  cannot set it (Japanese), one merged mesh per room, the hidden back caps
+  dropped, under 60k triangles for the palace; (3) the pedestal is gone:
+  a tape's wall text is the face of the reading stand the tape builds at
+  its near edge, whose strip carries the progress bar and the lamp, both
+  placed from one frame (stand.ts), and every plaque grew (entrance panel
+  1.8 m, labels 0.7 m) with a brass body and a dark back a hair off it,
+  which is what removed the z-fighting; (4) the Blender bake
+  (`tools/palace`) lit glb rooms the runtime architecture replaced and is
+  not run again; in its place the architecture's own luminous elements
+  (sconces, chandeliers, lanterns, door inlays, obelisks), the portals and
+  the sealed lenses are emitters baked at build time into a 2 m × 1 m ×
+  2 m RGB light field (lightfield.ts, a few hundred kilobytes) that stays
+  inside its room and spills through open doorways, sampled once per
+  fragment by every architectural material; the analytic floor pools and
+  wall rhythm are gone, the two scene lights remain for avatars; no sound
+  filter was ever baked, so none is re-baked; (5) the armillary stands in
+  a court 12 m west of the crossing: a round of gravel, a water ring, a
+  stone dais with a brass rim, two bridges on the axis walk, four
+  lanterns, with the western quarters set back from it and the crossing
+  reduced to a gravel round with a brass rose, walks added from the
+  terrace's side stairs, nothing left standing in a walk. Beat lighting
+  by three.js lights (per-object cost, no occlusion) and by per-room
+  materials (the material budget).
