@@ -3,6 +3,7 @@ import mansionDocument from "../world/mansion.json";
 import { parseMansion } from "../world/schema";
 import { createInput } from "./input";
 import { createBody, step, teleport } from "./locomotion";
+import { reachableRooms } from "../world/navigation";
 
 const mansion = parseMansion(mansionDocument);
 const [first, second] = mansion.rooms;
@@ -37,5 +38,42 @@ describe("a crossing survives until the frame loop acts on it", () => {
     expect(teleport(body, mansion, ...middle(second!), () => true)).toBe(false);
     expect(body.room).toBe(first!.id);
     expect(body.crossedInto).toBeNull();
+  });
+});
+
+describe("a teleport goes only where a walk could", () => {
+  const room = (id: string) => mansion.rooms.find((r) => r.id === id)!;
+  const sealed = mansion.rooms.find((r) => r.doorways.length > 0 && r.doorways.every((d) => d.closed))!;
+  const beside = room(sealed.doorways[0]!.to);
+
+  it("has a room behind closed doors only, next to one a visitor stands in", () => {
+    // The premise: without it the refusals below would pass for no reason.
+    expect(sealed).toBeDefined();
+    expect(reachableRooms(mansion, beside.id).has(sealed.id)).toBe(false);
+  });
+
+  it("refuses a teleport through a closed doorway", () => {
+    const body = createBody(...middle(beside), 0, beside.id);
+    expect(teleport(body, mansion, ...middle(sealed))).toBe(false);
+    expect(body.room).toBe(beside.id);
+    expect(body.crossedInto).toBeNull();
+  });
+
+  it("still lets the quality tour jump there, but never past a lock", () => {
+    const body = createBody(...middle(beside), 0, beside.id);
+    expect(teleport(body, mansion, ...middle(sealed), () => true, { walls: false })).toBe(false);
+    expect(teleport(body, mansion, ...middle(sealed), undefined, { walls: false })).toBe(true);
+    expect(body.room).toBe(sealed.id);
+  });
+
+  it("refuses a room reachable only through a locked one", () => {
+    const hall = room("hall");
+    const far = [...reachableRooms(mansion, hall.id)].find(
+      (id) => id !== hall.id && !hall.doorways.some((d) => d.to === id),
+    )!;
+    const body = createBody(...middle(hall), 0, hall.id);
+    const lockedRooms = new Set(hall.doorways.map((d) => d.to));
+    expect(teleport(body, mansion, ...middle(room(far)), (id) => lockedRooms.has(id))).toBe(false);
+    expect(teleport(body, mansion, ...middle(room(far)))).toBe(true);
   });
 });
