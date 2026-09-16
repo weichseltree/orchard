@@ -36,6 +36,8 @@ function stubConnection(options: {
   rooms?: string[];
   exhibits?: ExhibitRow[];
   refuse?: (room: string) => string | null;
+  /** Rooms whose join never settles until the test settles it by hand. */
+  pending?: (room: string) => boolean;
   /** Rooms whose row says `open: false`: shut to everyone, host included. */
   closed?: string[];
   /** Rooms only a host may enter. */
@@ -50,6 +52,7 @@ function stubConnection(options: {
   names: string[];
   moves: number;
   leaves: number;
+  pendingJoins: Array<{ room: string; resolve: () => void; reject: (error: Error) => void }>;
   queries: string[][];
   reports: Array<[string, string]>;
   moderation: string[];
@@ -67,6 +70,7 @@ function stubConnection(options: {
   const reports: Array<[string, string]> = [];
   let moves = 0;
   let leaves = 0;
+  const pendingJoins: Array<{ room: string; resolve: () => void; reject: (error: Error) => void }> = [];
   const id = (hex: string) => ({ toHexString: () => hex });
   const table = <Row>(rows: () => Row[]) => ({
     iter: rows,
@@ -79,6 +83,7 @@ function stubConnection(options: {
     names,
     said,
     chatInserts,
+    pendingJoins,
     moderation,
     queries,
     reports,
@@ -124,6 +129,10 @@ function stubConnection(options: {
       join: async ({ room, name }: { room: string; name: string }) => {
         joins.push(room);
         names.push(name);
+        if (options.pending?.(room)) {
+          await new Promise<void>((resolve, reject) => pendingJoins.push({ room, resolve, reject }));
+          return;
+        }
         const refusal = options.refuse?.(room);
         if (refusal) throw new Error(refusal);
       },
@@ -173,6 +182,7 @@ function stubConnection(options: {
     names: string[];
     moves: number;
     leaves: number;
+    pendingJoins: Array<{ room: string; resolve: () => void; reject: (error: Error) => void }>;
     queries: string[][];
     reports: Array<[string, string]>;
     moderation: string[];
@@ -367,6 +377,54 @@ describe("join refusal", () => {
     expiries[0]!.fn(); // the stale one, from the connection that dropped
     expect(presence.canEnter("einstruct")).toBe(false);
     expiries[1]!.fn(); // this connection's own
+    expect(presence.canEnter("einstruct")).toBe(true);
+  });
+
+  it("ignores a join that rejects after its own connection died", async () => {
+    // A join's promise can settle long after its socket did. Applying that
+    // answer to the live connection is worse than a stale lock: a refusal
+    // takes the visitor out of presence, so a late rejection for a room they
+    // have since left would call `leave` and evict them from the room they
+    // are actually standing in.
+    const timers: Array<{ fn: () => void; ms: number }> = [];
+    let handlers!: TransportHandlers;
+    const presence = new Presence(
+      {},
+      {
+        transport: (h) => (handlers = h),
+        storage: memoryStorage(),
+        setTimer: (fn, ms) => {
+          timers.push({ fn, ms });
+          return timers.length as unknown as ReturnType<typeof setTimeout>;
+        },
+        clearTimer: () => undefined,
+      },
+    );
+    const first = stubConnection({ rooms: ["grove", "einstruct"], pending: (r) => r === "einstruct" });
+    presence.connect("grove");
+    handlers.onConnect(first, "abc", "token");
+    await settle(20);
+    presence.join("einstruct");
+    await settle(20);
+    expect(first.pendingJoins).toHaveLength(1);
+
+    // The socket dies with that join still in flight, and the visitor comes
+    // back and settles into the grove on a new connection.
+    handlers.onDisconnect(new Error("socket dropped"));
+    timers[timers.length - 1]!.fn();
+    const second = stubConnection({ rooms: ["grove", "einstruct"] });
+    handlers.onConnect(second, "abc", "token");
+    await settle(20);
+    presence.join("grove"); // they walked back before the new socket settled
+    await settle(20);
+    expect(presence.joinedRoom).toBe("grove");
+
+    // Only now does the dead connection answer, about a room they left.
+    first.pendingJoins[0]!.reject(new Error("room full"));
+    await settle(20);
+
+    expect(presence.joinedRoom).toBe("grove");
+    expect(second.leaves).toBe(0);
     expect(presence.canEnter("einstruct")).toBe(true);
   });
 
