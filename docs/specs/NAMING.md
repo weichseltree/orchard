@@ -238,8 +238,9 @@ now** and fires every 15 minutes. So: rename `trees/spectre.yaml`, walk away,
 and within 15 minutes the live `spectre` tree row and its exhibit rows are
 gone. Since 2026-09-13 an empty exhibit answer no longer falls back to the
 pinned id in `mansion.json` (`docs/specs/PACKAGES.md` §5), so the Gravity
-Chamber's video wall goes blank for live visitors. The planet hanging survives,
-because it is pinned by id with no exhibit reference.
+Chamber's video wall goes blank for live visitors, and since #20 so do the
+planet hangings in the chamber and the Orrery: they take the `planet` exhibit
+row too, and keep their pinned id only for the single-player fallback.
 
 ### Renaming the spectre repo (option B)
 
