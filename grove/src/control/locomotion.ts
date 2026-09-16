@@ -54,7 +54,12 @@ export function step(
   heading: number = body.yaw,
   locked?: (roomId: string) => boolean,
 ): void {
-  body.crossedInto = null;
+  // `crossedInto` is NOT cleared here. The frame loop clears it after acting
+  // on it, so a crossing made before this step -- an XR teleport, which runs
+  // earlier in the same frame -- survives to be acted on. Clearing it here
+  // erased every teleport into another room: the body arrived, but presence
+  // never joined and the room was never announced, which is the phantom of
+  // #19 by another road.
   body.lockedOut = null;
   body.yaw -= input.yawDelta;
   body.pitch = clampPitch(body.pitch - input.pitchDelta);

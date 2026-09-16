@@ -801,6 +801,9 @@ view.start((dt, time, rawDt) => {
     }
     guide.setRoom(body.crossedInto);
     notice(roomTitle(labelsLoaded(locale), body.crossedInto) ?? roomById(mansion, body.crossedInto)?.title ?? body.crossedInto);
+    // Acted on: cleared here, once, rather than at the start of `step`, so a
+    // teleport earlier in the frame is not erased before it is seen.
+    body.crossedInto = null;
   }
 
   view.camera.getWorldPosition(headWorld);
