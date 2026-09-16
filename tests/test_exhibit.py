@@ -28,6 +28,8 @@ def test_entry_urls_per_kind():
     assert X.entry_urls(still)["url"] == base + "full.avif"
     del still["tiers"][0]["avif"]
     assert X.entry_urls(still)["url"] == base + "full.jpg"
+    planet = {"id": "0123456789abcdef", "kind": "planet", "poster": "poster.jpg"}
+    assert X.entry_urls(planet) == {"url": base + "bundle.json", "thumb_url": base + "poster.jpg", "tape_url": ""}
     with pytest.raises(ValueError):
         X.entry_urls({"id": "x", "kind": "splat"})
 

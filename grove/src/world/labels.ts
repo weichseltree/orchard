@@ -57,9 +57,10 @@ const LECTERN_STANDOFF_M = 1.2;
 /** What the visitor reads for a tree: the room and tree stay `spectre`, the repository is coarsen (docs/specs/NAMING.md). */
 const REPOSITORY_NAME: Readonly<Record<string, string>> = { spectre: "coarsen" };
 /**
- * A planet hanging pins a bundle id and names no tree in the scene document;
- * the two rooms that hang coarsen's cutaway worlds are its. Every other
- * hanging carries its tree in `bundle.exhibit`.
+ * Every hanging carries its tree in `bundle.exhibit` (since #20 the planets
+ * too); this is the fallback for a hanging that pins a bundle id alone, as
+ * the two rooms of coarsen's cutaway worlds did before, so a credit line
+ * never goes missing.
  */
 const TREE_OF_ROOM: Readonly<Record<string, string>> = { spectre: "spectre", orrery: "spectre" };
 

@@ -24,7 +24,7 @@ from .push import PUBLIC_HOST, verify_local
 from .sync import DB, SPACETIME_DIR, _cli, call
 
 #: What the module's `exhibit.kind` may say (spacetime/spacetimedb/src/index.ts).
-EXHIBIT_KINDS = ("clip", "still", "master", "tape")
+EXHIBIT_KINDS = ("clip", "still", "master", "tape", "planet")
 
 
 def entry_urls(doc: dict, host: str = PUBLIC_HOST) -> dict:
@@ -40,6 +40,10 @@ def entry_urls(doc: dict, host: str = PUBLIC_HOST) -> dict:
         full = doc["tiers"][0]
         return {"url": base + (full.get("avif") or full["jpg"]), "thumb_url": thumb,
                 "tape_url": ""}
+    if kind == "planet":
+        # One address for the whole exhibit: the client reads bundle.json and
+        # follows it to the mesh, the surface stream and the atlas videos.
+        return {"url": base + "bundle.json", "thumb_url": thumb, "tape_url": ""}
     raise ValueError(f"no exhibit shape for bundle kind {kind!r}")
 
 
@@ -78,7 +82,7 @@ def hang(bundle_dir, *, approve: bool = False, push: bool = True,
         approved = art.approved or approve
     else:
         tree = tree or doc.get("tree")
-        kind = kind or {"video": "clip", "tape": "tape", "still": "still"}[doc["kind"]]
+        kind = kind or {"video": "clip", "tape": "tape", "still": "still", "planet": "planet"}[doc["kind"]]
         title = title or doc.get("title", "")
         approved = approve
     if kind not in EXHIBIT_KINDS:

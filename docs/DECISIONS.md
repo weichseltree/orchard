@@ -319,3 +319,28 @@ Append-only. A decision names the day, the ruling, and the alternative it beat.
   room, 200,000 sign triangles for the world); (6) one presence room
   "arcedit" for the whole area, in `SEED_ROOMS` and added live with
   `set_room`, no module publish. The area's furniture is not rendered.
+
+- **2026-09-16 · A planet is an exhibit kind; the two live planets are
+  approved and recorded (issue #20).** Manuel: "I approve all exhibits
+  because I need to see them first anyway." spectre's cutaway worlds hung
+  in two rooms on a bare pinned bundle id because `planet` was no exhibit
+  kind anywhere, the one path that bypassed the ruling and the take-down.
+  Now `planet` is an artefact kind (orchard/manifest.py), an exhibit kind
+  in the pipeline (`entry_urls`: the row's url is the bundle's
+  `bundle.json`, one address for mesh, stream, legends and atlases), in
+  the module's `EXHIBIT_KINDS` (a publish) and in the client's
+  `EXHIBIT_KINDS_FOR` and exhibit-ref schema; both hangings name
+  `{tree: spectre, kind: planet, bundle: 26f78b7516170d6d}`. The planet
+  and its four atlas videos are recorded in coarsen's orchard.yaml
+  (mirrored to trees/spectre.yaml) as approved artefacts with the digests
+  the bundles carry (the bake manifest's for the planet, each mp4's for
+  the atlases), at the commits they record. The atlases are not hung as
+  rows: the planet bundle names them by id, and a clip row would become
+  spectre's "latest clip" for any video wall. A new check
+  (tests/test_mansion_refs.py) fails when a hanging has no exhibit ref or
+  its bundle is not an approved, digested artefact of the fund's tree
+  copies; every other hanging already passed it. Live order: publish the
+  module, `orchard exhibit hang results/bundles/26f78b7516170d6d`, then
+  deploy the client, since a client with the ref and no row shows nothing.
+  The two recorded clips whose bundles are not on disk (fb20f1408eec97c8,
+  8e86f967de15c1ea) stay as they are, unapproved.

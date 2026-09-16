@@ -52,6 +52,7 @@ from . import RESULTS
 from .manifest import Artefact, Tree
 from .portfolio import manifest_path, save  # noqa: F401  (manifest_path: callers import it from here)
 
+#: A `planet` artefact is bundled by `orchard bundle planet` from a bake delivery, not here.
 BUNDLED_KINDS = ("tape", "clip", "master", "still", "figure")
 
 
