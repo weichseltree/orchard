@@ -157,6 +157,21 @@ export const ANNOUNCE_BUDGET = 3;
 export const COLLAPSE_AT = 2;
 
 /**
+ * A tree's identity to the label a person reads: `spectre` -> `coarsen`.
+ * Built from `trees/*.yaml` (`name` and the optional `title`) by whoever calls
+ * `announce`, so this module stays pure and reads no files.
+ */
+export type TreeTitles = ReadonlyMap<string, string>;
+
+/**
+ * The label for a tree identity, falling back to the identity itself. A tree
+ * with no title has always been shown by its name, and that stays true.
+ */
+export function treeLabel(identity: string, titles?: TreeTitles): string {
+  return titles?.get(identity) || identity;
+}
+
+/**
  * What a visitor is told. Expdash's own vocabulary does not survive this step.
  *
  * "completed" is the trap and the reason this is a function rather than a
@@ -165,8 +180,14 @@ export const COLLAPSE_AT = 2;
  * say so, and `exp wait --done-when` exists because of it). So nothing here
  * ever says a run SUCCEEDED or WORKED. It says it finished, which is the only
  * thing the feed actually knows.
+ *
+ * `titles` is the second half of the same discipline. The feed's `repo` is a
+ * tree IDENTITY -- the live feed says `spectre` for 113 events -- and the
+ * rename ruling of 2026-09-16 keeps that identity precisely because it is
+ * inside the bytes every bundle id hashes. The label a person reads moved to
+ * `coarsen`. A visitor is told the label; the identity never reaches them.
  */
-export function announce(fresh: readonly ComputeEvent[]): Announcement[] {
+export function announce(fresh: readonly ComputeEvent[], titles?: TreeTitles): Announcement[] {
   if (fresh.length === 0) return [];
   // Group by what happened and where, so a sweep losing eight members is one
   // sentence rather than eight.
@@ -182,7 +203,7 @@ export function announce(fresh: readonly ComputeEvent[]): Announcement[] {
   for (const events of groups.values()) {
     const first = events[0]!;
     const priority = Math.min(...events.map((e) => e.priority));
-    const where = first.repo ? ` in ${first.repo}` : "";
+    const where = first.repo ? ` in ${treeLabel(first.repo, titles)}` : "";
     let text: string;
     if (events.length >= COLLAPSE_AT) {
       text = `${events.length} ${plural(first.type, events.length)}${where}.`;
