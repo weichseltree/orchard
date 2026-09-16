@@ -569,3 +569,22 @@ meets one in SANDBOX-TRUST.md, that document's ruling is the one about trust.
   orchard repository's own area. Note that its room count has moved: main had
   fifteen rooms at 6a9743b once the Belvedere was added. The ids frozen are
   the ids on main, not the fourteen this section was written against.
+- **someotherlife's splat room is entered through its area model**, and its
+  entrance is the Belvedere. Neither a doorway nor an equal-scale portal was
+  chosen. The room is metric and must stay 1:1: its lean radius is a measured
+  distance in metres. A portal must still change scale (schema.ts refuses a
+  same-scale portal). The area's scale portal satisfies both rules. The
+  visitor stands over the model at a small scale, and crossing lands the body
+  at scale 1.
+
+  someotherlife supplied four constraints, and they bind the build:
+  1. **The body lands at the capture station.** A splat room has no outside.
+     It holds up only within about a metre of where it was photographed.
+  2. **No locomotion inside.** The head is clamped to the lean radius and
+     guided back past it. clampHead and the lock predicate are the hook.
+  3. **A far view needs its own SparkRenderer.** Spark sorts for one
+     viewpoint per renderer, so a portal's view is a second sort worker and
+     a second ordering. It is not just a second draw.
+  4. **A splat far view stays a still on every device** until
+     someotherlife's bench measures host room plus portal view together.
+     It goes live only where that combined budget holds.
