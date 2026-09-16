@@ -154,13 +154,22 @@ not local.
   logged, not broadcast.
 - **She speaks only when named.** A room where every sentence might summon a
   spirit is a room nobody can talk in.
-- **She does not run against maincloud** until §8's rulings are made, because
-  a host appearing unannounced in a public room is a different act from one
-  standing in a local test.
+- **She stands in the live world only as herself.** Ruled by Manuel on
+  2026-09-16 (§8, ruling 1). Live she needs `--live` and her OWN identity
+  (`~/.config/orchard/faye.token`, made with `--new-identity`, granted with
+  `add_admin`, revocable with `remove_admin`), and never a CLI's token: the
+  maincloud CLI's token is the publisher, and a long-running script must not
+  hold what can delete the module (`src/faye/local.ts`). She runs as the user
+  service `orchard-faye`, from her own worktree pinned to `origin/main`
+  (`deploy/faye/install.sh`), never from the main checkout.
 
 ## 8. Rulings this asks for
 
-1. **Does Faye ever stand in the PUBLIC grove, or only local?** Everything
+1. **RULED 2026-09-16: yes, the public world.** Manuel accepted the disclosure
+   below: she names trees by their labels and says how many runs are on each
+   box, in a public room. The recommendation that follows is kept as the
+   reasoning it was, not as the decision.
+   *Original question:* **Does Faye ever stand in the PUBLIC grove, or only local?** Everything
    built so far is local-only by refusal. A visitor-facing spirit that speaks
    about a private repo's compute is a disclosure question, and it is the same
    one `AUDIO-STREAM.md` §7 already parks: no stream from an observed repo
