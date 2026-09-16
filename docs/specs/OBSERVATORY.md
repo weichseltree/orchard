@@ -19,7 +19,8 @@ faceted grove sculptures and garden armillary are designed architecture.
 | The Gravity Chamber | How does a world find its middle? | spectre's three worlds cut open at walking scale, with lit, composition, temperature and pressure views; a silent excerpt |
 | The Binding Chamber | What lets two atoms stay together? | One recorded three-body capture |
 | The Reconstruction Gallery | What does a new viewpoint reveal? | Three still studies of a classroom reconstruction and its limitations |
-| The Lantern Walk and Long Gallery | Space between questions | Architecture and open routes |
+| The Lantern Walk | Space between questions, and a game | Architecture, the three terrace arches, and the FTL Chess surface (ruled here 2026-09-16, moved out of the Long Gallery) |
+| The Long Gallery | Space between questions | Architecture and open routes; its closed doors are the trees without rooms |
 | Terrace, Meridian Garden and three groves | Pause and explore outside | Designed grounds; the armillary at the garden's crossing is the portal to the Orrery |
 | The Orrery | How does a world find its middle, seen at the scale of the sky? | spectre's three cutaway worlds with their measured surfaces, eighty metres across, on a star field |
 | The Workshop | Host space | Behind a closed door; absent from visitor routes |

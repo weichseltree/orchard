@@ -90,7 +90,7 @@ const content: Readonly<Record<string, ExhibitContent>> = {
   },
   orangery: {
     question: "Let your eyes travel.",
-    introduction: "The Lantern Walk is a place between exhibits. Follow the open doors, look back towards the chambers, or continue out to the terrace.",
+    introduction: "The Lantern Walk is a place between exhibits. Follow the open doors, look back towards the chambers, or continue out to the terrace. There is a game of chess here: Guide opens it over the room, and closing it puts you back where you stood.",
     lookFor: [],
   },
   gallery: {

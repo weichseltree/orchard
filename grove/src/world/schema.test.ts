@@ -43,15 +43,21 @@ describe("mansion.json", () => {
     expect([still.widthMeters, still.heightMeters]).toEqual([6, 3.4]);
   });
 
-  it("offers FTL Chess from the Long Gallery as an explicit game surface", () => {
-    const gallery = roomById(parseMansion(mansionDocument), "gallery")!;
-    expect(gallery.gameSurfaces).toEqual([{
+  it("offers FTL Chess from the Lantern Walk, and from nowhere else", () => {
+    const mansion = parseMansion(mansionDocument);
+    const orangery = roomById(mansion, "orangery")!;
+    expect(orangery.gameSurfaces).toEqual([{
       id: "ftl-chess",
       provider: "ftlchess",
       title: "FTL Chess",
       description: "A fast chess game hosted by FTL Chess.",
       url: "https://ftlchess.com/",
     }]);
+    // Ruled 2026-09-16: the game moved out of the Long Gallery, which keeps
+    // its closed doors for trees that have no room yet.
+    for (const room of mansion.rooms) {
+      if (room.id !== "orangery") expect(room.gameSurfaces, room.id).toEqual([]);
+    }
   });
 
   it("describes einstruct as a 14 x 12 x 6 m state room with two tape sheets and two video walls", () => {
