@@ -139,11 +139,58 @@ export const PlanetHangingSchema = z.looseObject({
   worlds: z.array(PlanetWorldSchema).min(1),
 });
 
+/**
+ * A live audio exhibit's name: `audio/live/<provider>/<stream-id>`
+ * (AUDIO-STREAM.md §1). It is a name with no bytes behind it -- never cached,
+ * never immutable, never hashed -- which is why it is NOT a `BundleRef`. The
+ * service worker recognises the same shape on the path alone
+ * (`grove/src/sw/policy.ts`).
+ */
+export const LiveAudioRefSchema = z.looseObject({
+  provider: z.string().min(1),
+  streamId: z.string().min(1),
+});
+
+/**
+ * A stream a visitor stands inside (AUDIO-STREAM.md §5). A stream has no
+ * geometry, so a hanging of this kind places the observed system's TOPOLOGY
+ * instead: the provider publishes node positions in a unit space and this
+ * says where that unit cube stands in the room and how large it is, the way a
+ * `planet` hanging owns `radiusMeters`.
+ *
+ * `live` names an exhibit; `bundle` an archived `audio` bundle. Exactly one,
+ * because they obey opposite caching rules.
+ */
+export const AudioHangingSchema = z
+  .looseObject({
+    id: z.string().min(1),
+    title: z.string().default(""),
+    kind: z.literal("audio"),
+    live: LiveAudioRefSchema.optional(),
+    bundle: BundleRefSchema.optional(),
+    /** The unit cube's centre, in room metres. */
+    position: Vec3,
+    /** What one side of the unit cube measures here; uniform on every axis (audio/topology.ts). */
+    sizeMeters: z.number().positive().default(8),
+    /** Turn the topology about the room's y, so the DAG faces the visitor's landing. */
+    rotationDeg: Vec3.default([0, 0, 0]),
+    /**
+     * Where the topology document is, when it is not the exhibit's own
+     * `topology.json` sibling. A stream with no topology plays as the bed
+     * alone -- the §5 fallback, not an error.
+     */
+    topology: z.string().default(""),
+  })
+  .refine((h) => (h.live !== undefined) !== (h.bundle !== undefined), {
+    message: "an audio hanging takes either a live exhibit or an archived bundle, not both and not neither",
+  });
+
 export const HangingSchema = z.discriminatedUnion("kind", [
   TapeHangingSchema,
   VideoHangingSchema,
   StillHangingSchema,
   PlanetHangingSchema,
+  AudioHangingSchema,
 ]);
 
 /**
@@ -195,7 +242,14 @@ export const RoomSchema = z.looseObject({
   fallback: z
     .looseObject({ kind: z.enum(["box", "ground"]).default("box"), color: z.string().default("#8e968d") })
     .default({ kind: "box", color: "#8e968d" }),
+  /**
+   * The room's box. `min[1]` is the floor: rooms may stand at different
+   * heights, and a doorway between two floors gets a flight of steps in the
+   * lower room (terrain.ts, observatory.ts), so a raised wing is a change
+   * of one number here and nothing else.
+   */
   bounds: BoundsSchema,
+  /** The body's feet on the room's floor; `position[1]` should equal `bounds.min[1]`. */
   spawn: SpawnSchema,
   doorways: z.array(DoorwaySchema).default([]),
   hangings: z.array(HangingSchema).default([]),
@@ -229,12 +283,31 @@ export const SkySchema = z.looseObject({
   source: z.string().default(""),
 });
 
+/**
+ * A mound of the grounds: a smooth, compactly supported bump (terrain.ts).
+ * The height field is one function shared by the ground mesh, the trees and
+ * the body's feet, so a hill you see is a hill you climb. Mounds shape only
+ * the cells of the grounds; a room's floor is flat at its own base.
+ */
+export const MoundSchema = z.looseObject({
+  x: z.number(),
+  z: z.number(),
+  radius: z.number().positive(),
+  height: z.number(),
+});
+
+export const TerrainSchema = z.looseObject({
+  mounds: z.array(MoundSchema).default([]),
+});
+
 export const MansionSchema = z
   .looseObject({
     schema: z.literal("orchard/mansion/1"),
     title: z.string().default(""),
     start: z.string().min(1),
     sky: SkySchema.optional(),
+    /** The lie of the land outside; absent means flat grounds. */
+    terrain: TerrainSchema.default({ mounds: [] }),
     rooms: z.array(RoomSchema).min(1),
   })
   .superRefine((doc, ctx) => {
@@ -273,6 +346,16 @@ export const MansionSchema = z
         }
         gameSurfaceIds.add(surface.id);
       }
+      for (const door of room.doorways) {
+        if (door.closed) continue;
+        const other = doc.rooms.find((r) => r.id === door.to);
+        if (!other) continue;
+        // Both rooms must know the opening, or one side walks through a wall.
+        const twin = other.doorways.find((d) => d.to === room.id && d.axis === door.axis && Math.abs(d.at - door.at) < 1e-6 && Math.abs(d.center - door.center) < 1e-6);
+        if (!twin) {
+          ctx.addIssue({ code: "custom", message: `doorway ${room.id} -> ${door.to} at ${door.axis}=${door.at}, ${door.center} is not listed by "${door.to}"` });
+        }
+      }
       for (const portal of room.portals) {
         const target = doc.rooms.find((r) => r.id === portal.to);
         if (!target) {
@@ -310,10 +393,14 @@ export type VideoHanging = z.infer<typeof VideoHangingSchema>;
 export type StillHanging = z.infer<typeof StillHangingSchema>;
 export type PlanetHanging = z.infer<typeof PlanetHangingSchema>;
 export type PlanetWorld = z.infer<typeof PlanetWorldSchema>;
+export type LiveAudioRef = z.infer<typeof LiveAudioRefSchema>;
+export type AudioHanging = z.infer<typeof AudioHangingSchema>;
 export type Portal = z.infer<typeof PortalSchema>;
 export type Hanging = z.infer<typeof HangingSchema>;
 export type Room = z.infer<typeof RoomSchema>;
 export type Sky = z.infer<typeof SkySchema>;
+export type Mound = z.infer<typeof MoundSchema>;
+export type Terrain = z.infer<typeof TerrainSchema>;
 export type Mansion = z.infer<typeof MansionSchema>;
 
 export function parseMansion(input: unknown): Mansion {

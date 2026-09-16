@@ -89,6 +89,17 @@ Notes on the rows.
   `AUDIO-STREAM.md` §5's proposed cap on simultaneous positioned per-node
   sources for a live stream exhibit, with the rest folded into one
   non-positioned bed; §7 item 2 is what turns it into a fact.
+- **This row and the panner row below it disagree, and §5 reconciles them.**
+  This row gives `vr-quest` 16; the `convolvers / panners / HRTF` row gives
+  Quest 2 and Pico 4 — both `vr-quest` — six panners and no HRTF at all. A
+  tier budget holds on the weakest device in the tier, so `vr-quest` cannot
+  have sixteen HRTF-panned sources. `AUDIO-STREAM.md` §5 makes the cap a
+  **ladder** instead of one number: each node takes the best rung still
+  affordable, nearest listener first — an HRTF `PannerNode`, then an
+  equal-power `PannerNode`, then a `StereoPannerNode` on the azimuth, then the
+  bed. So on `vr-quest` sixteen nodes are positioned, six of them through
+  panners, none externalised. `grove/src/audio/sources.ts` is where the
+  per-tier numbers live and it takes the weakest device in each tier.
 - **Draw calls, not triangles, are the Quest ceiling.** Meta's own example:
   1000 triangles as 1000 draw calls falls under 72 Hz on CPU cost alone. The
   scene today is 7 draw calls in the einstruct room, 21 with the hall in view,

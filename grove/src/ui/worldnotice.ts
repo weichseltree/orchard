@@ -101,7 +101,8 @@ export class WorldNotices {
   }
 }
 
-function wrap(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
+/** Greedy word wrap by measured width; the wall plaques (world/labels.ts) share it. */
+export function wrap(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
   const words = text.split(/\s+/);
   const lines: string[] = [];
   let line = "";

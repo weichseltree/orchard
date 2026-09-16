@@ -1,0 +1,125 @@
+import type { Doorway, Mansion, Mound, Room } from "./schema";
+
+// The lie of the land, as one function. A room's floor is its bounds' base;
+// the grounds rise in mounds; and where a doorway joins two floors of
+// different height the lower room carries a flight of steps up to the
+// opening. The same function places the ground mesh, the trees, the steps and
+// the visitor's feet, so a hill you see is a hill you climb and a stair you
+// climb is a stair you see. Rooms stay axis-aligned boxes for navigation
+// (navigation.ts); height is a property of a point, never a second floor.
+
+/** One step: the rise the eye takes and the tread the foot lands on, metres. */
+export const STAIR_RISE = 0.16;
+export const STAIR_TREAD = 0.29;
+/** A flight is this much wider than its doorway on each side; the cheek walls stand there. */
+export const STAIR_MARGIN = 0.5;
+
+/** How many steps climb a given difference of floors. */
+export function stairSteps(rise: number): number {
+  return Math.max(1, Math.ceil(rise / STAIR_RISE - 1e-6));
+}
+
+/** The horizontal length a flight takes, metres, measured from the doorway plane into the lower room. */
+export function stairRun(rise: number): number {
+  return stairSteps(rise) * STAIR_TREAD;
+}
+
+/**
+ * A mound is a compact quartic bump: exactly zero beyond its radius, smooth
+ * at the rim, so a mound placed clear of a doorway never lifts the doorway.
+ */
+export function moundHeight(mounds: readonly Mound[], x: number, z: number): number {
+  let h = 0;
+  for (const m of mounds) {
+    const dx = x - m.x;
+    const dz = z - m.z;
+    const q = (dx * dx + dz * dz) / (m.radius * m.radius);
+    if (q >= 1) continue;
+    const f = 1 - q;
+    h += m.height * f * f;
+  }
+  return h;
+}
+
+export interface Flight {
+  door: Doorway;
+  /** The higher floor's height above this room's base. */
+  rise: number;
+  /** Horizontal length of the flight, from the doorway plane into the room. */
+  run: number;
+  /** Which way the flight descends from the doorway: +1 along the axis or -1. */
+  direction: 1 | -1;
+}
+
+/**
+ * The flights this room carries: one per open doorway whose neighbour's floor
+ * is higher. The higher room carries none; its doorway is level with its floor.
+ */
+export function flightsOf(mansion: Mansion, room: Room): Flight[] {
+  const out: Flight[] = [];
+  const base = room.bounds.min[1];
+  for (const door of room.doorways) {
+    if (door.closed) continue;
+    const neighbour = mansion.rooms.find((r) => r.id === door.to);
+    if (!neighbour) continue;
+    const rise = neighbour.bounds.min[1] - base;
+    if (rise <= 1e-6) continue;
+    const axis = door.axis === "x" ? 0 : 2;
+    const direction: 1 | -1 = Math.abs(door.at - room.bounds.min[axis]) < 1e-6 ? 1 : -1;
+    out.push({ door, rise, run: stairRun(rise), direction });
+  }
+  return out;
+}
+
+/** Where a point stands on a flight: 0 at the foot (and beyond), 1 at the doorway plane; null when off the flight. */
+export function flightFraction(flight: Flight, x: number, z: number): number | null {
+  const { door } = flight;
+  const along = door.axis === "x" ? x : z;
+  const lateral = door.axis === "x" ? z : x;
+  if (Math.abs(lateral - door.center) > door.width / 2 + STAIR_MARGIN) return null;
+  const dist = (along - door.at) * flight.direction;
+  if (dist < -1e-6 || dist > flight.run) return null;
+  return 1 - dist / flight.run;
+}
+
+/**
+ * The height of the floor under a point of this room. Steps are a smooth
+ * ramp for the body, so the eye glides rather than hops; the steps you see
+ * are drawn to the same run and rise (observatory.ts), never more than one
+ * riser from where the foot is.
+ */
+export function floorAt(mansion: Mansion, room: Room, x: number, z: number): number {
+  const base = room.bounds.min[1];
+  let h = base;
+  if (room.fallback.kind === "ground") h += moundHeight(mansion.terrain.mounds, x, z);
+  for (const flight of flightsOf(mansion, room)) {
+    const t = flightFraction(flight, x, z);
+    if (t === null) continue;
+    h = Math.max(h, base + flight.rise * t);
+  }
+  return h;
+}
+
+/**
+ * Keeps a body that has climbed onto a flight between its cheek walls: a
+ * step that starts on the flight, above the room's floor, may not leave it
+ * sideways. Returns the corrected destination.
+ */
+export function keepOnFlight(
+  mansion: Mansion,
+  room: Room,
+  from: { x: number; z: number },
+  to: { x: number; z: number },
+  radius: number,
+): { x: number; z: number } {
+  for (const flight of flightsOf(mansion, room)) {
+    const t = flightFraction(flight, from.x, from.z);
+    if (t === null || t < 0.02) continue;
+    const half = flight.door.width / 2 + STAIR_MARGIN - radius;
+    const lateral = flight.door.axis === "x" ? to.z : to.x;
+    const clamped = Math.min(flight.door.center + half, Math.max(flight.door.center - half, lateral));
+    if (clamped === lateral) continue;
+    return flight.door.axis === "x" ? { x: to.x, z: clamped } : { x: clamped, z: to.z };
+  }
+  return { x: to.x, z: to.z };
+}

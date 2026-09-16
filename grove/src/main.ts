@@ -4,12 +4,13 @@ import { detectDevice } from "./device";
 import { demoEnabled, demoMansion } from "./demo";
 import { attachDesktopControls, type DesktopControls } from "./control/desktop";
 import { consumeDeltas, createInput, type Commands } from "./control/input";
-import { clampHead, createBody, step, teleport } from "./control/locomotion";
+import { clampHead, createBody, settle, step, teleport } from "./control/locomotion";
 import { attachTouchControls } from "./control/touch";
 import { XrControls, requestXrSession, watchXrSupport } from "./control/xr";
 import { deploymentTokenSource } from "./net/auth";
 import { Avatars } from "./net/avatars";
 import { Presence } from "./net/presence";
+import { ChatPanel } from "./ui/chat";
 import { installAssetMap } from "./render/asset-map";
 import { showOverdraw } from "./render/overdraw";
 import { EYE_HEIGHT, createView } from "./render/view";
@@ -29,6 +30,8 @@ import mansionDocument from "./world/mansion.json";
 import { parseMansion, roomById } from "./world/schema";
 import { buildWorld, exhibitRoom, neighbourhood, type BuiltWorld } from "./world/world";
 import { PortalSystem } from "./world/portal";
+import { pickLocale } from "./ui/locale";
+import { AVAILABLE_LOCALES, labelsFor, labelsLoaded, roomTitle } from "./world/labels/index";
 import { ATLAS_LABELS, type Screen } from "./media/screen";
 import type { TapeExhibit } from "./world/tape-exhibit";
 
@@ -76,6 +79,9 @@ view.scene.add(avatars.group, worldNotices.panel);
 // room while it is built, and for a link straight to a tree's room.
 const query = new URLSearchParams(location.search);
 const startRoom = visitRoom(mansion, query);
+// The wall plaques speak the visitor's language: the browser's list, `?lang=` first, English last.
+const locale = pickLocale(AVAILABLE_LOCALES, navigator.languages, query.get("lang"));
+void labelsFor(locale).catch(() => labelsFor("en"));
 const requestedYaw = finiteParameter(query, "yaw");
 const requestedPitch = finiteParameter(query, "pitch");
 const requestedX = finiteParameter(query, "x");
@@ -88,12 +94,14 @@ const body = createBody(
   MathUtils.degToRad(startYaw),
   startRoom.id,
   startRoom.scale,
+  startRoom.bounds.min[1],
 );
 // `&pitch=<deg>` looks up or down from the start, for a link to something high;
 // `&x=&z=` stand somewhere else in the room, and then the marker leaves them be.
 if (requestedPitch !== null) body.pitch = MathUtils.degToRad(requestedPitch);
 if (requestedX !== null) body.x = MathUtils.clamp(requestedX, startRoom.bounds.min[0], startRoom.bounds.max[0]);
 if (requestedZ !== null) body.z = MathUtils.clamp(requestedZ, startRoom.bounds.min[2], startRoom.bounds.max[2]);
+settle(body, mansion);
 // `&debug=overdraw` draws the room shells as faint additive white, so a
 // doubled or hidden face shows as a brighter patch (render/overdraw.ts).
 const debugView = query.get("debug");
@@ -186,10 +194,25 @@ function notice(text: string, sticky = false): void {
   console.info(`[grove] ${text}`);
 }
 
+// Room chat, flat mode only (VR-PRESENCE.md §3). Hidden until the link is up:
+// there is nothing to say to a room you are visiting on your own.
+const chat = new ChatPanel(hudRoot, {
+  onSend: (text) => presence.say(text),
+  // A locked pointer cannot be typed past, so the line takes it and the next
+  // click in the view gives it back (control/desktop.ts re-locks on click).
+  onFocusChange: (open) => {
+    if (open && document.pointerLockElement) document.exitPointerLock();
+  },
+});
+
 const presence = new Presence(
   {
     onStatus: (status, detail) => {
       hud.setMe(presence.me, presence.name);
+      // Chat is only meaningful with a link; single-player has no room to
+      // speak into, and a dead input is worse than no input.
+      if (status === "online") chat.show();
+      else chat.hide();
       if (status === "online") hud.setLink("connected");
       else if (status === "connecting") hud.setLink("connecting…");
       else {
@@ -201,6 +224,17 @@ const presence = new Presence(
       }
     },
     onNotice: (text) => notice(text),
+    onChat: (line) => {
+      chat.addLine(line);
+      // A peer's line hangs above their capsule for a few seconds (avatars.ts),
+      // which is the one part of chat a headset can see. The line carries a
+      // name, not an identity; the room's peers resolve it.
+      if (!line.mine) {
+        for (const peer of presence.peers.values()) {
+          if (peer.name === line.name) avatars.speak(peer.identity, line.text);
+        }
+      }
+    },
   },
   // The grove's token service, when this build has one (a human check, then
   // a token that carries the visitor's identity from visit to visit).
@@ -210,6 +244,7 @@ let lastLinkDetail = "";
 
 let perfOpen = false;
 let nextPerfReport = 0;
+let nextAudioReassign = 0;
 let scrubbingUntil = 0;
 
 const commands: Commands = {
@@ -287,11 +322,15 @@ function boot(): void {
   hud.setHere(1);
   hud.setLink(demo ? "local demo" : "connecting…");
   if (demo) notice("Local demo · synthetic particles", true);
-  else presence.connect(presenceRoomFor(body.room));
+  else {
+    presence.connect(presenceRoomFor(body.room));
+    chat.noteJoined();
+  }
 
   const built = buildWorld({
     mansion,
     startRoom: body.room,
+    locale,
     renderer: view.renderer,
     device,
     scheduler: chunks,
@@ -317,6 +356,7 @@ function boot(): void {
       // ...except the heading when the link asked for one: `?yaw=` is for
       // looking at a particular wall, and the marker must not turn it away.
       if (requestedYaw === null) body.yaw = MathUtils.degToRad(room.spawn.yawDeg);
+      settle(body, mansion);
     },
   });
   world = built;
@@ -504,7 +544,7 @@ view.start((dt, time, rawDt) => {
   if (movingBefore) bodyPlaced = true;
   consumeDeltas(input);
 
-  view.rig.position.set(body.x, 0, body.z);
+  view.rig.position.set(body.x, body.y, body.z);
   adaptExposure(dt);
   handOverVideo();
   if (presenting) {
@@ -514,7 +554,7 @@ view.start((dt, time, rawDt) => {
     if (push.dx !== 0 || push.dz !== 0) {
       body.x += push.dx;
       body.z += push.dz;
-      view.rig.position.set(body.x, 0, body.z);
+      view.rig.position.set(body.x, body.y, body.z);
     }
   } else {
     view.rig.rotation.y = body.yaw;
@@ -527,6 +567,7 @@ view.start((dt, time, rawDt) => {
   view.rig.updateMatrixWorld(true);
   const crossing = portals.update({
     body,
+    dt,
     camera: view.camera,
     scene: view.scene,
     worldRoot: view.world,
@@ -539,7 +580,8 @@ view.start((dt, time, rawDt) => {
     body.room = crossing.room;
     body.scale = crossing.scale;
     body.crossedInto = crossing.room;
-    view.rig.position.set(body.x, 0, body.z);
+    settle(body, mansion);
+    view.rig.position.set(body.x, body.y, body.z);
     world?.setScaleVisible(body.scale);
     portals.setScale(body.scale);
     handOverVideo(true);
@@ -590,13 +632,18 @@ view.start((dt, time, rawDt) => {
     void world?.ensureRooms(neighbourhood(mansion, body.crossedInto)).catch((error: unknown) =>
       notice(`This room did not finish loading: ${message(error)}. Reload to try again.`, true));
     bodyPlaced = true;
-    if (!demo) presence.join(presenceRoomFor(body.crossedInto));
+    if (!demo) {
+      presence.join(presenceRoomFor(body.crossedInto));
+      // The module stamps its chat clock on join, so the first line straight
+      // after crossing would be refused; the panel holds the gap instead.
+      chat.noteJoined();
+    }
     guide.setRoom(body.crossedInto);
-    notice(roomById(mansion, body.crossedInto)?.title ?? body.crossedInto);
+    notice(roomTitle(labelsLoaded(locale), body.crossedInto) ?? roomById(mansion, body.crossedInto)?.title ?? body.crossedInto);
   }
 
   view.camera.getWorldPosition(headWorld);
-  if (!demo) presence.sendPose(headWorld.x, 0, headWorld.z, wrapAngle(headingFromCamera()));
+  if (!demo) presence.sendPose(headWorld.x, body.y, headWorld.z, wrapAngle(headingFromCamera()));
   if (presence.sync()) {
     hud.setPeople(presence.peers.values());
     hud.setMe(presence.me, presence.name);
@@ -606,6 +653,22 @@ view.start((dt, time, rawDt) => {
 
   provenance.update(view.camera, presenting);
   worldNotices.update(view.camera, presenting);
+
+  // A live audio exhibit's field needs the visitor's head every frame -- that
+  // is the whole of what makes a positioned source mean anything -- but the
+  // ranking of which node gets which source only changes when the visitor has
+  // MOVED, and rebuilding a panner is not free. So the listener moves at frame
+  // rate and the sources are re-ranked four times a second
+  // (AUDIO-STREAM.md §5, grove/src/audio/field.ts).
+  if (world && world.audios.length > 0) {
+    view.camera.getWorldDirection(_forward);
+    const reassign = time >= nextAudioReassign;
+    if (reassign) nextAudioReassign = time + 250;
+    for (const audio of world.audios) {
+      audio.setListener([headWorld.x, headWorld.y, headWorld.z], [_forward.x, _forward.y, _forward.z]);
+      if (reassign) audio.reassign();
+    }
+  }
 
   if (perfOpen && time >= nextPerfReport) {
     nextPerfReport = time + 500;

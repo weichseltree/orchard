@@ -16,12 +16,14 @@ import type { DeviceTier } from "../tape/bundle";
 import type { StillPanel } from "../media/still";
 import type { VideoWall } from "../media/videowall";
 import type { PlanetExhibit } from "./planet-exhibit";
+import type { AudioExhibit } from "./audio-exhibit";
 import { StillBundleSchema, VideoBundleSchema } from "../tape/bundle";
 import type { Provenance } from "../ui/provenance";
 import { bundleBaseOf, pickExhibit, type ExhibitRow } from "./exhibits";
 import type { PosterMarker, RoomShell } from "./rooms";
 import { buildSky, sunFromAsset, type SkyDome } from "./sky";
 import type { TapeExhibit } from "./tape-exhibit";
+import type { Labels } from "./labels/index";
 import type { BundleRef, Mansion, Room, StillHanging } from "./schema";
 
 // Builds the whole mansion out of mansion.json. Rooms first, because they are
@@ -49,6 +51,12 @@ export interface BuildWorldOptions {
   /** The room the visitor starts in; `mansion.start` when absent. */
   startRoom?: string;
   scheduler?: ChunkScheduler;
+  /**
+   * The language of the wall text (labels/<locale>.json), "en" when absent.
+   * A language file that fails to load falls back to English; only when
+   * English fails too do the rooms go without plaques, with a notice.
+   */
+  locale?: string;
 }
 
 export interface BuiltWorld {
@@ -67,6 +75,12 @@ export interface BuiltWorld {
   stills: StillPanel[];
   /** spectre's cutaway worlds, wherever they stand. */
   planets: PlanetExhibit[];
+  /**
+   * Live audio exhibits. The frame loop hands each one the visitor's head
+   * (`setListener`) and re-ranks its sources a few times a second
+   * (`reassign`); nothing else drives them.
+   */
+  audios: AudioExhibit[];
   /** Streams the start room's neighbourhood in. Resolves when everything that can load has. */
   load(): Promise<void>;
   /** Loads more rooms (a doorway crossing widens the neighbourhood); rooms already loaded are skipped. */
@@ -211,7 +225,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
     // Runtime architecture needs no GLTF loaders, texture decoders or room
     // downloads. Legacy scene documents can still use their original assets.
     const shell = room.architecture === "observatory"
-      ? (await import("./observatory")).buildObservatory(room)
+      ? (await import("./observatory")).buildObservatory(room, mansion)
       : room.architecture === "space"
         ? (await import("./space")).buildSpace(room)
         : await (await import("./rooms")).buildRoom({ room, renderer, tier: device.tier, onNotice, scheduler: options.scheduler });
@@ -229,7 +243,33 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
       read: () => shell.provenance,
     });
     options.onRoomReady?.(room, shell);
+    // The museum's wall text: an introduction panel and one label per
+    // exhibit, in the visitor's language. Text on the walls is not a room,
+    // so it never holds a room up; it lands when the language file has.
+    void labelsOnce().then((labels) => {
+      if (!labels || labelGroups.has(room.id)) return;
+      return import("./labels").then(({ buildRoomLabels }) => {
+        const group = buildRoomLabels(room, labels, locale, { mansion });
+        labelGroups.set(room.id, group);
+        groupFor(room).add(group);
+      });
+    }).catch((error: unknown) => onNotice(`labels ${room.id}: ${message(error)}`));
   }
+
+  const locale = options.locale ?? "en";
+  const labelGroups = new Map<string, Group>();
+  let labelsPromise: Promise<Labels | null> | null = null;
+  const labelsOnce = () =>
+    (labelsPromise ??= import("./labels/index").then(({ labelsFor }) =>
+      labelsFor(locale).catch((error: unknown) => {
+        if (locale === "en") throw error;
+        onNotice(`Wall text in "${locale}" could not load (${message(error)}); showing English.`);
+        return labelsFor("en");
+      }),
+    ).catch((error: unknown) => {
+      onNotice(`Wall text could not load: ${message(error)}`);
+      return null;
+    }));
 
   function ensureShell(room: Room): Promise<void> {
     const pending = shellLoads.get(room.id);
@@ -245,6 +285,36 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
   function loadHangings(room: Room, exhibits: ExhibitRow[] | null): Promise<void>[] {
     const pending: Promise<void>[] = [];
     for (const hanging of room.hangings) {
+      // A live audio exhibit is resolved before anything else, because it is
+      // the one hanging that is NOT a bundle: it is a name with no bytes
+      // behind it (AUDIO-STREAM.md §1), so `bundleUrl` has nothing to say
+      // about it. An archived `audio` bundle still carries a bundle ref and
+      // takes the ordinary path below.
+      if (hanging.kind === "audio") {
+        const archived = hanging.bundle ? bundleUrl(hanging.bundle, exhibits) : null;
+        if (hanging.bundle && archived === null) {
+          const ref = hanging.bundle.exhibit;
+          onNotice(`${hanging.id}: nothing is hung on ${ref?.tree} as ${ref?.kind} yet`);
+          continue;
+        }
+        pending.push(
+          import("./audio-exhibit").then(({ AudioExhibit }) => AudioExhibit.load({
+            hanging, archivedBase: archived, tier: device.tier, onNotice,
+          }))
+            .then((audio) => {
+              world.audios.push(audio);
+              roomOf.set(audio, room.id);
+              provenance.register({
+                id: `audio:${hanging.id}`,
+                title: hanging.title,
+                bounds: audio.bounds,
+                read: () => audio.provenance(),
+              });
+            })
+            .catch((error: unknown) => onNotice(`audio ${hanging.id}: ${message(error)}`)),
+        );
+        continue;
+      }
       const base = bundleUrl(hanging.bundle, exhibits);
       if (base === null) {
         const ref = hanging.bundle.exhibit;
@@ -337,7 +407,9 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
       await ensureShell(room);
       let hangings = hangingLoads.get(id);
       if (!hangings) {
-        const wantsExhibits = room.hangings.some((hanging) => hanging.bundle.exhibit !== undefined);
+        // A live audio hanging has no bundle at all, so it never wants the
+        // exhibit table; an archived one may.
+        const wantsExhibits = room.hangings.some((hanging) => hanging.bundle?.exhibit !== undefined);
         hangings = (wantsExhibits ? exhibitsOnce() : Promise.resolve(null))
           .then((exhibits) => Promise.all(loadHangings(room, exhibits)))
           .then(() => undefined);
@@ -360,6 +432,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
     },
     stills: [],
     planets: [],
+    audios: [],
     load: () => ensureRooms(neighbourhood(mansion, options.startRoom ?? mansion.start)),
     ensureRooms: (ids) => ensureRooms(ids),
     setScaleVisible(scale) {
@@ -373,6 +446,13 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
       for (const video of world.videos) video.dispose();
       for (const still of world.stills) still.dispose();
       for (const planet of world.planets) planet.dispose();
+      for (const audio of world.audios) audio.dispose();
+      if (labelGroups.size) {
+        void import("./labels").then(({ disposeRoomLabels }) => {
+          for (const group of labelGroups.values()) disposeRoomLabels(group);
+          labelGroups.clear();
+        });
+      }
     },
   };
   return world;

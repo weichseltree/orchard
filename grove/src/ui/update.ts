@@ -6,11 +6,19 @@ import { registerWorker, removeWorker, workerWanted } from "../sw/register";
 // becomes visible and every ten minutes; a different commit puts one quiet
 // offer on the notice list. Nothing reloads under a visitor in a headset: the
 // offer waits for the immersive session to end.
+//
+// A stamp with `forced: true` takes the choice away, not the safe moment: the
+// page reloads without an offer, but still only once the immersive session
+// has ended (issue #16). Yanking someone out of VR is a nausea and safety
+// problem, so "forced" means forced at the next safe moment, through the
+// same `whenFree` gate every other reload here goes through.
 
 export interface VersionStamp {
   commit: string;
   builtAt: string;
   sw?: boolean;
+  /** Every open page must run this build: reload without asking, at a safe moment. */
+  forced?: boolean;
 }
 
 /** This page's own build. */
@@ -32,7 +40,16 @@ export function parseVersion(doc: unknown): VersionStamp | null {
     commit: d["commit"],
     builtAt: typeof d["builtAt"] === "string" ? d["builtAt"] : "",
     ...(typeof d["sw"] === "boolean" ? { sw: d["sw"] } : {}),
+    ...(d["forced"] === true ? { forced: true } : {}),
   };
+}
+
+/** What a stamp asks of this page: nothing, a quiet offer, or a reload it cannot decline. */
+export type UpdatePlan = "none" | "offer" | "forced";
+
+export function planUpdate(own: VersionStamp, remote: VersionStamp | null): UpdatePlan {
+  if (!remote || !isNewer(own, remote)) return "none";
+  return remote.forced ? "forced" : "offer";
 }
 
 /**
@@ -66,39 +83,70 @@ export interface GroveUpdatesOptions {
   xr: XrLike;
 }
 
-/** Registers the service worker (or removes it), watches for new builds, recovers stale lazy imports. */
-export function startGroveUpdates(options: GroveUpdatesOptions): void {
-  const { hud, xr } = options;
-  /** Runs `then` now, or when the immersive session ends. */
+/** Runs `then` now, or once the immersive session ends: the one gate every reload goes through. */
+export type WhenFree = (then: () => void) => void;
+
+export function safeMoment(xr: XrLike): WhenFree {
   let afterXr: Array<() => void> = [];
-  const whenFree = (then: () => void) => {
-    if (xr.isPresenting) afterXr.push(then);
-    else then();
-  };
   xr.addEventListener("sessionend", () => {
     const due = afterXr;
     afterXr = [];
     for (const then of due) then();
   });
+  return (then) => {
+    if (xr.isPresenting) afterXr.push(then);
+    else then();
+  };
+}
+
+export interface UpdaterDeps {
+  hud: HudLike;
+  whenFree: WhenFree;
+  reload(): void;
+}
+
+/**
+ * Reacts to what the stamps ask for. An offer goes up once and stays until
+ * taken; a forced reload happens at the next safe moment and needs no one to
+ * take it. A forced stamp that arrives while an offer is up, or while one is
+ * waiting for a session to end, wins: the deferred step reads the latest ask.
+ */
+export function createUpdater({ hud, whenFree, reload }: UpdaterDeps): (plan: UpdatePlan) => void {
+  let forced = false;
+  let offered: HTMLElement | null = null;
+  let scheduled = false;
+  return (plan) => {
+    if (plan === "none") return;
+    if (plan === "forced") forced = true;
+    if (scheduled) return;
+    if (!forced && offered?.isConnected) return;
+    scheduled = true;
+    whenFree(() => {
+      scheduled = false;
+      if (forced) {
+        console.info("[grove] a required version of the Mind Palace is up; reloading");
+        reload();
+        return;
+      }
+      offered = hud.offer("A new version of the Mind Palace is up —", "reload", reload);
+    });
+  };
+}
+
+/** Registers the service worker (or removes it), watches for new builds, recovers stale lazy imports. */
+export function startGroveUpdates(options: GroveUpdatesOptions): void {
+  const { hud, xr } = options;
+  const whenFree = safeMoment(xr);
 
   recoverStaleImports(xr, whenFree);
   if (import.meta.env.DEV) return;
 
-  let offered: HTMLElement | null = null;
-  let waiting = false;
-  const offer = () => {
-    if (offered?.isConnected || waiting) return;
-    waiting = true;
-    whenFree(() => {
-      waiting = false;
-      offered = hud.offer("A new version of the grove is up —", "reload", () => location.reload());
-    });
-  };
+  const update = createUpdater({ hud, whenFree, reload: () => location.reload() });
 
   const check = async (): Promise<VersionStamp | null> => {
     const stamp = await fetchVersion();
     if (stamp?.sw === false) void removeWorker();
-    if (stamp && isNewer(OWN_VERSION, stamp)) offer();
+    update(planUpdate(OWN_VERSION, stamp));
     return stamp;
   };
 
@@ -138,7 +186,7 @@ async function fetchVersion(): Promise<VersionStamp | null> {
  * `vite:preloadError`. Reload once to pick up the new build; if that happens
  * again within a minute, let the error through rather than loop.
  */
-function recoverStaleImports(xr: XrLike, whenFree: (then: () => void) => void): void {
+function recoverStaleImports(xr: XrLike, whenFree: WhenFree): void {
   window.addEventListener("vite:preloadError", (event) => {
     let last: string | null;
     try {

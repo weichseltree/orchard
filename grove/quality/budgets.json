@@ -1,8 +1,8 @@
 {
-  "description": "Observatory regression limits: all 13 areas use runtime architecture. Total build measured at 3.43 MB after replacing palace bakes; 4.3 MB cap prevents retired assets re-entering the release, with headroom for the optional, dynamically-imported three/webgpu chunk (~162 KB gzip) added alongside the WebGL2 fallback renderer. Source media is streamed and measured separately.",
+  "description": "Observatory regression limits: all 15 areas use runtime architecture. Total build measured at 3.43 MB after replacing palace bakes; 4.3 MB cap prevents retired assets re-entering the release, with headroom for the optional, dynamically-imported three/webgpu chunk (~162 KB gzip) added alongside the WebGL2 fallback renderer. Source media is streamed and measured separately. Startup JS rose to ~220 KB gzip with the palace's second pass (terrain, stairs, the plaque loader and the portal's intent and shader); the cap is 230 KB.",
   "maximum": {
     "deferredModuleViolations": 0,
-    "startupJsGzipBytes": 215000,
+    "startupJsGzipBytes": 230000,
     "allJsGzipBytes": 700000,
     "largestJsGzipBytes": 240000,
     "cssGzipBytes": 10000,

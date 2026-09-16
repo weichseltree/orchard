@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AUDIENCE, TOKEN_TTL_S, handle, networkKey, networkOf, unb64url, type AuthDeps, type AuthEnv } from "./issuer";
+import { AUDIENCE, TOKEN_TTL_S, handle, networkKey, networkOf, unb64url, verifyLive, type AuthDeps, type AuthEnv } from "./issuer";
 
 async function makeEnv(extra: Partial<AuthEnv> = {}): Promise<AuthEnv> {
   const pair = await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, ["sign", "verify"]);
@@ -175,5 +175,58 @@ describe("a misconfigured token service", () => {
   it("answers 503 for an unreadable signing key instead of throwing", async () => {
     const r = await handle(tokenRequest({}), { AUTH_SIGNING_KEY: "{not json", AUTH_NETWORK_KEY: "k" }, deps());
     expect(r.status).toBe(503);
+  });
+});
+
+describe("verifyLive", () => {
+  const NOW_S = 1_800_000_000;
+
+  /** A real token, minted the way a visitor's is. */
+  async function mint(env: AuthEnv): Promise<string> {
+    const response = await handle(tokenRequest({}), env, deps());
+    return ((await response.json()) as { token: string }).token;
+  }
+
+  const request = new Request(`${ORIGIN}/voice/grant`, { method: "POST" });
+
+  it("accepts a live token from this issuer", async () => {
+    const env = await makeEnv();
+    const claims = await verifyLive(request, env, await mint(env), NOW_S);
+    expect(claims).not.toBeNull();
+    expect(claims?.aud).toBe(AUDIENCE);
+  });
+
+  it("refuses an expired token, which renewal would still accept", async () => {
+    // This is the whole reason it exists: `verifyOurs` looks at `iss` and the
+    // signature, and /token accepts a token a YEAR past expiry so an identity
+    // can be carried forward. Spending money on that is a different matter.
+    const env = await makeEnv();
+    const token = await mint(env);
+    expect(await verifyLive(request, env, token, NOW_S + TOKEN_TTL_S + 1)).toBeNull();
+  });
+
+  it("refuses a token signed by another key", async () => {
+    const mine = await makeEnv();
+    const theirs = await makeEnv();
+    expect(await verifyLive(request, mine, await mint(theirs), NOW_S)).toBeNull();
+  });
+
+  it("refuses junk without throwing into the route", async () => {
+    const env = await makeEnv();
+    for (const bad of ["", "a.b", "not.a.token", "..."]) {
+      expect(await verifyLive(request, env, bad, NOW_S)).toBeNull();
+    }
+  });
+
+  it("refuses everything when no signing key is configured", async () => {
+    const env = await makeEnv();
+    const token = await mint(env);
+    expect(await verifyLive(request, {}, token, NOW_S)).toBeNull();
+  });
+
+  it("refuses an unreadable signing key rather than throwing", async () => {
+    const env = await makeEnv();
+    const token = await mint(env);
+    expect(await verifyLive(request, { AUTH_SIGNING_KEY: "{not json" }, token, NOW_S)).toBeNull();
   });
 });

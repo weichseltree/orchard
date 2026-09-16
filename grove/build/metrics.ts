@@ -63,7 +63,7 @@ function category(path: string): string {
 export function measureBuild(directory: string) {
   const root = resolve(directory);
   const manifest = JSON.parse(readFileSync(join(root, ".vite/manifest.json"), "utf8")) as BuildManifest;
-  const startup = startupFiles(manifest, ["grove/index.html", "src/main.ts"]);
+  const startup = startupFiles(manifest, ["mind/index.html", "src/main.ts"]);
   const contracts = deferredContracts(manifest, startup);
   const files = inventory(root).map((path) => {
     const bytes = readFileSync(join(root, path));

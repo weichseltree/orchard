@@ -1,18 +1,58 @@
-import { Vector3 } from "three";
+import { BackSide, FrontSide, Group, PerspectiveCamera, Scene, ShaderMaterial, Vector2, Vector3, type WebGLRenderTarget } from "three";
 import { describe, expect, it } from "vitest";
+import type { Renderer } from "../render/types";
 import mansionDocument from "./mansion.json";
 import { parseMansion } from "./schema";
-import { PORTAL_CORE, blendAt, crossPortal, farEye, portalEnds } from "./portal";
+import {
+  AFTERGLOW_SECONDS,
+  PORTAL_CORE,
+  PORTAL_MELD,
+  PortalSystem,
+  blendAt,
+  crossPortal,
+  farEye,
+  portalEnds,
+  type PortalEnd,
+} from "./portal";
+import {
+  INTENT,
+  RELAXED_CORE,
+  STRICT_CORE,
+  afterglowAlpha,
+  commitment,
+  coreFor,
+  createIntentState,
+  insideWithHysteresis,
+  intentEvidence,
+  liveWithHysteresis,
+  resetIntent,
+  screenCoverage,
+  shapedBlend,
+  smoothstep,
+  updateIntent,
+  viewScaleFor,
+  type IntentState,
+} from "./portal-intent";
+import { PORTAL_FRAGMENT, PORTAL_VERTEX } from "./portal-shader";
 import { neighbourhood } from "./world";
 
 // A portal is a blend between two scales, entered only from the room and the
 // scale it was built for. The Meridian Garden's armillary leads to the
-// Orrery, whose metre is a fiftieth of the garden's.
+// Orrery, whose metre is a fiftieth of the garden's. Every coordinate below
+// is read from the document: the palace is being redrawn around this file.
 
 const mansion = parseMansion(mansionDocument);
 const ends = portalEnds(mansion);
 const garden = ends.find((end) => end.room === "parterre")!;
 const orrery = ends.find((end) => end.room === "orrery")!;
+const gardenRoom = mansion.rooms.find((r) => r.id === "parterre")!;
+const orreryRoom = mansion.rooms.find((r) => r.id === "orrery")!;
+const armillary = gardenRoom.portals.find((p) => p.id === "armillary")!;
+
+/** A point `fraction` radii from an end's centre along `dir` (unit), at the centre's height. */
+function at(end: PortalEnd, fraction: number, dir = new Vector3(1, 0, 0)): Vector3 {
+  return end.center.clone().addScaledVector(dir, fraction * end.radius);
+}
 
 describe("portalEnds", () => {
   it("makes two ends of the armillary, twins of each other, with inverse ratios", () => {
@@ -20,15 +60,16 @@ describe("portalEnds", () => {
     expect(garden.twin).toBe(orrery);
     expect(orrery.twin).toBe(garden);
     expect(garden.to).toBe("orrery");
-    expect(garden.ratio).toBeCloseTo(50);
-    expect(orrery.ratio).toBeCloseTo(0.02);
+    expect(garden.ratio).toBeCloseTo(1 / orreryRoom.scale);
+    expect(orrery.ratio).toBeCloseTo(orreryRoom.scale);
     expect(garden.exit).toEqual(orrery.center);
     expect(orrery.exit).toEqual(garden.center);
   });
 
-  it("sits under the garden's armillary at eye height and lands on the Orrery's ring", () => {
-    expect(garden.center.toArray()).toEqual([-35, 1.6, 0]);
-    const landing = mansion.rooms.find((r) => r.id === "orrery")!.spawn.position;
+  it("sits under the garden's armillary as the document places it and lands on the Orrery's ring", () => {
+    expect(garden.center.toArray()).toEqual(armillary.position);
+    expect(garden.radius).toBe(armillary.radius);
+    const landing = orreryRoom.spawn.position;
     expect(orrery.center.x).toBe(landing[0]);
     expect(orrery.center.z).toBe(landing[2]);
   });
@@ -36,72 +77,607 @@ describe("portalEnds", () => {
 
 describe("blendAt", () => {
   it("is 0 outside the sphere, 1 inside its core, and climbs between", () => {
-    expect(garden.radius).toBe(4.5);
-    expect(blendAt(garden, new Vector3(-35 + 4.5, 1.6, 0))).toBe(0);
-    expect(blendAt(garden, new Vector3(-35 + 6, 1.6, 0))).toBe(0);
-    expect(blendAt(garden, new Vector3(-35 + 4.5 * PORTAL_CORE, 1.6, 0))).toBe(1);
-    expect(blendAt(garden, new Vector3(-35, 1.6, 0))).toBe(1);
-    const half = blendAt(garden, new Vector3(-35 + 4.5 * (1 + PORTAL_CORE) / 2, 1.6, 0));
-    expect(half).toBeCloseTo(0.5);
+    expect(blendAt(garden, at(garden, 1))).toBe(0);
+    expect(blendAt(garden, at(garden, 1.4))).toBe(0);
+    expect(blendAt(garden, at(garden, PORTAL_CORE))).toBe(1);
+    expect(blendAt(garden, at(garden, 0))).toBe(1);
+    expect(blendAt(garden, at(garden, (1 + PORTAL_CORE) / 2))).toBeCloseTo(0.5);
   });
 });
 
 describe("crossPortal", () => {
-  const eyeAtCentre = new Vector3(-35, 1.6, 0);
+  const body = (end: PortalEnd, dx: number, dz: number) => ({
+    room: end.room, scale: end.scale, x: end.center.x + dx, z: end.center.z + dz,
+  });
 
   it("steps a garden body at the core through to the Orrery, keeping its offset from the centre", () => {
-    const crossing = crossPortal(garden, { room: "parterre", scale: 1, x: -34.6, z: 0.2 }, eyeAtCentre)!;
+    const crossing = crossPortal(garden, body(garden, 0.4, 0.2), at(garden, 0))!;
     expect(crossing.room).toBe("orrery");
-    expect(crossing.scale).toBe(0.02);
-    expect(crossing.x).toBeCloseTo(0.4);
-    expect(crossing.z).toBeCloseTo(-399.8);
+    expect(crossing.scale).toBe(orreryRoom.scale);
+    expect(crossing.x).toBeCloseTo(orrery.center.x + 0.4);
+    expect(crossing.z).toBeCloseTo(orrery.center.z + 0.2);
   });
 
   it("refuses a body in another room, or at the wrong scale, even at the centre", () => {
-    expect(crossPortal(garden, { room: "terrace", scale: 1, x: -35, z: 0 }, eyeAtCentre)).toBeNull();
-    expect(crossPortal(garden, { room: "parterre", scale: 0.02, x: -35, z: 0 }, eyeAtCentre)).toBeNull();
+    expect(crossPortal(garden, { ...body(garden, 0, 0), room: "terrace" }, at(garden, 0))).toBeNull();
+    expect(crossPortal(garden, { ...body(garden, 0, 0), scale: orreryRoom.scale }, at(garden, 0))).toBeNull();
   });
 
   it("refuses an eye that is only in the blend, not the core", () => {
-    expect(crossPortal(garden, { room: "parterre", scale: 1, x: -32, z: 0 }, new Vector3(-32, 1.6, 0))).toBeNull();
+    expect(crossPortal(garden, body(garden, 0.6 * garden.radius, 0), at(garden, 0.6))).toBeNull();
+    expect(crossPortal(garden, body(garden, 0.4 * garden.radius, 0), at(garden, 0.4))).toBeNull();
+  });
+
+  it("takes a wider core when asked, and the strict one by default", () => {
+    expect(crossPortal(garden, body(garden, 0.5 * garden.radius, 0), at(garden, 0.5), RELAXED_CORE)).not.toBeNull();
+    expect(crossPortal(garden, body(garden, 0.5 * garden.radius, 0), at(garden, 0.5))).toBeNull();
+    expect(crossPortal(garden, body(garden, 0.6 * garden.radius, 0), at(garden, 0.6), RELAXED_CORE)).toBeNull();
+    expect(crossPortal(garden, body(garden, PORTAL_CORE * garden.radius, 0), at(garden, PORTAL_CORE))).not.toBeNull();
   });
 
   it("brings an Orrery body back to the garden", () => {
-    const back = crossPortal(orrery, { room: "orrery", scale: 0.02, x: 0, z: -400 }, new Vector3(0, 1.6, -400));
+    const back = crossPortal(orrery, body(orrery, 0, 0), at(orrery, 0));
     expect(back).not.toBeNull();
     expect(back!.room).toBe("parterre");
-    expect(back!.scale).toBe(1);
-    expect(back!.x).toBeCloseTo(-35);
-    expect(back!.z).toBeCloseTo(0);
+    expect(back!.scale).toBe(gardenRoom.scale);
+    expect(back!.x).toBeCloseTo(garden.center.x);
+    expect(back!.z).toBeCloseTo(garden.center.z);
   });
 });
 
 describe("farEye", () => {
   it("stands the far camera fifty Orrery metres out per garden metre from the centre, and one at the core", () => {
-    const eye = new Vector3(-35 + 2, 1.6, 0);
-    expect(farEye(garden, eye, 0).toArray()).toEqual([100, 1.6, -400]);
-    expect(farEye(garden, eye, 1).toArray()).toEqual([2, 1.6, -400]);
+    const eye = garden.center.clone().add(new Vector3(2, 0, 0));
+    const ratio = garden.ratio;
+    expect(farEye(garden, eye, 0).toArray()).toEqual([orrery.center.x + 2 * ratio, orrery.center.y, orrery.center.z]);
+    expect(farEye(garden, eye, 1).toArray()).toEqual([orrery.center.x + 2, orrery.center.y, orrery.center.z]);
     // Halfway in, the scale is the geometric mean.
-    expect(farEye(garden, eye, 0.5).x).toBeCloseTo(2 * Math.sqrt(50));
+    expect(farEye(garden, eye, 0.5).x - orrery.center.x).toBeCloseTo(2 * Math.sqrt(ratio));
   });
 
   it("from the Orrery the garden is seen from the armillary's centre, a fiftieth of the walk away", () => {
-    const eye = new Vector3(2, 1.6, -400);
-    expect(farEye(orrery, eye, 0).x).toBeCloseTo(-35 + 0.04);
-    expect(farEye(orrery, eye, 0).z).toBeCloseTo(0);
+    const eye = orrery.center.clone().add(new Vector3(2, 0, 0));
+    expect(farEye(orrery, eye, 0).x).toBeCloseTo(garden.center.x + 2 * orrery.ratio);
+    expect(farEye(orrery, eye, 0).z).toBeCloseTo(garden.center.z);
+  });
+});
+
+// The intent estimator, driven at 60 frames a second along straight walks.
+const FPS = 60;
+const WALK = 2.4;
+
+interface Walk {
+  from: Vector3;
+  /** Unit direction of travel. */
+  along: Vector3;
+  /** Unit direction of the gaze; the direction of travel when omitted. */
+  gaze?: Vector3;
+  speed: number;
+  seconds: number;
+}
+
+/** Walk the eye and return the intent after every frame. */
+function walk(state: IntentState, end: PortalEnd, w: Walk): number[] {
+  const out: number[] = [];
+  const eye = w.from.clone();
+  const forward = (w.gaze ?? w.along).clone().normalize();
+  const dt = 1 / FPS;
+  for (let i = 0; i < Math.round(w.seconds * FPS); i++) {
+    eye.addScaledVector(w.along, w.speed * dt);
+    out.push(updateIntent(state, { eye, forward, center: end.center, radius: end.radius }, dt));
+  }
+  return out;
+}
+
+const toward = (end: PortalEnd, from: Vector3) => end.center.clone().sub(from).normalize();
+
+describe("updateIntent", () => {
+  it("ramps up within half a second of a head-on approach with the gaze on the centre", () => {
+    const state = createIntentState();
+    const from = at(garden, 1.5);
+    const intents = walk(state, garden, { from, along: toward(garden, from), speed: WALK, seconds: 0.5 });
+    expect(intents.at(-1)!).toBeGreaterThan(0.5);
+    // Monotone on the way: no flicker.
+    for (let i = 1; i < intents.length; i++) expect(intents[i]!).toBeGreaterThanOrEqual(intents[i - 1]! - 1e-9);
+    // Reaching the rim it is nearly certain.
+    const more = walk(state, garden, { from: from.clone().addScaledVector(toward(garden, from), WALK * 0.5), along: toward(garden, from), speed: WALK, seconds: 0.45 });
+    expect(more.at(-1)!).toBeGreaterThan(0.85);
+  });
+
+  it("stays low on a sideways pass that brushes the sphere", () => {
+    const state = createIntentState();
+    // Along x, offset one radius in z: the eye grazes the rim and looks where it walks.
+    const from = garden.center.clone().add(new Vector3(-2 * garden.radius, 0, garden.radius));
+    const intents = walk(state, garden, { from, along: new Vector3(1, 0, 0), speed: WALK, seconds: (4 * garden.radius) / WALK });
+    expect(Math.max(...intents)).toBeLessThan(0.15);
+  });
+
+  it("stays low walking backwards into the sphere, even head-on", () => {
+    const state = createIntentState();
+    const from = at(garden, 1.5);
+    const along = toward(garden, from);
+    const intents = walk(state, garden, { from, along, gaze: along.clone().negate(), speed: WALK, seconds: 1.2 });
+    expect(Math.max(...intents)).toBeLessThan(0.25);
+    // And commitment, which is what relaxes the core, stays at nothing.
+    expect(commitment(Math.max(...intents))).toBe(0);
+  });
+
+  it("decays when the visitor stops, slower than it rose", () => {
+    const state = createIntentState();
+    const from = at(garden, 1.5);
+    const along = toward(garden, from);
+    const rise = walk(state, garden, { from, along, speed: WALK, seconds: 0.9 });
+    const high = rise.at(-1)!;
+    expect(high).toBeGreaterThan(0.8);
+    const stood = from.clone().addScaledVector(along, WALK * 0.9);
+    const still = walk(state, garden, { from: stood, along, gaze: along, speed: 0, seconds: 0.3 });
+    // Three tenths of a second standing: still mostly there (it forgets slowly).
+    expect(still.at(-1)!).toBeGreaterThan(high * 0.5);
+    const longer = walk(state, garden, { from: stood, along, gaze: along, speed: 0, seconds: 1.5 });
+    expect(longer.at(-1)!).toBeLessThan(0.15);
+  });
+
+  it("gathers nothing beyond reach, and treats a jump in time as standing still", () => {
+    const state = createIntentState();
+    const from = at(garden, INTENT.reach + 1);
+    const intents = walk(state, garden, { from, along: toward(garden, from), speed: WALK, seconds: 0.5 });
+    expect(Math.max(...intents)).toBe(0);
+    resetIntent(state);
+    expect(state.seen).toBe(false);
+    const eye = at(garden, 1.2);
+    const forward = toward(garden, eye);
+    const sample = { eye, forward, center: garden.center, radius: garden.radius };
+    // The first sample after a reset only starts the clock.
+    expect(updateIntent(state, sample, 1 / FPS)).toBe(0);
+    // A whole second between frames: whatever moved, the velocity is not trusted.
+    eye.addScaledVector(forward, 2);
+    expect(updateIntent(state, sample, 1)).toBe(0);
+    // Nor is a teleport: two metres in a frame is nobody's walk.
+    eye.addScaledVector(forward, 2);
+    expect(updateIntent(state, sample, 1 / FPS)).toBe(0);
+    expect(updateIntent(state, sample, 0)).toBe(0);
+  });
+
+  it("weighs the evidence: closing, aimed through the core, looking at it", () => {
+    const eye = at(garden, 1.2);
+    const dir = toward(garden, eye);
+    const v = { vx: dir.x * WALK, vy: dir.y * WALK, vz: dir.z * WALK };
+    const full = intentEvidence(v, dir, garden.center, eye, garden.radius);
+    expect(full).toBeCloseTo(0.9, 1);
+    // Looking away, the motion alone counts for little.
+    const away = intentEvidence(v, dir.clone().negate(), garden.center, eye, garden.radius);
+    expect(away).toBeLessThan(full * 0.2);
+    // Moving away counts for nothing at all, however hard the stare.
+    const receding = intentEvidence({ vx: -v.vx, vy: -v.vy, vz: -v.vz }, dir, garden.center, eye, garden.radius);
+    expect(receding).toBe(0);
+    // A tangential walk aimed at the rim counts for nothing either.
+    const side = new Vector3(0, 0, 1);
+    expect(intentEvidence({ vx: side.x * WALK, vy: 0, vz: side.z * WALK }, dir, garden.center, eye, garden.radius)).toBe(0);
+  });
+});
+
+describe("coreFor and shapedBlend", () => {
+  it("keeps the strict core at no intent and opens to the relaxed one with commitment", () => {
+    expect(coreFor(0)).toBe(STRICT_CORE);
+    expect(coreFor(0.3)).toBe(STRICT_CORE);
+    expect(coreFor(1)).toBeCloseTo(RELAXED_CORE);
+    let previous = 0;
+    for (let i = 0; i <= 20; i++) {
+      const c = coreFor(i / 20);
+      expect(c).toBeGreaterThanOrEqual(previous);
+      previous = c;
+    }
+  });
+
+  it("without intent is blendAt eased: 0 at the rim, 1 at the strict core, half way at the midpoint", () => {
+    const r = garden.radius;
+    expect(shapedBlend(r, r, 0)).toBe(0);
+    expect(shapedBlend(1.3 * r, r, 0)).toBe(0);
+    expect(shapedBlend(STRICT_CORE * r, r, 0)).toBe(1);
+    const mid = ((1 + STRICT_CORE) / 2) * r;
+    expect(shapedBlend(mid, r, 0)).toBeCloseTo(smoothstep(0, 1, blendAt(garden, at(garden, (1 + STRICT_CORE) / 2))));
+    expect(shapedBlend(mid, r, 0)).toBeCloseTo(0.5);
+  });
+
+  it("with full intent starts outside the sphere and completes at the relaxed core", () => {
+    const r = garden.radius;
+    expect(shapedBlend(1.2 * r, r, 1)).toBeGreaterThan(0);
+    expect(shapedBlend((1 + INTENT.earlyStart) * r, r, 1)).toBe(0);
+    expect(shapedBlend(RELAXED_CORE * r, r, 1)).toBe(1);
+    expect(shapedBlend(0.7 * r, r, 1)).toBeLessThan(1);
+    // Deeper in is always more, at any intent.
+    for (const intent of [0, 0.5, 1]) {
+      let previous = -1;
+      for (let d = 1.5 * r; d >= 0; d -= 0.05 * r) {
+        const t = shapedBlend(d, r, intent);
+        expect(t).toBeGreaterThanOrEqual(previous);
+        previous = t;
+      }
+    }
+  });
+});
+
+describe("the transition's helpers", () => {
+  it("afterglow starts at its peak, eases to nothing at the duration, and never rises", () => {
+    expect(afterglowAlpha(0, 0.7, 0.4)).toBeCloseTo(0.4);
+    expect(afterglowAlpha(0.35, 0.7, 0.4)).toBeCloseTo(0.2);
+    expect(afterglowAlpha(0.7, 0.7, 0.4)).toBe(0);
+    expect(afterglowAlpha(5, 0.7, 0.4)).toBe(0);
+    let previous = 1;
+    for (let e = 0; e <= 0.7; e += 0.01) {
+      const a = afterglowAlpha(e, 0.7, 1);
+      expect(a).toBeLessThanOrEqual(previous);
+      previous = a;
+    }
+  });
+
+  it("covers the whole view from inside, and less the further off the sphere is", () => {
+    const fov = Math.PI / 3;
+    expect(screenCoverage(0.5, 4.5, fov)).toBe(1);
+    expect(screenCoverage(4.5, 4.5, fov)).toBe(1);
+    expect(screenCoverage(5, 4.5, fov)).toBe(1);
+    expect(screenCoverage(20, 4.5, fov)).toBeLessThan(0.5);
+    expect(screenCoverage(200, 4.5, fov)).toBeLessThan(0.05);
+  });
+
+  it("renders the far view at half resolution when small and far, and full when the blend deepens or it fills the view", () => {
+    expect(viewScaleFor(0, 0)).toBe(0.5);
+    expect(viewScaleFor(0, 0.2)).toBe(0.5);
+    expect(viewScaleFor(1, 0)).toBe(1);
+    expect(viewScaleFor(0, 1)).toBe(1);
+    const half = viewScaleFor(0.5, 0);
+    expect(half).toBeGreaterThan(0.5);
+    expect(half).toBeLessThan(1);
+    // Quantised, so the viewport changes rarely.
+    expect(viewScaleFor(0.5, 0) * 8).toBeCloseTo(Math.round(viewScaleFor(0.5, 0) * 8));
+    expect(viewScaleFor(0.51, 0)).toBe(viewScaleFor(0.5, 0));
+    expect(viewScaleFor(0.02, 0.32)).toBe(0.5);
+  });
+
+  it("switches the material's side just outside the surface and back only further out", () => {
+    const r = 4.5;
+    expect(insideWithHysteresis(false, 1.3 * r, r)).toBe(false);
+    expect(insideWithHysteresis(false, 1.1 * r, r)).toBe(false);
+    expect(insideWithHysteresis(false, 1.05 * r, r)).toBe(true);
+    expect(insideWithHysteresis(true, 1.1 * r, r)).toBe(true);
+    expect(insideWithHysteresis(true, 1.2 * r, r)).toBe(false);
+    expect(insideWithHysteresis(false, 0.5 * r, r)).toBe(true);
+  });
+
+  it("keeps the far view live across the reach boundary until a radius further out", () => {
+    const r = 4.5;
+    expect(liveWithHysteresis(false, 11 * r, r, 12)).toBe(true);
+    expect(liveWithHysteresis(false, 12.5 * r, r, 12)).toBe(false);
+    expect(liveWithHysteresis(true, 12.5 * r, r, 12)).toBe(true);
+    expect(liveWithHysteresis(true, 13.5 * r, r, 12)).toBe(false);
+  });
+});
+
+describe("the shader", () => {
+  it("keeps the tone mapping and colour space includes and one fetch per channel", () => {
+    expect(PORTAL_FRAGMENT).toContain("#include <tonemapping_fragment>");
+    expect(PORTAL_FRAGMENT).toContain("#include <colorspace_fragment>");
+    expect((PORTAL_FRAGMENT.match(/texture2D\(/g) ?? []).length).toBe(1);
+    expect((PORTAL_FRAGMENT.match(/farAt\(uv/g) ?? []).length).toBe(3);
+    expect(PORTAL_FRAGMENT).not.toMatch(/for\s*\(/);
+    for (const name of ["uView", "uResolution", "uViewScale", "uBlend", "uLive", "uInside", "uIntent", "uFade", "uTime", "uTravel", "uTint"]) {
+      expect(PORTAL_FRAGMENT).toMatch(new RegExp(`uniform \\w+ ${name};`));
+    }
+    expect(PORTAL_VERTEX).toContain("vNormalV");
+  });
+});
+
+// The system, driven frame by frame with a stub renderer: it records what a
+// far view would be and never touches a GPU.
+
+interface StubRenderer {
+  renders: number;
+  target: WebGLRenderTarget | null;
+  targets: Set<WebGLRenderTarget>;
+  live: boolean;
+}
+
+function stubRenderer(live: boolean): Renderer & StubRenderer {
+  const stub = {
+    renders: 0,
+    target: null as WebGLRenderTarget | null,
+    targets: new Set<WebGLRenderTarget>(),
+    live,
+    toneMapping: 0,
+    toneMappingExposure: 1,
+    xr: {} as Renderer["xr"],
+    info: { render: { calls: 0, triangles: 0, points: 0 }, memory: { geometries: 0, textures: 0 } },
+    setPixelRatio() {},
+    setSize() {},
+    setAnimationLoop() {},
+    render() {
+      stub.renders += 1;
+    },
+    getPixelRatio: () => 1,
+    dispose() {},
+    clear() {},
+    getRenderTarget: () => stub.target,
+    setRenderTarget(target: WebGLRenderTarget | null) {
+      stub.target = target;
+      if (target) stub.targets.add(target);
+    },
+    getDrawingBufferSize: (out: Vector2) => out.set(1600, 900),
+  };
+  if (!live) {
+    delete (stub as Partial<typeof stub>).setRenderTarget;
+    delete (stub as Partial<typeof stub>).getDrawingBufferSize;
+  }
+  return stub as unknown as Renderer & StubRenderer;
+}
+
+class Rig {
+  readonly scene = new Scene();
+  readonly world = new Group();
+  readonly camera = new PerspectiveCamera(60, 16 / 9, 0.1, 1000);
+  readonly renderer: Renderer & StubRenderer;
+  readonly portals: PortalSystem;
+  readonly scaleShown: number[] = [];
+  body = { room: "parterre", scale: 1, x: 0, z: 0 };
+  readonly eye = new Vector3();
+
+  constructor(live = true) {
+    this.renderer = stubRenderer(live);
+    this.scene.add(this.world);
+    this.scene.add(this.camera);
+    this.portals = new PortalSystem(mansion, this.renderer);
+    this.portals.setScale(1);
+    this.world.add(this.portals.group);
+  }
+
+  /** Put the eye somewhere, looking along `gaze`, in the room the point is in. */
+  place(eye: Vector3, gaze: Vector3, room = "parterre", scale = 1): void {
+    this.eye.copy(eye);
+    this.camera.position.copy(eye);
+    this.camera.lookAt(eye.clone().add(gaze));
+    this.camera.updateMatrixWorld(true);
+    this.body = { room, scale, x: eye.x, z: eye.z };
+  }
+
+  frame(dt = 1 / FPS, live = true) {
+    return this.portals.update({
+      body: this.body,
+      dt,
+      camera: this.camera,
+      scene: this.scene,
+      worldRoot: this.world,
+      live,
+      setScaleVisible: (scale) => this.scaleShown.push(scale),
+    });
+  }
+
+  /** Walk toward `end` from `from` at `speed`, looking along `gaze` (the walk when omitted), until a crossing or `seconds`. */
+  walkIn(end: PortalEnd, from: Vector3, speed: number, seconds: number, gaze?: Vector3) {
+    const along = toward(end, from);
+    const eye = from.clone();
+    const dt = 1 / FPS;
+    for (let i = 0; i < Math.round(seconds * FPS); i++) {
+      eye.addScaledVector(along, speed * dt);
+      this.place(eye, gaze ?? along, end.room, end.scale);
+      const crossing = this.frame(dt);
+      if (crossing) return { crossing, distance: eye.distanceTo(end.center), end };
+    }
+    return { crossing: null, distance: eye.distanceTo(end.center), end };
+  }
+
+  material(end: PortalEnd): ShaderMaterial {
+    return this.portals.meshOf(end).material as ShaderMaterial;
+  }
+
+  uniform(end: PortalEnd, name: string): number {
+    return this.material(end).uniforms[name]!.value as number;
+  }
+}
+
+describe("PortalSystem", () => {
+  it("crosses a committed head-on walk at the relaxed core, before the strict one", () => {
+    const rig = new Rig();
+    const result = rig.walkIn(garden, at(garden, 1.6), WALK, 5);
+    expect(result.crossing).not.toBeNull();
+    expect(result.crossing!.room).toBe("orrery");
+    expect(rig.portals.intentOf(garden)).toBeGreaterThan(0.85);
+    expect(result.distance).toBeLessThanOrEqual(RELAXED_CORE * garden.radius + 1e-6);
+    expect(result.distance).toBeGreaterThan(STRICT_CORE * garden.radius * 1.3);
+    // The blend was complete at the moment of the step: the scale slide had ended.
+    expect(rig.uniform(garden, "uBlend")).toBe(1);
+  });
+
+  it("does not yank a visitor standing still between the two cores, but the strict core always crosses", () => {
+    const rig = new Rig();
+    // Seen from outside first, so the end is armed; then a teleport inside.
+    rig.place(at(garden, 1.3), new Vector3(-1, 0, 0));
+    rig.frame();
+    rig.place(at(garden, 0.45), new Vector3(-1, 0, 0));
+    for (let i = 0; i < 120; i++) expect(rig.frame()).toBeNull();
+    expect(rig.portals.intentOf(garden)).toBeLessThan(0.1);
+    rig.place(at(garden, STRICT_CORE - 0.02), new Vector3(-1, 0, 0));
+    expect(rig.frame()).not.toBeNull();
+  });
+
+  it("crosses a backward walk only at the strict core", () => {
+    const rig = new Rig();
+    const from = at(garden, 1.6);
+    const result = rig.walkIn(garden, from, WALK, 5, toward(garden, from).negate());
+    expect(result.crossing).not.toBeNull();
+    expect(result.distance).toBeLessThanOrEqual(STRICT_CORE * garden.radius + WALK / FPS);
+  });
+
+  it("after a crossing the twin is unarmed, shows the room left for the afterglow, then hides until walked clear", () => {
+    const rig = new Rig();
+    const result = rig.walkIn(garden, at(garden, 1.6), WALK, 5);
+    const crossing = result.crossing!;
+    const twinMaterial = rig.material(orrery);
+    expect(rig.portals.isArmed(orrery)).toBe(false);
+    expect(rig.portals.afterglow?.end.room).toBe("orrery");
+    // On the crossing frame itself the twin is already dressed for the next one: inside, the room left at the meld's share.
+    expect(twinMaterial.side).toBe(BackSide);
+    expect(twinMaterial.depthTest).toBe(false);
+    expect(rig.uniform(orrery, "uLive")).toBe(1);
+    expect(rig.uniform(orrery, "uFade")).toBeCloseTo(PORTAL_MELD / (1 - PORTAL_MELD));
+    expect(rig.portals.meshOf(orrery).visible).toBe(true);
+    // The far view rendered for it is the garden's scale, and the Orrery's is put back.
+    expect(rig.scaleShown.slice(-2)).toEqual([gardenRoom.scale, orreryRoom.scale]);
+
+    // Step over as main.ts does, and stand still on the landing.
+    rig.portals.setScale(crossing.scale);
+    const eye = new Vector3(crossing.x, orrery.center.y, crossing.z);
+    const fades: number[] = [];
+    const renders = rig.renderer.renders;
+    for (let i = 0; i < Math.ceil(AFTERGLOW_SECONDS * FPS) + 2; i++) {
+      rig.place(eye, new Vector3(1, 0, 0), crossing.room, crossing.scale);
+      expect(rig.frame()).toBeNull();
+      if (rig.portals.afterglow) fades.push(rig.uniform(orrery, "uFade"));
+    }
+    // Fading, eased, monotone, then gone, with the mesh hidden and no more far views.
+    expect(fades.length).toBeGreaterThan(30);
+    expect(fades[0]!).toBeLessThan(PORTAL_MELD / (1 - PORTAL_MELD));
+    for (let i = 1; i < fades.length; i++) expect(fades[i]!).toBeLessThanOrEqual(fades[i - 1]! + 1e-9);
+    expect(fades.at(-1)!).toBeLessThan(0.05);
+    expect(rig.uniform(orrery, "uFade")).toBe(1);
+    expect(rig.uniform(orrery, "uBlend")).toBe(0);
+    expect(rig.portals.afterglow).toBeNull();
+    expect(rig.portals.meshOf(orrery).visible).toBe(false);
+    // One far view per afterglow frame (the garden, from where they stood), none after.
+    expect(rig.renderer.renders - renders).toBe(fades.length);
+    const afterFade = rig.renderer.renders;
+    rig.frame();
+    expect(rig.renderer.renders).toBe(afterFade);
+
+    // Walking clear arms it; walking back in then blends and can cross back.
+    rig.place(at(orrery, 1.2), new Vector3(1, 0, 0), "orrery", orreryRoom.scale);
+    rig.frame();
+    expect(rig.portals.isArmed(orrery)).toBe(true);
+    const back = rig.walkIn(orrery, at(orrery, 1.2), WALK, 5);
+    expect(back.crossing?.room).toBe("parterre");
+  });
+
+  it("flips the material to the inside just before the surface and back only a step further out", () => {
+    const rig = new Rig();
+    const look = new Vector3(-1, 0, 0);
+    rig.place(at(garden, 1.3), look);
+    rig.frame();
+    expect(rig.material(garden).side).toBe(FrontSide);
+    expect(rig.material(garden).depthTest).toBe(true);
+    rig.place(at(garden, 1.1), look);
+    rig.frame();
+    expect(rig.material(garden).side).toBe(FrontSide);
+    rig.place(at(garden, 1.04), look);
+    rig.frame();
+    expect(rig.material(garden).side).toBe(BackSide);
+    expect(rig.material(garden).depthTest).toBe(false);
+    expect(rig.uniform(garden, "uInside")).toBe(1);
+    rig.place(at(garden, 1.1), look);
+    rig.frame();
+    expect(rig.material(garden).side).toBe(BackSide);
+    rig.place(at(garden, 1.2), look);
+    rig.frame();
+    expect(rig.material(garden).side).toBe(FrontSide);
+  });
+
+  it("renders one far view per frame only in reach and in view, into one target whose viewport grows", () => {
+    const rig = new Rig();
+    // Out of reach: nothing.
+    rig.place(at(garden, 14), new Vector3(-1, 0, 0));
+    rig.frame();
+    expect(rig.renderer.renders).toBe(0);
+    // In reach, but the sphere is behind the camera: nothing.
+    rig.place(at(garden, 6), new Vector3(1, 0, 0));
+    rig.frame();
+    expect(rig.renderer.renders).toBe(0);
+    expect(rig.uniform(garden, "uLive")).toBe(0);
+    // In reach and in view: one render, at half resolution, in the target's lower-left.
+    rig.place(at(garden, 6), new Vector3(-1, 0, 0));
+    rig.frame();
+    expect(rig.renderer.renders).toBe(1);
+    expect(rig.uniform(garden, "uLive")).toBe(1);
+    expect(rig.portals.viewScale).toBe(0.5);
+    expect(rig.renderer.targets.size).toBe(1);
+    const target = [...rig.renderer.targets][0]!;
+    expect([target.width, target.height]).toEqual([1600, 900]);
+    expect(target.viewport.toArray()).toEqual([0, 0, 800, 450]);
+    expect(target.scissorTest).toBe(true);
+    expect((rig.material(garden).uniforms.uViewScale!.value as Vector2).toArray()).toEqual([0.5, 0.5]);
+    expect((rig.material(garden).uniforms.uResolution!.value as Vector2).toArray()).toEqual([1600, 900]);
+    // Nearer, the sphere fills the view: full resolution, the same target.
+    rig.place(at(garden, 1.2), new Vector3(-1, 0, 0));
+    rig.frame();
+    expect(rig.portals.viewScale).toBe(1);
+    expect(rig.renderer.targets.size).toBe(1);
+    expect(target.viewport.toArray()).toEqual([0, 0, 1600, 900]);
+    // The far view showed the Orrery's scale and put the garden's back.
+    expect(rig.scaleShown.slice(-2)).toEqual([orreryRoom.scale, gardenRoom.scale]);
+    // The portals hid themselves from their own far view (depth one) and are back.
+    expect(rig.portals.group.visible).toBe(true);
+  });
+
+  it("blends by the eased, intent-shaped depth once armed", () => {
+    const rig = new Rig();
+    rig.place(at(garden, 1.3), new Vector3(-1, 0, 0));
+    rig.frame();
+    rig.place(at(garden, 0.6), new Vector3(-1, 0, 0));
+    rig.frame();
+    const t = rig.uniform(garden, "uBlend");
+    expect(t).toBeCloseTo(shapedBlend(0.6 * garden.radius, garden.radius, 0));
+    expect(t).toBeGreaterThan(0);
+    expect(t).toBeLessThan(1);
+  });
+
+  it("fades without a far view on a renderer without render targets, or in a headset", () => {
+    const rig = new Rig(false);
+    rig.place(at(garden, 1.3), new Vector3(-1, 0, 0));
+    rig.frame(1 / FPS, false);
+    rig.place(at(garden, 0.6), new Vector3(-1, 0, 0));
+    rig.frame(1 / FPS, false);
+    expect(rig.uniform(garden, "uLive")).toBe(0);
+    expect(rig.uniform(garden, "uBlend")).toBeGreaterThan(0);
+    // A headset still steps through, with intent.
+    const result = rig.walkIn(garden, at(garden, 1.6), WALK, 5);
+    expect(result.crossing).not.toBeNull();
+    expect(result.distance).toBeGreaterThan(STRICT_CORE * garden.radius * 1.3);
+    // And the afterglow is a plain veil, fading from full.
+    expect(rig.uniform(orrery, "uFade")).toBe(1);
+    expect(rig.uniform(orrery, "uLive")).toBe(0);
+  });
+
+  it("arriving in an end by any other road leaves it quiet until walked clear of", () => {
+    const rig = new Rig();
+    rig.portals.setScale(orreryRoom.scale);
+    rig.place(at(orrery, 0), new Vector3(1, 0, 0), "orrery", orreryRoom.scale);
+    expect(rig.frame()).toBeNull();
+    expect(rig.portals.isArmed(orrery)).toBe(false);
+    expect(rig.portals.meshOf(orrery).visible).toBe(false);
+    rig.place(at(orrery, 1.2), new Vector3(1, 0, 0), "orrery", orreryRoom.scale);
+    rig.frame();
+    expect(rig.portals.isArmed(orrery)).toBe(true);
+    expect(rig.portals.meshOf(orrery).visible).toBe(true);
+  });
+
+  it("allocates nothing per frame beyond the first far view", () => {
+    const rig = new Rig();
+    rig.place(at(garden, 3), new Vector3(-1, 0, 0));
+    rig.frame();
+    const target = rig.renderer.targets.size;
+    for (let i = 0; i < 30; i++) {
+      rig.place(at(garden, 3 - i * 0.05), new Vector3(-1, 0, 0));
+      rig.frame();
+    }
+    expect(rig.renderer.targets.size).toBe(target);
   });
 });
 
 describe("the Orrery in the document", () => {
   it("is the one room at another scale, in space, with spectre's worlds cut toward the landing", () => {
-    const room = mansion.rooms.find((r) => r.id === "orrery")!;
-    expect(room.scale).toBe(0.02);
+    const room = orreryRoom;
+    expect(room.scale).toBeLessThan(1);
     // Through the portal, every world is a globe inside the armillary's blend sphere.
-    const portal = mansion.rooms.find((r) => r.id === "parterre")!.portals[0]!;
     for (const world of (room.hangings[0] as { worlds: { position: number[] }[] }).worlds) {
       const [x, y, z] = world.position as [number, number, number];
-      const shrunk = Math.hypot(x - portal.exit.position[0], y - portal.exit.position[1], z - portal.exit.position[2]) * room.scale;
-      expect(shrunk + 40 * room.scale).toBeLessThan(portal.radius);
+      const shrunk = Math.hypot(x - armillary.exit.position[0], y - armillary.exit.position[1], z - armillary.exit.position[2]) * room.scale;
+      expect(shrunk + 40 * room.scale).toBeLessThan(armillary.radius);
     }
     expect(room.architecture).toBe("space");
     expect(room.doorways).toEqual([]);
@@ -114,10 +690,10 @@ describe("the Orrery in the document", () => {
     expect(planet.radiusMeters).toBe(40);
     expect(planet.worlds.map((w) => w.world)).toEqual(["adiabat-chi0", "adiabat-chi6", "adiabat-chi12"]);
     for (const world of planet.worlds) {
-      expect(world.cutToward).toEqual([0, 1.6, -400]);
+      expect(world.cutToward).toEqual(armillary.exit.position);
       // Each world clears the walking plane and stays inside the star dome.
       expect(world.position[1] - planet.radiusMeters).toBeGreaterThan(5);
-      expect(Math.hypot(world.position[0], world.position[2] + 400)).toBeLessThan(200);
+      expect(Math.hypot(world.position[0] - orrery.center.x, world.position[2] - orrery.center.z)).toBeLessThan(200);
     }
   });
 

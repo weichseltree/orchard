@@ -1,0 +1,157 @@
+{
+  "common": {
+    "entrance": "Introducción",
+    "exhibit": "Pieza",
+    "lookFor": "Mire de cerca",
+    "limit": "Lo que esto no muestra",
+    "source": "Fuente"
+  },
+  "rooms": {
+    "hall": {
+      "title": "hall",
+      "kicker": "¿Qué pregunta le atrae?",
+      "intro": "Bienvenido al Mind Palace, un pequeño museo de investigación construido por una sola persona. Cuatro salas se abren desde este hall, cada una con el nombre del repositorio de código abierto cuyo trabajo muestra: einstruct, coarsen, world-engine y phototroph. Nada aquí es una ilustración. Las imágenes en movimiento son simulaciones grabadas, reproducidas fotograma a fotograma; las imágenes fijas son estudios renderizados a partir de datos medidos, y cada pieza nombra el archivo del que procede. La arquitectura solo pone el escenario. La investigación es el trabajo en curso de una persona, no el veredicto de una institución, y cada sala termina con una línea sobre lo que sus pruebas aún no pueden mostrar.",
+      "lookFor": "Lea el panel en la puerta de cada sala antes de la pieza, y luego la pequeña etiqueta junto a cada obra.",
+      "limit": "El edificio pone el escenario; solo las cintas y las imágenes fijas aportan pruebas, y «About this view» nombra exactamente lo que está mirando."
+    },
+    "einstruct": {
+      "title": "einstruct",
+      "kicker": "¿Cuándo dejan de mezclarse dos clases?",
+      "intro": "einstruct es la investigación abierta de una sola persona sobre lo que una nube de partículas puede saber de sí misma solo a partir de las distancias, sin coordenadas. Esta sala muestra su experimento más sencillo. Doscientas mil partículas de dos clases, A y B, vagan por una lámina; cada vez que una A encuentra una B, ambas desaparecen. Esa es toda la regla. En el suelo yace la simulación grabada, reproducida fotograma a fotograma sin interpolar nada. A su lado yace su control, la misma simulación con las clases rebarajadas cada veinte pasos. En una, crecen regiones de una sola clase hasta que la lámina es un mosaico; en la otra nunca se forman.",
+      "lookFor": "Pause ambas cintas cerca del final y compare el tamaño de las manchas de una sola clase; luego retroceda para verlas surgir.",
+      "limit": "El navegador dibuja una muestra de las partículas, así que no puede medir cada región vacía de la simulación completa; los números de las etiquetas proceden de los archivos grabados."
+    },
+    "spectre": {
+      "title": "coarsen",
+      "kicker": "¿Cómo encuentra un mundo su centro?",
+      "intro": "coarsen es la investigación abierta de una sola persona sobre cuán grande y cuánto tiempo puede correr un mundo hecho solo de partículas antes de dejar de medirse como materia real. Los tres globos de aquí son un único experimento. Cada mundo comenzó como la misma bola de 508.744 partículas, una mezcla uniforme de una clase pesada y una ligera, unida por su propia gravedad bajo un cielo frío. La única diferencia entre ellos es con qué fuerza se repelen las dos clases. Cada uno está abierto: la superficie es el borde medido de las partículas, y el interior se mide a partir de ellas, fotograma a fotograma, durante 96 tiempos dinámicos.",
+      "lookFor": "Deje correr la grabación y compare las tres caras cortadas en el mismo instante; donde las dos clases más se repelen, la clase pesada se reúne antes en el centro.",
+      "limit": "Una sola simulación grabada por mundo, nada interpolado. Estas simulaciones no separan la desmezcla del enfriamiento común como causa de un centro pesado, así que ninguna placa afirma aquí que la desmezcla lo causó."
+    },
+    "world-engine": {
+      "title": "world-engine",
+      "kicker": "¿Qué revela un nuevo punto de vista?",
+      "intro": "world-engine es la investigación abierta de una sola persona sobre cuán poca geometría almacenada necesita un mundo antes de que un espectador lo note. Está inactivo: su pregunta fundacional se respondió con un no, y estos tres estudios fijos son lo que queda. La habitación que muestran es el aula de la escena de demostración libre de Blender, reconstruida a partir de una descripción compacta y luego observada desde lugares que nunca se fotografiaron. Empiece por el aula entera, mire luego detrás de la silla, donde un nuevo punto de vista rasga la imagen, y por último el fleco alrededor de una pata de silla, donde el mismo borde se dibuja de seis maneras.",
+      "lookFor": "Compare la vista verdadera con las estiradas; los huecos están marcados en magenta, y el estudio del fleco muestra lo que una vista convincente de toda la habitación oculta.",
+      "limit": "Son estudios fijos renderizados a partir de datos almacenados, no una reconstrucción en vivo ni una puerta-lente que funcione; la pregunta restante del repositorio no se ha medido."
+    },
+    "phototroph": {
+      "title": "phototroph",
+      "kicker": "¿Qué permite que dos átomos permanezcan juntos?",
+      "intro": "phototroph es la investigación abierta de una sola persona sobre si la materia, bajo un haz constante de luz de un solo color, se organiza en estructuras que absorben ese color. Esa pregunta sigue abierta. Lo que cuelga aquí es lo único honesto que el repositorio puede mostrar: un encuentro grabado entre tres átomos. Dos átomos que caen uno hacia el otro no pueden atraparse; salen despedidos exactamente tan rápido como llegaron. Solo permanecen cuando llega un tercero y se lleva la velocidad sobrante. La cinta contiene 801 fotogramas de ocho átomos en una pequeña caja periódica, convertidos desde el propio registro de la simulación sin añadir nada.",
+      "lookFor": "Pause en torno a la captura, siga al átomo que se aleja, y luego retroceda y reproduzca el mismo encuentro despacio; es un único evento grabado, no uno nuevo cada vez que pulsa reproducir.",
+      "limit": "Una sola captura no establece ni equilibrio ni tasas de enlace, y no prueba la selección por la luz; la luz de la que trata esta investigación no está en la cinta en absoluto."
+    },
+    "orangery": {
+      "title": "orangerie",
+      "kicker": "Deje que sus ojos viajen.",
+      "intro": "La orangerie une la sala de world-engine con la terraza. Es un lugar entre piezas: siga las puertas abiertas, mire hacia las salas, o salga bajo el cielo. Aquí hay una partida de ajedrez, que se abre desde la Guía sobre la habitación.",
+      "lookFor": "Las tres puertas del lado del jardín dan todas a la terraza."
+    },
+    "gallery": {
+      "title": "galería",
+      "kicker": "Un tramo más tranquilo del Mind Palace.",
+      "intro": "La galería va de la sala de phototroph al belvedere. Las puertas cerradas a lo largo de su pared interior pertenecen a proyectos de investigación que aún no se han ganado una sala; una sala se gana teniendo algo honesto que colgar. Camine, deténgase y vuelva cuando esté listo.",
+      "lookFor": "La amplia abertura del fondo sube al belvedere; las puertas estrechas del lado del jardín llevan a la terraza."
+    },
+    "belvedere": {
+      "title": "belvedere",
+      "kicker": "El final de la galería, un peldaño por encima.",
+      "intro": "El belvedere es una plataforma elevada al fondo de la galería, un lugar desde el que mirar toda la longitud del edificio. Sus dos puertas cerradas están prometidas a proyectos que aún no tienen sala, neuralese y someotherlife; se abrirán cuando esos repositorios tengan algo que mostrar.",
+      "lookFor": "Dese la vuelta: toda la galería queda bajo usted, hasta las salas."
+    },
+    "greenhouse": {
+      "title": "taller",
+      "kicker": "Donde se cuida el museo.",
+      "intro": "El taller es la habitación del anfitrión, junto al hall, tras una puerta que solo se abre para él. Desde aquí se cuelgan, revisan y retiran las piezas, y lo que un visitante ve en las salas fue aprobado primero en esta habitación. No forma parte del recorrido público.",
+      "lookFor": "Si puede leer este panel, usted es el anfitrión."
+    },
+    "terrace": {
+      "title": "terraza",
+      "kicker": "Salga bajo el cielo.",
+      "intro": "La terraza recorre todo el lado del jardín del edificio. Las puertas devuelven al hall, la orangerie y la galería; delante se extiende el jardín, y más allá las arboledas. El cielo es un crepúsculo diseñado, no uno astronómico.",
+      "lookFor": "Siga la terraza en cualquier dirección hasta una puerta de vuelta al interior, o cruce al jardín."
+    },
+    "parterre": {
+      "title": "jardín",
+      "kicker": "Oriéntese bajo el cielo.",
+      "intro": "El jardín se extiende entre la terraza y las arboledas. En su cruce se alza una esfera armilar, y la esfera es un portal: a través de ella, los tres mundos de coarsen aparecen como globos, y entrar en ella le lleva a su escala. Más allá del jardín están las arboledas oeste, lejana y este.",
+      "lookFor": "Mire a través de la esfera antes de entrar; lo que allí parece un globo mide ochenta metros al otro lado."
+    },
+    "orchard-west": {
+      "title": "arboleda oeste",
+      "kicker": "Los terrenos, al oeste del jardín.",
+      "intro": "La arboleda oeste forma parte de los terrenos que dan nombre a este mundo. Aquí no se expone nada; es un lugar para caminar bajo los árboles y mirar hacia el edificio. El jardín queda a un lado, la arboleda lejana al otro.",
+      "lookFor": "El suelo sube suavemente hacia el fondo de la arboleda; el camino de vuelta es el borde abierto hacia el jardín."
+    },
+    "orchard-south": {
+      "title": "arboleda lejana",
+      "kicker": "Los terrenos, al final del jardín.",
+      "intro": "La arboleda lejana cierra los terrenos frente a la terraza. Desde aquí todo el edificio se alza al otro lado del jardín, con la esfera armilar en su centro. Se une a las arboledas oeste y este por sus lados; aquí no hay nada que leer salvo la vista.",
+      "lookFor": "Póngase al borde de la arboleda y mire, a través del jardín, la línea de tejados del edificio."
+    },
+    "orchard-east": {
+      "title": "arboleda este",
+      "kicker": "Los terrenos, al este del jardín.",
+      "intro": "La arboleda este refleja la arboleda oeste al otro lado del jardín. Son terrenos, no una sala: árboles, una pendiente y la vista de vuelta a la terraza y la galería. Recórrala por la calma, y vuelva por el jardín cuando esté listo para otra pregunta.",
+      "lookFor": "La vuelta al interior es cruzando el jardín y subiendo a la terraza."
+    },
+    "orrery": {
+      "title": "orrery",
+      "kicker": "¿Cómo encuentra un mundo su centro?",
+      "intro": "El orrery muestra los tres mundos de coarsen a la escala del cielo, a los que se llega por la esfera armilar del jardín. Se ha encogido cincuenta veces para estar aquí; cada globo mide ochenta metros. Son las mismas simulaciones grabadas que en la sala de coarsen: 508.744 partículas cada una, la misma mezcla uniforme de una clase pesada y una ligera, que solo difieren en la fuerza con que las dos se repelen. Cada una está abierta hacia donde usted está, con la superficie como borde medido de las partículas y el interior medido a partir de ellas. Las estrellas son un fondo diseñado, no un catálogo.",
+      "lookFor": "Camine hacia un mundo y observe su cara cortada; el brillo marca la materia más caliente, una codificación de la temperatura, no luz.",
+      "limit": "Una sola simulación grabada por mundo, nada interpolado. Un centro pesado no basta por sí solo para separar la desmezcla del enfriamiento común como causa."
+    }
+  },
+  "exhibits": {
+    "hall-poster": {
+      "title": "A + B → nada: un fotograma de la lámina",
+      "caption": "Un render fijo de un fotograma tardío de la simulación grabada de einstruct: 200.000 partículas de dos clases sobre una lámina plana, y toda A que encuentra una B desaparece con ella. El color distingue las dos clases y nada más; las regiones no se dibujaron, se formaron."
+    },
+    "einstruct-tape": {
+      "title": "Aniquilación A + B sobre una lámina",
+      "caption": "La simulación grabada en sí, tendida en el suelo: 801 fotogramas a lo largo de 400 unidades de tiempo simulado, 200.000 partículas al principio y 2.634 al final, desde una única disposición inicial fija (semilla 0). El color nombra la clase, A o B; no muestra temperatura ni velocidad."
+    },
+    "einstruct-tape-stirred": {
+      "title": "El control: clases rebarajadas cada veinte pasos",
+      "caption": "Las mismas partículas y la misma regla, salvo que cada veinte pasos las dos clases se barajan sobre las posiciones. 801 fotogramas a lo largo de 400 unidades de tiempo simulado; 200.000 partículas caen a 292, nueve veces menos que al lado, y las regiones nunca se forman. El color nombra la clase."
+    },
+    "einstruct-wall": {
+      "title": "La lámina como película, 40 segundos",
+      "caption": "Un render plano de la cinta del suelo como una película de 40 segundos, diez unidades de tiempo simulado por segundo, cada fotograma el fotograma grabado más cercano y ninguno inventado. Observe cómo las dos clases se ordenan en regiones que nadie dibujó. El color nombra la clase."
+    },
+    "einstruct-wall-row": {
+      "title": "Una fila no sabe hacia dónde está arriba",
+      "caption": "Una animación de 16 segundos de la idea tras einstruct: las distancias ordenadas de un punto a sus ocho vecinos más cercanos, dibujadas como barras. Gire la nube, refléjela, renumérela, y las barras no se mueven; amplíela, y cada barra crece. Una figura dibujada, sin color medido."
+    },
+    "spectre-worlds": {
+      "title": "Tres mundos abiertos",
+      "caption": "El trío de planetas de coarsen a escala de paseo: tres bolas de 508.744 partículas desde una misma disposición inicial, 1.129 fotogramas a lo largo de 96 tiempos dinámicos cada una, con las dos clases indiferentes, moderadamente y fuertemente repelidas, del más cercano al más lejano. Las regiones color hierro contienen más partículas pesadas, las pálidas más ligeras; el brillo codifica la temperatura."
+    },
+    "spectre-wall": {
+      "title": "De la primera película: 42,8 segundos, muda",
+      "caption": "Un extracto de la primera película de coarsen, 2.568 fotogramas a 1080p60, renderizados en la CPU fotograma a fotograma desde una cinta grabada de 12.288 partículas en una losa periódica. Es una imagen iluminada del registro, no una medida: el sombreado es la luz del render, y no hay sonido."
+    },
+    "world-engine-classroom": {
+      "title": "El aula en 2,1 megabytes",
+      "caption": "El aula de demostración de Blender reconstruida a partir de 28.112 esferas en 2,1 MB de datos almacenados, vista desde una posición de la cabeza que la reconstrucción nunca vio. Un estudio fijo: cómo se ve una habitación entera cuando casi toda su geometría se ha desechado. Los colores son las texturas propias de la escena."
+    },
+    "world-engine-behind-the-chair": {
+      "title": "Detrás de la silla, de cuatro maneras",
+      "caption": "Una vista del aula renderizada de cuatro maneras: la vista verdadera, luego la imagen rasgada donde un nuevo punto de vista revela lo oculto, estirada para cubrir el desgarro, y estirada solo dentro de cada objeto. El magenta marca huecos, lugares a los que ningún dato almacenado llega; cualquier otro color es el de la escena."
+    },
+    "world-engine-fringe": {
+      "title": "El fleco alrededor de una pata de silla, de seis maneras",
+      "caption": "Un recorte de 56 píxeles alrededor de una pata de silla, ampliado nueve veces y dibujado de seis maneras: la vista verdadera, rasgada, con color más fino, con un borde de dos capas, estirada, y estirada dentro de los objetos. Pequeños flecos revelan lo que una vista convincente de toda la habitación oculta. El brillo se triplica para hacerlos visibles."
+    },
+    "phototroph-tape": {
+      "title": "Dos átomos no pueden atraparse",
+      "caption": "801 fotogramas de ocho átomos en una pequeña caja periódica, convertidos desde el registro de la simulación: dos caen uno hacia el otro y solo permanecen cuando llega un tercero y se lleva la velocidad sobrante. Todos los átomos son de una clase y comparten un color; la cinta dibuja solo posiciones, sin enlaces ni luz."
+    },
+    "orrery-worlds": {
+      "title": "El trío de planetas a la escala del cielo",
+      "caption": "Los mismos tres mundos grabados que en la sala de coarsen, cada uno de ochenta metros: 508.744 partículas, 1.129 fotogramas a lo largo de 96 tiempos dinámicos, una única disposición inicial, tres fuerzas de repulsión entre la clase pesada y la ligera. Las regiones color hierro contienen más partículas pesadas, las pálidas más ligeras; el brillo codifica la temperatura."
+    }
+  }
+}

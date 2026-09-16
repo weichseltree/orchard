@@ -1,0 +1,157 @@
+{
+  "common": {
+    "entrance": "Introduzione",
+    "exhibit": "Opera",
+    "lookFor": "Guardi da vicino",
+    "limit": "Ciò che questo non mostra",
+    "source": "Fonte"
+  },
+  "rooms": {
+    "hall": {
+      "title": "hall",
+      "kicker": "Quale domanda la attira?",
+      "intro": "Benvenuti nel Mind Palace, un piccolo museo di ricerca costruito da una sola persona. Quattro sale si aprono da questo hall, ciascuna con il nome del repository open source di cui mostra il lavoro: einstruct, coarsen, world-engine e phototroph. Nulla qui è un'illustrazione. Le immagini in movimento sono simulazioni registrate, riprodotte fotogramma per fotogramma; le immagini fisse sono studi resi a partire da dati misurati, e ogni opera nomina il file da cui proviene. L'architettura fa solo da scena. La ricerca è il lavoro in corso di una persona, non il verdetto di un'istituzione, e ogni sala termina con una riga su ciò che le sue prove non possono ancora mostrare.",
+      "lookFor": "Legga il pannello alla porta di ogni sala prima dell'opera, poi la piccola etichetta accanto a ciascun pezzo.",
+      "limit": "L'edificio fa da scena; solo i nastri e le immagini fisse portano prove, e «About this view» nomina esattamente ciò che sta guardando."
+    },
+    "einstruct": {
+      "title": "einstruct",
+      "kicker": "Quando due specie smettono di mescolarsi?",
+      "intro": "einstruct è la ricerca aperta di una sola persona su ciò che una nuvola di particelle può sapere di sé dalle sole distanze, senza coordinate. Questa sala mostra il suo esperimento più semplice. Duecentomila particelle di due specie, A e B, vagano su un foglio; ogni volta che una A incontra una B, entrambe svaniscono. Questa è tutta la regola. Sul pavimento giace la simulazione registrata, riprodotta fotogramma per fotogramma senza alcuna interpolazione. Accanto giace il suo controllo, la stessa simulazione con le specie rimescolate ogni venti passi. In una, regioni di una sola specie crescono finché il foglio è un mosaico; nell'altra non si formano mai.",
+      "lookFor": "Metta in pausa entrambi i nastri verso la fine e confronti la dimensione delle chiazze di una sola specie, poi torni indietro per vederle emergere.",
+      "limit": "Il browser disegna un campione delle particelle, quindi non può misurare ogni regione vuota della simulazione completa; i numeri sulle etichette vengono dai file registrati."
+    },
+    "spectre": {
+      "title": "coarsen",
+      "kicker": "Come trova un mondo il proprio centro?",
+      "intro": "coarsen è la ricerca aperta di una sola persona su quanto grande e quanto a lungo possa girare un mondo fatto solo di particelle prima di smettere di misurarsi come materia reale. I tre globi qui sono un unico esperimento. Ogni mondo è iniziato come la stessa sfera di 508.744 particelle, una miscela uniforme di una specie pesante e una leggera, tenuta insieme dalla propria gravità sotto un cielo freddo. L'unica differenza tra loro è quanto fortemente le due specie si respingono. Ognuno è aperto: la superficie è il bordo misurato delle particelle, e l'interno è misurato a partire da esse, fotogramma per fotogramma, lungo 96 tempi dinamici.",
+      "lookFor": "Lasci scorrere la registrazione e confronti le tre facce tagliate nello stesso istante; dove le due specie si respingono di più, la specie pesante si raccoglie prima al centro.",
+      "limit": "Una sola simulazione registrata per mondo, nulla di interpolato. Queste simulazioni non separano la smiscelazione dal raffreddamento comune come causa di un centro pesante, quindi nessuna targa qui afferma che la smiscelazione l'abbia causato."
+    },
+    "world-engine": {
+      "title": "world-engine",
+      "kicker": "Cosa rivela un nuovo punto di vista?",
+      "intro": "world-engine è la ricerca aperta di una sola persona su quanta poca geometria memorizzata serva a un mondo prima che un osservatore se ne accorga. È dormiente: la sua domanda fondativa ha avuto risposta no, e questi tre studi fissi sono ciò che resta. La stanza che mostrano è l'aula della scena dimostrativa libera di Blender, ricostruita da una descrizione compatta e poi guardata da luoghi mai fotografati. Cominci dall'aula intera, poi guardi dietro la sedia, dove un nuovo punto di vista squarcia l'immagine, e infine la frangia attorno a una gamba di sedia, dove lo stesso bordo è disegnato in sei modi.",
+      "lookFor": "Confronti la vista vera con quelle stirate; i buchi sono segnati in magenta, e lo studio della frangia mostra ciò che una vista convincente dell'intera stanza nasconde.",
+      "limit": "Sono studi fissi resi da dati memorizzati, non una ricostruzione dal vivo né una porta-lente funzionante; la domanda rimasta del repository non è stata misurata."
+    },
+    "phototroph": {
+      "title": "phototroph",
+      "kicker": "Cosa permette a due atomi di restare insieme?",
+      "intro": "phototroph è la ricerca aperta di una sola persona sul fatto che la materia, sotto un fascio costante di luce di un solo colore, si organizzi in strutture che assorbono quel colore. Quella domanda è ancora aperta. Ciò che è appeso qui è l'unica cosa onesta che il repository possa mostrare: un incontro registrato tra tre atomi. Due atomi che cadono l'uno verso l'altro non possono catturarsi; si allontanano esattamente alla velocità con cui sono arrivati. Restano solo quando un terzo arriva e porta via la velocità in eccesso. Il nastro contiene 801 fotogrammi di otto atomi in una piccola scatola periodica, convertiti dal registro della simulazione senza aggiungere nulla.",
+      "lookFor": "Metta in pausa attorno alla cattura, segua l'atomo che si allontana, poi torni indietro e riproduca lentamente lo stesso incontro; è un unico evento registrato, non uno nuovo a ogni riproduzione.",
+      "limit": "Una sola cattura non stabilisce né l'equilibrio né tassi di legame, e non verifica la selezione guidata dalla luce; la luce di cui tratta questa ricerca non è affatto nel nastro."
+    },
+    "orangery": {
+      "title": "orangerie",
+      "kicker": "Lasci viaggiare lo sguardo.",
+      "intro": "L'orangerie collega la sala di world-engine alla terrazza. È un luogo tra le opere: segua le porte aperte, guardi verso le sale, o esca sotto il cielo. C'è qui una partita a scacchi, aperta dalla Guida sopra la stanza.",
+      "lookFor": "Le tre porte sul lato del giardino danno tutte sulla terrazza."
+    },
+    "gallery": {
+      "title": "galleria",
+      "kicker": "Un tratto più quieto del Mind Palace.",
+      "intro": "La galleria va dalla sala di phototroph al belvedere. Le porte chiuse lungo la sua parete interna appartengono a progetti di ricerca che non si sono ancora guadagnati una sala; una sala si guadagna avendo qualcosa di onesto da appendere. Cammini, si fermi, e torni quando è pronto.",
+      "lookFor": "L'ampia apertura in fondo sale al belvedere; le porte strette sul lato del giardino portano alla terrazza."
+    },
+    "belvedere": {
+      "title": "belvedere",
+      "kicker": "La fine della galleria, un gradino più in alto.",
+      "intro": "Il belvedere è una piattaforma rialzata in fondo alla galleria, un luogo da cui guardare tutta la lunghezza dell'edificio. Le sue due porte chiuse sono promesse a progetti ancora senza sala, neuralese e someotherlife; si apriranno quando quei repository avranno qualcosa da mostrare.",
+      "lookFor": "Si volti: tutta la galleria si stende sotto di lei, fino alle sale."
+    },
+    "greenhouse": {
+      "title": "officina",
+      "kicker": "Dove il museo viene curato.",
+      "intro": "L'officina è la stanza dell'ospite, accanto all'hall, dietro una porta che si apre solo per lui. Da qui le opere vengono appese, controllate e rimosse, e ciò che un visitatore vede nelle sale è stato approvato prima in questa stanza. Non fa parte del percorso pubblico.",
+      "lookFor": "Se può leggere questo pannello, lei è l'ospite."
+    },
+    "terrace": {
+      "title": "terrazza",
+      "kicker": "Esca sotto il cielo.",
+      "intro": "La terrazza corre lungo tutto il lato del giardino dell'edificio. Le porte riportano nell'hall, nell'orangerie e nella galleria; davanti si stende il giardino, e oltre i boschetti. Il cielo è un crepuscolo disegnato, non astronomico.",
+      "lookFor": "Segua la terrazza in una direzione o nell'altra fino a una porta verso l'interno, o attraversi verso il giardino."
+    },
+    "parterre": {
+      "title": "giardino",
+      "kicker": "Si orienti sotto il cielo.",
+      "intro": "Il giardino si stende tra la terrazza e i boschetti. Al suo incrocio sorge una sfera armillare, e la sfera è un portale: attraverso di essa i tre mondi di coarsen appaiono come globi, ed entrarvi la porta alla loro scala. Oltre il giardino si trovano i boschetti ovest, lontano ed est.",
+      "lookFor": "Guardi attraverso la sfera prima di entrarvi; ciò che lì sembra un globo misura ottanta metri dall'altra parte."
+    },
+    "orchard-west": {
+      "title": "boschetto ovest",
+      "kicker": "I terreni, a ovest del giardino.",
+      "intro": "Il boschetto ovest fa parte dei terreni che danno il nome a questo mondo. Qui non è esposto nulla; è un luogo dove camminare sotto gli alberi e guardare verso l'edificio. Il giardino sta da un lato, il boschetto lontano dall'altro.",
+      "lookFor": "Il terreno sale dolcemente verso il fondo del boschetto; la via del ritorno è il bordo aperto verso il giardino."
+    },
+    "orchard-south": {
+      "title": "boschetto lontano",
+      "kicker": "I terreni, in fondo al giardino.",
+      "intro": "Il boschetto lontano chiude i terreni di fronte alla terrazza. Da qui l'intero edificio si erge al di là del giardino, con la sfera armillare al suo centro. Si unisce ai boschetti ovest ed est lungo i lati; qui non c'è nulla da leggere se non la vista.",
+      "lookFor": "Si fermi al margine del boschetto e guardi, oltre il giardino, la linea dei tetti dell'edificio."
+    },
+    "orchard-east": {
+      "title": "boschetto est",
+      "kicker": "I terreni, a est del giardino.",
+      "intro": "Il boschetto est rispecchia il boschetto ovest al di là del giardino. Sono terreni, non una sala: alberi, un pendio e la vista verso la terrazza e la galleria. Lo percorra per la quiete, e torni dal giardino quando è pronto per un'altra domanda.",
+      "lookFor": "Il ritorno all'interno passa per il giardino e sale sulla terrazza."
+    },
+    "orrery": {
+      "title": "orrery",
+      "kicker": "Come trova un mondo il proprio centro?",
+      "intro": "L'orrery mostra i tre mondi di coarsen alla scala del cielo, raggiunti attraverso la sfera armillare del giardino. Si è rimpiccioliti cinquanta volte per stare qui; ogni globo misura ottanta metri. Sono le stesse simulazioni registrate della sala di coarsen: 508.744 particelle ciascuna, la stessa miscela uniforme di una specie pesante e una leggera, che differiscono solo per quanto fortemente le due si respingono. Ognuna è aperta verso il punto in cui si trova, con la superficie come bordo misurato delle particelle e l'interno misurato da esse. Le stelle sono uno sfondo disegnato, non un catalogo.",
+      "lookFor": "Cammini verso un mondo e osservi la sua faccia tagliata; il bagliore segna la materia più calda, una codifica della temperatura, non luce.",
+      "limit": "Una sola simulazione registrata per mondo, nulla di interpolato. Un centro pesante non basta da solo a separare la smiscelazione dal raffreddamento comune come causa."
+    }
+  },
+  "exhibits": {
+    "hall-poster": {
+      "title": "A + B → nulla: un fotogramma del foglio",
+      "caption": "Un render fisso di un fotogramma tardivo della simulazione registrata di einstruct: 200.000 particelle di due specie su un foglio piano, ogni A che incontra una B svanisce con essa. Il colore distingue le due specie e nient'altro; le regioni non sono state disegnate, si sono formate."
+    },
+    "einstruct-tape": {
+      "title": "Annichilazione A + B su un foglio",
+      "caption": "La simulazione registrata stessa, distesa sul pavimento: 801 fotogrammi lungo 400 unità di tempo simulato, 200.000 particelle all'inizio e 2.634 alla fine, da un'unica disposizione iniziale fissa (seme 0). Il colore nomina la specie, A o B; non mostra temperatura né velocità."
+    },
+    "einstruct-tape-stirred": {
+      "title": "Il controllo: specie rimescolate ogni venti passi",
+      "caption": "Le stesse particelle e la stessa regola, salvo che ogni venti passi le due specie vengono rimescolate sulle posizioni. 801 fotogrammi lungo 400 unità di tempo simulato; 200.000 particelle scendono a 292, nove volte meno che accanto, e le regioni non si formano mai. Il colore nomina la specie."
+    },
+    "einstruct-wall": {
+      "title": "Il foglio come film, 40 secondi",
+      "caption": "Un render piatto del nastro a pavimento come film di 40 secondi, dieci unità di tempo simulato al secondo, ogni fotogramma il fotogramma registrato più vicino e nessuno inventato. Guardi le due specie ordinarsi in regioni che nessuno ha disegnato. Il colore nomina la specie."
+    },
+    "einstruct-wall-row": {
+      "title": "Una riga non sa dove sia l'alto",
+      "caption": "Un'animazione di 16 secondi dell'idea dietro einstruct: le distanze ordinate di un punto dai suoi otto vicini più prossimi, disegnate come barre. Ruoti la nuvola, la rifletta, la rinumeri, e le barre non si muovono; la ingrandisca, e ogni barra cresce. Una figura disegnata, senza colore misurato."
+    },
+    "spectre-worlds": {
+      "title": "Tre mondi aperti",
+      "caption": "Il trio di pianeti di coarsen a scala di passeggiata: tre sfere di 508.744 particelle da una stessa disposizione iniziale, 1.129 fotogrammi lungo 96 tempi dinamici ciascuna, con le due specie indifferenti, moderatamente e fortemente avverse dal più vicino al più lontano. Le regioni color ferro contengono più particelle pesanti, quelle pallide più leggere; il bagliore codifica la temperatura."
+    },
+    "spectre-wall": {
+      "title": "Dal primo film: 42,8 secondi, muto",
+      "caption": "Un estratto dal primo film di coarsen, 2.568 fotogrammi a 1080p60, resi su CPU fotogramma per fotogramma da un nastro registrato di 12.288 particelle in una lastra periodica. È un'immagine illuminata del registro, non una misura: l'ombreggiatura è la luce del render, e non c'è suono."
+    },
+    "world-engine-classroom": {
+      "title": "L'aula in 2,1 megabyte",
+      "caption": "L'aula dimostrativa di Blender ricostruita da 28.112 sfere in 2,1 MB di dati memorizzati, vista da una posizione della testa mai mostrata alla ricostruzione. Uno studio fisso: come appare un'intera stanza quando quasi tutta la sua geometria è stata gettata via. I colori sono le texture proprie della scena."
+    },
+    "world-engine-behind-the-chair": {
+      "title": "Dietro la sedia, in quattro modi",
+      "caption": "Una vista dell'aula resa in quattro modi: la vista vera, poi l'immagine squarciata dove un nuovo punto di vista rivela ciò che era nascosto, stirata per coprire lo squarcio, e stirata solo dentro ogni oggetto. Il magenta segna i buchi, luoghi che nessun dato memorizzato raggiunge; ogni altro colore è della scena."
+    },
+    "world-engine-fringe": {
+      "title": "La frangia attorno a una gamba di sedia, in sei modi",
+      "caption": "Un ritaglio di 56 pixel attorno a una gamba di sedia, ingrandito nove volte e disegnato in sei modi: la vista vera, squarciata, con colore più fine, con un bordo a due strati, stirata, e stirata dentro gli oggetti. Piccole frange rivelano ciò che una vista convincente dell'intera stanza nasconde. La luminosità è triplicata per renderle visibili."
+    },
+    "phototroph-tape": {
+      "title": "Due atomi non possono catturarsi",
+      "caption": "801 fotogrammi di otto atomi in una piccola scatola periodica, convertiti dal registro della simulazione: due cadono l'uno verso l'altro e restano solo quando un terzo arriva e porta via la velocità in eccesso. Tutti gli atomi sono di una specie e condividono un colore; il nastro disegna solo posizioni, nessun legame e nessuna luce."
+    },
+    "orrery-worlds": {
+      "title": "Il trio di pianeti alla scala del cielo",
+      "caption": "Gli stessi tre mondi registrati della sala di coarsen, ciascuno di ottanta metri: 508.744 particelle, 1.129 fotogrammi lungo 96 tempi dinamici, un'unica disposizione iniziale, tre forze di repulsione tra la specie pesante e quella leggera. Le regioni color ferro contengono più particelle pesanti, quelle pallide più leggere; il bagliore codifica la temperatura."
+    }
+  }
+}

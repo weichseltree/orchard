@@ -15,6 +15,8 @@ export interface BuildStamp {
   commit: string;
   builtAt: string;
   sw: boolean;
+  /** `GROVE_FORCED=on`: every open page reloads to this build at its next safe moment (src/ui/update.ts). */
+  forced?: boolean;
 }
 
 const grove = fileURLToPath(new URL("..", import.meta.url));
@@ -27,6 +29,7 @@ export function buildStamp(): BuildStamp {
     commit: process.env.GROVE_COMMIT || gitCommit(),
     builtAt: new Date().toISOString(),
     sw: process.env.GROVE_SW !== "off",
+    ...(process.env.GROVE_FORCED === "on" ? { forced: true } : {}),
   };
   return stamp;
 }

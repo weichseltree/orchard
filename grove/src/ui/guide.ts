@@ -138,7 +138,7 @@ export class VisitorGuide {
     gameHint.className = "guide-note";
     gameHint.textContent = this.#device.headset
       ? "Leave immersive VR before opening a browser game surface."
-      : "The game opens in a separate surface over the Grove.";
+      : "The game opens in a separate surface over the Mind Palace.";
     this.#games.className = "guide-games";
     this.#gameActions.className = "guide-game-actions";
     this.#games.append(gameHeading, gameHint, this.#gameActions);

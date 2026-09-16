@@ -13,23 +13,39 @@ describe("mansion.json", () => {
   it("parses", () => {
     const mansion = parseMansion(mansionDocument);
     expect(mansion.schema).toBe("orchard/mansion/1");
-    expect(mansion.rooms.map((room) => room.id)).toEqual(["hall", "einstruct", "world-engine", "orangery", "phototroph", "gallery", "spectre", "greenhouse", "terrace", "parterre", "orchard-west", "orchard-south", "orchard-east", "orrery"]);
+    expect(mansion.rooms.map((room) => room.id)).toEqual(["hall", "einstruct", "spectre", "world-engine", "orangery", "phototroph", "gallery", "belvedere", "greenhouse", "terrace", "parterre", "orchard-west", "orchard-south", "orchard-east", "orrery"]);
     expect(mansion.start).toBe("hall");
   });
 
-  it("opens the 14 x 20 x 7 m Observatory hall with a generous axial portal", () => {
-    const hall = roomById(parseMansion(mansionDocument), "hall");
+  it("opens the 20 x 24 x 9 m hall with a grand flight up to the raised north wing", () => {
+    const mansion = parseMansion(mansionDocument);
+    const hall = roomById(mansion, "hall");
     expect(hall).toBeDefined();
     const { min, max } = hall!.bounds;
-    expect(max[0] - min[0]).toBeCloseTo(14);
-    expect(max[1] - min[1]).toBeCloseTo(7);
-    expect(max[2] - min[2]).toBeCloseTo(20);
+    expect(max[0] - min[0]).toBeCloseTo(20);
+    expect(max[1] - min[1]).toBeCloseTo(9);
+    expect(max[2] - min[2]).toBeCloseTo(24);
     expect(hall!.presence).toBe("grove");
-    // The palace: the einstruct door, the phototroph door in the once-blank back
-    // wall, and the greenhouse door, closed to visitors.
-    expect(hall!.doorways).toHaveLength(5);
-    expect(hall!.doorways[0]).toMatchObject({ to: "einstruct", width: 4.8, height: 4.6 });
+    // The palace: the enfilade north (a 6 m opening onto world-engine, whose
+    // floor is 1.5 m up), phototroph south, einstruct's own cabinet east, two
+    // French doors west, and the greenhouse door, closed to visitors.
+    expect(hall!.doorways).toHaveLength(6);
+    expect(hall!.doorways[0]).toMatchObject({ to: "world-engine", width: 6, height: 4.6 });
+    expect(roomById(mansion, "world-engine")!.bounds.min[1]).toBeCloseTo(1.5);
+    expect(hall!.doorways.find((d) => d.to === "einstruct")).toMatchObject({ axis: "x", at: 10 });
     expect(hall!.doorways.find((d) => d.to === "greenhouse")).toMatchObject({ closed: true });
+  });
+
+  it("titles the tree rooms after their repositories and stands the grounds below the terrace", () => {
+    const mansion = parseMansion(mansionDocument);
+    expect(mansion.rooms.filter((r) => ["einstruct", "spectre", "world-engine", "phototroph"].includes(r.id)).map((r) => r.title))
+      .toEqual(["einstruct", "coarsen", "world-engine", "phototroph"]);
+    expect(roomById(mansion, "terrace")!.bounds.min[1]).toBe(0);
+    expect(roomById(mansion, "parterre")!.bounds.min[1]).toBeCloseTo(-1.6);
+    expect(roomById(mansion, "belvedere")!.bounds.min[1]).toBeCloseTo(1.8);
+    expect(mansion.terrain.mounds.length).toBeGreaterThan(3);
+    // The portal's centre sits at eye height above the sunken garden.
+    expect(roomById(mansion, "parterre")!.portals[0]!.position[1]).toBeCloseTo(-1.6 + 1.6);
   });
 
   it("hangs a still on the hall's poster wall, taken from the exhibit table", () => {
@@ -60,10 +76,10 @@ describe("mansion.json", () => {
     }
   });
 
-  it("describes einstruct as a 14 x 12 x 6 m state room with two tape sheets and two video walls", () => {
+  it("describes einstruct as a 16 x 16 x 7 m cabinet of its own with two tape sheets and two video walls", () => {
     const room = roomById(parseMansion(mansionDocument), "einstruct");
     const { min, max } = room!.bounds;
-    expect([max[0] - min[0], max[1] - min[1], max[2] - min[2]]).toEqual([14, 6, 12]);
+    expect([max[0] - min[0], max[1] - min[1], max[2] - min[2]]).toEqual([16, 7, 16]);
     expect(room!.presence).toBe("einstruct");
     const kinds = room!.hangings.map((h) => h.kind).sort();
     expect(kinds).toEqual(["tape", "tape", "video", "video"]);
@@ -71,8 +87,9 @@ describe("mansion.json", () => {
     // either side of the enfilade line, pinned to their own bundles.
     const tapes = room!.hangings.filter((h) => h.kind === "tape");
     expect(tapes.map((h) => h.bundle.exhibit?.bundle)).toEqual(["2dd0038799b2db15", "903d0c5a939b0ba1"]);
-    expect(tapes.map((h) => h.position[0])).toEqual([-3.6, 3.6]);
-    expect(room!.doorways.map((d) => d.to).sort()).toEqual(["hall", "spectre", "world-engine"]);
+    expect(tapes.map((h) => h.position[0])).toEqual([14.5, 21.5]);
+    // Its own room: one door from the hall, one on to coarsen's cabinet; the enfilade no longer runs through it.
+    expect(room!.doorways.map((d) => d.to).sort()).toEqual(["hall", "spectre"]);
     const tape = tapes[0];
     expect(tape).toMatchObject({ longSideMeters: 6 });
     expect(tape!.position[1]).toBeCloseTo(1.0);
@@ -183,6 +200,9 @@ describe("BundleRefSchema", () => {
           expect(hanging.bundle.exhibit).toBeUndefined();
           continue;
         }
+        // A live audio exhibit is a name with no bytes and no exhibit row
+        // (AUDIO-STREAM.md §1); nothing below is a claim about it.
+        if (hanging.kind === "audio") continue;
         // The hall's poster wall shows einstruct; the Orrery's worlds are spectre's.
         const guest: Record<string, string> = { hall: "einstruct", orrery: "spectre" };
         expect(hanging.bundle.exhibit?.tree).toBe(guest[room.id] ?? room.id);
@@ -212,7 +232,9 @@ function wallOf(room: Room, door: Doorway): Wall {
 
 function postersOf(room: Room): Array<{ wall: Wall; center: number; width: number }> {
   return room.hangings.flatMap((hanging) => {
-    if (hanging.kind === "tape" || hanging.kind === "planet") return [];
+    // Nothing that stands in the room's volume rather than on a wall: a tape
+    // box, one of spectre's worlds, or a live audio exhibit's topology.
+    if (hanging.kind === "tape" || hanging.kind === "planet" || hanging.kind === "audio") return [];
     const [x, , z] = hanging.position;
     const candidates: Array<[Wall, number, number]> = [
       ["-x", Math.abs(x - room.bounds.min[0]), z], ["+x", Math.abs(x - room.bounds.max[0]), z],

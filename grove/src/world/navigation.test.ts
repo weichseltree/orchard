@@ -9,7 +9,9 @@ import { wallPieces } from "./rooms";
 
 const mansion = parseMansion(mansionDocument);
 const hall = mansion.rooms[0]!;
-const einstruct = mansion.rooms[1]!;
+const north = mansion.rooms.find((r) => r.id === "world-engine")!;
+// The hall's first doorway is the enfilade north, at z = -12, onto world-engine.
+const NORTH = hall.doorways[0]!.at;
 
 describe("resolveMove", () => {
   it("keeps a step inside the room, a body radius off the wall", () => {
@@ -23,25 +25,25 @@ describe("resolveMove", () => {
   });
 
   it("does not let a step through the wall the doorway is in, away from the opening", () => {
-    const out = resolveMove(mansion, "hall", { x: 5, z: -9 }, { x: 5, z: -12 });
+    const out = resolveMove(mansion, "hall", { x: 8, z: NORTH + 3 }, { x: 8, z: NORTH - 2 });
     expect(out.z).toBeCloseTo(hall.bounds.min[2] + BODY_RADIUS);
     expect(out.room).toBe("hall");
   });
 
   it("lets a step through the opening and hands over the room", () => {
-    const out = resolveMove(mansion, "hall", { x: 0, z: -9.5 }, { x: 0, z: -10.5 });
-    expect(out.room).toBe("einstruct");
+    const out = resolveMove(mansion, "hall", { x: 0, z: NORTH + 0.5 }, { x: 0, z: NORTH - 0.5 });
+    expect(out.room).toBe("world-engine");
     expect(out.crossed).toBe(true);
-    expect(out.z).toBeCloseTo(-10.5);
+    expect(out.z).toBeCloseTo(NORTH - 0.5);
   });
 
   it("treats a locked doorway as the wall it is in, and says which room locked it", () => {
     // Same step as the crossing above. The door is the only difference.
-    const out = resolveMove(mansion, "hall", { x: 0, z: -9.5 }, { x: 0, z: -10.5 }, BODY_RADIUS, (id) => id === "einstruct");
+    const out = resolveMove(mansion, "hall", { x: 0, z: NORTH + 0.5 }, { x: 0, z: NORTH - 0.5 }, BODY_RADIUS, (id) => id === "world-engine");
     expect(out.room).toBe("hall");
     expect(out.crossed).toBe(false);
     expect(out.z).toBeCloseTo(hall.bounds.min[2] + BODY_RADIUS);
-    expect(out.locked).toBe("einstruct");
+    expect(out.locked).toBe("world-engine");
   });
 
   it("reports a lock only while the body is walking into that doorway", () => {
@@ -52,14 +54,37 @@ describe("resolveMove", () => {
   });
 
   it("leaves every other doorway open when one room is locked", () => {
-    const out = resolveMove(mansion, "hall", { x: 0, z: -9.5 }, { x: 0, z: -10.5 }, BODY_RADIUS, (id) => id === "cellar");
-    expect(out.room).toBe("einstruct");
+    const out = resolveMove(mansion, "hall", { x: 0, z: NORTH + 0.5 }, { x: 0, z: NORTH - 0.5 }, BODY_RADIUS, (id) => id === "cellar");
+    expect(out.room).toBe("world-engine");
+    expect(out.crossed).toBe(true);
+    expect(out.locked).toBeNull();
+  });
+
+  it("treats a locked doorway as the wall it is in, and says which room locked it", () => {
+    // Same step as the crossing above. The door is the only difference.
+    const out = resolveMove(mansion, "hall", { x: 0, z: NORTH + 0.5 }, { x: 0, z: NORTH - 0.5 }, BODY_RADIUS, (id) => id === "world-engine");
+    expect(out.room).toBe("hall");
+    expect(out.crossed).toBe(false);
+    expect(out.z).toBeCloseTo(hall.bounds.min[2] + BODY_RADIUS);
+    expect(out.locked).toBe("world-engine");
+  });
+
+  it("reports a lock only while the body is walking into that doorway", () => {
+    // Standing at the far wall of the hall with the same room locked: the
+    // visitor is not being stopped by it, so there is nothing to tell them.
+    const away = resolveMove(mansion, "hall", { x: 5, z: 0 }, { x: 5, z: 1 }, BODY_RADIUS, (id) => id === "einstruct");
+    expect(away.locked).toBeNull();
+  });
+
+  it("leaves every other doorway open when one room is locked", () => {
+    const out = resolveMove(mansion, "hall", { x: 0, z: NORTH + 0.5 }, { x: 0, z: NORTH - 0.5 }, BODY_RADIUS, (id) => id === "cellar");
+    expect(out.room).toBe("world-engine");
     expect(out.crossed).toBe(true);
     expect(out.locked).toBeNull();
   });
 
   it("crosses back the other way", () => {
-    const out = resolveMove(mansion, "einstruct", { x: 0, z: -10.4 }, { x: 0, z: -9.6 });
+    const out = resolveMove(mansion, "world-engine", { x: 0, z: NORTH - 0.4 }, { x: 0, z: NORTH + 0.4 });
     expect(out.room).toBe("hall");
     expect(out.crossed).toBe(true);
   });
@@ -68,17 +93,17 @@ describe("resolveMove", () => {
     // Lined up with the doorway at the destination but not at the start:
     // sliding along the wall must not pop the body through it.
     const outside = hall.doorways[0]!.width / 2 + BODY_RADIUS;
-    const out = resolveMove(mansion, "hall", { x: outside, z: -9.7 }, { x: 0.2, z: -10.2 });
+    const out = resolveMove(mansion, "hall", { x: outside, z: NORTH + 0.3 }, { x: 0.2, z: NORTH - 0.2 });
     expect(out.room).toBe("hall");
     expect(out.z).toBeCloseTo(hall.bounds.min[2] + BODY_RADIUS);
   });
 
   it("only opens across the passable part of the opening", () => {
     const limit = hall.doorways[0]!.width / 2 - BODY_RADIUS - DOOR_SHOULDER;
-    const inside = resolveMove(mansion, "hall", { x: limit - 0.05, z: -9.6 }, { x: limit - 0.05, z: -10.4 });
-    expect(inside.room).toBe("einstruct");
-    expect(inside.x).toBeLessThanOrEqual(einstruct.bounds.max[0] - BODY_RADIUS + 1e-9);
-    const edge = resolveMove(mansion, "hall", { x: limit + 0.05, z: -9.6 }, { x: limit + 0.05, z: -10.4 });
+    const inside = resolveMove(mansion, "hall", { x: limit - 0.05, z: NORTH + 0.4 }, { x: limit - 0.05, z: NORTH - 0.4 });
+    expect(inside.room).toBe("world-engine");
+    expect(inside.x).toBeLessThanOrEqual(north.bounds.max[0] - BODY_RADIUS + 1e-9);
+    const edge = resolveMove(mansion, "hall", { x: limit + 0.05, z: NORTH + 0.4 }, { x: limit + 0.05, z: NORTH - 0.4 });
     expect(edge.room).toBe("hall");
     expect(edge.z).toBeCloseTo(hall.bounds.min[2] + BODY_RADIUS);
   });
@@ -101,9 +126,10 @@ describe("apertures and rooms", () => {
 
   it("finds the room a point is in", () => {
     expect(roomAt(mansion, 0, 0)?.id).toBe("hall");
-    expect(roomAt(mansion, 0, -15)?.id).toBe("einstruct");
+    expect(roomAt(mansion, 0, -15)?.id).toBe("world-engine");
+    expect(roomAt(mansion, 18, -10)?.id).toBe("einstruct");
     expect(roomAt(mansion, 40, 0)).toBeUndefined();
-    expect(insideRoom(hall, 6.9, 0, BODY_RADIUS)).toBe(false);
+    expect(insideRoom(hall, 9.9, 0, BODY_RADIUS)).toBe(false);
   });
 });
 

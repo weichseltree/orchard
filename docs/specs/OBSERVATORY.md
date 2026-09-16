@@ -14,16 +14,17 @@ faceted grove sculptures and garden armillary are designed architecture.
 
 | Place | Question or purpose | Available content |
 | --- | --- | --- |
-| The Observatory | Which question draws you in? | Arrival, guide and routes into the chambers |
-| The Mixing Chamber | When do two kinds stop mixing? | An annihilation tape beside its shuffled control; two video panels |
-| The Gravity Chamber | How does a world find its middle? | spectre's three worlds cut open at walking scale, with lit, composition, temperature and pressure views; a silent excerpt |
-| The Binding Chamber | What lets two atoms stay together? | One recorded three-body capture |
-| The Reconstruction Gallery | What does a new viewpoint reveal? | Three still studies of a classroom reconstruction and its limitations |
-| The Lantern Walk | Space between questions, and a game | Architecture, the three terrace arches, and the FTL Chess surface (ruled here 2026-09-16, moved out of the Long Gallery) |
-| The Long Gallery | Space between questions | Architecture and open routes; its closed doors are the trees without rooms |
-| Terrace, Meridian Garden and three groves | Pause and explore outside | Designed grounds; the armillary at the garden's crossing is the portal to the Orrery |
-| The Orrery | How does a world find its middle, seen at the scale of the sky? | spectre's three cutaway worlds with their measured surfaces, eighty metres across, on a star field |
-| The Workshop | Host space | Behind a closed door; absent from visitor routes |
+| hall | Which question draws you in? | Arrival, guide and routes into the chambers |
+| einstruct | When do two kinds stop mixing? | An annihilation tape beside its shuffled control; two video panels |
+| coarsen (room id `spectre`) | How does a world find its middle? | spectre's three worlds cut open at walking scale, with lit, composition, temperature and pressure views; a silent excerpt |
+| phototroph | What lets two atoms stay together? | One recorded three-body capture |
+| world-engine | What does a new viewpoint reveal? | Three still studies of a classroom reconstruction and its limitations |
+| orangery | Space between questions, and a game | Architecture, the three terrace arches, and the FTL Chess surface (ruled here 2026-09-16, moved out of the Long Gallery) |
+| gallery | Space between questions | Architecture, statuary and open routes; its closed doors are the trees without rooms; a broad stair climbs to the Belvedere at its end |
+| belvedere | The long view back | A raised platform over the gallery; closed doors for neuralese and someotherlife |
+| terrace, garden and the three groves | Pause and explore outside | Designed grounds; the armillary at the garden's crossing is the portal to the Orrery |
+| orrery | How does a world find its middle, seen at the scale of the sky? | spectre's three cutaway worlds with their measured surfaces, eighty metres across, on a star field |
+| workshop | Host space | Behind a closed door; absent from visitor routes |
 
 The guide gives concrete observations and limits for each research chamber.
 Sources, species meaning and controls are in disclosures. Routes use only
@@ -131,3 +132,64 @@ former design records, bake tooling and camera baselines. The legacy baker
 reads that archive. Its assets stay out of the current build because the
 current scene no longer references them. New captures do not overwrite the
 old visual baseline.
+
+## The palace, second pass (2026-09-16 evening)
+
+Manuel's brief: the portals as a bigger feature with better shader work,
+smoother transitions and intent detection; einstruct in its own room and
+every tree room named after its repository; museum text on the walls in the
+visitor's language; a proper palace with bigger rooms, more objects, stairs
+and terrain. Built on `weichseltree-palace-portals`; DECISIONS 2026-09-16
+records the rulings.
+
+**The plan.** The hall is 20 × 24 × 9 m. The enfilade runs north from it
+up a 6 m grand flight to the raised north wing (world-engine, then the
+Lantern Walk) 1.5 m above the hall. einstruct is a 16 m cabinet of its own
+off the hall's east wall, coarsen's cabinet north of it with a door on to
+world-engine, so the research rooms form a loop. phototroph and the Long
+Gallery run south; the gallery is 34 m long with statuary between its
+closed cabinet doors and a broad stair at its end up to the Belvedere,
+1.8 m above, whose closed doors are neuralese and someotherlife. The
+terrace keeps its colonnade and gains a balustrade with urns along the
+garden edge; the Meridian Garden is sunk 1.6 m below it and reached by
+three garden stairs, its four quarters edged in box hedge, a basin under
+the armillary, lanterns along the axis and obelisks at the corners. The
+three groves roll over authored mounds, up to 3.4 m, with rows of grove
+sculptures and lanterns. Room titles: einstruct, coarsen, world-engine,
+phototroph; the circulation rooms are plain words (hall, orangery, gallery, belvedere, workshop, terrace, garden, the groves, orrery) and the world is titled weichseltree: Manuel's ruling of the same night, "bare repo names; it should be a local map of the internet" (ids, presence names and links unchanged, NAMING.md's rule).
+
+**Heights.** A room's floor is its `bounds.min[1]`; a doorway joining two
+floors gets a flight of steps in the lower room, generated from the
+doorway alone (`terrain.ts`: rise 0.16, tread 0.29, half a metre of margin
+each side with cheek walls, a rail and a newel lamp), so stairs are never
+authored, only floor heights. The body has a height (`locomotion.settle`),
+the rig rides it, poses carry it, and a body on a flight cannot step off it
+sideways. The grounds are `terrain.mounds` in mansion.json, compact
+quartic bumps that are exactly zero beyond their radius, so a mound placed
+clear of a doorway never lifts it; one function stands under the ground
+mesh, the trees and the feet. The schema now refuses a doorway that only
+one of its two rooms lists.
+
+**Wall text.** Every room carries an entrance panel by the doorway a
+visitor most likely enters through (title, the question, an introduction,
+what to look for, one honest limit) and every hanging a label (title,
+caption, a credit line with the repository and bundle id). The copy lives
+in `grove/src/world/labels/<lang>.json`, chosen from `navigator.languages`
+with `?lang=` overriding and English as the fallback; the plaques are
+canvases on meshes (`labels.ts`), the same path the in-world notices take,
+so they read in a headset too. German is written, not translated; other
+languages are translations of the English file and say so in their credit.
+
+**Portals.** See `portal.ts`: the sphere now estimates the visitor's
+intent (closing speed, gaze, dwell) and lets it shape the blend and the
+crossing threshold; the far view's resolution rises as the blend deepens;
+a crossing dissolves through an afterglow of the room left behind rather
+than cutting; the shader refracts and disperses the far view at the rim and
+shimmers where it holds no view. The far view still stops at one level (no
+portal inside a portal) and is not rendered while a headset presents.
+
+Stated limits: the steps are drawn to the body's ramp within one riser, so
+the eye glides rather than hops; there is no second floor over a first
+(height is a property of a point); the balustrade and hedges are solid to
+the eye but not to the body (the AABB clamp is the fence, as before); no
+phone or headset frame measurement exists for the larger rooms yet.

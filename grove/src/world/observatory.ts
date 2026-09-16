@@ -1,26 +1,42 @@
 import {
   BoxGeometry, BufferGeometry, Color, CylinderGeometry, DoubleSide,
   Float32BufferAttribute, Group, IcosahedronGeometry, InstancedMesh,
-  Matrix4, Mesh, MeshBasicMaterial, Quaternion, TorusGeometry, Vector3,
+  Matrix4, Mesh, MeshBasicMaterial, PlaneGeometry, Quaternion, TorusGeometry, Vector3,
   type Material,
 } from "three";
-import type { Room, Doorway } from "./schema";
+import type { Room, Doorway, Mansion } from "./schema";
 import type { RoomShell } from "./rooms";
+import { STAIR_MARGIN, STAIR_TREAD, flightsOf, moundHeight, stairSteps, type Flight } from "./terrain";
+
+// The palace's architecture, generated at runtime from mansion.json: a
+// nocturne of mineral walls, brass and luminous inlays. Rooms may stand at
+// different heights; a doorway between two floors gets a flight of steps in
+// the lower room, drawn to the same rise and run the body climbs
+// (terrain.ts). The grounds are a height field with the same function under
+// the trees and the feet. Nothing here is a scientific claim: the exhibits
+// carry their own records.
 
 /** Architecture colours carry no scientific meaning; tapes keep their own palettes. */
 export const OBSERVATORY_PALETTE = {
   floor: "#17212b", wall: "#182737", inset: "#101b27", roof: "#142435", stone: "#53616c",
   brass: "#a98551", light: "#eed3a5", blue: "#87b9db",
   joint: "#263540", path: "#243544", earth: "#0b1822", grove: "#345355",
+  hedge: "#1c3a33", water: "#0c2634", gravel: "#2b3543",
 } as const;
 type Finish = keyof typeof OBSERVATORY_PALETTE;
 type Primitive = "box" | "column" | "arch" | "ring" | "crown" | "halo";
 const UNIT = new Vector3(0, 1, 0);
+const FLAT = /* @__PURE__ */ new Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), Math.PI / 2);
 const ROOM_FINISH: Record<string, Partial<Record<Finish, string>>> = {
   spectre: { wall: "#050b13", floor: "#080f18", inset: "#040810", stone: "#1b2732", brass: "#555348", light: "#7793a8", blue: "#527389", roof: "#070e18" },
   phototroph: { wall: "#292326", floor: "#241e1b", inset: "#171418", stone: "#62564b", brass: "#b59668", light: "#ffdb9d", blue: "#d2aa73", roof: "#251f23" },
   orangery: { wall: "#263846", inset: "#172632", stone: "#667b88", brass: "#899eaa", light: "#ddf1ff", blue: "#a9d9f0", roof: "#203443" },
+  belvedere: { wall: "#1b2c3c", inset: "#121f2b", stone: "#5c6b77", roof: "#172838" },
 };
+/** Rooms whose walls carry brass sconces between the panels. */
+const SCONCED = ["hall", "gallery", "orangery", "belvedere", "world-engine"];
+/** Rooms with a colonnade along their long walls. */
+const COLONNADED = ["hall", "gallery", "orangery", "belvedere"];
 const materials = new Map<string, MeshBasicMaterial>();
 const geometries = new Map<Primitive, BufferGeometry>();
 
@@ -76,10 +92,10 @@ function stoneSurface(material: MeshBasicMaterial, finish: Finish, quiet: boolea
         float edge = exp(-abs(abs(across) - 5.8) * 1.8);
         diffuseColor.rgb += vec3(.012, .027, .038) * edge * ${quiet ? "0.2" : "1.0"};
       ` : `
-        float wash = .58 + .42 * smoothstep(.1, 5.5, observatoryWorld.y);
+        float wash = .58 + .42 * smoothstep(.1, 5.5, observatoryWorld.y - observatoryCenter.y + 2.5);
         diffuseColor.rgb *= wash;
         float rhythm = pow(.5 + .5 * cos(observatoryWorld.z * 1.7), 10.0);
-        diffuseColor.rgb += vec3(.012, .017, .019) * rhythm * exp(-abs(observatoryWorld.y - 2.7) * .8) * ${quiet ? "0.15" : "1.0"};
+        diffuseColor.rgb += vec3(.012, .017, .019) * rhythm * exp(-abs(observatoryWorld.y - observatoryCenter.y - 0.2) * .8) * ${quiet ? "0.15" : "1.0"};
       `}
       float architectureHaze = 1.0 - exp(-max(0.0, length(cameraPosition - observatoryWorld) - 18.0) * .006);
       diffuseColor.rgb = mix(diffuseColor.rgb, vec3(.012, .026, .046), architectureHaze);
@@ -118,7 +134,7 @@ function geometry(kind: Primitive): BufferGeometry {
 class Builder {
   readonly group = new Group();
   readonly batches = new Map<string, { kind: Primitive; finish: Finish; transforms: Matrix4[] }>();
-  constructor(readonly room: Room) { this.group.name = `${room.id}-shell`; }
+  constructor(readonly room: Room, readonly mansion: Mansion | null) { this.group.name = `${room.id}-shell`; }
   add(kind: Primitive, finish: Finish, x: number, y: number, z: number, sx: number, sy: number, sz: number, rotation = new Quaternion()): void {
     if (Math.min(sx, sy, sz) <= 0) return;
     const key = `${kind}-${finish}`;
@@ -135,6 +151,18 @@ class Builder {
     this.add("column", finish, middle.x, middle.y, middle.z, radius, delta.length(), radius,
       new Quaternion().setFromUnitVectors(UNIT, delta.normalize()));
   }
+  /** The ground under a point of this room: the base, lifted by the mounds in a cell of the grounds. */
+  ground(x: number, z: number): number {
+    const base = this.room.bounds.min[1];
+    if (this.room.fallback.kind !== "ground" || !this.mansion) return base;
+    return base + moundHeight(this.mansion.terrain.mounds, x, z);
+  }
+  /** The floor a doorway opens at: the higher of the two rooms it joins. */
+  doorBase(door: Doorway): number {
+    const base = this.room.bounds.min[1];
+    const neighbour = this.mansion?.rooms.find(r => r.id === door.to);
+    return neighbour && !door.closed ? Math.max(base, neighbour.bounds.min[1]) : base;
+  }
   finish(): Group {
     for (const [key, batch] of this.batches) {
       const mesh = new InstancedMesh(geometry(batch.kind), material(batch.finish, this.room.id), batch.transforms.length);
@@ -150,7 +178,13 @@ class Builder {
 
 /** How wide a hanging is along its wall, for keeping the wall panels clear of it. */
 function hangingWidth(h: Room["hangings"][number]): number {
-  return h.kind === "tape" ? h.longSideMeters : h.kind === "planet" ? h.radiusMeters * 2 : h.widthMeters;
+  if (h.kind === "tape") return h.longSideMeters;
+  if (h.kind === "planet") return h.radiusMeters * 2;
+  // A live audio exhibit is a volume standing in the room, not a thing on a
+  // wall (audio/topology.ts places its topology around the visitor), so it
+  // clears no wall panel.
+  if (h.kind === "audio") return 0;
+  return h.widthMeters;
 }
 
 interface Wall { axis: "x" | "z"; at: number; inward: number; min: number; max: number }
@@ -172,6 +206,14 @@ function wallBox(b: Builder, wall: Wall, finish: Finish, center: number, y: numb
   if (wall.axis === "x") b.box(finish, at, y, center, thickness, height, length);
   else b.box(finish, center, y, at, length, height, thickness);
 }
+/** Whether a hanging sits on this wall within `reach` of a coordinate along it. */
+function hangingNear(room: Room, wall: Wall, along: number, reach: number): boolean {
+  return room.hangings.some(h => Math.abs(h.position[wall.axis === "x" ? 0 : 2] - wall.at) < 0.6
+    && Math.abs(h.position[wall.axis === "x" ? 2 : 0] - along) < hangingWidth(h) / 2 + reach);
+}
+function doorNear(room: Room, wall: Wall, along: number, reach: number): boolean {
+  return room.doorways.some(d => d.axis === wall.axis && Math.abs(d.at - wall.at) < 0.001 && Math.abs(d.center - along) < d.width / 2 + reach);
+}
 
 function chamberWalls(b: Builder): void {
   const room = b.room, y0 = room.bounds.min[1], y1 = room.bounds.max[1];
@@ -184,12 +226,10 @@ function chamberWalls(b: Builder): void {
       wallBox(b, wall, "brass", (left + right) / 2, y0 + 0.1, right - left, 0.025, 0.018, 0.165);
       // Recessed vertical panels add rhythm while keeping wall hangings visible.
       for (let p = left + 0.65; p < right - 0.6; p += 1.4) {
-        const obstructsHanging = room.hangings.some(h => Math.abs(h.position[wall.axis === "x" ? 0 : 2] - wall.at) < 0.6
-          && Math.abs(h.position[wall.axis === "x" ? 2 : 0] - p) < hangingWidth(h) / 2 + 0.3);
-        if (!obstructsHanging) {
+        if (!hangingNear(room, wall, p, 0.3)) {
           wallBox(b, wall, "inset", p, y0 + (y1 - y0) * 0.48, 0.65, (y1 - y0) * 0.78, 0.012, 0.162);
           wallBox(b, wall, "stone", p + 0.36, y0 + (y1 - y0) * 0.48, 0.12, (y1 - y0) * 0.85, 0.18, 0.17);
-          if (["hall", "gallery", "orangery"].includes(room.id)) {
+          if (SCONCED.includes(room.id)) {
             wallBox(b, wall, "brass", p - 0.02, y0 + 2.8, 0.16, 0.95, 0.09, 0.19);
             wallBox(b, wall, "light", p - 0.02, y0 + 2.8, 0.055, 0.74, 0.025, 0.285);
           }
@@ -200,33 +240,78 @@ function chamberWalls(b: Builder): void {
       const left = Math.max(wall.min, door.center - door.width / 2);
       const right = Math.min(wall.max, door.center + door.width / 2);
       pier(cursor, left);
-      const top = y0 + door.height;
+      const bottom = b.doorBase(door);
+      const top = bottom + door.height;
+      // A doorway onto a higher floor opens at that floor; the wall below it is the flight's back.
+      if (bottom > y0 + 0.001) wallBox(b, wall, "wall", (left + right) / 2, (y0 + bottom) / 2, right - left, bottom - y0, 0.16);
       if (top < y1) wallBox(b, wall, "wall", (left + right) / 2, (top + y1) / 2, right - left, y1 - top, 0.16);
       cursor = Math.max(cursor, right);
     }
     pier(cursor, wall.max);
     // The luminous cornice stays above the tallest aperture on this wall.
-    const corniceY = Math.max(y1 - 0.32, y0 + Math.max(0, ...doors.map(d => d.height)) + 0.07);
+    const corniceY = Math.max(y1 - 0.32, Math.max(y0, ...doors.map(d => b.doorBase(d) + d.height)) + 0.07);
     if (corniceY < y1 - 0.03) wallBox(b, wall, "blue", (wall.min + wall.max) / 2, corniceY, wall.max - wall.min - 0.35, 0.027, 0.025, 0.18);
   }
-  portals(b);
+  surrounds(b);
 }
 
-function portals(b: Builder): void {
+/** Stone and brass surrounds on every doorway, closed ones dark. */
+function surrounds(b: Builder): void {
   const room = b.room, y0 = room.bounds.min[1], height = room.bounds.max[1] - y0;
   for (const wall of walls(room)) {
     for (const door of room.doorways.filter(d => d.axis === wall.axis && Math.abs(d.at - wall.at) < 0.001)) {
       // Grounds have broad graph connections, not eighty-metre physical gates.
       if (door.width > 8 || door.height >= height) continue;
+      const base = b.doorBase(door);
       for (const side of [-1, 1]) {
-        wallBox(b, wall, "stone", door.center + side * (door.width / 2 + 0.28), y0 + door.height / 2, 0.44, door.height, 0.38, 0.02);
-        wallBox(b, wall, "brass", door.center + side * (door.width / 2 + 0.09), y0 + door.height / 2, 0.12, door.height, 0.14, 0.02);
-        wallBox(b, wall, door.closed ? "joint" : "light", door.center + side * (door.width / 2 + 0.019), y0 + door.height / 2, 0.025, door.height, 0.02, 0.17);
+        wallBox(b, wall, "stone", door.center + side * (door.width / 2 + 0.28), base + door.height / 2, 0.44, door.height, 0.38, 0.02);
+        wallBox(b, wall, "brass", door.center + side * (door.width / 2 + 0.09), base + door.height / 2, 0.12, door.height, 0.14, 0.02);
+        wallBox(b, wall, door.closed ? "joint" : "light", door.center + side * (door.width / 2 + 0.019), base + door.height / 2, 0.025, door.height, 0.02, 0.17);
       }
-      wallBox(b, wall, "stone", door.center, y0 + door.height + 0.28, door.width + 1.0, 0.44, 0.38, 0.02);
-      wallBox(b, wall, "brass", door.center, y0 + door.height + 0.09, door.width + 0.3, 0.14, 0.14, 0.02);
-      wallBox(b, wall, door.closed ? "joint" : "light", door.center, y0 + door.height + 0.022, door.width + 0.05, 0.025, 0.02, 0.17);
+      wallBox(b, wall, "stone", door.center, base + door.height + 0.28, door.width + 1.0, 0.44, 0.38, 0.02);
+      wallBox(b, wall, "brass", door.center, base + door.height + 0.09, door.width + 0.3, 0.14, 0.14, 0.02);
+      wallBox(b, wall, door.closed ? "joint" : "light", door.center, base + door.height + 0.022, door.width + 0.05, 0.025, 0.02, 0.17);
     }
+  }
+}
+
+/**
+ * A flight of steps up to every doorway that opens on a higher floor: stone
+ * treads with a brass nosing, cheek walls with a rail, as wide as the
+ * doorway plus its margin. The rise and run are terrain.ts's, so the body's
+ * ramp and the drawn steps agree to within one riser.
+ */
+function flights(b: Builder): void {
+  if (!b.mansion) return;
+  const y0 = b.room.bounds.min[1];
+  for (const flight of flightsOf(b.mansion, b.room)) stepsOf(b, flight, y0);
+}
+function stepsOf(b: Builder, flight: Flight, y0: number): void {
+  const { door, rise, run, direction } = flight;
+  const steps = stairSteps(rise);
+  const cheek = 0.22;
+  const width = door.width + 2 * STAIR_MARGIN;
+  const inner = width - 2 * cheek;
+  const place = (finish: Finish, along: number, y: number, depth: number, height: number, breadth: number, lateral = door.center): void => {
+    if (door.axis === "x") b.box(finish, along, y, lateral, depth, height, breadth);
+    else b.box(finish, lateral, y, along, breadth, height, depth);
+  };
+  for (let i = 0; i < steps; i++) {
+    const top = y0 + rise * (i + 1) / steps;
+    const near = (steps - 1 - i) * STAIR_TREAD;
+    const along = door.at + direction * (near + STAIR_TREAD / 2);
+    place("stone", along, (y0 + top) / 2, STAIR_TREAD, top - y0, inner);
+    place("brass", door.at + direction * (near + STAIR_TREAD - 0.03), top + 0.004, 0.06, 0.012, inner);
+  }
+  const parapet = rise + 0.95;
+  for (const side of [-1, 1]) {
+    const lateral = door.center + side * (width / 2 - cheek / 2);
+    place("stone", door.at + direction * run / 2, y0 + parapet / 2, run, parapet, cheek, lateral);
+    place("brass", door.at + direction * run / 2, y0 + parapet + 0.03, run, 0.06, cheek + 0.06, lateral);
+    // A lamp on the newel at the foot of each flight.
+    const foot = door.at + direction * (run + 0.25);
+    place("brass", foot, y0 + 0.7, 0.32, 1.4, 0.32, lateral);
+    place("light", foot, y0 + 1.6, 0.22, 0.36, 0.22, lateral);
   }
 }
 
@@ -234,7 +319,8 @@ function portals(b: Builder): void {
 function vault(b: Builder): void {
   const room = b.room, [x0, y0, z0] = room.bounds.min, [x1, y1, z1] = room.bounds.max;
   const cx = (x0 + x1) / 2, width = x1 - x0, depth = z1 - z0;
-  const spring = Math.max(y0 + (y1 - y0) * 0.6, y0 + Math.max(0, ...room.doorways.map(d => d.height)) + 0.15);
+  const doorTop = Math.max(y0, ...room.doorways.map(d => b.doorBase(d) + d.height));
+  const spring = Math.max(y0 + (y1 - y0) * 0.6, doorTop + 0.15);
   const rise = Math.max(0.25, y1 - spring - 0.12), radius = width / 2 - 0.19;
   const positions: number[] = [], colors: number[] = [];
   const roofColor = new Color(ROOM_FINISH[room.id]?.roof ?? OBSERVATORY_PALETTE.roof);
@@ -264,25 +350,60 @@ function vault(b: Builder): void {
   }
   for (const side of [-1, 1]) b.box("blue", cx + side * width * 0.078, y1 - 0.11, (z0 + z1) / 2, 0.04, 0.035, depth - 0.3);
   // Oculi distinguish the quieter chambers. They hang above the exhibit envelope.
-  if (["hall", "phototroph", "spectre", "greenhouse"].includes(room.id)) {
-    const radius = room.id === "hall" ? 2.1 : 1.65;
-    const rotation = new Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), Math.PI / 2);
-    b.add("ring", "brass", cx, y1 - 0.48, (z0 + z1) / 2, radius, radius, 1.3, rotation);
-    b.add("ring", "light", cx, y1 - 0.49, (z0 + z1) / 2, radius - 0.08, radius - 0.08, 0.35, rotation);
+  if (["hall", "phototroph", "spectre", "greenhouse", "belvedere"].includes(room.id)) {
+    const radius = room.id === "hall" ? 2.6 : 1.65;
+    b.add("ring", "brass", cx, y1 - 0.48, (z0 + z1) / 2, radius, radius, 1.3, FLAT);
+    b.add("ring", "light", cx, y1 - 0.49, (z0 + z1) / 2, radius - 0.08, radius - 0.08, 0.35, FLAT);
   }
-  if (room.id === "hall") {
-    const rotation = new Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), Math.PI / 2);
-    for (let i = 0; i < 3; i++) {
-      const y = y1 - 1.5 + i * 0.32, radius = 2.4 - i * 0.34;
-      b.add("halo", "brass", cx, y, (z0 + z1) / 2, radius, radius, 0.85, rotation);
-      b.add("halo", "light", cx, y - 0.055, (z0 + z1) / 2, radius - 0.015, radius - 0.015, 0.22, rotation);
-    }
-    for (const x of [-1.75, 1.75]) b.bar("brass", new Vector3(cx + x, y1 - 1.45, (z0 + z1) / 2), new Vector3(cx + x, y1 - 0.2, (z0 + z1) / 2), 0.018);
-  }
+  colonnade(b, spring);
+  chandeliers(b);
 }
 let roofFinish: Material | undefined;
 function roofMaterial(): Material {
   return roofFinish ??= new MeshBasicMaterial({ vertexColors: true, side: DoubleSide });
+}
+
+/** Columns along the long walls of the great rooms, clear of doors and hangings. */
+function colonnade(b: Builder, spring: number): void {
+  const room = b.room;
+  if (!COLONNADED.includes(room.id)) return;
+  const [, y0, z0] = room.bounds.min, [, , z1] = room.bounds.max;
+  const height = spring - 0.42 - y0;
+  if (height < 3) return;
+  const bays = Math.max(2, Math.round((z1 - z0) / 4.6));
+  for (const wall of walls(room).filter(w => w.axis === "x")) {
+    const x = wall.at + wall.inward * 1.15;
+    for (let i = 0; i <= bays; i++) {
+      const z = z0 + 1.6 + (z1 - z0 - 3.2) * i / bays;
+      if (doorNear(room, wall, z, 1.0) || hangingNear(room, wall, z, 0.9)) continue;
+      b.add("column", "stone", x, y0 + height / 2 + 0.12, z, 0.3, height, 0.3);
+      b.add("column", "brass", x, y0 + 0.07, z, 0.42, 0.14, 0.42);
+      b.add("column", "brass", x, y0 + height + 0.2, z, 0.44, 0.16, 0.44);
+      b.box("stone", x, y0 + height + 0.36, z, 0.9, 0.16, 0.9);
+    }
+  }
+}
+
+/** Halo chandeliers, one per bay of the great rooms, three tiers in the hall. */
+function chandeliers(b: Builder): void {
+  const room = b.room, [x0, , z0] = room.bounds.min, [x1, y1, z1] = room.bounds.max;
+  const cx = (x0 + x1) / 2, depth = z1 - z0;
+  if (room.id === "hall") {
+    chandelier(b, cx, y1, (z0 + z1) / 2, 2.4, 3);
+    return;
+  }
+  if (["gallery", "orangery", "world-engine", "einstruct", "phototroph", "belvedere"].includes(room.id)) {
+    const count = Math.max(1, Math.round(depth / 12));
+    for (let i = 0; i < count; i++) chandelier(b, cx, y1, z0 + depth * (i + 0.5) / count, Math.min(1.6, (x1 - x0) * 0.09), 2);
+  }
+}
+function chandelier(b: Builder, x: number, y1: number, z: number, radius: number, tiers: number): void {
+  for (let i = 0; i < tiers; i++) {
+    const y = y1 - 1.5 + i * 0.32, r = radius - i * 0.34;
+    b.add("halo", "brass", x, y, z, r, r, 0.85, FLAT);
+    b.add("halo", "light", x, y - 0.055, z, r - 0.015, r - 0.015, 0.22, FLAT);
+  }
+  for (const dx of [-radius * 0.73, radius * 0.73]) b.bar("brass", new Vector3(x + dx, y1 - 1.45, z), new Vector3(x + dx, y1 - 0.2, z), 0.018);
 }
 
 function chamberFloor(b: Builder): void {
@@ -295,9 +416,36 @@ function chamberFloor(b: Builder): void {
   for (let x = x0 + 2; x < x1; x += 2) b.box("joint", x, y0 + 0.004, cz, 0.012, 0.008, z1 - z0 - 0.32);
 }
 
+/** Abstract figures on plinths: a museum's statuary, without a face to misread. */
+function figure(b: Builder, x: number, z: number): void {
+  const y = b.ground(x, z);
+  b.box("stone", x, y + 0.55, z, 0.9, 1.1, 0.9);
+  b.box("brass", x, y + 1.11, z, 0.96, 0.03, 0.96);
+  b.add("column", "stone", x, y + 1.95, z, 0.24, 1.6, 0.24);
+  b.add("crown", "stone", x, y + 2.95, z, 0.28, 0.34, 0.28);
+  b.add("ring", "brass", x, y + 3.02, z, 0.42, 0.42, 1.2, FLAT);
+}
+
+/** Statues between the cabinet doors of the gallery, and in the hall's corners. */
+function statuary(b: Builder): void {
+  const room = b.room, [x0, , z0] = room.bounds.min, [x1, , z1] = room.bounds.max;
+  if (room.id === "gallery") {
+    const wall = walls(room)[1]!;
+    for (let z = z0 + 2.5; z < z1 - 5; z += 1) {
+      if (doorNear(room, wall, z, 2.2) || hangingNear(room, wall, z, 1.2)) continue;
+      figure(b, x1 - 1.3, z);
+      z += 8;
+    }
+  }
+  if (room.id === "hall") for (const x of [x0 + 1.6, x1 - 1.6]) for (const z of [z0 + 1.8, z1 - 1.8]) {
+    if (walls(room).some(w => doorNear(room, w, w.axis === "x" ? z : x, 1.5) && Math.abs(w.at - (w.axis === "x" ? x : z)) < 2)) continue;
+    figure(b, x, z);
+  }
+}
+
 /** Faceted, brass-stemmed grove sculptures, kept away from the primary paths. */
 function tree(b: Builder, x: number, z: number, height: number): void {
-  const y = b.room.bounds.min[1];
+  const y = b.ground(x, z);
   b.add("column", "brass", x, y + height * 0.4, z, 0.09, height * 0.8, 0.09);
   for (const side of [-1, 1]) {
     b.bar("brass", new Vector3(x, y + height * 0.4, z), new Vector3(x + side * 0.95, y + height * 0.75, z + side * 0.3), 0.045);
@@ -312,61 +460,169 @@ function path(b: Builder, x: number, z: number, width: number, depth: number): v
   for (const side of [-1, 1]) b.box("brass", x + (alongZ ? side * (width / 2 - 0.12) : 0), y + 0.016,
     z + (alongZ ? 0 : side * (depth / 2 - 0.12)), alongZ ? 0.025 : width, 0.008, alongZ ? depth : 0.025);
 }
+/** A brass post with a luminous lantern head. */
+function lantern(b: Builder, x: number, z: number): void {
+  const y = b.ground(x, z);
+  b.add("column", "brass", x, y + 1.3, z, 0.06, 2.6, 0.06);
+  b.add("column", "brass", x, y + 0.08, z, 0.22, 0.16, 0.22);
+  b.box("light", x, y + 2.75, z, 0.26, 0.34, 0.26);
+  b.box("brass", x, y + 2.96, z, 0.34, 0.06, 0.34);
+}
+/** A stone balustrade with urns on every fourth pier, gapped at the openings. */
+function balustrade(b: Builder, wall: Wall, gaps: readonly { center: number; width: number }[]): void {
+  const y = b.room.bounds.min[1];
+  const at = wall.at + wall.inward * 0.28;
+  const put = (finish: Finish, along: number, cy: number, length: number, height: number, thickness: number): void => {
+    if (wall.axis === "x") b.box(finish, at, cy, along, thickness, height, length);
+    else b.box(finish, along, cy, at, length, height, thickness);
+  };
+  const open = (along: number): boolean => gaps.some(g => Math.abs(along - g.center) < g.width / 2 + 0.2);
+  let pier = 0;
+  for (let along = wall.min + 0.4; along <= wall.max - 0.4; along += 2.5) {
+    if (open(along)) continue;
+    put("stone", along, y + 0.62, 0.34, 1.24, 0.34);
+    if (pier++ % 4 === 0) {
+      put("brass", along, y + 1.34, 0.4, 0.2, 0.4);
+      b.add("crown", "stone", wall.axis === "x" ? at : along, y + 1.72, wall.axis === "x" ? along : at, 0.3, 0.42, 0.3);
+    }
+  }
+  for (let along = wall.min + 0.4; along < wall.max - 0.4; along += 0.5) {
+    if (open(along) || open(along + 0.5)) continue;
+    put("stone", along + 0.25, y + 0.5, 0.09, 0.85, 0.09);
+  }
+  // The rail runs between the openings.
+  let cursor = wall.min + 0.3;
+  const stops = [...gaps].sort((a, c) => a.center - c.center);
+  for (const gap of stops) {
+    const left = gap.center - gap.width / 2 - 0.2;
+    if (left > cursor) put("stone", (cursor + left) / 2, y + 1.06, left - cursor, 0.1, 0.22);
+    cursor = Math.max(cursor, gap.center + gap.width / 2 + 0.2);
+  }
+  if (wall.max - 0.3 > cursor) put("stone", (cursor + wall.max - 0.3) / 2, y + 1.06, wall.max - 0.3 - cursor, 0.1, 0.22);
+}
+
+/**
+ * The ground of a cell as a mesh over the height field: flat where the
+ * parterre is, rolling under the groves, coloured by height and slope with
+ * a grain, so the lie of the land reads without light.
+ */
+function terrainMesh(b: Builder): void {
+  const room = b.room, [x0, y0, z0] = room.bounds.min, [x1, , z1] = room.bounds.max;
+  const width = x1 - x0, depth = z1 - z0;
+  const mounds = b.mansion?.terrain.mounds ?? [];
+  const rolling = mounds.length > 0 && b.mansion !== null;
+  const cell = rolling ? 2 : 8;
+  const sx = Math.max(1, Math.ceil(width / cell)), sz = Math.max(1, Math.ceil(depth / cell));
+  const geometry = new PlaneGeometry(width, depth, sx, sz);
+  geometry.rotateX(-Math.PI / 2);
+  geometry.translate((x0 + x1) / 2, 0, (z0 + z1) / 2);
+  const positions = geometry.getAttribute("position");
+  const colors: number[] = [];
+  const earth = new Color(OBSERVATORY_PALETTE.earth), grass = new Color(OBSERVATORY_PALETTE.grove);
+  const tint = new Color();
+  for (let i = 0; i < positions.count; i++) {
+    const x = positions.getX(i), z = positions.getZ(i);
+    const h = rolling ? moundHeight(mounds, x, z) : 0;
+    positions.setY(i, y0 + h - 0.02);
+    const slope = rolling ? Math.hypot(moundHeight(mounds, x + 0.5, z) - h, moundHeight(mounds, x, z + 0.5) - h) : 0;
+    const grain = 0.9 + 0.2 * hash2(Math.floor(x / 3), Math.floor(z / 3));
+    // Lawn over earth: a third of the way to the grove green on the flat, greener up a slope and on a crown.
+    tint.copy(earth).lerp(grass, Math.min(1, 0.38 + h * 0.14 + slope * 0.6)).multiplyScalar(grain);
+    colors.push(tint.r, tint.g, tint.b);
+  }
+  geometry.setAttribute("color", new Float32BufferAttribute(colors, 3));
+  geometry.computeVertexNormals();
+  const mesh = new Mesh(geometry, material("earth", room.id));
+  mesh.name = "observatory-ground";
+  b.group.add(mesh);
+  // The skirt: a slab below the field, so the cell has an edge from outside.
+  b.box("earth", (x0 + x1) / 2, y0 - 0.6, (z0 + z1) / 2, width, 1.0, depth);
+}
+function hash2(x: number, z: number): number {
+  const s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453;
+  return s - Math.floor(s);
+}
+
 function grounds(b: Builder): void {
   const room = b.room, [x0, y0, z0] = room.bounds.min, [x1, , z1] = room.bounds.max;
   const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, width = x1 - x0, depth = z1 - z0;
-  b.box("earth", cx, y0 - 0.1, cz, width, 0.2, depth);
+  terrainMesh(b);
   if (room.id === "terrace") {
     path(b, cx, cz, 4.8, depth);
-    portals(b);
+    surrounds(b);
     for (let z = z0 + 5; z < z1 - 3; z += 8) {
       if (room.doorways.some(d => d.axis === "x" && Math.abs(d.center - z) < d.width / 2 + 0.5)) continue;
-      for (const x of [x0 + 0.65, x1 - 0.65]) {
+      for (const x of [x0 + 1.1, x1 - 0.65]) {
         b.add("column", "stone", x, y0 + 2.65, z, 0.18, 5.3, 0.18);
         b.add("column", "brass", x, y0 + 0.12, z, 0.32, 0.24, 0.32);
         b.box("light", x, y0 + 4.2, z, 0.20, 1.2, 0.20);
       }
-      b.add("arch", "stone", cx, y0 + 5.2, z, width / 2 - 0.65, 1.6, 4);
-      b.add("arch", "blue", cx, y0 + 5.14, z, width / 2 - 0.70, 1.6, 0.6);
+      b.add("arch", "stone", cx + 0.22, y0 + 5.2, z, width / 2 - 0.88, 1.6, 4);
+      b.add("arch", "blue", cx + 0.22, y0 + 5.14, z, width / 2 - 0.93, 1.6, 0.6);
     }
+    // The balustrade along the garden edge, open where the garden stairs descend.
+    const edge = walls(room)[0]!;
+    balustrade(b, edge, room.doorways.filter(d => d.axis === "x" && Math.abs(d.at - edge.at) < 0.001).map(d => ({ center: d.center, width: d.width + 2 * STAIR_MARGIN })));
   } else if (room.id === "parterre") {
     path(b, cx, 0, width, 6); path(b, cx, cz, 6, depth);
-    for (const x of [x0 + 9, x1 - 9]) for (const z of [-26, -14, 14, 26]) tree(b, x, z, 4.7);
-    // An architectural armillary over the crossing: the walking plane stays clear.
+    // Four quarters edged in box hedge, each holding its grove of sculptures.
+    for (const qx of [-1, 1]) for (const qz of [-1, 1]) {
+      const hx0 = cx + qx * 4.5, hx1 = qx > 0 ? x1 - 3.5 : x0 + 3.5;
+      const hz0 = qz * 4.5, hz1 = qz > 0 ? z1 - 3.5 : z0 + 3.5;
+      const hcx = (hx0 + hx1) / 2, hcz = (hz0 + hz1) / 2;
+      const hw = Math.abs(hx1 - hx0), hd = Math.abs(hz1 - hz0);
+      b.box("hedge", hcx, y0 + 0.32, hz0, hw, 0.64, 0.5);
+      b.box("hedge", hcx, y0 + 0.32, hz1, hw, 0.64, 0.5);
+      b.box("hedge", hx0, y0 + 0.32, hcz, 0.5, 0.64, hd);
+      b.box("hedge", hx1, y0 + 0.32, hcz, 0.5, 0.64, hd);
+      b.box("gravel", hcx, y0 + 0.004, hcz, hw - 0.6, 0.008, hd - 0.6);
+      for (const tx of [hcx - hw * 0.25, hcx + hw * 0.25]) for (const tz of [hcz - hd * 0.25, hcz + hd * 0.25]) tree(b, tx, tz, 4.7);
+    }
+    // The basin at the crossing, under the armillary that holds the portal.
+    b.add("halo", "stone", cx, y0 + 0.18, 0, 6.2, 6.2, 2.6, FLAT);
+    b.add("column", "water", cx, y0 + 0.03, 0, 5.9, 0.06, 5.9);
     for (const angle of [0, Math.PI / 3, -Math.PI / 3]) {
       b.add("ring", "brass", cx, y0 + 5.2, 0, 2.3, 2.3, 1.6,
         new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), angle));
     }
-    b.add("ring", "blue", cx, y0 + 5.2, 0, 2.16, 2.16, 0.45,
-      new Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), Math.PI / 2));
+    b.add("ring", "blue", cx, y0 + 5.2, 0, 2.16, 2.16, 0.45, FLAT);
+    for (let z = z0 + 6; z < z1 - 5; z += 12) for (const x of [cx - 3.6, cx + 3.6]) if (Math.abs(z) > 8) lantern(b, x, z);
+    for (const x of [x0 + 1.6, x1 - 1.6]) for (const z of [z0 + 1.6, z1 - 1.6]) obelisk(b, x, z);
   } else {
-    path(b, cx, cz, width, 5);
-    path(b, cx, cz, 5, depth);
-    // Deterministic architectural planting; there is no particle system here.
+    // Rows of grove sculptures over the rolling ground, the rows running toward the palace.
     let index = 0;
-    for (let x = x0 + 9; x <= x1 - 8; x += 15) for (let z = z0 + 9; z <= z1 - 8; z += 15) {
-      if (Math.abs(x - cx) < 5 || Math.abs(z - cz) < 5) continue;
-      if (Math.hypot(x - room.spawn.position[0], z - room.spawn.position[2]) < 4) continue;
-      tree(b, x, z, 4.5 + (index++ % 3) * 0.55);
+    for (let x = x0 + 7; x <= x1 - 6; x += 9) for (let z = z0 + 7; z <= z1 - 6; z += 9) {
+      if (Math.hypot(x - room.spawn.position[0], z - room.spawn.position[2]) < 5) continue;
+      if (room.doorways.some(d => d.axis === "x" ? Math.abs(x - d.at) < 4 && Math.abs(z - d.center) < d.width / 2 : Math.abs(z - d.at) < 4 && Math.abs(x - d.center) < d.width / 2)) continue;
+      tree(b, x + ((index * 7) % 5) * 0.3 - 0.6, z + ((index * 3) % 5) * 0.3 - 0.6, 4.3 + (index++ % 3) * 0.55);
     }
+    for (const z of [cz - depth * 0.3, cz, cz + depth * 0.3]) lantern(b, cx, z);
   }
 }
+function obelisk(b: Builder, x: number, z: number): void {
+  const y = b.ground(x, z);
+  b.box("stone", x, y + 0.5, z, 1.4, 1.0, 1.4);
+  b.add("column", "stone", x, y + 4.0, z, 0.36, 6.0, 0.36);
+  b.add("crown", "light", x, y + 7.15, z, 0.3, 0.42, 0.3);
+}
 
-export function buildObservatory(room: Room): RoomShell {
-  const b = new Builder(room);
+export function buildObservatory(room: Room, mansion: Mansion | null = null): RoomShell {
+  const b = new Builder(room, mansion);
   if (room.fallback.kind === "ground") grounds(b);
-  else { chamberFloor(b); chamberWalls(b); vault(b); }
+  else { chamberFloor(b); chamberWalls(b); vault(b); statuary(b); }
+  flights(b);
   const group = b.finish();
   return {
     group,
     provenance: {
       source: "Designed procedural architecture",
       generator: "grove/src/world/observatory.ts",
-      design: "Nocturne research observatory",
+      design: "Nocturne research palace",
       materials: "Vertex-shaded mineral, brass, luminous architectural inlays",
       scientific_content: false,
-      note: "The building and grove sculptures are architecture. Research exhibits retain their independent source records.",
+      note: "The building, the grounds and the grove sculptures are architecture. Research exhibits retain their independent source records.",
       units: "metres",
+      floor_m: room.bounds.min[1],
       architecture_batches: group.children.length,
     },
     lightmap: null,

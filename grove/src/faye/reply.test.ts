@@ -1,0 +1,141 @@
+import { describe, expect, it } from "vitest";
+import { EMPTY_STATE, describeAge, intentOf, replyTo, type FayeState } from "./reply";
+
+const titles = new Map([["spectre", "coarsen"]]);
+
+function state(over: Partial<FayeState> = {}): FayeState {
+  return {
+    ...EMPTY_STATE,
+    hasFeed: true,
+    hosts: ["Legion", "SirBase"],
+    mirror: { state: "ok", ageSeconds: 3, peer: "Legion", records: 105 },
+    ...over,
+  };
+}
+
+describe("intentOf", () => {
+  it("ignores a room that is not talking to her", () => {
+    expect(intentOf("what is running?")).toBe("none");
+    expect(intentOf("hello everyone")).toBe("none");
+    // A room where every sentence might summon a spirit is unusable.
+    expect(intentOf("the peer looks slow today")).toBe("none");
+  });
+
+  it("answers when named, whatever the case", () => {
+    expect(intentOf("Faye, what is running?")).toBe("running");
+    expect(intentOf("FAYE status")).toBe("running");
+    expect(intentOf("hey faye")).toBe("greeting");
+  });
+
+  it("does not answer to a name that merely contains hers", () => {
+    expect(intentOf("fayette is running")).toBe("none");
+    expect(intentOf("unfaye")).toBe("none");
+  });
+
+  it("reads the peer and help asks", () => {
+    expect(intentOf("faye how is legion")).toBe("peer");
+    expect(intentOf("faye is the mirror ok")).toBe("peer");
+    expect(intentOf("faye help")).toBe("help");
+  });
+
+  it("falls back to help when named but not understood", () => {
+    expect(intentOf("faye sing me a song")).toBe("help");
+  });
+
+  it("answers to the name a transcriber writes instead of hers", () => {
+    // Spoken, "Faye" comes back as an ordinary word. Ignoring those is
+    // indistinguishable from a dead microphone, which reads as broken.
+    expect(intentOf("fay what is running")).toBe("running");
+    expect(intentOf("hey fae")).toBe("greeting");
+    expect(intentOf("fey help")).toBe("help");
+  });
+
+  it("still does not answer to a longer word that starts the same way", () => {
+    expect(intentOf("fayette is running")).toBe("none");
+    expect(intentOf("faylight")).toBe("none");
+    expect(intentOf("feyd is here")).toBe("none");
+  });
+});
+
+describe("replyTo", () => {
+  it("says nothing at all when not addressed", () => {
+    expect(replyTo("what is running?", state())).toBeNull();
+  });
+
+  it("greets with what she is watching", () => {
+    expect(replyTo("hi faye", state())).toBe("I am here. I am watching Legion and SirBase.");
+  });
+
+  it("reports the peer's freshness in words, not seconds", () => {
+    expect(replyTo("faye how is the peer", state())).toBe(
+      "Legion is reporting, 105 records, last heard 3 seconds ago.");
+  });
+
+  it("says plainly when the peer has gone quiet", () => {
+    const quiet = state({ mirror: { state: "ok", ageSeconds: 3600, peer: "Legion", records: 105 } });
+    expect(replyTo("faye peer", quiet)).toBe(
+      "Legion has stopped reporting; the last word from it was 60 minutes ago.");
+  });
+
+  it("admits when there is no peer to see", () => {
+    expect(replyTo("faye peer", state({ mirror: null }))).toBe("I cannot see a peer from here.");
+  });
+
+  it("admits when the compute has not answered yet, rather than guessing", () => {
+    expect(replyTo("faye what is running", state({ hasFeed: false })))
+      .toBe("I have not heard from the compute yet.");
+  });
+
+  it("treats an empty card as a real answer", () => {
+    expect(replyTo("faye what is running", state())).toBe("Nothing is running that I can see.");
+  });
+
+  it("names the tree's label, never its identity", () => {
+    const busy = state({ runningByTree: new Map([["spectre", 2]]) });
+    expect(replyTo("faye what is running", busy, titles)).toBe("2 runs on the card: 2 in coarsen.");
+    // Without a title a tree is shown by its name, as it always has been.
+    expect(replyTo("faye what is running", busy)).toBe("2 runs on the card: 2 in spectre.");
+  });
+
+  it("puts the busiest tree first and caps the list", () => {
+    const busy = state({
+      runningByTree: new Map([["a", 1], ["spectre", 5], ["b", 3], ["c", 2]]),
+    });
+    expect(replyTo("faye runs", busy, titles))
+      .toBe("11 runs on the card: 5 in coarsen, 3 in b, 2 in c.");
+  });
+
+  it("is deterministic when two trees are equally busy", () => {
+    const tied = state({ runningByTree: new Map([["zulu", 2], ["alpha", 2]]) });
+    expect(replyTo("faye runs", tied)).toBe(replyTo("faye runs", tied));
+    expect(replyTo("faye runs", tied)).toContain("2 in alpha, 2 in zulu");
+  });
+
+  it("never claims anything succeeded", () => {
+    const busy = state({ runningByTree: new Map([["spectre", 2]]), seenByType: new Map([["completed", 9]]) });
+    for (const ask of ["faye status", "faye peer", "hi faye", "faye help"]) {
+      expect(replyTo(ask, busy, titles)).not.toMatch(/success|succeeded|worked|passed/i);
+    }
+  });
+
+  it("answers in one line", () => {
+    const busy = state({ runningByTree: new Map([["spectre", 2]]) });
+    for (const ask of ["faye status", "faye peer", "hi faye", "faye help"]) {
+      expect(replyTo(ask, busy, titles)).not.toContain("\n");
+    }
+  });
+});
+
+describe("describeAge", () => {
+  it("speaks in the unit a person would use", () => {
+    expect(describeAge(3)).toBe("3 seconds");
+    expect(describeAge(89)).toBe("89 seconds");
+    expect(describeAge(600)).toBe("10 minutes");
+    expect(describeAge(7200)).toBe("2 hours");
+  });
+
+  it("does not invent an age it cannot read", () => {
+    expect(describeAge(Number.NaN)).toBe("an unknown time");
+    expect(describeAge(-5)).toBe("an unknown time");
+  });
+});
