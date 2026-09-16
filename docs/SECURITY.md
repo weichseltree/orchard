@@ -77,9 +77,11 @@ iframe window, the validated origin, and the documented event envelope.
 The production CSP permits `https://ftlchess.com` in `frame-src`; Orchard itself
 retains `frame-ancestors 'none'`. The FTL Chess deployment must independently
 include Orchard's exact production origin in `FTLCHESS_FRAME_ANCESTORS`, or the
-browser correctly refuses to frame it. The production room entry is therefore
-hidden unless the Grove is built with `VITE_FTL_CHESS_ENABLED=1`; set that only
-after verifying the FTL response header. Game lifecycle state is local and
+browser correctly refuses to frame it. Since 2026-09-16 it does (ftlchess
+`apphosting.yaml` names `https://weichseltree.com` and `https://www.weichseltree.com`,
+and the game posts its lifecycle only to the parent origin that framed it), so
+the Grove builds with the room entry on; `VITE_FTL_CHESS_ENABLED=0` hides it
+again should that header ever change. Game lifecycle state is local and
 ephemeral: it is exposed to diagnostics but is not sent to SpacetimeDB or an
 analytics service.
 

@@ -89,10 +89,11 @@ export default defineConfig(({ command }) => ({
     "import.meta.env.VITE_AUTH_URL": JSON.stringify(
       process.env.VITE_AUTH_URL ?? (command === "serve" ? "" : "/auth"),
     ),
-    // Keep the production entry hidden until FTL Chess admits this deployment
-    // in frame-ancestors. Dev enables it for the intercepted browser fixture.
+    // FTL Chess admits weichseltree.com in its frame-ancestors since
+    // 2026-09-16 (ftlchess apphosting.yaml), so the gallery's game surface
+    // ships on; VITE_FTL_CHESS_ENABLED=0 hides it again without a code change.
     "import.meta.env.VITE_FTL_CHESS_ENABLED": JSON.stringify(
-      process.env.VITE_FTL_CHESS_ENABLED ?? (command === "serve" ? "1" : ""),
+      process.env.VITE_FTL_CHESS_ENABLED ?? "1",
     ),
     // The site key is public, so the live one is the build's default: a build
     // without it would send no human check, and the token service, which
