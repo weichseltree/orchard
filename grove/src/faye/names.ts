@@ -21,8 +21,9 @@
 export const NAMES = /\b(faye|fay|fae|fey)\b/;
 
 /**
- * The presence room she stands in: the hall's. `scripts/faye.ts --room`
- * defaults to it, and the client names the room a visitor should walk to.
+ * The presence room she stands in: the hall's. `scripts/faye.ts` always joins
+ * it, with no flag to change that, because the client names this room as the
+ * one a visitor should walk to.
  */
 export const FAYE_ROOM = "grove";
 

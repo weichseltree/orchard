@@ -47,8 +47,6 @@ const { values: args } = parseArgs({
     "token-file": { type: "string", default: "" },
     /** Make that identity: connect with none, write its token, print it, exit. */
     "new-identity": { type: "boolean", default: false },
-    /** The client tells visitors elsewhere to walk here (src/faye/names.ts). */
-    room: { type: "string", default: FAYE_ROOM },
     // NAME_MAX is 24 and `cleanName` clips silently, so a longer name is
     // truncated rather than refused: "The Great Admin Spirit Faye" (27) would
     // stand in the room as "The Great Admin Spirit F". This one is 23.
@@ -260,14 +258,17 @@ async function main(): Promise<void> {
     void speaker.say(answer, { droppable: true });
   });
 
+  // Always FAYE_ROOM, with no flag to change it: the client tells a visitor
+  // elsewhere to walk to that room (src/faye/names.ts), so a Faye standing
+  // anywhere else would send them to the wrong one.
   before = ownLastSeen();
   // The speaker is held from BEFORE the join until its acknowledgement and the
   // hold after it: the handler is live, and a reply to a line said while the
   // join is in flight must not go out inside the gap `join` just stamped.
-  const joining = conn.reducers.join({ name: args.name, room: args.room });
+  const joining = conn.reducers.join({ name: args.name, room: FAYE_ROOM });
   speaker.holdUntil(joining.then(() => speaker.heldUntilGap(performance.now())));
   await joining;
-  console.log(`faye: standing in "${args.room}" as "${args.name}"`);
+  console.log(`faye: standing in "${FAYE_ROOM}" as "${args.name}"`);
   if (args.name.length > 24) {
     console.warn(`faye: the module clips names at 24 characters, so this shows as "${args.name.slice(0, 24)}"`);
   }

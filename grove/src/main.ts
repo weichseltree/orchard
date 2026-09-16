@@ -219,12 +219,20 @@ const canSpeak = Boolean(VOICE_URL && tokenSource && voiceSupported());
 
 const chat = new ChatPanel(hudRoot, {
   onSend: async (text) => {
-    await presence.say(text);
     // Chat reaches only this room, and every way of asking her works in every
     // room: say where she is rather than leave the question in silence
-    // (faye/names.ts). English, like the log's other system lines.
+    // (faye/names.ts). English, like the log's other system lines. The room
+    // and who is in it are read BEFORE the send: a visitor can walk through a
+    // door while it is in flight, and the answer is about the room the line
+    // was said in.
     const fayeRoom = mansion.rooms.find((room) => room.presence === FAYE_ROOM)?.title ?? "hall";
-    const away = whereIsFaye(text, presence.peers.values(), presence.joinedRoom, fayeRoom);
+    const away = whereIsFaye(
+      text,
+      [...presence.peers.values()].map(({ name, host }) => ({ name, host })),
+      presence.joinedRoom,
+      fayeRoom,
+    );
+    await presence.say(text);
     if (away) chat.addSystemLine(away);
   },
   // A locked pointer cannot be typed past, so the line takes it and the next
