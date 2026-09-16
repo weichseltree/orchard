@@ -391,10 +391,12 @@ async function settledRendering(page, { quietMs = 1000, timeoutMs = 20000 } = {}
  * A room's wall text, door names and reading stands land after its shell,
  * and the renderer counts a geometry only once it has been in view: a
  * plaque built after the tour left its room, in a chamber the fixed heading
- * never faces again, would be counted on the next lap as if it were new.
- * So each visit waits for the world to settle (`grove.settled`), and a lap
- * ends with a full turn on the spot, so that everything a lap built is
- * drawn before it is counted.
+ * never faces again, would be counted on a later lap as if it were new. So
+ * each visit waits for the world to settle (`grove.settled`), a lap ends
+ * with a full turn on the spot, and the laps compared are the SECOND and
+ * the THIRD: by the end of lap one everything has loaded, lap two draws
+ * whatever of it the route can see, and lap three sees exactly the same
+ * again, so any growth there is a rebuild per arrival.
  */
 /** A full turn on the spot, a frame per heading, so everything around the body has been in view. */
 async function lookAround(page) {
@@ -421,7 +423,7 @@ async function roomTourAudit() {
     const rooms = await page.evaluate(() => window.grove.mansion.rooms.map((room) => room.id));
     const start = await page.evaluate(() => window.grove.body.room);
     const laps = [];
-    for (let lap = 1; lap <= 2; lap++) {
+    for (let lap = 1; lap <= 3; lap++) {
       const refused = [];
       const unsettled = [];
       for (const room of rooms) {
@@ -438,11 +440,11 @@ async function roomTourAudit() {
     }
     const frames = await page.evaluate(() => window.grove.metrics().frames);
     report.measurements.push({ kind: 'room-tour', rooms: rooms.length, laps, frames: { p50Ms: frames.p50Ms, p95Ms: frames.p95Ms, p99Ms: frames.p99Ms, sessionStalls: frames.sessionStalls }, frameBudgetP95Ms: 13.8, frameBudgetEnforced: false });
-    const [first, second] = laps;
+    const [first, second, third] = laps;
     check(`${name}: every room can be visited`, first.refused.length === 0, first.refused);
-    check(`${name}: every room settles`, first.unsettled.length + second.unsettled.length === 0, { first: first.unsettled, second: second.unsettled });
+    check(`${name}: every room settles`, laps.every((lap) => lap.unsettled.length === 0), laps.map((lap) => lap.unsettled));
     for (const kind of ['geometries', 'textures', 'programs']) {
-      check(`${name}: a second lap creates no ${kind}`, second[kind] <= first[kind], { first: first[kind], second: second[kind] });
+      check(`${name}: a third lap creates no ${kind}`, third[kind] <= second[kind], { first: first[kind], second: second[kind], third: third[kind] });
     }
     check(`${name}: no script or console errors`, events.pageErrors.length + events.consoleErrors.length === 0, events);
   } finally { await context.close(); }
