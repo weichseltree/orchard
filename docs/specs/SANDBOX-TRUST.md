@@ -731,10 +731,19 @@ no table of the old module touched:
   an admin of the world, a mute and a ban hold in the area's room only, and
   unlinking takes the admins along.
 
-Not yet built, in the order the rulings ask: live revocation in the client (a
-paused or unlinked area closes its doors without a deploy; the `area` table is
-the row it will watch), the attribution wall (repository, commit and licence
-on the entrance wall, from the `area` row), and the fetcher.
+Live revocation, the same day: the client subscribes to `area` beside `room`
+and `presence.whyLocked` reads it, so a paused area's room (its own pause or
+the host's) locks its doors the moment the row changes, no deploy; a draft
+is left to the server, which admits the area's own admins and whose refusal
+locks the door for everyone else. A visitor already inside a paused area is
+not evicted; they leave through doors that do not reopen behind them. (The
+same change fixed `whyLocked` reading `admin_only` where the generated row
+says `adminOnly`, so an admin-only room had only ever locked on refusal.)
+
+Not yet built, in the order the rulings ask: the attribution wall
+(repository, commit and licence on the entrance wall, from the `area` row),
+and the fetcher; the plan itself still ships in the build, so an unlinked
+area's architecture stays until the next deploy, with its doors locked.
 
 ### Ruled by Manuel, 2026-09-16
 

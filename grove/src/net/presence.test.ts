@@ -36,6 +36,7 @@ interface StubPose {
 function stubConnection(options: {
   rooms?: string[];
   exhibits?: ExhibitRow[];
+  areas?: { tree: string; state: string; hostPaused: boolean }[];
   refuse?: (room: string) => string | null;
   /** Rooms whose join never settles until the test settles it by hand. */
   pending?: (room: string) => boolean;
@@ -122,9 +123,10 @@ function stubConnection(options: {
           (options.rooms ?? ["grove", "einstruct"]).map((name) => ({
             name,
             open: !(options.closed ?? []).includes(name),
-            admin_only: (options.adminOnly ?? []).includes(name),
+            adminOnly: (options.adminOnly ?? []).includes(name),
           })),
       },
+      area: { iter: () => options.areas ?? [] },
       exhibit: { iter: () => options.exhibits ?? [] },
     },
     reducers: {
@@ -273,6 +275,37 @@ describe("join refusal", () => {
     expect(presence.whyLocked("gallery")).toBe("room closed");
     expect(presence.whyLocked("greenhouse")).toBe("admin only");
     expect(presence.whyLocked("cellar")).toBe('no room "cellar" server-side');
+  });
+
+  it("locks an area's room while the area is paused, from the database, and leaves a draft to the server", async () => {
+    // SANDBOX-TRUST.md §4.3: a pause must reach visitors without a deploy.
+    // The area's room carries the area's name. A draft is not locked here:
+    // the server admits the area's own admins, and its refusal locks the
+    // door for everyone else.
+    let handlers!: TransportHandlers;
+    const presence = new Presence({}, { transport: (h) => (handlers = h), storage: memoryStorage() });
+    presence.connect("grove");
+    handlers.onConnect(
+      stubConnection({
+        rooms: ["grove", "arcedit", "mosaic", "event-atoms", "hnl"],
+        areas: [
+          { tree: "arcedit", state: "paused", hostPaused: false },
+          { tree: "mosaic", state: "live", hostPaused: true },
+          { tree: "event-atoms", state: "live", hostPaused: false },
+          { tree: "hnl", state: "draft", hostPaused: false },
+        ],
+      }),
+      "abc",
+      "token",
+    );
+    await settle(20);
+
+    expect(presence.whyLocked("arcedit")).toBe("this area is paused");
+    expect(presence.whyLocked("mosaic")).toBe("this area is paused");
+    expect(presence.whyLocked("event-atoms")).toBeNull();
+    expect(presence.whyLocked("hnl")).toBeNull();
+    expect(presence.canEnter("arcedit")).toBe(false);
+    expect(presence.canEnter("event-atoms")).toBe(true);
   });
 
   it("locks nothing while offline or before the room table has arrived", async () => {
@@ -545,6 +578,7 @@ describe("join refusal", () => {
       "SELECT * FROM chat_here",
       "SELECT * FROM broadcast",
       "SELECT * FROM room",
+      "SELECT * FROM area",
     ]);
     presence.join("grove");
     await settle(20);
