@@ -1,8 +1,9 @@
-// A room in the client that the server has never heard of is a room where a
-// visitor stands alone: `join` is refused, presence falls back to the grove,
-// and the only trace is a console line nobody reads. The mansion and the
-// module are edited in different repos-worth of files days apart, so nothing
-// but this check ties them together.
+// A room in the client that the server has never heard of is a room nobody
+// can be in together: `join` is refused, and since a refusal now locks the
+// door and takes the visitor out of presence entirely, the room is simply
+// shut -- no avatars, no chat, and a notice rather than an explanation. The
+// mansion and the module are edited in different repos-worth of files days
+// apart, so nothing but this check ties them together.
 //
 // Two comparisons, because there are two ways to be out of step:
 //   - mansion.json against the module's SEED_ROOMS, which is what a fresh

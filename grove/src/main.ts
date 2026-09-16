@@ -573,6 +573,7 @@ view.start((dt, time, rawDt) => {
     worldRoot: view.world,
     live: !presenting,
     setScaleVisible: (scale) => world?.setScaleVisible(scale),
+    locked: lockedRoom,
   });
   if (crossing) {
     body.x = crossing.x;
@@ -627,7 +628,7 @@ view.start((dt, time, rawDt) => {
     }
   }
 
-  tellAboutLock(body.lockedOut);
+  tellAboutLock(body.lockedOut ?? portals.lockedOut);
   if (body.crossedInto) {
     void world?.ensureRooms(neighbourhood(mansion, body.crossedInto)).catch((error: unknown) =>
       notice(`This room did not finish loading: ${message(error)}. Reload to try again.`, true));

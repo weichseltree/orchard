@@ -419,6 +419,8 @@ class Rig {
   readonly scaleShown: number[] = [];
   body = { room: "parterre", scale: 1, x: 0, z: 0 };
   readonly eye = new Vector3();
+  /** Rooms presence would refuse; a portal into one is seen through, not crossed. */
+  locked: ((roomId: string) => boolean) | undefined = undefined;
 
   constructor(live = true) {
     this.renderer = stubRenderer(live);
@@ -447,6 +449,7 @@ class Rig {
       worldRoot: this.world,
       live,
       setScaleVisible: (scale) => this.scaleShown.push(scale),
+      locked: this.locked,
     });
   }
 
@@ -666,6 +669,63 @@ describe("PortalSystem", () => {
       rig.frame();
     }
     expect(rig.renderer.targets.size).toBe(target);
+  });
+});
+
+describe("a locked portal is seen through, not stepped through", () => {
+  // A portal crosses presence rooms exactly as a doorway does: the Meridian
+  // Garden joins "parterre", the Orrery joins "orrery". Without this the
+  // armillary is the one road left into a room presence would refuse, which
+  // puts the body in one room and the visitor's presence in another.
+
+  /**
+   * The same committed head-on walk as the crossing tests, but stopped at
+   * whichever comes first: the crossing, or the frame the lock refuses one.
+   * Walking the full five seconds would carry the eye out the far side, where
+   * there is no portal to be refused by and nothing to assert about.
+   */
+  function walkUntilStopped(rig: Rig) {
+    const along = toward(garden, at(garden, 1.6));
+    const eye = at(garden, 1.6);
+    const dt = 1 / FPS;
+    for (let i = 0; i < Math.round(5 * FPS); i++) {
+      eye.addScaledVector(along, WALK * dt);
+      rig.place(eye, along, garden.room, garden.scale);
+      const crossing = rig.frame(dt);
+      if (crossing || rig.portals.lockedOut) return { crossing, locked: rig.portals.lockedOut };
+    }
+    return { crossing: null, locked: rig.portals.lockedOut };
+  }
+
+  it("walks a committed approach right in when the far room is open", () => {
+    const result = walkUntilStopped(new Rig());
+    expect(result.crossing?.room).toBe("orrery");
+    expect(result.locked).toBeNull();
+  });
+
+  it("refuses the same walk and names the room when the Orrery is locked", () => {
+    const rig = new Rig();
+    rig.locked = (id) => id === "orrery";
+    const result = walkUntilStopped(rig);
+    expect(result.crossing).toBeNull();
+    expect(result.locked).toBe("orrery");
+  });
+
+  it("still blends, so the visitor sees the room they may not enter", () => {
+    // A locked portal that went dark would read as a broken portal rather
+    // than as a door that will not open.
+    const rig = new Rig();
+    rig.locked = (id) => id === "orrery";
+    walkUntilStopped(rig);
+    expect(rig.uniform(garden, "uBlend")).toBeGreaterThan(0);
+  });
+
+  it("locks nothing when the predicate names some other room", () => {
+    const rig = new Rig();
+    rig.locked = (id) => id === "terrace";
+    const result = walkUntilStopped(rig);
+    expect(result.crossing?.room).toBe("orrery");
+    expect(result.locked).toBeNull();
   });
 });
 

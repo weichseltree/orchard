@@ -659,9 +659,17 @@ export class Presence {
       return;
     }
     this.#joining = true;
+    // Pinned to the connection that is being asked. A join's promise can
+    // settle long after its socket died: without this the answer from a dead
+    // connection is applied to the live one, and since a refusal now takes
+    // the visitor out of presence, a late rejection could call `leave` and
+    // evict them from a room they had legitimately joined since.
+    const generation = this.#connectionGeneration;
+    const current = (): boolean => generation === this.#connectionGeneration;
     connection.reducers
       .join({ name: this.name, room: want })
       .then(() => {
+        if (!current()) return;
         this.joinedRoom = want;
         this.#poseSuppressed = false;
         // Once per connection: the views follow us from room to room. Guarded
@@ -682,9 +690,13 @@ export class Presence {
       .catch((error: unknown) => {
         // "room full", "room closed", "admin only": an answer, not a hiccup.
         // Only the reducer's own refusals reach here now.
+        if (!current()) return;
         this.#refuse(want, message(error));
       })
       .finally(() => {
+        // A dead connection's join does not free the live one's slot;
+        // #dropped has already cleared it.
+        if (!current()) return;
         this.#joining = false;
         // #wantRoom is only ever left ahead of joinedRoom by a *new* request,
         // so this cannot loop on a refusal.
@@ -707,7 +719,14 @@ export class Presence {
   #refuse(room: string, reason: string): void {
     if (this.joinedRoom !== null) this.#poseSuppressed = true;
     this.#refused.add(room);
-    this.#setTimer(() => this.#refused.delete(room), REFUSAL_TTL_MS);
+    // Pinned to this connection. #dropped clears #refused outright, but the
+    // timers it scheduled keep running: without this, a timer from a dead
+    // connection would delete a refusal the NEW connection had just recorded,
+    // cutting its lock short and letting the join be retried at once.
+    const generation = this.#connectionGeneration;
+    this.#setTimer(() => {
+      if (generation === this.#connectionGeneration) this.#refused.delete(room);
+    }, REFUSAL_TTL_MS);
     this.#wantRoom = null;
     const notice = `presence: "${room}" refused (${reason})`;
     this.#callbacks.onNotice?.(notice);
