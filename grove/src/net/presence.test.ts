@@ -342,6 +342,28 @@ describe("join refusal", () => {
     expect(presence.joinedRoom).toBeNull();
   });
 
+  it("stops publishing poses after a refused crossing, and leaves nothing frozen behind", async () => {
+    const connection = stubConnection({ refuse: (room) => (room === "einstruct" ? "room full" : null) });
+    let handlers!: TransportHandlers;
+    const presence = new Presence({}, { transport: (h) => (handlers = h), storage: memoryStorage() });
+    presence.connect("grove");
+    handlers.onConnect(connection, "abc", "token");
+    await settle(20);
+    presence.sendPose(0, 0, 0, 0, 1000);
+    const beforeRefusal = connection.moves;
+
+    presence.join("einstruct");
+    await settle(20);
+    presence.sendPose(42, 0, -17, 1, 2000);
+
+    // Suppressing the next pose stops the phantom moving; `leave` is what
+    // stops it being there at all, by dropping the pose row rather than
+    // freezing it at the last position it was seen in the old room.
+    expect(connection.moves).toBe(beforeRefusal);
+    expect(presence.joinedRoom).toBeNull();
+    expect(connection.leaves).toBe(1);
+  });
+
   it("asks again after a reconnect, because a refusal was only that connection's answer", async () => {
     // The room a visitor was refused may have been full, or missing from the
     // room table and added since. Remembering the refusal past the connection

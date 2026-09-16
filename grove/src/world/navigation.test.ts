@@ -60,6 +60,29 @@ describe("resolveMove", () => {
     expect(out.locked).toBeNull();
   });
 
+  it("treats a locked doorway as the wall it is in, and says which room locked it", () => {
+    // Same step as the crossing above. The door is the only difference.
+    const out = resolveMove(mansion, "hall", { x: 0, z: NORTH + 0.5 }, { x: 0, z: NORTH - 0.5 }, BODY_RADIUS, (id) => id === "world-engine");
+    expect(out.room).toBe("hall");
+    expect(out.crossed).toBe(false);
+    expect(out.z).toBeCloseTo(hall.bounds.min[2] + BODY_RADIUS);
+    expect(out.locked).toBe("world-engine");
+  });
+
+  it("reports a lock only while the body is walking into that doorway", () => {
+    // Standing at the far wall of the hall with the same room locked: the
+    // visitor is not being stopped by it, so there is nothing to tell them.
+    const away = resolveMove(mansion, "hall", { x: 5, z: 0 }, { x: 5, z: 1 }, BODY_RADIUS, (id) => id === "einstruct");
+    expect(away.locked).toBeNull();
+  });
+
+  it("leaves every other doorway open when one room is locked", () => {
+    const out = resolveMove(mansion, "hall", { x: 0, z: NORTH + 0.5 }, { x: 0, z: NORTH - 0.5 }, BODY_RADIUS, (id) => id === "cellar");
+    expect(out.room).toBe("world-engine");
+    expect(out.crossed).toBe(true);
+    expect(out.locked).toBeNull();
+  });
+
   it("crosses back the other way", () => {
     const out = resolveMove(mansion, "world-engine", { x: 0, z: NORTH - 0.4 }, { x: 0, z: NORTH + 0.4 });
     expect(out.room).toBe("hall");

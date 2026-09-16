@@ -254,6 +254,14 @@ export class Presence {
   #dirty = false;
   #wantRoom: string | null = null;
   #joining = false;
+  /**
+   * Stop publishing poses while the body is in a room whose next crossing was
+   * refused. A backstop rather than the mechanism: `#refuse` now clears
+   * `joinedRoom` and calls `leave`, which stops poses by the guard below and
+   * deletes the pose row outright. This keeps the poses stopped even if that
+   * ever regresses, and costs one comparison.
+   */
+  #poseSuppressed = false;
   /** Reused: a pose goes out ten times a second and must not allocate. */
   #lastSent = { x: Number.NaN, y: 0, z: 0, yaw: 0, at: Number.NEGATIVE_INFINITY };
   #pendingStop = false;
@@ -344,7 +352,7 @@ export class Presence {
    */
   sendPose(x: number, y: number, z: number, yaw: number, now: number = performance.now()): void {
     const connection = this.#connection;
-    if (!connection || this.status !== "online" || !this.joinedRoom) return;
+    if (!connection || this.status !== "online" || !this.joinedRoom || this.#poseSuppressed) return;
     const last = this.#lastSent;
     const moved =
       Number.isNaN(last.x) ||
@@ -617,6 +625,7 @@ export class Presence {
     this.#exhibitsApplied = false;
     this.joinedRoom = null;
     this.#joining = false;
+    this.#poseSuppressed = false;
     // A refusal is an answer from one connection, not a fact about the world.
     // The room may have been full, closed, or missing from the room table and
     // added since; a visitor whose socket dropped should not have to reload
@@ -654,6 +663,7 @@ export class Presence {
       .join({ name: this.name, room: want })
       .then(() => {
         this.joinedRoom = want;
+        this.#poseSuppressed = false;
         // Once per connection: the views follow us from room to room. Guarded
         // because this runs inside the join's promise chain: anything thrown
         // here would otherwise be caught below and reported as the server
@@ -695,6 +705,7 @@ export class Presence {
    * nothing is left frozen behind.
    */
   #refuse(room: string, reason: string): void {
+    if (this.joinedRoom !== null) this.#poseSuppressed = true;
     this.#refused.add(room);
     this.#setTimer(() => this.#refused.delete(room), REFUSAL_TTL_MS);
     this.#wantRoom = null;
