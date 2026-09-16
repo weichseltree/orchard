@@ -24,13 +24,22 @@ Numbers marked **budget** are proposals, not measurements.
 | Faye speaks | **works** — `say`, rate-limited to one line per 0.7 s |
 | Faye listens and answers | **works** — `chat_here`, answers only when named |
 | Faye fires world events | **works** — `send_broadcast`, admin only, expiring |
-| A visitor SEES any of it | **missing** — nothing in `grove/src/` renders `chat_here` or `broadcast` |
-| A visitor SAYS anything | **missing** — nothing calls `say`; `PresenceConnection` does not declare it |
-| Any of it in an immersive session | **missing** — the HUD is DOM, and DOM is not shown in `immersive-vr` |
-| A visitor SPEAKS with their voice | **blocked** — BACKLOG 7, Cloudflare Realtime, not built |
+| A visitor SEES her speak | **works** — a chat panel in the HUD, and her last line hangs above her capsule |
+| A visitor SAYS anything | **works** — `presence.say`, rate-limited by the panel so "slow down" never reaches a person |
+| A visitor SEES a world event | **works** — `broadcast` is subscribed and gated (`world/broadcast.ts`) |
+| Her speech in an immersive session | **works** — the capsule panel is scene geometry, so a headset shows it |
+| The chat LOG in an immersive session | **works** — a canvas panel, visitor-locked, built on the first session |
+| A visitor SPEAKS with their voice | **works in flat mode** — hold-to-talk in the chat panel |
+| A visitor ASKS her something in a headset | **works** — a wrist menu of four asks: left B/Y, right stick, trigger (§6 option 2) |
 
-The first two missing rows are small. The third is the real VR work. The
-fourth is not orchard's to finish yet.
+Updated 2026-09-16. Stage one and most of stage two are done; what is left is
+the scrolling log in a headset, and the wiring that would let a person speak.
+
+**Deepgram changes what §6 says.** Voice was written down as blocked on
+Cloudflare Realtime, and that is still true of visitor-to-visitor spatial
+voice, which needs an SFU. It is NOT true of talking to Faye: that is one
+client and a transcription service, and Manuel already has Deepgram keys. The
+row above is "half" rather than "blocked" for that reason.
 
 ## 2. The rule that shapes all of it
 
@@ -178,5 +187,34 @@ not local.
 - `spacetime/spacetimedb/src/index.ts` — the public `broadcast` table,
   `send_broadcast`, and expiry in the sweep.
 
-Not landed: every item in §3 onward. Nothing in this document is published to
-maincloud.
+- `grove/src/ui/chat-log.ts`, `chat.ts` — the panel's rules and its DOM.
+- `grove/src/net/avatars.ts` — a peer's last line above their capsule, which is
+  the one part of chat a headset can see. Built by another session against §4.
+- `grove/src/world/broadcast.ts` — the client's half of world events: the
+  backlog refused, expiry read as a DURATION so a wrong client clock cannot
+  break it, each row once, ordered by `at` and never by `id`.
+- `grove/src/voice/transcript.ts`, `capture.ts`, `grove/voice/service.ts` — the
+  transcriber, the push-to-talk loop, and the route that holds the key.
+
+- `grove/src/ui/world-chat.ts` — §5's log as scene geometry, visitor-locked,
+  redrawn only when the text changes.
+- `grove/src/voice/browser.ts`, `support.ts`, `ui/chat.ts` — §6's hold-to-talk.
+
+- `grove/src/ui/ask-menu.ts`, `wrist-menu.ts` — §6 option 2, ruled in by
+  Manuel on 2026-09-16: four asks on the left wrist. Left B/Y opens it, the
+  right stick's vertical steps, the trigger asks — and while it is open the
+  trigger does NOT toggle playback, or choosing a question would also pause the
+  tape behind it. A test holds every entry to the intent `intentOf` reads.
+
+Not landed: every cue but `notice`, and free speech in a headset, which is
+§6 option 3 (voice without the DOM button) and still to come.
+
+Nothing here is published to maincloud, `DEEPGRAM_API_KEY` is not in secrets,
+and the CSP does not yet allow the Deepgram socket.
+
+**The startup budget.** The ceiling was 215,000 when this was written and
+voice alone would have broken it; it is now 230,000 (raised for the palace's
+second pass, see `quality/budgets.json`) and this branch measures 222,156. Both features added here are loaded on
+demand — voice on the first press, the log panel on the first session — and
+that deferral is what keeps it under. The next thing on the startup path needs
+either its own deferral or a deliberate ruling on the ceiling.

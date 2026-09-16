@@ -9,6 +9,14 @@ import { attachTouchControls } from "./control/touch";
 import { XrControls, requestXrSession, watchXrSupport } from "./control/xr";
 import { deploymentTokenSource } from "./net/auth";
 import { Avatars } from "./net/avatars";
+import { knowsCue } from "./world/broadcast";
+import { VOICE_URL } from "./config";
+import type { WorldChat } from "./ui/world-chat";
+import type { WristMenu } from "./ui/wrist-menu";
+import { CLOSED, stepAsk, type AskEvent } from "./ui/ask-menu";
+import type { ChatEntry } from "./ui/chat-log";
+import { voiceSupported } from "./voice/support";
+import type { VoiceCapture } from "./voice/capture";
 import { Presence } from "./net/presence";
 import { ChatPanel } from "./ui/chat";
 import { installAssetMap } from "./render/asset-map";
@@ -196,6 +204,17 @@ function notice(text: string, sticky = false): void {
 
 // Room chat, flat mode only (VR-PRESENCE.md §3). Hidden until the link is up:
 // there is nothing to say to a room you are visiting on your own.
+// One token source for the whole page: presence and voice both need the
+// grove token, and two managers would mean two human checks.
+const tokenSource = demo ? undefined : deploymentTokenSource(hudRoot);
+
+// Voice is offered only when this build has the route AND this browser can
+// actually record (VR-PRESENCE §6). The capture object is built after the
+// panel because its callbacks talk to the panel, so the panel is handed a
+// thin driver rather than the object itself.
+let voiceCapture: VoiceCapture | null = null;
+const canSpeak = Boolean(VOICE_URL && tokenSource && voiceSupported());
+
 const chat = new ChatPanel(hudRoot, {
   onSend: (text) => presence.say(text),
   // A locked pointer cannot be typed past, so the line takes it and the next
@@ -203,7 +222,50 @@ const chat = new ChatPanel(hudRoot, {
   onFocusChange: (open) => {
     if (open && document.pointerLockElement) document.exitPointerLock();
   },
+  onLinesChanged: (lines) => {
+    chatLines = lines;
+    worldChat?.setLines(lines);
+  },
+  voice: canSpeak
+    ? {
+        begin: async () => {
+          await loadVoice();
+          await voiceCapture?.begin();
+        },
+        end: () => voiceCapture?.end(),
+        prime: async () => {
+          await loadVoice();
+          return (await voiceCapture?.prime()) ?? false;
+        },
+      }
+    : undefined,
 });
+
+/**
+ * Loads the voice code on demand, once.
+ *
+ * Voice is a few dozen kB that most visitors never press, so it is not in the
+ * startup bundle -- `voice/support.ts` is import-free precisely so the button
+ * can be offered without it. `prime()` runs this early, so the first press is
+ * not waiting on a download as well as a permission prompt.
+ */
+let voiceLoad: Promise<void> | null = null;
+function loadVoice(): Promise<void> {
+  if (!canSpeak) return Promise.resolve();
+  voiceLoad ??= import("./voice/browser").then(({ browserVoice }) => {
+    voiceCapture = browserVoice(
+      { base: VOICE_URL, token: tokenSource },
+      {
+        onUtterance: (text) => chat.sayHeard(text),
+        onCaption: (text) => chat.showCaption(text),
+        // A failed microphone is something to read in the room, not a console
+        // message: the visitor pressed a button and deserves an answer.
+        onError: (message) => chat.addSystemLine(message),
+      },
+    );
+  });
+  return voiceLoad;
+}
 
 const presence = new Presence(
   {
@@ -235,12 +297,66 @@ const presence = new Presence(
         }
       }
     },
+    // A world event the gate has already vouched for: it arrived after we
+    // subscribed, it is for this room, it has not expired and we have not
+    // acted on it before (world/broadcast.ts). All that is left is to show it.
+    onBroadcast: (action) => {
+      if (action.kind === "notice") {
+        notice(action.text);
+        return;
+      }
+      // A cue we cannot draw is silence. Firing the words instead would turn a
+      // missing animation into a notice nobody asked for, and the host who
+      // sent it would have no way to tell it had not played.
+      if (!knowsCue(action.cue)) return;
+      if (action.text.trim() !== "") notice(action.text);
+    },
   },
   // The grove's token service, when this build has one (a human check, then
   // a token that carries the visitor's identity from visit to visit).
-  demo ? {} : { token: deploymentTokenSource(hudRoot) },
+  tokenSource ? { token: tokenSource } : {},
 );
 let lastLinkDetail = "";
+
+// The chat log a headset can read. DOM is not shown in an immersive session,
+// so the same lines are drawn into a canvas and hung in front of the visitor.
+//
+// Built on the first session rather than at startup: it is a panel only a
+// headset ever sees, and the startup budget is what a visitor downloads before
+// they can walk around. Voice is deferred for the same reason.
+let worldChat: WorldChat | null = null;
+let worldChatLoad: Promise<void> | null = null;
+let chatLines: readonly ChatEntry[] = [];
+// The ask menu: the only way to say anything from inside a headset, since the
+// microphone button is DOM (ui/ask-menu.ts). Its state lives here and XR
+// controls only report inputs, so the menu's rules stay pure and tested.
+let askState = CLOSED;
+let wristMenu: WristMenu | null = null;
+function onAskEvent(event: AskEvent): void {
+  const step = stepAsk(askState, event);
+  askState = step.state;
+  wristMenu?.wear(xr.controllerFor("left"));
+  wristMenu?.show(askState);
+  // Through the typed path, like a spoken line: the rate limit, the clip, and
+  // a refusal that lands in the log a headset can read rather than nowhere.
+  if (step.say) chat.sayHeard(step.say);
+}
+
+view.renderer.xr.addEventListener("sessionstart", () => {
+  worldChatLoad ??= Promise.all([import("./ui/world-chat"), import("./ui/wrist-menu")]).then(
+    ([{ WorldChat: Panel }, { WristMenu: Menu }]) => {
+      const panel = new Panel();
+      // Whatever was already said, so entering VR mid-conversation is not a
+      // blank panel until the next line.
+      panel.setLines(chatLines);
+      view.scene.add(panel.panel);
+      worldChat = panel;
+      wristMenu = new Menu();
+      wristMenu.wear(xr.controllerFor("left"));
+      wristMenu.show(askState);
+    },
+  );
+});
 
 let perfOpen = false;
 let nextPerfReport = 0;
@@ -293,6 +409,10 @@ const xr = new XrControls({
     if (!teleport(body, mansion, x, z, lockedRoom)) notice("nothing to stand on there");
   },
   onNotice: (text) => notice(text),
+  askMenu: {
+    isOpen: () => askState.open,
+    onEvent: onAskEvent,
+  },
 });
 view.scene.add(xr.marker);
 
@@ -654,6 +774,7 @@ view.start((dt, time, rawDt) => {
 
   provenance.update(view.camera, presenting);
   worldNotices.update(view.camera, presenting);
+  worldChat?.update(view.camera, presenting);
 
   // A live audio exhibit's field needs the visitor's head every frame -- that
   // is the whole of what makes a positioned source mean anything -- but the

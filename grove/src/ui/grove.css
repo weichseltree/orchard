@@ -364,4 +364,32 @@ noscript a { color: var(--accent); }
   cursor: pointer;
 }
 .chat-send:disabled { opacity: 0.45; cursor: default; }
+
+/* Push-to-talk. `touch-action: none` so a press-and-hold on a phone is a hold
+   and not the browser's text-selection or scroll gesture, which would steal
+   the pointer and leave the microphone open. */
+.chat-mic {
+  background: transparent;
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  padding: 5px 9px;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  white-space: nowrap;
+}
+/* Live is a colour AND a word ("Listening…"), never colour alone: whether the
+   microphone is open is not something to encode where a colour-blind visitor
+   cannot read it. */
+.chat-mic-live { border-color: var(--accent, #c8a24a); color: var(--accent, #c8a24a); }
+.chat-caption {
+  margin: 4px 0 0;
+  font-size: 12px;
+  opacity: 0.7;
+  font-style: italic;
+  min-height: 1em;
+}
 .touch .chat { width: min(30ch, calc(100vw - 24px)); }

@@ -89,6 +89,13 @@ export default defineConfig(({ command }) => ({
     "import.meta.env.VITE_AUTH_URL": JSON.stringify(
       process.env.VITE_AUTH_URL ?? (command === "serve" ? "" : "/auth"),
     ),
+    // Voice is a Pages Function too (grove/voice/service.ts), so it is off in
+    // `vite` for the same reason and on in a build. `wrangler pages dev` runs
+    // both; there is deliberately no dev-only stub of a route whose whole job
+    // is holding a key.
+    "import.meta.env.VITE_VOICE_URL": JSON.stringify(
+      process.env.VITE_VOICE_URL ?? (command === "serve" ? "" : "/voice"),
+    ),
     // FTL Chess admits weichseltree.com in its frame-ancestors since
     // 2026-09-16 (ftlchess apphosting.yaml), so the gallery's game surface
     // ships on; VITE_FTL_CHESS_ENABLED=0 hides it again without a code change.
