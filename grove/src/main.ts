@@ -15,6 +15,7 @@ import { VOICE_URL } from "./config";
 import type { WorldChat } from "./ui/world-chat";
 import type { WristMenu } from "./ui/wrist-menu";
 import { CLOSED, stepAsk, type AskEvent } from "./ui/ask-menu";
+import { FAYE_ROOM, whereIsFaye } from "./faye/names";
 import type { ChatEntry } from "./ui/chat-log";
 import { voiceSupported } from "./voice/support";
 import type { VoiceCapture } from "./voice/capture";
@@ -217,7 +218,15 @@ let voiceCapture: VoiceCapture | null = null;
 const canSpeak = Boolean(VOICE_URL && tokenSource && voiceSupported());
 
 const chat = new ChatPanel(hudRoot, {
-  onSend: (text) => presence.say(text),
+  onSend: async (text) => {
+    await presence.say(text);
+    // Chat reaches only this room, and every way of asking her works in every
+    // room: say where she is rather than leave the question in silence
+    // (faye/names.ts). English, like the log's other system lines.
+    const fayeRoom = mansion.rooms.find((room) => room.presence === FAYE_ROOM)?.title ?? "hall";
+    const away = whereIsFaye(text, presence.peers.values(), presence.joinedRoom, fayeRoom);
+    if (away) chat.addSystemLine(away);
+  },
   // A locked pointer cannot be typed past, so the line takes it and the next
   // click in the view gives it back (control/desktop.ts re-locks on click).
   onFocusChange: (open) => {

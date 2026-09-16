@@ -90,36 +90,58 @@ describe("replyTo", () => {
     expect(replyTo("faye what is running", state())).toBe("Nothing is running that I can see.");
   });
 
+  const run = (host: string, tree: string) => ({ host, tree });
+
   it("names the tree's label, never its identity", () => {
-    const busy = state({ runningByTree: new Map([["spectre", 2]]) });
-    expect(replyTo("faye what is running", busy, titles)).toBe("2 runs on the card: 2 in coarsen.");
+    const busy = state({ running: [run("SirBase", "spectre"), run("SirBase", "spectre")] });
+    expect(replyTo("faye what is running", busy, titles)).toBe("2 runs: 2 on SirBase (2 coarsen).");
     // Without a title a tree is shown by its name, as it always has been.
-    expect(replyTo("faye what is running", busy)).toBe("2 runs on the card: 2 in spectre.");
+    expect(replyTo("faye what is running", busy)).toBe("2 runs: 2 on SirBase (2 spectre).");
   });
 
-  it("puts the busiest tree first and caps the list", () => {
+  it("says which box each run is on, busiest box first", () => {
     const busy = state({
-      runningByTree: new Map([["a", 1], ["spectre", 5], ["b", 3], ["c", 2]]),
+      running: [run("Legion", "arcedit"), run("SirBase", "arcedit"), run("SirBase", "spectre")],
+    });
+    expect(replyTo("faye what is running", busy, titles))
+      .toBe("3 runs: 2 on SirBase (arcedit, coarsen), 1 on Legion (arcedit).");
+  });
+
+  it("never says the card: a cpu-lane run holds no GPU", () => {
+    const busy = state({ running: [run("SirBase", "spectre")] });
+    expect(replyTo("faye runs", busy, titles)).toBe("1 run: 1 on SirBase (coarsen).");
+    expect(replyTo("faye runs", busy, titles)).not.toContain("card");
+  });
+
+  it("puts the busiest tree first and caps the list per box", () => {
+    const busy = state({
+      running: [
+        run("SirBase", "a"),
+        ...Array.from({ length: 5 }, () => run("SirBase", "spectre")),
+        ...Array.from({ length: 3 }, () => run("SirBase", "b")),
+        run("SirBase", "c"), run("SirBase", "c"),
+      ],
     });
     expect(replyTo("faye runs", busy, titles))
-      .toBe("11 runs on the card: 5 in coarsen, 3 in b, 2 in c.");
+      .toBe("11 runs: 11 on SirBase (5 coarsen, 3 b, 2 c, 1 more).");
   });
 
-  it("is deterministic when two trees are equally busy", () => {
-    const tied = state({ runningByTree: new Map([["zulu", 2], ["alpha", 2]]) });
-    expect(replyTo("faye runs", tied)).toBe(replyTo("faye runs", tied));
-    expect(replyTo("faye runs", tied)).toContain("2 in alpha, 2 in zulu");
+  it("is deterministic when two trees or two boxes are equally busy", () => {
+    const tied = state({ running: [run("SirBase", "zulu"), run("Legion", "alpha")] });
+    const reordered = state({ running: [run("Legion", "alpha"), run("SirBase", "zulu")] });
+    expect(replyTo("faye runs", tied)).toBe(replyTo("faye runs", reordered));
+    expect(replyTo("faye runs", tied)).toBe("2 runs: 1 on Legion (alpha), 1 on SirBase (zulu).");
   });
 
   it("never claims anything succeeded", () => {
-    const busy = state({ runningByTree: new Map([["spectre", 2]]), seenByType: new Map([["completed", 9]]) });
+    const busy = state({ running: [run("SirBase", "spectre")], seenByType: new Map([["completed", 9]]) });
     for (const ask of ["faye status", "faye peer", "hi faye", "faye help"]) {
       expect(replyTo(ask, busy, titles)).not.toMatch(/success|succeeded|worked|passed/i);
     }
   });
 
   it("answers in one line", () => {
-    const busy = state({ runningByTree: new Map([["spectre", 2]]) });
+    const busy = state({ running: [run("SirBase", "spectre")] });
     for (const ask of ["faye status", "faye peer", "hi faye", "faye help"]) {
       expect(replyTo(ask, busy, titles)).not.toContain("\n");
     }

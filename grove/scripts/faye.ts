@@ -34,6 +34,7 @@ import {
 } from "../src/faye/events";
 import { EMPTY_STATE, replyTo, type FayeState } from "../src/faye/reply";
 import { Speaker, TURN_POSE_HZ, isNewLine, onDisconnectAction } from "../src/faye/listen";
+import { FAYE_ROOM } from "../src/faye/names";
 
 const { values: args } = parseArgs({
   options: {
@@ -46,7 +47,8 @@ const { values: args } = parseArgs({
     "token-file": { type: "string", default: "" },
     /** Make that identity: connect with none, write its token, print it, exit. */
     "new-identity": { type: "boolean", default: false },
-    room: { type: "string", default: "grove" },
+    /** The client tells visitors elsewhere to walk here (src/faye/names.ts). */
+    room: { type: "string", default: FAYE_ROOM },
     // NAME_MAX is 24 and `cleanName` clips silently, so a longer name is
     // truncated rather than refused: "The Great Admin Spirit Faye" (27) would
     // stand in the room as "The Great Admin Spirit F". This one is 23.
@@ -327,7 +329,7 @@ async function main(): Promise<void> {
       hosts: reading.hosts,
       mirror: reading.mirror,
       seenByType: countBy(taken.fresh.map((e) => e.type), known.seenByType),
-      runningByTree: runningByTree(doc),
+      running: reading.running,
       hasFeed: true,
     };
 
@@ -429,21 +431,6 @@ function readTreeTitles(dir: string): TreeTitles {
 
 function unquote(raw: string): string {
   return raw.replace(/^['"]|['"]$/g, "");
-}
-
-/** Running counts per tree identity, straight off the feed's experiments. */
-function runningByTree(doc: unknown): Map<string, number> {
-  const out = new Map<string, number>();
-  const root = doc as { experiments?: unknown };
-  if (!Array.isArray(root?.experiments)) return out;
-  for (const raw of root.experiments) {
-    const e = raw as { status?: unknown; repo?: unknown };
-    if (e?.status !== "running") continue;
-    const repo = typeof e.repo === "string" && e.repo ? e.repo : "";
-    if (!repo) continue;
-    out.set(repo, (out.get(repo) ?? 0) + 1);
-  }
-  return out;
 }
 
 function countBy(values: readonly string[], into: ReadonlyMap<string, number>): Map<string, number> {

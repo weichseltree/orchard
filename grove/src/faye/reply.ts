@@ -9,7 +9,8 @@
 // The same honesty rule as `announce`: "completed exit=0" is also what a kill,
 // an OOM and a time-budget stop record, so nothing here reports a success.
 
-import { peerIsSilent, treeLabel, type MirrorHealth, type TreeTitles } from "./events";
+import { peerIsSilent, treeLabel, type MirrorHealth, type RunningRun, type TreeTitles } from "./events";
+import { NAMES } from "./names";
 
 /** What Faye knows right now, as the poll loop last left it. */
 export interface FayeState {
@@ -18,8 +19,8 @@ export interface FayeState {
   mirror: MirrorHealth | null;
   /** Counts of the event types seen since she arrived, by type. */
   seenByType: ReadonlyMap<string, number>;
-  /** How many runs are on the card right now, by tree identity. */
-  runningByTree: ReadonlyMap<string, number>;
+  /** What is running right now, on which box (`readFeed`). */
+  running: readonly RunningRun[];
   /** Whether a feed has answered at all yet. */
   hasFeed: boolean;
 }
@@ -28,29 +29,12 @@ export const EMPTY_STATE: FayeState = {
   hosts: [],
   mirror: null,
   seenByType: new Map(),
-  runningByTree: new Map(),
+  running: [],
   hasFeed: false,
 };
 
 /** The things a visitor can ask for. `none` means they were not talking to her. */
 export type Intent = "greeting" | "running" | "peer" | "help" | "none";
-
-/**
- * The spellings that count as her name.
- *
- * "faye" alone is right for typed chat and wrong for spoken chat: a
- * transcriber hears a one-syllable name it does not know and writes the
- * common word -- fay, fae, fey. She would then ignore a visitor who plainly
- * addressed her, and there is no way for them to tell that from a dead
- * microphone, so the mishearing reads as the whole feature being broken.
- *
- * The alternative is to rewrite the transcript before it is sent, which puts
- * words the visitor did not say into the room's log. Widening what she
- * answers to keeps the log honest and costs only the chance that someone
- * says "fae" in a grove and gets a reply -- a far cheaper mistake than
- * silence.
- */
-export const NAMES = /\b(faye|fay|fae|fey)\b/;
 
 /**
  * Whether a line is addressed to Faye, and what it asks.
@@ -98,19 +82,40 @@ export function replyTo(text: string, state: FayeState, titles?: TreeTitles): st
 
   // "running"
   if (!state.hasFeed) return "I have not heard from the compute yet.";
-  const running = [...state.runningByTree.entries()].filter(([, n]) => n > 0);
-  if (running.length === 0) {
-    // Nothing on the card is a real answer, and a common one at night.
+  if (state.running.length === 0) {
+    // Nothing running is a real answer, and a common one at night.
     return "Nothing is running that I can see.";
   }
-  const total = running.reduce((sum, [, n]) => sum + n, 0);
-  // Busiest first, then by label, so the same state always reads the same way.
-  const parts = running
-    .map(([tree, n]) => ({ label: treeLabel(tree, titles), n }))
-    .sort((a, b) => (b.n !== a.n ? b.n - a.n : a.label < b.label ? -1 : 1))
-    .slice(0, 3)
-    .map(({ label, n }) => `${n} in ${label}`);
-  return `${total} run${total === 1 ? "" : "s"} on the card: ${parts.join(", ")}.`;
+  const total = state.running.length;
+  // Box by box, because "3 runs" on two machines is not one fact. Busiest
+  // first and ties by name at both levels, so the same state always reads the
+  // same way.
+  const boxes = busiestFirst(groupCount(state.running.map((r) => r.host)));
+  const parts = boxes.map(({ key: host, n }) => {
+    const trees = busiestFirst(groupCount(
+      state.running.filter((r) => r.host === host).map((r) => treeLabel(r.tree, titles)),
+    ));
+    const named = trees.slice(0, TREES_PER_BOX).map(({ key, n: k }) => (k > 1 ? `${k} ${key}` : key));
+    const rest = trees.length - named.length;
+    if (rest > 0) named.push(`${rest} more`);
+    return `${n} on ${host} (${named.join(", ")})`;
+  });
+  return `${total} run${total === 1 ? "" : "s"}: ${parts.join(", ")}.`;
+}
+
+/** How many trees one box's answer names before it says "and N more". One line, not a list. */
+const TREES_PER_BOX = 3;
+
+function groupCount(keys: readonly string[]): Map<string, number> {
+  const out = new Map<string, number>();
+  for (const key of keys) out.set(key, (out.get(key) ?? 0) + 1);
+  return out;
+}
+
+function busiestFirst(counts: ReadonlyMap<string, number>): { key: string; n: number }[] {
+  return [...counts.entries()]
+    .map(([key, n]) => ({ key, n }))
+    .sort((a, b) => (b.n !== a.n ? b.n - a.n : a.key < b.key ? -1 : 1));
 }
 
 /** A rough age a person can hear, rather than a number of seconds. */

@@ -32,14 +32,22 @@ Numbers marked **budget** are proposals, not measurements.
 | A visitor SPEAKS with their voice | **works in flat mode** — hold-to-talk in the chat panel |
 | A visitor ASKS her something in a headset | **works** — a wrist menu of four asks: left B/Y, right stick, trigger (§6 option 2) |
 
-Updated 2026-09-16. Stage one and most of stage two are done; what is left is
-the scrolling log in a headset, and the wiring that would let a person speak.
+Updated 2026-09-16, evening. Every row is done, and all of it is live: the
+module with `broadcast`, the chat panel, the headset log, the wrist menu, and
+voice through Deepgram (key set as a Pages secret, socket allowed by the CSP).
+Faye herself goes live when `deploy/faye/install.sh` is first run.
 
-**Deepgram changes what §6 says.** Voice was written down as blocked on
+**Deepgram changed what §6 says.** Voice was written down as blocked on
 Cloudflare Realtime, and that is still true of visitor-to-visitor spatial
-voice, which needs an SFU. It is NOT true of talking to Faye: that is one
-client and a transcription service, and Manuel already has Deepgram keys. The
-row above is "half" rather than "blocked" for that reason.
+voice, which needs an SFU. It was never true of talking to Faye: that is one
+client and a transcription service.
+
+**She hears one room.** Chat reaches only the room it is said in, and she
+stands in the hall (presence `grove`). Every way of asking her works in every
+room, so a visitor elsewhere who names her is told where she stands, and one
+in the hall while she is away is told nobody will answer
+(`src/faye/names.ts`). Answering in every room would mean one admin speaking
+into all of them, which is a ruling, not a fix.
 
 ## 2. The rule that shapes all of it
 
@@ -231,11 +239,14 @@ not local.
   use, capped at ten minutes on the client as well as in the module. The room
   says why when a visitor tries a door, and says once when the doors open.
 
-Not landed: the `DEEPGRAM_API_KEY` Pages secret, which only Manuel holds. Until that secret is
-set, `/voice/grant` answers 503 and the button stays hidden.
+All of the above is published and deployed. Manuel set the `DEEPGRAM_API_KEY`
+Pages secret on 2026-09-16; before that `/voice/grant` answered 503 and the
+button stayed hidden.
 
-Nothing here is published to maincloud, `DEEPGRAM_API_KEY` is not in secrets,
-and the CSP does not yet allow the Deepgram socket.
+- `grove/src/faye/names.ts` — her name and her room, shared by the script and
+  the client, which tells a visitor who names her where she cannot hear them
+  where she stands. Her "what is running" answer is per box and never says
+  "the card", since a cpu-lane run holds no GPU.
 
 **The startup budget.** The ceiling was 215,000 when this was written and
 voice alone would have broken it; it is now 230,000 (raised for the palace's
