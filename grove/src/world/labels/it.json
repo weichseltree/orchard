@@ -102,6 +102,118 @@
       "intro": "L'orrery mostra i tre mondi di coarsen alla scala del cielo, raggiunti attraverso la sfera armillare del giardino. Si è rimpiccioliti cinquanta volte per stare qui; ogni globo misura ottanta metri. Sono le stesse simulazioni registrate della sala di coarsen: 508.744 particelle ciascuna, la stessa miscela uniforme di una specie pesante e una leggera, che differiscono solo per quanto fortemente le due si respingono. Ognuna è aperta verso il punto in cui si trova, con la superficie come bordo misurato delle particelle e l'interno misurato da esse. Le stelle sono uno sfondo disegnato, non un catalogo.",
       "lookFor": "Cammini verso un mondo e osservi la sua faccia tagliata; il bagliore segna la materia più calda, una codifica della temperatura, non luce.",
       "limit": "Una sola simulazione registrata per mondo, nulla di interpolato. Un centro pesante non basta da solo a separare la smiscelazione dal raffreddamento comune come causa."
+    },
+    "arcedit": {
+      "title": "arcedit",
+      "kicker": "Una macchina può imparare a risolvere i rompicapi ARC come una persona davanti a uno schermo?",
+      "intro": "Questo è l'ingresso di arcedit, un progetto di ricerca su un agente che risolve rompicapi modificando: si guarda intorno, sceglie un colore e clicca, e vede nitido solo ciò che è vicino al cursore. Il corridoio porta al motore, agli strumenti, agli archivi e alle opere esposte.",
+      "lookFor": "Percorrete prima il corridoio fino alle opere esposte, poi tornate per le parti che le hanno prodotte."
+    },
+    "arcedit/arcedit": {
+      "title": "arcedit",
+      "kicker": "Di che cosa è fatta la macchina?",
+      "intro": "Il motore: la tela senza fine, l'editor esatto che applica ogni clic, la vista centrata sul cursore che raddoppia di grana a ogni anello, e la rete che impara a usarli. Tutto ciò che serve a un addestramento, e nulla che decida quale esperimento eseguire.",
+      "lookFor": "Gli scaffali nominano ogni parte; vista e clic condividono una sola geometria, l'idea fissa del progetto."
+    },
+    "arcedit/arcedit/serve": {
+      "title": "serve",
+      "kicker": "Che cosa si prova a essere l'agente?",
+      "intro": "Una piccola console dove una persona usa l'editor a mano, sulla stessa tela e attraverso la stessa vista stretta dell'agente, e può cedere il cursore a una rete addestrata e guardarla giocare.",
+      "lookFor": "I clic di una persona e quelli di una rete sullo stesso compito si possono mettere fianco a fianco."
+    },
+    "arcedit/docs": {
+      "title": "docs",
+      "kicker": "Che cosa doveva costruire il progetto?",
+      "intro": "Il mandato, conservato com'era scritto, con una tabella di ogni punto in cui la costruzione se ne discosta e perché, e la regola che ogni esperimento è annunciato prima di raccoglierne i dati.",
+      "lookFor": "La tabella degli scostamenti è la parte onesta: la tastiera è stata sostituita dai clic e il budget di passi ridotto a un quarto."
+    },
+    "arcedit/mental": {
+      "title": "mental",
+      "kicker": "Come può ricordare ciò che ha visto un agente che vede così poco?",
+      "intro": "Una memoria esatta conservata da una linea di lavoro precedente: uno specchio dell'editor su ciò che l'agente crede, muto dove una cella non è stata vista, e un registro che paga l'agente per ogni cella scoperta, una sola volta.",
+      "lookFor": "La memoria non ha mai contraddetto il mondo in tre milioni di verifiche; la ricompensa per la scoperta non si può guadagnare due volte."
+    },
+    "arcedit/results": {
+      "title": "results",
+      "kicker": "Che cosa hanno mostrato davvero gli esperimenti?",
+      "intro": "Le prove: una sala per esperimento, ciascuna con il suo resoconto datato di che cosa fu chiesto, che cosa fu misurato e che cosa il numero non dice. Il corridoio è lungo perché il progetto conserva i fallimenti accanto ai successi.",
+      "lookFor": "Le sale più grandi sono le campagne; gli scaffali chiusi più piccoli sono linee che si sono concluse."
+    },
+    "arcedit/results/grove": {
+      "title": "grove",
+      "kicker": "Come appare l'editor dall'interno?",
+      "intro": "Le opere esposte di questo albero: due episodi registrati dell'editor, uno giocato da un agente addestrato e uno dal maestro programmato i cui clic lo hanno istruito, ciascuno mostrato come una nuvola di celle in cui un visitatore può stare, come un breve filmato con la vista dell'agente sotto la tela, e come immagini fisse. Alla parete, l'ambiente costruito come modello, con la vista dell'agente impilata in vetro sopra le piastrelle. Nulla qui è disegnato a mano; ogni posizione e colore viene da un episodio registrato.",
+      "lookFor": "Confrontate le due nuvole: la breve camminata dell'agente addestrato verso la tavolozza e il giro di cento clic del maestro su una griglia multicolore.",
+      "limit": "Un episodio illustra una politica, non ne è la misura; l'episodio del maestro mostra il compito, non un risultato appreso."
+    },
+    "arcedit/results/grove/oracle_side5": {
+      "title": "oracle_side5",
+      "kicker": "Che cosa chiede il compito, clic dopo clic?",
+      "intro": "Il maestro programmato copia una griglia multicolore cinque per cinque: va alla tavolozza, sceglie un colore, va a una cella, la dipinge e torna, centoquattordici clic in tutto. È il programma le cui scelte sono servite da lezioni all'agente addestrato, mostrato come una nuvola di celle in cui stare, come un filmato con la vista dell'agente sotto, e come la disposizione prima del primo clic. Sopra la tela, la pila di strati è ciò che l'agente vedrebbe da qui: nitida in basso, sfocata in alto.",
+      "lookFor": "Osservate quanto raramente la griglia sorgente sia nitida mentre si dipinge la risposta; il colore va cercato, ricordato e portato.",
+      "limit": "Nessun agente addestrato risolve ancora questa copia multicolore; ciò che è appeso qui è il compito, eseguito dal programma che lo definisce."
+    },
+    "arcedit/results/grove/policy_side3": {
+      "title": "policy_side3",
+      "kicker": "Che cosa fa un agente addestrato con una vista così stretta?",
+      "intro": "Una rete addestrata per imitazione copia un quadrato giallo uniforme che non ha mai visto: va alla tavolozza, sceglie il colore della sorgente, dipinge la risposta tre per tre e consegna, sedici clic. Vede nitide solo le otto celle attorno al cursore, così la camminata è anche uno sguardo. L'episodio è appeso come una nuvola di celle in cui stare, come un filmato con i nove livelli della sua vista sotto la tela, e come due immagini fisse: l'istante della pittura, e la vista da sola, che è tutto ciò che la rete riceve.",
+      "lookFor": "Seguite il percorso del cursore: va una volta alla tavolozza, poi dipinge senza tornarci, perché il colore è ormai sul suo pennello.",
+      "limit": "Un episodio scelto da un insieme riservato illustra una politica che riesce in 124 quadrati su 128; non è la misura, e il caso multicolore non è risolto."
+    },
+    "arcedit/results/i15_perception_under_reward": {
+      "title": "i15_perception_under_reward",
+      "kicker": "Può l'agente imparare a vedere se viene pagato solo per le risposte?",
+      "intro": "Una giornata di ventidue prove per chiedere se la percezione possa essere appresa dalla sola ricompensa. Il grande encoder del mandato non ha mai superato il caso; uno piccolo ha letto il colore della sorgente in poche migliaia di aggiornamenti e ha imparato la copia due per due dal nulla, con tre semi.",
+      "lookFor": "La barriera si è spostata: a tre per tre l'agente legge il colore e poi non consegna."
+    },
+    "arcedit/results/i17_full_campaign": {
+      "title": "i17_full_campaign",
+      "kicker": "Che cosa succede quando l'intero progetto gira a pieno budget?",
+      "intro": "Una campagna su due macchine: ogni variante di percezione e il modello completo sul compito di copia più piccolo, tre semi ciascuno. Si è conclusa quando la macchina ospite si è bloccata; il grande encoder non aveva imparato a vedere in nessuna delle sue ventiquattro celle.",
+      "lookFor": "Una testimonianza di quanto calcolo costi un risultato nullo, e del giorno in cui la macchina si è spenta."
+    },
+    "arcedit/results/i2_encoder": {
+      "title": "i2_encoder",
+      "kicker": "La vista stretta può almeno rappresentare il clic giusto?",
+      "intro": "La prima domanda posta all'encoder: dalla sola vista centrata sul cursore, sa dire quale clic farebbe il maestro subito dopo? Sapeva farlo, ben oltre il caso, una volta corretto il programma di addestramento. Qui il progetto ha imparato che la vista non era il collo di bottiglia.",
+      "lookFor": "Qui è stato trovato un soffitto che le sale successive hanno dovuto spiegare."
+    },
+    "arcedit/results/i3_action": {
+      "title": "i3_action",
+      "kicker": "Come fa un maestro a rivelare la risposta senza volerlo?",
+      "intro": "La prima politica appresa azzeccava quasi ogni decisione e non risolveva nulla: il maestro aveva sempre dipinto le celle in un ordine, così la rete aveva imparato a consegnare quando il cursore stava sull'ultima cella. Un pareggio tra lezioni ugualmente buone era diventato un indizio.",
+      "lookFor": "Spostare il solo cursore faceva passare la rete dal dipingere al consegnare; il rimedio fu mescolare il maestro."
+    },
+    "arcedit/results/i9_restriction": {
+      "title": "i9_restriction",
+      "kicker": "Quanto si può rimpicciolire l'editor restando esatti?",
+      "intro": "L'editor ridotto a un mondo di settantamila stati che si può enumerare per intero, così che ogni affermazione su quali azioni valga la pena inventare si verifica contro la verità invece di essere stimata.",
+      "lookFor": "Qui sono state superate tre porte; la verità di riferimento per la domanda sull'astrazione delle azioni vive su questi scaffali."
+    },
+    "arcedit/results/interface_v1": {
+      "title": "interface_v1",
+      "kicker": "Il compito di copia è apprendibile, se l'agente potesse vedere tutto?",
+      "intro": "Il controllo con cui si misura ogni sala successiva: con l'intera griglia in vista e un vocabolario semplice di dipingi-questa-cella-di-questo-colore, una rete risolve completamente il compito di copia, con tre semi. La difficoltà sta nella vista stretta e nei clic grezzi, non nel compito.",
+      "lookFor": "Il pavimento dell'intero progetto: ciò che è possibile quando nulla è nascosto."
+    },
+    "arcedit/scripts": {
+      "title": "scripts",
+      "kicker": "Come si trasforma ogni domanda in una misura?",
+      "intro": "Gli strumenti: uno script per esperimento, ciascuno raccoglie i numeri promessi in anticipo e li scrive accanto a un'impronta del codice che li ha prodotti. Due di essi producono le opere esposte in questo edificio.",
+      "lookFor": "I nomi seguono la scala delle tappe; le sonde verificano una premessa prima che un esperimento venga annunciato."
+    },
+    "arcedit/tests": {
+      "title": "tests",
+      "kicker": "Che cosa non deve mai spostarsi?",
+      "intro": "Ogni regola su cui il motore si basa ha una verifica che fallisce quando è infranta: l'editor è esatto, la vista è una funzione pura dello stato, nessuna osservazione porta una coordinata assoluta, e la ricompensa pagata per impostazione è quella sotto cui ogni numero registrato fu misurato.",
+      "lookFor": "Uno scaffale verifica che le perdite trovate in passato non tornino in silenzio."
+    },
+    "arcedit/inside": {
+      "title": "Dentro la tela",
+      "kicker": "Che cosa si prova a stare sulla tela?",
+      "intro": "Qui avete la grandezza di una cella. L'episodio del maestro si svolge intorno a voi: la griglia sorgente sta da un lato, il riquadro della risposta si riempie sotto i vostri piedi cella per cella, la tavolozza è una fila di pietre accese, e il cursore è una colonna di luce che va e viene. In alto, gli strati della vista dell'agente pendono come pavimenti di vetro, il più basso nitido e piccolo, ciascuno sopra due volte più largo e due volte più vago, finché il più alto copre tutto e non dice quasi nulla. Scorrete il tempo per vedere il colore viaggiare dalla tavolozza alla cella.",
+      "lookFor": "State sul riquadro della risposta e guardate in alto attraverso gli strati mentre il cursore passa; la finestra nitida lo segue.",
+      "limit": "Questo è l'episodio del maestro, non di un agente addestrato, e la scala è un espediente per guardare; l'agente non vede mai la tela come un luogo."
     }
   },
   "exhibits": {
@@ -152,6 +264,42 @@
     "orrery-worlds": {
       "title": "Il trio di pianeti alla scala del cielo",
       "caption": "Gli stessi tre mondi registrati della sala di coarsen, ciascuno di ottanta metri: 508.744 particelle, 1.129 fotogrammi lungo 96 tempi dinamici, un'unica disposizione iniziale, tre forze di repulsione tra la specie pesante e quella leggera. Le regioni color ferro contengono più particelle pesanti, quelle pallide più leggere; il bagliore codifica la temperatura."
+    },
+    "arcedit.results.grove#0": {
+      "title": "L'editor come luogo",
+      "caption": "L'editor come luogo: celle come piastrelle, il cursore come colonna di luce, la vista dell'agente come lastre di vetro impilate sopra la tela, ogni strato largo il doppio di quello sotto. Posizioni e colori vengono dall'episodio; le proporzioni sono disegnate."
+    },
+    "arcedit.results.grove.oracle_side5#0": {
+      "title": "Il maestro copia una griglia multicolore",
+      "caption": "Il maestro programmato copia una griglia multicolore cinque per cinque in 114 clic: alla tavolozza, alla cella, di nuovo alla tavolozza. Mostra il compito tramite il programma che lo definisce; nessun agente addestrato risolve ancora la copia multicolore."
+    },
+    "arcedit.results.grove.oracle_side5#1": {
+      "title": "L'episodio del maestro come filmato",
+      "caption": "L'episodio del maestro come filmato, la tela sopra e la vista dell'agente sotto. Notate quanto poco della sorgente sia mai nitido mentre si dipinge la risposta; è tutta la difficoltà."
+    },
+    "arcedit.results.grove.oracle_side5#2": {
+      "title": "Il compito prima del primo clic",
+      "caption": "Il compito prima del primo clic: la griglia sorgente, una freccia, il riquadro della risposta vuoto con la sua maniglia, e una barra di dieci colori e sette strumenti, disposta a caso in ogni episodio."
+    },
+    "arcedit.results.grove.policy_side3#0": {
+      "title": "Un agente addestrato copia un quadrato giallo",
+      "caption": "Un agente addestrato copia un quadrato giallo in 16 clic, vedendo solo ciò che è vicino al cursore. Gli strati sopra la tela sono la sua vista, nitida in basso, sfocata in alto. Un episodio che illustra una politica riuscita in 124 quadrati su 128; non è la misura."
+    },
+    "arcedit.results.grove.policy_side3#1": {
+      "title": "Lo stesso episodio come filmato",
+      "caption": "Lo stesso episodio come filmato: la tela sopra, i nove livelli della vista dell'agente sotto, tre clic al secondo. Guardate il cursore andare alla tavolozza e tornare con un colore."
+    },
+    "arcedit.results.grove.policy_side3#2": {
+      "title": "A metà episodio, dipingendo con il colore scelto",
+      "caption": "A metà episodio: l'agente addestrato ha scelto il colore della sorgente e dipinge la risposta. Il quadrato bianco è il cursore; le cornici blu sono le sue finestre di vista, ciascuna doppia della precedente."
+    },
+    "arcedit.results.grove.policy_side3#3": {
+      "title": "Ciò che l'agente vede, nove livelli",
+      "caption": "Ciò che l'agente vede in un passo: nove livelli, ciascuno due volte più grossolano del precedente, il cursore sempre al centro. Questa è l'intera osservazione. Non c'è mappa né coordinata."
+    },
+    "arcedit.inside.canvas": {
+      "title": "La tela alla scala di una cella",
+      "caption": "Il maestro programmato copia una griglia multicolore cinque per cinque in 114 clic: alla tavolozza, alla cella, di nuovo alla tavolozza. Mostra il compito tramite il programma che lo definisce; nessun agente addestrato risolve ancora la copia multicolore."
     }
   }
 }

@@ -10,6 +10,12 @@ from that repository's structure**, not drawn by hand.
 Nothing here is built. Every number is a plan. The spec ends in rulings
 (section 12) that are Manuel's to make before lane time is spent.
 
+**Update, 2026-09-16 evening:** the first area is in. arcedit's authored
+plan (§8, that tree's `results/grove/area.json`) stands off the Long
+Gallery's east door as eighteen rooms (OBSERVATORY.md, "The first area").
+The generator of §3 to §6 is still unbuilt; arcedit's `scripts/grove_area.py`
+is that tree's own authoring tool, not the generator.
+
 ---
 
 ## 1. The inversion
