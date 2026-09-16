@@ -43,6 +43,7 @@ import LeaveReducer from "./leave_reducer";
 import MoveReducer from "./move_reducer";
 import MuteReducer from "./mute_reducer";
 import PutSnapshotReducer from "./put_snapshot_reducer";
+import RemoveAdminReducer from "./remove_admin_reducer";
 import RemoveTreeReducer from "./remove_tree_reducer";
 import ReportVisitorReducer from "./report_visitor_reducer";
 import ResolveReportReducer from "./resolve_report_reducer";
@@ -158,6 +159,7 @@ const reducersSchema = __reducers(
   __reducerSchema("move", MoveReducer),
   __reducerSchema("mute", MuteReducer),
   __reducerSchema("put_snapshot", PutSnapshotReducer),
+  __reducerSchema("remove_admin", RemoveAdminReducer),
   __reducerSchema("remove_tree", RemoveTreeReducer),
   __reducerSchema("report_visitor", ReportVisitorReducer),
   __reducerSchema("resolve_report", ResolveReportReducer),

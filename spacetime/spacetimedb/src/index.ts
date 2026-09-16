@@ -37,6 +37,24 @@ import { ScheduleAt, Timestamp, type Identity } from 'spacetimedb';
 const NAME_MAX = 24;
 const CHAT_MAX = 280;
 const REASON_MAX = 280;
+// What the admin reducers write into public tables. These were once trusted
+// because only the operator's home box called them; area admins and linked
+// repositories make that untrue, so every visitor-facing string is cleaned
+// and every identifier and URL is checked here, not by the caller.
+const TITLE_MAX = 200;
+const QUESTION_MAX = 400;
+const LABEL_MAX = 32;
+const URL_MAX = 2048;
+const ROOM_CAPACITY_MAX = 200;
+const POTENTIAL_MAX = 10;
+const EXHIBIT_KINDS = ['clip', 'still', 'master', 'tape'] as const;
+/** Room and tree names: they are ids in URLs, presence strings and bundle paths. */
+const IDENT = /^[a-z0-9][a-z0-9_.-]{0,63}$/;
+/**
+ * An https URL with a host and nothing a browser would reinterpret. A regex
+ * rather than `new URL`, which the module runtime is not promised to have.
+ */
+const HTTPS_URL = /^https:\/\/[A-Za-z0-9.-]+(?::[0-9]{1,5})?(?:\/[^\s\p{Cc}\p{Cf}]*)?$/u;
 
 const SECOND = 1_000_000n;
 const MINUTE = 60n * SECOND;
@@ -379,6 +397,28 @@ function cleanName(ctx: Ctx, raw: string): string {
   if (s.length >= 2) return s;
   const n = Math.floor(ctx.random() * 9000) + 1000;
   return `visitor-${n}`;
+}
+
+function requireIdent(value: string, what: string): string {
+  if (!IDENT.test(value)) {
+    throw new SenderError(`${what} must be lowercase letters, digits and . _ -, at most 64`);
+  }
+  return value;
+}
+
+/** Visitor-facing text that must say something: cleaned, then refused if nothing is left. */
+function requireText(raw: string, max: number, what: string): string {
+  const clean = cleanText(raw, max);
+  if (!clean) throw new SenderError(`${what} is empty`);
+  return clean;
+}
+
+/** `optional` lets an empty string through as empty; anything else must be an https URL. */
+function checkUrl(raw: string, what: string, optional: boolean): string {
+  const s = raw.trim();
+  if (s === '' && optional) return '';
+  if (s.length > URL_MAX || !HTTPS_URL.test(s)) throw new SenderError(`${what} must be an https URL`);
+  return s;
 }
 
 function roomOrThrow(ctx: Ctx, name: string) {
@@ -735,7 +775,13 @@ export const setRoom = spacetimedb.reducer(
   { name: t.string(), title: t.string(), admin_only: t.bool(), open: t.bool(), capacity: t.u32() },
   (ctx, { name, title, admin_only, open, capacity }) => {
     requireAdmin(ctx);
-    const row = { name, title, admin_only, open, capacity };
+    requireIdent(name, 'room name');
+    // A room shut to everyone is `open: false`, not capacity 0, which would
+    // refuse every join with "room full" and say nothing true about why.
+    if (capacity < 1 || capacity > ROOM_CAPACITY_MAX) {
+      throw new SenderError(`capacity must be 1 to ${ROOM_CAPACITY_MAX}`);
+    }
+    const row = { name, title: requireText(title, TITLE_MAX, 'room title'), admin_only, open, capacity };
     if (ctx.db.room.name.find(name)) ctx.db.room.name.update(row); else ctx.db.room.insert(row);
   }
 );
@@ -828,6 +874,27 @@ export const addAdmin = spacetimedb.reducer(
 );
 
 /**
+ * The undo of `add_admin`, which until now had none: a mistaken grant was
+ * permanent short of a --delete-data republish. Any admin may remove any
+ * other, as any admin may add one.
+ *
+ * The last admin cannot be removed. `init` only seeds the allowlist on a
+ * first publish, so a database with no admin left could never be administered
+ * again from inside the module -- not its rooms, not its bans, not this.
+ */
+export const removeAdmin = spacetimedb.reducer(
+  { who: t.identity() },
+  (ctx, { who }) => {
+    requireAdmin(ctx);
+    if (!ctx.db.admin.identity.find(who)) throw new SenderError('not an admin');
+    let admins = 0;
+    for (const _ of ctx.db.admin.iter()) admins++;
+    if (admins <= 1) throw new SenderError('the last admin cannot be removed');
+    ctx.db.admin.identity.delete(who);
+  }
+);
+
+/**
  * The token gate. `issuers` are the token services whose tokens count as a
  * grove visitor's; `required` turns anonymous connections away.
  */
@@ -862,7 +929,16 @@ export const upsertTree = spacetimedb.reducer(
   { name: t.string(), question: t.string(), status: t.string(), stage: t.string(), potential: t.u8() },
   (ctx, { name, question, status, stage, potential }) => {
     requireAdmin(ctx);
-    const row = { name, question, status, stage, potential, updated_at: ctx.timestamp };
+    requireIdent(name, 'tree name');
+    if (potential > POTENTIAL_MAX) throw new SenderError(`potential must be 0 to ${POTENTIAL_MAX}`);
+    const row = {
+      name,
+      question: cleanText(question, QUESTION_MAX),
+      status: requireText(status, LABEL_MAX, 'status'),
+      stage: requireText(stage, LABEL_MAX, 'stage'),
+      potential,
+      updated_at: ctx.timestamp,
+    };
     if (ctx.db.tree.name.find(name)) ctx.db.tree.name.update(row); else ctx.db.tree.insert(row);
   }
 );
@@ -881,7 +957,19 @@ export const hang = spacetimedb.reducer(
   (ctx, { tree, kind, title, url, thumb_url, tape_url }) => {
     requireAdmin(ctx);
     if (!ctx.db.tree.name.find(tree)) throw new SenderError('no such tree');
-    ctx.db.exhibit.insert({ id: 0n, tree, kind, title, url, thumb_url, tape_url, hung_at: ctx.timestamp });
+    if (!(EXHIBIT_KINDS as readonly string[]).includes(kind)) {
+      throw new SenderError(`kind must be one of ${EXHIBIT_KINDS.join(', ')}`);
+    }
+    ctx.db.exhibit.insert({
+      id: 0n,
+      tree,
+      kind,
+      title: requireText(title, TITLE_MAX, 'title'),
+      url: checkUrl(url, 'url', false),
+      thumb_url: checkUrl(thumb_url, 'thumb_url', true),
+      tape_url: checkUrl(tape_url, 'tape_url', true),
+      hung_at: ctx.timestamp,
+    });
   }
 );
 
