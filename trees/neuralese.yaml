@@ -1,3 +1,4 @@
+# generated from /home/manuel/weichseltree/neuralese/orchard.yaml — edit that file, not this one
 name: neuralese
 title: ''
 path: /home/manuel/weichseltree/neuralese
@@ -6,7 +7,7 @@ question: Can many local models cooperate without ever inspecting one another, i
   them is a few bits of decision per round, and each is paid only for how much worse everyone else predicts
   without it?
 status: active
-stage: scouted
+stage: planted
 gpu: none
 phenomena: []
 artefacts:
@@ -50,7 +51,7 @@ budget:
   prio_cap: 10
 kill: ''
 potential: 0
-notes: 'Drafted 2026-09-16, not planted. Half of a new pair with the tree `spectre`, whose repository
+notes: 'Planted 2026-09-16 by Manuel''s ruling. Half of a new pair with the tree `spectre`, whose repository
   directory is now coarsen: neuralese is the protocol, coarsen is the physics that runs under it and supplies
   a realised outcome to score against. Manuel, 2026-09-16: both are new and have to work together, so
   neither is the other''s successor. Status is the scout''s guess; the repo is a skeleton with the protocol

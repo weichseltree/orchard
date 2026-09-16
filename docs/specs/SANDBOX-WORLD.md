@@ -540,3 +540,32 @@ Each is one question with a recommendation attached.
    arriving in a composed, ruled, deliberately lit building, and the generated
    areas hang off its Long Gallery doors, which is what those doors were put
    there for.
+
+### Ruled by Manuel, 2026-09-16
+
+The recommendation stands unless marked **overruled**. Where a ruling here
+meets one in SANDBOX-TRUST.md, that document's ruling is the one about trust.
+
+- **Scope: full generation.** Rooms, doorways and geometry all come from the
+  structure of the repositories an area's admins link. Stage 1 alone was
+  offered and not chosen. The trust layer (SANDBOX-TRUST.md) is built
+  **before** generation, so nothing linked reaches a visitor before it can be
+  withdrawn.
+- 1 — **Topology first**, as recommended. Then architecture for one tree,
+  then contents.
+- 2 — **The sentence rule is the law**, as recommended.
+- 3 — **No inferred metric decides how a room looks**, as recommended.
+- 4 — **One presence room per area**, as recommended.
+- 5 — **Overruled: generation is live from the start.** It is not build-time
+  through stage 2. The client derives areas at runtime, so a commit can
+  reshape an area without a deploy. The caching, presence and client cost
+  that the recommendation deferred is now part of the first build.
+- 6 — **A notice at the area's entrance** for an unlinked or renamed room, as
+  recommended.
+- 7 — **Overtaken.** SANDBOX-TRUST.md ruling 3 builds per-area admins now, so
+  a per-tree role enters the module after all.
+- 8 — **The area's scale portal is in scope, stage 3**, as recommended.
+- 9 — **The Observatory stays authored**, as recommended. It becomes the
+  orchard repository's own area. Note that its room count has moved: main had
+  fifteen rooms at 6a9743b once the Belvedere was added. The ids frozen are
+  the ids on main, not the fourteen this section was written against.
