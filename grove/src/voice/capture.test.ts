@@ -96,10 +96,13 @@ describe("a turn", () => {
     expect(h.recorder.started).toBe(SLICE_MS);
   });
 
-  it("carries the token as a subprotocol, since a browser cannot set a header", async () => {
+  it("carries the grant as a BEARER subprotocol, since a browser cannot set a header", async () => {
+    // `token` is Deepgram's scheme for an account key; a grant is an access
+    // token and must go as `bearer`, or the handshake is refused. This test
+    // once asserted `token` -- it pinned the bug instead of the contract.
     const h = harness();
     await h.capture.begin();
-    expect(h.deps.connect).toHaveBeenCalledWith("wss://api.deepgram.com/v1/listen?x=1", ["token", "dg-temp"]);
+    expect(h.deps.connect).toHaveBeenCalledWith("wss://api.deepgram.com/v1/listen?x=1", ["bearer", "dg-temp"]);
   });
 
   it("sends one line for one sentence, not one per fragment", async () => {

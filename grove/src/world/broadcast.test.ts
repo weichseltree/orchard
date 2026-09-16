@@ -157,10 +157,13 @@ describe("knowsCue", () => {
     expect(knowsCue("notice")).toBe(true);
   });
 
+  it("knows the update cue, which has an effect behind it now", () => {
+    expect(knowsCue("update")).toBe(true);
+  });
+
   it("does not claim a cue that is named in the brief but has no effect yet", () => {
     // Claiming one fires a moment nobody sees, and reports nothing wrong.
     expect(knowsCue("turnstile")).toBe(false);
-    expect(knowsCue("update")).toBe(false);
   });
 
   it("does not know a bundle it has never fetched", () => {

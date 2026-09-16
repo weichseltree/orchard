@@ -27,7 +27,7 @@ import { Hud } from "./ui/hud";
 import { PerfMeter } from "./ui/perf";
 import { VisitMetrics } from "./ui/diagnostics";
 import { Provenance } from "./ui/provenance";
-import { startGroveUpdates } from "./ui/update";
+import { startGroveUpdates, type GroveUpdates } from "./ui/update";
 import { WorldNotices } from "./ui/worldnotice";
 import { VisitorGuide } from "./ui/guide";
 import { GameSurface } from "./ui/game-surface";
@@ -310,6 +310,7 @@ const presence = new Presence(
       // sent it would have no way to tell it had not played.
       if (!knowsCue(action.cue)) return;
       if (action.text.trim() !== "") notice(action.text);
+      if (action.cue === "update") updates?.checkNow();
     },
   },
   // The grove's token service, when this build has one (a human check, then
@@ -330,6 +331,9 @@ let chatLines: readonly ChatEntry[] = [];
 // The ask menu: the only way to say anything from inside a headset, since the
 // microphone button is DOM (ui/ask-menu.ts). Its state lives here and XR
 // controls only report inputs, so the menu's rules stay pure and tested.
+/** Bound once the update watcher starts; an `update` cue before then is a no-op. */
+let updates: GroveUpdates | null = null;
+
 let askState = CLOSED;
 let wristMenu: WristMenu | null = null;
 function onAskEvent(event: AskEvent): void {
@@ -413,7 +417,31 @@ const xr = new XrControls({
     isOpen: () => askState.open,
     onEvent: onAskEvent,
   },
+  voice: canSpeak
+    ? {
+        begin: () => void talkInHeadset(),
+        end: () => voiceCapture?.end(),
+      }
+    : undefined,
 });
+
+/**
+ * A talk turn from a headset.
+ *
+ * A permission prompt cannot be shown inside an immersive session. If the
+ * browser already remembers a grant, the microphone simply opens; if not, the
+ * visitor is told how to give it, in the log a headset can read, rather than
+ * pressing a stick that does nothing.
+ */
+async function talkInHeadset(): Promise<void> {
+  await loadVoice();
+  if (!voiceCapture) return;
+  if (!(await voiceCapture.prime())) {
+    chat.addSystemLine("To talk in the headset, allow the microphone first: outside VR, hold “Hold to talk” once.");
+    return;
+  }
+  await voiceCapture.begin();
+}
 view.scene.add(xr.marker);
 
 // The portals: soft spheres that show the other scale and step the body
@@ -874,4 +902,4 @@ window.addEventListener("pagehide", (event) => {
 boot();
 // The service worker (cache, offline hall, media integrity) and the reload
 // offer after a deploy; both off in `vite dev`.
-startGroveUpdates({ tier: device.tier, hud, xr: view.renderer.xr });
+updates = startGroveUpdates({ tier: device.tier, hud, xr: view.renderer.xr });
