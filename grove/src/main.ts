@@ -255,7 +255,7 @@ const xr = new XrControls({
   input,
   commands,
   onTeleport: (x, z) => {
-    if (!teleport(body, mansion, x, z)) notice("nothing to stand on there");
+    if (!teleport(body, mansion, x, z, lockedRoom)) notice("nothing to stand on there");
   },
   onNotice: (text) => notice(text),
 });
@@ -337,6 +337,33 @@ function boot(): void {
 
 function presenceRoomFor(roomId: string): string {
   return roomById(mansion, roomId)?.presence ?? "grove";
+}
+
+/**
+ * A doorway into a room the server will not let this visitor into is a wall.
+ *
+ * Walking in and being refused afterwards is what made a phantom: the body is
+ * in one room while presence is in another, and the avatar stands at this
+ * room's coordinates in that room's space. Locking the door keeps the two
+ * halves of a visitor in the same place. In the demo there is no server, so
+ * there are no locks.
+ */
+function lockedRoom(roomId: string): boolean {
+  return !demo && !presence.canEnter(presenceRoomFor(roomId));
+}
+
+/** Said once per locked room, not once per frame the visitor leans on it. */
+let toldAboutLock: string | null = null;
+function tellAboutLock(roomId: string | null): void {
+  if (roomId === null) {
+    toldAboutLock = null;
+    return;
+  }
+  if (roomId === toldAboutLock) return;
+  toldAboutLock = roomId;
+  const title = roomById(mansion, roomId)?.title ?? roomId;
+  const why = presence.whyLocked(presenceRoomFor(roomId));
+  notice(why === null ? `${title} is not open just now.` : `${title}: ${why}.`);
 }
 
 async function enterVr(): Promise<void> {
@@ -473,7 +500,7 @@ view.start((dt, time, rawDt) => {
   // In XR you walk where you look; on a desktop the body's yaw is the heading.
   const heading = presenting ? headingFromCamera() : body.yaw;
   const movingBefore = input.forward !== 0 || input.strafe !== 0;
-  step(body, input, dt, mansion, heading);
+  step(body, input, dt, mansion, heading, lockedRoom);
   if (movingBefore) bodyPlaced = true;
   consumeDeltas(input);
 
@@ -483,7 +510,7 @@ view.start((dt, time, rawDt) => {
   if (presenting) {
     // Room-scale walking can take the head through a wall the rig never met.
     view.camera.getWorldPosition(headWorld);
-    const push = clampHead(body, headWorld.x, headWorld.z, mansion);
+    const push = clampHead(body, headWorld.x, headWorld.z, mansion, lockedRoom);
     if (push.dx !== 0 || push.dz !== 0) {
       body.x += push.dx;
       body.z += push.dz;
@@ -558,6 +585,7 @@ view.start((dt, time, rawDt) => {
     }
   }
 
+  tellAboutLock(body.lockedOut);
   if (body.crossedInto) {
     void world?.ensureRooms(neighbourhood(mansion, body.crossedInto)).catch((error: unknown) =>
       notice(`This room did not finish loading: ${message(error)}. Reload to try again.`, true));

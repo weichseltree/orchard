@@ -4,6 +4,7 @@ import {
   Presence,
   RECONNECT_MAX_MS,
   RECONNECT_MIN_MS,
+  REFUSAL_TTL_MS,
   reconnectDelay,
   type PresenceConnection,
   type TransportHandlers,
@@ -34,12 +35,17 @@ function stubConnection(options: {
   rooms?: string[];
   exhibits?: ExhibitRow[];
   refuse?: (room: string) => string | null;
+  /** Rooms whose row says `open: false`: shut to everyone, host included. */
+  closed?: string[];
+  /** Rooms only a host may enter. */
+  adminOnly?: string[];
   people?: StubVisitor[];
   poses?: StubPose[];
 }): PresenceConnection & {
   joins: string[];
   names: string[];
   moves: number;
+  leaves: number;
   queries: string[][];
   reports: Array<[string, string]>;
   moderation: string[];
@@ -50,6 +56,7 @@ function stubConnection(options: {
   const queries: string[][] = [];
   const reports: Array<[string, string]> = [];
   let moves = 0;
+  let leaves = 0;
   const id = (hex: string) => ({ toHexString: () => hex });
   const table = <Row>(rows: () => Row[]) => ({
     iter: rows,
@@ -66,6 +73,9 @@ function stubConnection(options: {
     get moves() {
       return moves;
     },
+    get leaves() {
+      return leaves;
+    },
     db: {
       peopleHere: table(() =>
         (options.people ?? []).map((v) => ({
@@ -78,7 +88,14 @@ function stubConnection(options: {
         })),
       ),
       posesHere: table(() => (options.poses ?? []).map((p) => ({ ...p, identity: id(p.hex) }))),
-      room: { iter: () => (options.rooms ?? ["grove", "einstruct"]).map((name) => ({ name })) },
+      room: {
+        iter: () =>
+          (options.rooms ?? ["grove", "einstruct"]).map((name) => ({
+            name,
+            open: !(options.closed ?? []).includes(name),
+            admin_only: (options.adminOnly ?? []).includes(name),
+          })),
+      },
       exhibit: { iter: () => options.exhibits ?? [] },
     },
     reducers: {
@@ -91,7 +108,9 @@ function stubConnection(options: {
       move: async () => {
         moves++;
       },
-      leave: async () => undefined,
+      leave: async () => {
+        leaves++;
+      },
       reportVisitor: async ({ who, reason }: { who: { toHexString(): string }; reason: string }) => {
         reports.push([who.toHexString(), reason]);
       },
@@ -127,6 +146,7 @@ function stubConnection(options: {
     joins: string[];
     names: string[];
     moves: number;
+    leaves: number;
     queries: string[][];
     reports: Array<[string, string]>;
     moderation: string[];
@@ -165,7 +185,7 @@ describe("reconnectDelay", () => {
 });
 
 describe("join refusal", () => {
-  it("asks once for a room the server refuses, then falls back to the grove", async () => {
+  it("asks once for a room the server refuses, and joins nothing in its place", async () => {
     const notices: string[] = [];
     const connection = stubConnection({ refuse: (room) => (room === "einstruct" ? "room full" : null) });
     let handlers!: TransportHandlers;
@@ -177,10 +197,106 @@ describe("join refusal", () => {
     handlers.onConnect(connection, "abc", "token");
     await settle(20);
 
+    // Falling back to the grove used to look like staying online through a
+    // refusal. It was not: the visitor is standing in the Mixing Chamber, so
+    // joining the grove puts their avatar there at this room's coordinates,
+    // for everyone in the grove to see. Present nowhere is the honest answer.
     expect(connection.joins.filter((r) => r === "einstruct")).toHaveLength(1);
-    expect(presence.joinedRoom).toBe("grove");
+    expect(connection.joins).not.toContain("grove");
+    expect(presence.joinedRoom).toBeNull();
     expect(notices.some((n) => n.includes("room full"))).toBe(true);
-    expect(notices.some((n) => n.includes("falling back"))).toBe(true);
+  });
+
+  it("locks a door the server would refuse, and says which and why", async () => {
+    // The three refusals that are normal operation, not misconfiguration.
+    // Capacity is deliberately absent: a client cannot count people in a room
+    // it is not in, so a full room is met on arrival, not seen from outside.
+    let handlers!: TransportHandlers;
+    const presence = new Presence({}, { transport: (h) => (handlers = h), storage: memoryStorage() });
+    presence.connect("grove");
+    handlers.onConnect(
+      stubConnection({ rooms: ["grove", "gallery", "greenhouse"], closed: ["gallery"], adminOnly: ["greenhouse"] }),
+      "abc",
+      "token",
+    );
+    await settle(20);
+
+    expect(presence.canEnter("grove")).toBe(true);
+    expect(presence.whyLocked("grove")).toBeNull();
+    expect(presence.whyLocked("gallery")).toBe("room closed");
+    expect(presence.whyLocked("greenhouse")).toBe("admin only");
+    expect(presence.whyLocked("cellar")).toBe('no room "cellar" server-side');
+  });
+
+  it("locks nothing while offline or before the room table has arrived", async () => {
+    // A world that cannot ask the server is not a world with locked doors:
+    // every door has to open, or a dropped socket walls the visitor in.
+    let handlers!: TransportHandlers;
+    const presence = new Presence({}, { transport: (h) => (handlers = h), storage: memoryStorage() });
+    expect(presence.canEnter("anything")).toBe(true);
+    presence.connect("grove");
+    handlers.onConnect(stubConnection({ rooms: [] }), "abc", "token");
+    await settle(20);
+    expect(presence.canEnter("anything")).toBe(true);
+  });
+
+  it("unlocks a door once the refusal expires, without a reload", async () => {
+    const timers: Array<{ fn: () => void; ms: number }> = [];
+    let handlers!: TransportHandlers;
+    const presence = new Presence(
+      {},
+      {
+        transport: (h) => (handlers = h),
+        storage: memoryStorage(),
+        setTimer: (fn, ms) => {
+          timers.push({ fn, ms });
+          return timers.length as unknown as ReturnType<typeof setTimeout>;
+        },
+        clearTimer: () => undefined,
+      },
+    );
+    presence.connect("grove");
+    handlers.onConnect(stubConnection({ rooms: ["grove", "einstruct"], refuse: (r) => (r === "einstruct" ? "room full" : null) }), "abc", "token");
+    await settle(20);
+    presence.join("einstruct");
+    await settle(20);
+    expect(presence.canEnter("einstruct")).toBe(false);
+
+    const expiry = timers.find((t) => t.ms === REFUSAL_TTL_MS);
+    expect(expiry).toBeDefined();
+    expiry!.fn();
+    expect(presence.canEnter("einstruct")).toBe(true);
+  });
+
+  it("does not lock the door when it is the views that failed, not the join", async () => {
+    // The subscription is built inside the join's promise chain, so a throw
+    // there used to arrive as a refusal. A refusal now locks the room and
+    // takes the visitor out of it, so a chat view that will not open must not
+    // be able to present itself as "you may not be here".
+    const notices: string[] = [];
+    const connection = stubConnection({ rooms: ["grove"] });
+    // The first builder is the exhibit subscription, taken at connect; the
+    // room-scoped views are the one the join takes.
+    const realBuilder = connection.subscriptionBuilder.bind(connection);
+    let built = 0;
+    connection.subscriptionBuilder = () => {
+      if (++built > 1) throw new Error("chatHere is missing");
+      return realBuilder();
+    };
+    let handlers!: TransportHandlers;
+    const presence = new Presence(
+      { onNotice: (m) => notices.push(m) },
+      { transport: (h) => (handlers = h), storage: memoryStorage() },
+    );
+    presence.connect("grove");
+    handlers.onConnect(connection, "abc", "token");
+    await settle(20);
+
+    expect(presence.joinedRoom).toBe("grove");
+    expect(presence.canEnter("grove")).toBe(true);
+    expect(connection.leaves).toBe(0);
+    expect(notices.some((n) => n.includes("views did not open"))).toBe(true);
+    expect(notices.some((n) => n.includes("refused"))).toBe(false);
   });
 
   it("does not re-ask on later join calls, so nothing loops", async () => {
@@ -197,6 +313,43 @@ describe("join refusal", () => {
     expect(presence.joinedRoom).toBeNull();
   });
 
+  it("asks again after a reconnect, because a refusal was only that connection's answer", async () => {
+    // The room a visitor was refused may have been full, or missing from the
+    // room table and added since. Remembering the refusal past the connection
+    // that gave it locks them out until they reload the page.
+    const timers: Array<{ fn: () => void }> = [];
+    let handlers!: TransportHandlers;
+    const presence = new Presence(
+      {},
+      {
+        transport: (h) => (handlers = h),
+        storage: memoryStorage(),
+        setTimer: (fn) => {
+          timers.push({ fn });
+          return timers.length as unknown as ReturnType<typeof setTimeout>;
+        },
+        clearTimer: () => undefined,
+      },
+    );
+    presence.connect("grove");
+    handlers.onConnect(stubConnection({ rooms: ["grove"] }), "abc", "token");
+    await settle(20);
+    presence.join("terrace");
+    await settle(20);
+    expect(presence.joinedRoom).toBeNull();
+
+    // The socket drops; the room is added server-side; the client reconnects.
+    handlers.onDisconnect(new Error("socket dropped"));
+    timers[timers.length - 1]!.fn();
+    const second = stubConnection({ rooms: ["grove", "terrace"] });
+    handlers.onConnect(second, "abc", "token");
+    await settle(20);
+    presence.join("terrace");
+    await settle(20);
+    expect(second.joins).toContain("terrace");
+    expect(presence.joinedRoom).toBe("terrace");
+  });
+
   it("says so and stays put when the room is not in the room table", async () => {
     const notices: string[] = [];
     const connection = stubConnection({ rooms: ["grove"] });
@@ -211,7 +364,10 @@ describe("join refusal", () => {
     presence.join("cellar");
     await settle(20);
     expect(connection.joins).toEqual(["grove"]);
-    expect(presence.joinedRoom).toBe("grove");
+    // The body walked into the cellar, so the grove is no longer where this
+    // visitor is; `leave` drops the pose row rather than freezing it there.
+    expect(presence.joinedRoom).toBeNull();
+    expect(connection.leaves).toBe(1);
     expect(notices.some((n) => n.includes("cellar"))).toBe(true);
   });
 

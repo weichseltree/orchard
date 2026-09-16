@@ -20,10 +20,16 @@ export interface Body {
   scale: number;
   /** Set for one frame after a doorway or portal crossing. */
   crossedInto: string | null;
+  /**
+   * The room behind a locked doorway the body is walking into, while it is
+   * walking into it. A locked doorway is a wall, and an unexplained wall reads
+   * as a bug, so whoever owns the lock owes the visitor a reason for this.
+   */
+  lockedOut: string | null;
 }
 
 export function createBody(x: number, z: number, yaw: number, room: string, scale = 1): Body {
-  return { x, z, yaw, pitch: 0, room, scale, crossedInto: null };
+  return { x, z, yaw, pitch: 0, room, scale, crossedInto: null, lockedOut: null };
 }
 
 /**
@@ -37,8 +43,10 @@ export function step(
   dt: number,
   mansion: Mansion,
   heading: number = body.yaw,
+  locked?: (roomId: string) => boolean,
 ): void {
   body.crossedInto = null;
+  body.lockedOut = null;
   body.yaw -= input.yawDelta;
   body.pitch = clampPitch(body.pitch - input.pitchDelta);
 
@@ -63,9 +71,11 @@ export function step(
     { x: body.x, z: body.z },
     { x: body.x + dx * speed, z: body.z + dz * speed },
     BODY_RADIUS,
+    locked,
   );
   body.x = result.x;
   body.z = result.z;
+  body.lockedOut = result.locked;
   if (result.crossed) {
     body.room = result.room;
     body.crossedInto = result.room;
@@ -81,6 +91,7 @@ export function clampHead(
   headX: number,
   headZ: number,
   mansion: Mansion,
+  locked?: (roomId: string) => boolean,
 ): { dx: number; dz: number } {
   const result = resolveMove(
     mansion,
@@ -88,7 +99,9 @@ export function clampHead(
     { x: body.x, z: body.z },
     { x: headX, z: headZ },
     BODY_RADIUS,
+    locked,
   );
+  if (result.locked) body.lockedOut = result.locked;
   if (result.crossed) {
     body.room = result.room;
     body.crossedInto = result.room;
@@ -100,8 +113,14 @@ export function clampPitch(pitch: number): number {
   return pitch < -MAX_PITCH ? -MAX_PITCH : pitch > MAX_PITCH ? MAX_PITCH : pitch;
 }
 
-/** Teleport: only onto a floor inside a room. */
-export function teleport(body: Body, mansion: Mansion, x: number, z: number): boolean {
+/** Teleport: only onto a floor inside a room, and never into a locked one. */
+export function teleport(
+  body: Body,
+  mansion: Mansion,
+  x: number,
+  z: number,
+  locked?: (roomId: string) => boolean,
+): boolean {
   const room = mansion.rooms.find(
     (r) =>
       x >= r.bounds.min[0] + BODY_RADIUS &&
@@ -110,6 +129,7 @@ export function teleport(body: Body, mansion: Mansion, x: number, z: number): bo
       z <= r.bounds.max[2] - BODY_RADIUS,
   );
   if (!room) return false;
+  if (room.id !== body.room && locked?.(room.id)) return false;
   body.x = x;
   body.z = z;
   if (room.id !== body.room) {
