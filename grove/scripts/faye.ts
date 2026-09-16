@@ -33,6 +33,7 @@ import {
   type Cursor, type TreeTitles,
 } from "../src/faye/events";
 import { EMPTY_STATE, replyTo, type FayeState } from "../src/faye/reply";
+import { TURN_POSE_HZ, isNewLine, onDisconnectAction } from "../src/faye/listen";
 
 const { values: args } = parseArgs({
   options: {
@@ -87,12 +88,13 @@ if (args["new-identity"] && !args["token-file"]) {
 
 // The module's own limits. Breaking any of them is a thrown reducer, not a
 // silent clamp, so they are read from the module rather than guessed.
-const MOVE_RATE = 20;          // tokens per second, burst 10
-const TICK_HZ = 10;            // half the rate: a spirit never spends its burst
 const WORLD_HALF_EXTENT_M = 500;
 const WORLD_Y_MIN_M = -50;
 const WORLD_Y_MAX_M = 100;
 const CHAT_MIN_GAP_MS = 700;
+
+/** Whether the socket has come up, and whether she is walking out on purpose. */
+const life = { connected: false, leaving: false };
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -136,6 +138,7 @@ function connect(token: string | null): Promise<{ conn: DbConnection; hex: strin
     (token ? builder.withToken(token) : builder)
       .onConnect((conn, identity, issued) => {
         clearTimeout(timer);
+        life.connected = true;
         resolve({ conn, hex: identity.toHexString(), identity, token: issued });
       })
       .onConnectError((_ctx, error) => {
@@ -144,7 +147,15 @@ function connect(token: string | null): Promise<{ conn: DbConnection; hex: strin
       })
       .onDisconnect((_ctx, error) => {
         clearTimeout(timer);
-        reject(error ?? new Error("disconnected"));
+        // src/faye/listen.ts: a drop after connecting must end the process,
+        // or the unit stays "active" with her capsule gone from the room.
+        const action = onDisconnectAction(life);
+        if (action === "reject") {
+          reject(error ?? new Error("disconnected"));
+        } else if (action === "exit-failed") {
+          console.error(`faye: lost the connection (${error instanceof Error ? error.message : "closed"}); exiting for a restart`);
+          process.exit(1);
+        }
       })
       .build();
   });
@@ -213,34 +224,42 @@ async function main(): Promise<void> {
   const titles = readTreeTitles(args.trees);
   if (titles.size > 0) console.log(`faye: ${titles.size} tree label(s) loaded from ${args.trees}`);
 
-  let leaving = false;
   const startedAt = Date.now();
-  const timer = setInterval(() => {
-    if (leaving) return;
-    // Standing on the spot, turning slowly: a presence, not a pacing NPC.
-    // Nothing here pretends to walk -- the body has no collision and no
-    // navigation, and a capsule sliding through a wall reads as a bug.
+  // Standing on the spot, turning slowly: a presence, not a pacing NPC.
+  // Nothing here pretends to walk -- the body has no collision and no
+  // navigation, and a capsule sliding through a wall reads as a bug.
+  const sendPose = () => {
+    if (life.leaving) return;
     const yaw = turnSeconds > 0
       ? ((Date.now() - startedAt) / 1000 / turnSeconds) * Math.PI * 2
       : 0;
     conn.reducers.move({ x: at.x, y: at.y, z: at.z, yaw: wrapAngle(yaw) }).catch((error: unknown) => {
       console.warn(`faye: move refused (${error instanceof Error ? error.message : String(error)})`);
     });
-  }, 1000 / Math.min(TICK_HZ, MOVE_RATE));
+  };
+  sendPose();
+  // Standing still is one pose; turning is a stream, at a rate maincloud is
+  // not paying for around the clock (TURN_POSE_HZ says why).
+  const timer = turnSeconds > 0 ? setInterval(sendPose, 1000 / TURN_POSE_HZ) : null;
 
   // What she knows, for answering a visitor who speaks to her. Updated by the
   // poll loop; read by the chat handler.
   let known: FayeState = EMPTY_STATE;
 
-  // Every line already in the room when she arrives is history. Answering it
-  // would have her walk in replying to a conversation that finished hours ago,
-  // so the subscription's initial rows are skipped and only what is said from
-  // now on is heard.
-  let listening = false;
+  // Every line already in the room when she arrives is history; she hears
+  // only what is said after her own join, by the module's clock
+  // (src/faye/listen.ts). Listening does not wait on the compute feed: with
+  // no feed she still answers, and says she has not heard from it.
+  const joinedAt = (): bigint | null => {
+    for (const person of conn.db.peopleHere.iter()) {
+      if (person.identity.isEqual(identity)) return person.lastSeen.microsSinceUnixEpoch;
+    }
+    return null;
+  };
   conn.db.chatHere.onInsert((_ctx, row) => {
-    if (!listening || leaving) return;
-    // Her own lines come back through the same view; answering them is a loop.
-    if (row.sender.isEqual(identity)) return;
+    if (life.leaving) return;
+    const line = { sender: row.sender.toHexString(), atMicros: row.at.microsSinceUnixEpoch };
+    if (!isNewLine(line, hex, joinedAt())) return;
     const answer = replyTo(row.text, known, titles);
     if (!answer) return;
     console.log(`faye: ${row.name} said "${row.text}" -> "${answer}"`);
@@ -263,7 +282,7 @@ async function main(): Promise<void> {
   if (!Number.isFinite(pollSeconds) || pollSeconds < 0) throw new Error("--poll wants seconds");
 
   const pollOnce = async (): Promise<void> => {
-    if (leaving) return;
+    if (life.leaving) return;
     let doc: unknown;
     try {
       const response = await fetch(args["status-url"], { cache: "no-store" });
@@ -294,9 +313,7 @@ async function main(): Promise<void> {
     if (firstPoll) {
       firstPoll = false;
       peerWasSilent = peerIsSilent(reading.mirror);
-      listening = true;
       console.log(`faye: baseline taken at ${reading.events.length} event(s); watching ${reading.hosts.join(", ")}`);
-      console.log("faye: listening — say her name in the room");
       return;
     }
 
@@ -313,7 +330,7 @@ async function main(): Promise<void> {
     peerWasSilent = silentNow;
 
     for (const text of lines) {
-      if (leaving) return;
+      if (life.leaving) return;
       await conn.reducers.say({ text }).catch((error: unknown) => {
         console.warn(`faye: line refused (${error instanceof Error ? error.message : String(error)})`);
       });
@@ -329,10 +346,12 @@ async function main(): Promise<void> {
     console.log(`faye: watching the compute every ${pollSeconds}s`);
   }
 
+  console.log("faye: listening — say her name in the room");
+
   const farewell = async (signal: string) => {
-    if (leaving) return;
-    leaving = true;
-    clearInterval(timer);
+    if (life.leaving) return;
+    life.leaving = true;
+    if (timer !== null) clearInterval(timer);
     if (pollTimer !== null) clearInterval(pollTimer);
     // Without this the capsule stands there until the connection times out.
     try {
