@@ -48,6 +48,12 @@ const REPORT_MIN_GAP = 30n * SECOND;     // one report per 30 s per visitor
 const KICK_FOR = 10n * MINUTE;           // a kick is a short ban
 const BAN_FOREVER = 100n * 365n * DAY;
 const CHAT_KEEP = DAY;
+// A broadcast is a moment, not a record. It is swept once it expires, and its
+// ttl is capped so a cue cannot sit in the table forever waiting to fire at
+// somebody who walks in next week.
+const BROADCAST_TTL_MAX = 10n * MINUTE;
+const BROADCAST_KINDS = ['cue', 'notice'] as const;
+const CUE_MAX = 64;
 const REPORT_KEEP = 90n * DAY;
 const VISITOR_KEEP = 30n * DAY;
 const SWEEP_EVERY = 10n * MINUTE;
@@ -129,6 +135,41 @@ const chat = table(
     name: t.string(),
     text: t.string(),
     at: t.timestamp(),
+  }
+);
+
+/**
+ * A world event every visitor sees: play a pre-fetched cue, or read a notice.
+ *
+ * Public, like `room`, `tree` and `exhibit`, and for the same reason -- there
+ * is nothing private in an announcement meant for the room, and a public table
+ * spares this a per-viewer view that would have to express "my room OR every
+ * room" as a join.
+ *
+ * `cue` names something the client ALREADY HAS. The bytes of an animation are
+ * a content-hashed bundle, cached forever; this row is the live trigger that
+ * is never cached (PACKAGES.md, AUDIO-STREAM.md §1). The split is the existing
+ * rule, not a new one.
+ *
+ * `expires_at` is load-bearing. A client that subscribes receives every row in
+ * the table, so without expiry a visitor arriving at noon would replay every
+ * cue fired that morning. The sweep deletes them and the client ignores what
+ * it did not see arrive.
+ */
+const broadcast = table(
+  { name: 'broadcast', public: true },
+  {
+    id: t.u64().primaryKey().autoInc(),
+    /** 'cue' plays a pre-fetched animation; 'notice' is words to read. */
+    kind: t.string(),
+    /** Which pre-fetched thing to play; empty for a notice. */
+    cue: t.string(),
+    /** What a visitor reads; may accompany a cue. */
+    text: t.string(),
+    /** The room it is for; empty means every room. */
+    room: t.string().index('btree'),
+    at: t.timestamp(),
+    expires_at: t.timestamp(),
   }
 );
 
@@ -292,7 +333,7 @@ const sweep_timer = table(
 );
 
 const spacetimedb = schema({
-  admin, room, visitor, pose, chat, tree, exhibit, review_item, ruling, directive, snapshot,
+  admin, room, visitor, pose, chat, broadcast, tree, exhibit, review_item, ruling, directive, snapshot,
   ban, whereabouts, connection, guest, throttle, join_throttle, report, setting, sweep_timer,
 });
 export default spacetimedb;
@@ -484,6 +525,11 @@ function sweepNowImpl(ctx: Ctx) {
   for (const r of [...ctx.db.report.iter()]) {
     if (now - micros(r.at) > REPORT_KEEP) ctx.db.report.id.delete(r.id);
   }
+  // An expired broadcast is gone, not kept: the table is what a joining client
+  // replays, so anything past its moment must not still be in it.
+  for (const b of [...ctx.db.broadcast.iter()]) {
+    if (micros(b.expires_at) <= now) ctx.db.broadcast.id.delete(b.id);
+  }
   for (const b of [...ctx.db.ban.iter()]) {
     if (micros(b.until) <= now) ctx.db.ban.identity.delete(b.identity);
   }
@@ -668,6 +714,39 @@ export const setRoom = spacetimedb.reducer(
     requireAdmin(ctx);
     const row = { name, title, admin_only, open, capacity };
     if (ctx.db.room.name.find(name)) ctx.db.room.name.update(row); else ctx.db.room.insert(row);
+  }
+);
+
+/**
+ * Fire a world event. Admin only, like every other thing that changes the
+ * world out from under a visitor.
+ *
+ * `ttl_seconds` is how long this stays live for someone who arrives late; it
+ * is clamped rather than refused, because a caller asking for an hour wants
+ * the longest allowed, not an error. A room that does not exist IS refused --
+ * a cue aimed at nowhere is a silent no-op, and silence is the one failure
+ * that never gets noticed.
+ */
+export const sendBroadcast = spacetimedb.reducer(
+  { kind: t.string(), cue: t.string(), text: t.string(), room: t.string(), ttl_seconds: t.u32() },
+  (ctx, { kind, cue, text, room, ttl_seconds }) => {
+    requireAdmin(ctx);
+    if (!(BROADCAST_KINDS as readonly string[]).includes(kind)) {
+      throw new SenderError(`kind must be one of ${BROADCAST_KINDS.join(', ')}`);
+    }
+    // Empty means every room; anything else must be a room that exists.
+    if (room && !ctx.db.room.name.find(room)) throw new SenderError('no such room');
+    const cleanCue = clip(cue.trim(), CUE_MAX);
+    if (kind === 'cue' && !cleanCue) throw new SenderError('a cue names what to play');
+    const cleaned = cleanText(text, CHAT_MAX);
+    if (kind === 'notice' && !cleaned) throw new SenderError('a notice carries words');
+    const asked = ttl_seconds > 0 ? BigInt(ttl_seconds) * SECOND : BROADCAST_TTL_MAX;
+    const ttl = asked > BROADCAST_TTL_MAX ? BROADCAST_TTL_MAX : asked;
+    ctx.db.broadcast.insert({
+      id: 0n, kind, cue: cleanCue, text: cleaned, room,
+      at: ctx.timestamp,
+      expires_at: new Timestamp(micros(ctx.timestamp) + ttl),
+    });
   }
 );
 

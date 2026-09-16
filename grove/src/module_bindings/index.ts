@@ -49,6 +49,7 @@ import ResolveReportReducer from "./resolve_report_reducer";
 import RetireDirectiveReducer from "./retire_directive_reducer";
 import RuleReducer from "./rule_reducer";
 import SayReducer from "./say_reducer";
+import SendBroadcastReducer from "./send_broadcast_reducer";
 import SetAuthReducer from "./set_auth_reducer";
 import SetDirectiveReducer from "./set_directive_reducer";
 import SetRoomReducer from "./set_room_reducer";
@@ -61,6 +62,7 @@ import UpsertTreeReducer from "./upsert_tree_reducer";
 // Import all procedure arg schemas
 
 // Import all table schema definitions
+import BroadcastRow from "./broadcast_table";
 import ChatHereRow from "./chat_here_table";
 import ExhibitRow from "./exhibit_table";
 import PeopleHereRow from "./people_here_table";
@@ -72,6 +74,20 @@ import TreeRow from "./tree_table";
 
 /** The schema information for all tables in this module. This is defined the same was as the tables would have been defined in the server. */
 const tablesSchema = __schema({
+  broadcast: __table({
+    name: 'broadcast',
+    indexes: [
+      { accessor: 'id', name: 'broadcast_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'room', name: 'broadcast_room_idx_btree', algorithm: 'btree', columns: [
+        'room',
+      ] },
+    ],
+    constraints: [
+      { name: 'broadcast_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, BroadcastRow),
   exhibit: __table({
     name: 'exhibit',
     indexes: [
@@ -148,6 +164,7 @@ const reducersSchema = __reducers(
   __reducerSchema("retire_directive", RetireDirectiveReducer),
   __reducerSchema("rule", RuleReducer),
   __reducerSchema("say", SayReducer),
+  __reducerSchema("send_broadcast", SendBroadcastReducer),
   __reducerSchema("set_auth", SetAuthReducer),
   __reducerSchema("set_directive", SetDirectiveReducer),
   __reducerSchema("set_room", SetRoomReducer),
