@@ -12,7 +12,7 @@ StartLimitBurst=5
 
 [Service]
 Type=simple
-# Her own worktree, pinned to origin/main by deploy/faye-install.sh -- never the
+# Her own worktree, pinned to origin/main by deploy/faye/install.sh -- never the
 # main checkout, whose branch changes under whoever is working in it.
 WorkingDirectory=@FAYE@/grove
 ExecStart=@NODE@ @FAYE@/grove/node_modules/tsx/dist/cli.mjs scripts/faye.ts --uri wss://maincloud.spacetimedb.com --db orchard --live --token-file @HOME@/.config/orchard/faye.token --trees @FAYE@/trees

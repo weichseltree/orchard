@@ -2,7 +2,7 @@
 # Install or update Faye's live service. Idempotent: the same command is the
 # first install and every later update.
 #
-#   deploy/faye-install.sh
+#   deploy/faye/install.sh
 #
 # 1. Her worktree at ~/.local/share/orchard-faye, detached at origin/main.
 #    Never the main checkout: a service restarting into whatever branch
@@ -16,7 +16,7 @@
 # and that identity made admin with the `add_admin` call it prints.
 set -euo pipefail
 
-repo="$(git -C "$(dirname "$0")/.." rev-parse --show-toplevel)"
+repo="$(git -C "$(dirname "$0")/../.." rev-parse --show-toplevel)"
 faye="${HOME}/.local/share/orchard-faye"
 token="${HOME}/.config/orchard/faye.token"
 node_bin="$(command -v node)"
@@ -38,7 +38,7 @@ echo "faye worktree at $(git -C "$faye" rev-parse --short HEAD)"
 unit_dir="${HOME}/.config/systemd/user"
 mkdir -p "$unit_dir"
 sed -e "s#@FAYE@#${faye}#g" -e "s#@HOME@#${HOME}#g" -e "s#@NODE@#${node_bin}#g" \
-  "$repo/deploy/systemd/orchard-faye.service" > "$unit_dir/orchard-faye.service"
+  "$repo/deploy/faye/orchard-faye.service" > "$unit_dir/orchard-faye.service"
 systemctl --user daemon-reload
 systemctl --user enable --quiet orchard-faye.service
 systemctl --user restart orchard-faye.service

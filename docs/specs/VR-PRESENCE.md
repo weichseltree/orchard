@@ -161,7 +161,7 @@ not local.
   maincloud CLI's token is the publisher, and a long-running script must not
   hold what can delete the module (`src/faye/local.ts`). She runs as the user
   service `orchard-faye`, from her own worktree pinned to `origin/main`
-  (`deploy/faye-install.sh`), never from the main checkout.
+  (`deploy/faye/install.sh`), never from the main checkout.
 
 ## 8. Rulings this asks for
 
