@@ -15,9 +15,14 @@
 // room capacity (spacetime/spacetimedb/src/index.ts, `join`). That is the
 // right identity for a host standing in their own world and the wrong one to
 // point at maincloud, where it would be a real host appearing unannounced.
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 import { parseArgs } from "node:util";
 import { DbConnection } from "../src/module_bindings";
+import {
+  EMPTY_CURSOR, accumulate, announce, peerIsSilent, readFeed,
+  type Cursor, type TreeTitles,
+} from "../src/faye/events";
 
 const { values: args } = parseArgs({
   options: {
@@ -35,6 +40,12 @@ const { values: args } = parseArgs({
     turn: { type: "string", default: "24" },
     /** One line on arrival. Empty says nothing. */
     say: { type: "string", default: "" },
+    /** expdash's feed: both boxes at once (src/faye/events.ts says why). */
+    "status-url": { type: "string", default: "http://localhost:8686/api/status" },
+    /** Seconds between polls; 0 leaves her silent about the compute. */
+    poll: { type: "string", default: "30" },
+    /** Where trees/*.yaml live, for the label a visitor reads rather than the tree identity. */
+    trees: { type: "string", default: "../trees" },
   },
 });
 
@@ -146,6 +157,9 @@ async function main(): Promise<void> {
     });
   }
 
+  const titles = readTreeTitles(args.trees);
+  if (titles.size > 0) console.log(`faye: ${titles.size} tree label(s) loaded from ${args.trees}`);
+
   let leaving = false;
   const startedAt = Date.now();
   const timer = setInterval(() => {
@@ -161,10 +175,77 @@ async function main(): Promise<void> {
     });
   }, 1000 / Math.min(TICK_HZ, MOVE_RATE));
 
+  // What she has taken in of the compute, and what she has already said about
+  // the peer. Both live only as long as she stands here: a spirit that
+  // remembers across restarts would announce a backlog on arrival.
+  let cursor: Cursor = EMPTY_CURSOR;
+  let peerWasSilent: boolean | null = null;
+  let firstPoll = true;
+  const pollSeconds = Number(args.poll);
+  if (!Number.isFinite(pollSeconds) || pollSeconds < 0) throw new Error("--poll wants seconds");
+
+  const pollOnce = async (): Promise<void> => {
+    if (leaving) return;
+    let doc: unknown;
+    try {
+      const response = await fetch(args["status-url"], { cache: "no-store" });
+      if (!response.ok) throw new Error(`${response.status}`);
+      doc = await response.json();
+    } catch (error) {
+      // The dashboard being down is not Faye's news to break. She goes on
+      // standing; the room is never told the plumbing failed.
+      console.warn(`faye: no feed (${error instanceof Error ? error.message : String(error)})`);
+      return;
+    }
+    const reading = readFeed(doc);
+    const taken = accumulate(cursor, reading.events);
+    cursor = taken.cursor;
+    if (taken.rebaselined) console.log("faye: the feed restarted its numbering; re-baselined");
+
+    // The first poll is a baseline, not news: everything in the feed happened
+    // before she arrived, and a spirit who walks in reciting the last hour is
+    // not informing anyone.
+    if (firstPoll) {
+      firstPoll = false;
+      peerWasSilent = peerIsSilent(reading.mirror);
+      console.log(`faye: baseline taken at ${reading.events.length} event(s); watching ${reading.hosts.join(", ")}`);
+      return;
+    }
+
+    const lines = announce(taken.fresh, titles).map((a) => a.text);
+
+    // The peer going quiet or coming back is worth one line each way, never
+    // one per poll. This is the mirror's freshness, not any job's age.
+    const silentNow = peerIsSilent(reading.mirror);
+    if (peerWasSilent !== null && silentNow !== peerWasSilent && reading.mirror) {
+      lines.push(silentNow
+        ? `${reading.mirror.peer} has stopped reporting.`
+        : `${reading.mirror.peer} is reporting again.`);
+    }
+    peerWasSilent = silentNow;
+
+    for (const text of lines) {
+      if (leaving) return;
+      await conn.reducers.say({ text }).catch((error: unknown) => {
+        console.warn(`faye: line refused (${error instanceof Error ? error.message : String(error)})`);
+      });
+      // CHAT_MIN_GAP is 0.7 s per speaker; crowding it throws "slow down".
+      await sleep(CHAT_MIN_GAP_MS + 200);
+    }
+  };
+
+  let pollTimer: ReturnType<typeof setInterval> | null = null;
+  if (pollSeconds > 0) {
+    void pollOnce();
+    pollTimer = setInterval(() => void pollOnce(), pollSeconds * 1000);
+    console.log(`faye: watching the compute every ${pollSeconds}s`);
+  }
+
   const farewell = async (signal: string) => {
     if (leaving) return;
     leaving = true;
     clearInterval(timer);
+    if (pollTimer !== null) clearInterval(pollTimer);
     // Without this the capsule stands there until the connection times out.
     try {
       await conn.reducers.leave({});
@@ -178,6 +259,39 @@ async function main(): Promise<void> {
   process.on("SIGINT", () => void farewell("SIGINT"));
   process.on("SIGTERM", () => void farewell("SIGTERM"));
   console.log("faye: ctrl-c to leave");
+}
+
+/**
+ * Tree identity to the label a person reads, from `trees/*.yaml`. The compute
+ * feed carries the IDENTITY (`spectre`), which the rename ruling keeps because
+ * it is inside the bytes every bundle id hashes; a visitor is told the title
+ * (`coarsen`). Read with a regex rather than a YAML dependency: only the two
+ * top-level scalars are wanted, and a manifest this reader cannot parse simply
+ * contributes no label.
+ */
+function readTreeTitles(dir: string): TreeTitles {
+  const titles = new Map<string, string>();
+  let files: string[];
+  try {
+    files = readdirSync(dir).filter((f) => f.endsWith(".yaml"));
+  } catch {
+    return titles;
+  }
+  for (const file of files) {
+    try {
+      const text = readFileSync(join(dir, file), "utf8");
+      const name = /^name:[ \t]*(\S.*?)[ \t]*$/m.exec(text)?.[1];
+      const title = /^title:[ \t]*(\S.*?)[ \t]*$/m.exec(text)?.[1];
+      if (name && title && title !== name) titles.set(unquote(name), unquote(title));
+    } catch {
+      // A manifest that will not read is a tree shown by its name. Not fatal.
+    }
+  }
+  return titles;
+}
+
+function unquote(raw: string): string {
+  return raw.replace(/^['"]|['"]$/g, "");
 }
 
 function wrapAngle(angle: number): number {
