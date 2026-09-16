@@ -4,15 +4,12 @@ Written 2026-09-16, from Manuel's ask: *"I want you to have a direct VR
 integration. Can you appear in the local version of the orchard as The Great
 Admin Spirit Faye?"* and *"plan the VR integration fully"*.
 
-**What is already true.** Faye stands in the local grove, watches the compute
-on both boxes, announces what changes, and answers a visitor who names her —
-verified as a real two-identity exchange against a live database. A public
-`broadcast` table now carries world events (cues and notices) to every client.
-
-**What is not true.** A visitor cannot reach any of it from inside the grove.
-This document is the path from a script-only conversation to one a person can
-have wearing a headset, and it says plainly which parts are blocked on
-something orchard does not have.
+**Where this started.** Faye stood in a local grove, watched the compute on
+both boxes, announced what changed and answered a visitor who named her —
+but only as a script-to-script exchange: no visitor could reach any of it from
+inside the grove. This document was the path from that to a conversation a
+person can have wearing a headset. §1 says where that path now stands; the
+sections after it are kept as the plan they were.
 
 Numbers marked **budget** are proposals, not measurements.
 

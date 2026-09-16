@@ -23,9 +23,10 @@ export const NAMES = /\b(faye|fay|fae|fey)\b/;
 /**
  * The name she stands in the room under. Not a flag: the client recognises her
  * by it (`isFaye`), so a Faye started under another name would be reported
- * absent while she stood there. NAME_MAX in the module is 24 and `cleanName`
- * clips silently -- "The Great Admin Spirit Faye" (27) would have stood as
- * "The Great Admin Spirit F" -- so a test holds this to the limit.
+ * absent while she stood there. It is 23 characters because NAME_MAX in the
+ * module is 24 and `cleanName` clips silently: the fuller title, with "The"
+ * in front, would have stood in the room cut off mid-name. A test holds it
+ * within the limit.
  */
 export const FAYE_NAME = "Great Admin Spirit Faye";
 
@@ -42,12 +43,14 @@ export function namesFaye(text: string): boolean {
 }
 
 /**
- * Whether a peer is Faye. A host whose name is hers: anyone can CALL themselves
- * Faye, but only the module can make a peer a host, so a visitor named Faye
- * does not stand in for her and hide that she is absent.
+ * Whether a peer is Faye: a host whose name is exactly hers. Anyone can CALL
+ * themselves Faye, but only the module can make a peer a host. And not every
+ * host whose name `NAMES` would hear -- that regex is for lines addressed to
+ * her, and a host called "Fay" standing in the gallery must not hide that
+ * Faye is somewhere else.
  */
 export function isFaye(peer: { name: string; host: boolean }): boolean {
-  return peer.host && namesFaye(peer.name);
+  return peer.host && peer.name === FAYE_NAME;
 }
 
 /**

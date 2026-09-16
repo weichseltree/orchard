@@ -27,6 +27,12 @@ describe("isFaye", () => {
     expect(isFaye({ name: FAYE_NAME.slice(0, 24), host: true })).toBe(true);
   });
 
+  it("is not a host whose name only sounds like hers", () => {
+    for (const name of ["Fay", "Fae", "Faye", "Faye's friend"]) {
+      expect(isFaye({ name, host: true }), name).toBe(false);
+    }
+  });
+
   it("is never a visitor who calls themselves Faye", () => {
     expect(isFaye({ name: "Faye", host: false })).toBe(false);
   });
