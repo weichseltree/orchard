@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   ANNOUNCE_BUDGET, EMPTY_CURSOR, accumulate, announce, eventNumber,
-  peerIsSilent, readFeed, type ComputeEvent,
+  peerIsSilent, readFeed, treeLabel, type ComputeEvent,
 } from "./events";
 
 function event(over: Partial<ComputeEvent> = {}): ComputeEvent {
   return {
     id: "ev_1", ts: 1789524730, type: "completed", priority: 3,
-    title: "Completed: a-run", detail: "ran 0m 20s", repo: "coarsen", host: "SirBase",
+    title: "Completed: a-run", detail: "ran 0m 20s", repo: "spectre", host: "SirBase",
     ...over,
   };
 }
@@ -25,8 +25,8 @@ const feed = {
     mirror: { state: "ok", age_s: 3, peer: "Legion", records: 105, interval: 10 },
   },
   events: [
-    { id: "ev_14448", ts: 1, type: "crashed", priority: 1, title: "Crashed: a", detail: "exit code 1", repo: "coarsen" },
-    { id: "ev_14450", ts: 2, type: "completed", priority: 3, title: "Completed: b", detail: "ran 0m 20s", repo: "coarsen" },
+    { id: "ev_14448", ts: 1, type: "crashed", priority: 1, title: "Crashed: a", detail: "exit code 1", repo: "spectre" },
+    { id: "ev_14450", ts: 2, type: "completed", priority: 3, title: "Completed: b", detail: "ran 0m 20s", repo: "spectre" },
   ],
 };
 
@@ -125,7 +125,7 @@ describe("announce", () => {
     const crashes = Array.from({ length: 8 }, (_, i) =>
       event({ id: `ev_${i + 1}`, type: "crashed", priority: 1, title: `Crashed: m-${i}` }));
     const [first] = announce(crashes);
-    expect(first!.text).toBe("8 runs crashed in coarsen.");
+    expect(first!.text).toBe("8 runs crashed in spectre.");
     expect(first!.count).toBe(8);
     expect(first!.ids).toHaveLength(8);
   });
@@ -142,7 +142,7 @@ describe("announce", () => {
 
   it("groups by repo, so the same failure in two repos is two sentences", () => {
     const said = announce([
-      event({ id: "ev_1", type: "crashed", priority: 1, repo: "coarsen", title: "Crashed: tests", detail: "exit code 1" }),
+      event({ id: "ev_1", type: "crashed", priority: 1, repo: "spectre", title: "Crashed: tests", detail: "exit code 1" }),
       event({ id: "ev_2", type: "crashed", priority: 1, repo: "einstruct", title: "Crashed: assemble", detail: "exit code 2" }),
     ]);
     expect(said).toHaveLength(2);
@@ -160,6 +160,20 @@ describe("announce", () => {
     ];
     expect(announce(events).map((a) => a.ids[0])).toEqual(["ev_2", "ev_9"]);
     expect(announce([...events].reverse()).map((a) => a.ids[0])).toEqual(["ev_2", "ev_9"]);
+  });
+
+  it("tells a visitor the tree's label, never its identity", () => {
+    // The feed says `spectre` because that identity is inside the bytes every
+    // bundle id hashes (the rename ruling of 2026-09-16 keeps it). What a
+    // person reads is `coarsen`.
+    const titles = new Map([["spectre", "coarsen"]]);
+    const crashes = [
+      event({ id: "ev_1", type: "crashed", priority: 1, repo: "spectre" }),
+      event({ id: "ev_2", type: "crashed", priority: 1, repo: "spectre" }),
+    ];
+    expect(announce(crashes, titles)[0]!.text).toBe("2 runs crashed in coarsen.");
+    // Without a title the identity is still what a tree has always been shown as.
+    expect(announce(crashes)[0]!.text).toBe("2 runs crashed in spectre.");
   });
 
   it("puts a crash before a routine finish", () => {
@@ -183,6 +197,17 @@ describe("announce", () => {
       event({ id: "ev_3", type: "completed", priority: 3, repo: "mike" }),
     ];
     expect(announce(events)).toEqual(announce([...events].reverse()));
+  });
+});
+
+describe("treeLabel", () => {
+  it("is the title when a tree has one, the identity when it does not", () => {
+    const titles = new Map([["spectre", "coarsen"]]);
+    expect(treeLabel("spectre", titles)).toBe("coarsen");
+    expect(treeLabel("einstruct", titles)).toBe("einstruct");
+    expect(treeLabel("einstruct")).toBe("einstruct");
+    // An empty title is not a label; a tree is never shown as nothing.
+    expect(treeLabel("x", new Map([["x", ""]]))).toBe("x");
   });
 });
 
