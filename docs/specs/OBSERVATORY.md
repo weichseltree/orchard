@@ -250,3 +250,45 @@ Stated limits: the field has no shadows and no bounce, and a lamp's power
 is a design number from its size, not photometry; a doorway's spill is a
 point at the doorway; Japanese door names are the identifiers; the lens
 over a sealed door does not open, since no room stands behind it.
+
+## The first area: arcedit (2026-09-16)
+
+arcedit's authored area (TREE-AREAS.md §8; `results/grove/area.json` in
+that tree, made by its `scripts/grove_area.py`) is folded into mansion.json
+as eighteen rooms: an entrance corridor of 68 m by 5 m on the gallery's
+east cabinet door at z 34, now open; six chambers off it; a results
+corridor of 67 m with seven chambers; the grove room with its two episode
+rooms, each a tape, a film and stills; and a canvas room at a tenth of the
+palace's metre, reached through a portal at the corridor's far end. The
+area's own frame is kept: its palace-scale rooms move by (+10, 0, +31.5)
+so the entrance's west door lands on the gallery's wall, and the canvas
+room keeps its coordinates, as the Orrery does, inside the ±500 m the
+presence module accepts. Its eight bundles hang as approved.
+
+What the fold changed in the area: inner doors are 2.6 to 2.75 m high so
+a lintel name fits under ceilings of 3.25 m (the entrance stays 2.4 by
+3.2); four hangings moved so that a still and a film never share a stretch
+of wall and every label has room beyond its hanging's right edge; every
+tape names its stand foot; the portal moved a metre east, clear of the
+tests door. arcedit-22 was told the numbers.
+
+Architecture: a room of an area takes its tree's finish (`finishOf`: one
+entry per tree in `ROOM_FINISH`, so its rooms share materials), and a room
+wider than it is deep is turned (`runsAlongX`): its vault spans the short
+way, its route and its chandeliers run the long way. Corridors with three
+or more doors get sconces; a chamber gets a single-tier halo hung under its
+low ribs, and ribs every six metres. An entrance panel that finds no room
+beside its door on a short end wall goes round the corner onto the side
+wall (labels.ts). The draw, triangle and door-sign budgets now scale with
+the room count: about fifteen batches and fourteen thousand triangles a
+room, 200,000 triangles of door names for the world. Wall text: eighteen
+rooms and nine hangings in eight languages from arcedit's
+`scripts/grove_labels.py`, merged into the label files. Presence: one room
+row "arcedit" for the whole area, in `SEED_ROOMS` and set live with
+`set_room`.
+
+Stated limits: rooms without hangings are architecture and prose; the
+area's furniture (its shelving) is not rendered; a visitor in the canvas
+room stands 400 m east at palace scale for the others in the area's one
+presence room, out of sight; the generator of TREE-AREAS.md §3 to §6 is
+still unbuilt, this is the authored path of §8.

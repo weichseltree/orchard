@@ -92,18 +92,28 @@ synthetic media. Neither is a live-service acceptance test.
 pnpm quality:browser --scope memory --out ../results/quality/memory.json
 ```
 
-The demo is walked through every room twice via `window.grove.visit`, which
-enters a room through the same `teleport` a controller uses. Each visit waits
-until the renderer's geometry, texture and program counts stop changing.
+The demo is walked through every room three times via `window.grove.visit`,
+which enters a room through the same `teleport` a controller uses. Each visit
+waits for the world to settle (`window.grove.settled`: every load in flight,
+and every load those started) and then until the renderer's geometry, texture
+and program counts stop changing; a lap ends with a full turn on the spot.
 Rooms load as a visitor nears them and are never unloaded, so the first lap
-legitimately grows those counts. The second lap must not: any growth there is
-something rebuilt on each arrival and never disposed, so the leak grows with
-the number of crossings. It also runs as part of `--scope all`, which CI uses.
+legitimately grows those counts. The laps compared are the second and the
+third: the renderer counts a geometry only once it has been in view, and a
+plaque built after the tour left a chamber that its fixed heading never faces
+again would otherwise be counted on lap two as new (found when arcedit's
+eighteen rooms came in). By the end of lap one everything has loaded, lap two
+draws whatever of it the route can see, and lap three sees exactly the same
+again, so any growth there is something rebuilt on each arrival and never
+disposed: a leak that grows with the number of crossings. It also runs as
+part of `--scope all`, which CI uses.
 
-Measured 2026-09-16: 15 rooms, both laps end at 115 geometries, 24 textures
-and 13 programs. The check was verified against a deliberate leak (one mesh per
-crossing, never disposed): the second lap reported 147 geometries against the
-first lap's 131, and the check failed as it should.
+Measured 2026-09-16 with 15 rooms: both laps ended at 115 geometries, 24
+textures and 13 programs. The check was verified against a deliberate leak
+(one mesh per crossing, never disposed): the second lap reported 147
+geometries against the first lap's 131, and the check failed as it should.
+With arcedit's area, 33 rooms: all three laps end at 242 geometries, 49
+textures and 15 programs locally.
 
 **Frame times in this suite are recorded, not enforced.** CI renders with
 SwiftShader on a shared runner; the same tour measured p95 750 ms there. A

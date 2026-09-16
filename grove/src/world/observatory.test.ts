@@ -2,7 +2,7 @@ import { InstancedMesh, Light, Mesh, MeshBasicMaterial, Raycaster, Vector3, type
 import { describe, expect, it, vi } from "vitest";
 import mansionDocument from "./mansion.json";
 import { parseMansion } from "./schema";
-import { buildObservatory } from "./observatory";
+import { buildObservatory, runsAlongX } from "./observatory";
 import { buildRoom } from "./rooms";
 
 const mansion = parseMansion(mansionDocument);
@@ -11,7 +11,8 @@ for (const { shell } of shells) shell.group.updateMatrixWorld(true);
 
 describe("the designed observatory", () => {
   it("builds every footprint with explicit architectural provenance, no textures or lights", () => {
-    expect(shells).toHaveLength(14);
+    // The palace's fourteen chambers and cells, and arcedit's area of eighteen (TREE-AREAS.md).
+    expect(shells).toHaveLength(32);
     for (const { room, shell } of shells) {
       expect(shell.group.name).toBe(`${room.id}-shell`);
       expect(shell.group.userData.architecture).toBe("observatory");
@@ -33,7 +34,7 @@ describe("the designed observatory", () => {
     }
   });
 
-  it("keeps all fourteen rooms below 260 architecture draws and 200000 triangles", () => {
+  it("keeps every room near fifteen architecture draws and the world under 200000 triangles", () => {
     let draws = 0, triangles = 0;
     const geometries = new Set(), materials = new Set();
     for (const { shell } of shells) shell.group.traverse(node => {
@@ -48,13 +49,13 @@ describe("the designed observatory", () => {
       expect([...bounds.min, ...bounds.max].every(Number.isFinite)).toBe(true);
     });
     // Fifteen batches a room, and the grounds are height-field meshes now.
-    expect(draws).toBeLessThan(260);
-    expect(triangles).toBeLessThan(200_000);
-    // Six shared primitives plus eight vaults; chamber colours reuse programs.
+    expect(draws).toBeLessThan(shells.length * 16);
+    // About fourteen thousand triangles a room: the palace's fifteen came to 200,000.
+    expect(triangles).toBeLessThan(shells.length * 14_000);
     // Six primitives, one vault per chamber, one height field per cell.
-    expect(geometries.size).toBeLessThanOrEqual(24);
-    // Fifteen finishes, a few of them per-room variants.
-    expect(materials.size).toBeLessThanOrEqual(48);
+    expect(geometries.size).toBeLessThanOrEqual(6 + shells.length);
+    // Fifteen finishes, a few of them per-room variants; an area's rooms share their tree's.
+    expect(materials.size).toBeLessThanOrEqual(56);
   });
 
   it("leaves every open doorway clear at walking height across its aperture", () => {
@@ -93,8 +94,10 @@ describe("the designed observatory", () => {
 
   it("gives the roof a real open crown and leaves the terrace under the sky", () => {
     for (const { room, shell } of shells) {
-      const x = (room.bounds.min[0] + room.bounds.max[0]) / 2;
-      const z = room.bounds.min[2] + 1.1;
+      // The crown runs the room's long way: along z, or along x in a turned room of an area.
+      const turned = runsAlongX(room, mansion);
+      const x = turned ? room.bounds.min[0] + 1.1 : (room.bounds.min[0] + room.bounds.max[0]) / 2;
+      const z = turned ? (room.bounds.min[2] + room.bounds.max[2]) / 2 : room.bounds.min[2] + 1.1;
       // From above any flight's parapet, so a stair at the north wall does not count as roof.
       expect(new Raycaster(new Vector3(x, room.bounds.min[1] + 3.2, z), new Vector3(0, 1, 0), 0.001, 10)
         .intersectObject(shell.group, true), `${room.id} sky opening`).toEqual([]);

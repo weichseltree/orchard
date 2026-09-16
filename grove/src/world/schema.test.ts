@@ -13,7 +13,10 @@ describe("mansion.json", () => {
   it("parses", () => {
     const mansion = parseMansion(mansionDocument);
     expect(mansion.schema).toBe("orchard/mansion/1");
-    expect(mansion.rooms.map((room) => room.id)).toEqual(["hall", "einstruct", "spectre", "world-engine", "orangery", "phototroph", "gallery", "belvedere", "greenhouse", "terrace", "parterre", "orchard-west", "orchard-south", "orchard-east", "orrery"]);
+    const palace = ["hall", "einstruct", "spectre", "world-engine", "orangery", "phototroph", "gallery", "belvedere", "greenhouse", "terrace", "parterre", "orchard-west", "orchard-south", "orchard-east", "orrery"];
+    // arcedit's area (results/grove/area.json in that tree): its entrance and seventeen chambers, the last at a tenth of the scale.
+    const arcedit = ["arcedit", "arcedit/arcedit", "arcedit/arcedit/serve", "arcedit/docs", "arcedit/mental", "arcedit/results", "arcedit/results/grove", "arcedit/results/grove/oracle_side5", "arcedit/results/grove/policy_side3", "arcedit/results/i15_perception_under_reward", "arcedit/results/i17_full_campaign", "arcedit/results/i2_encoder", "arcedit/results/i3_action", "arcedit/results/i9_restriction", "arcedit/results/interface_v1", "arcedit/scripts", "arcedit/tests", "arcedit/inside"];
+    expect(mansion.rooms.map((room) => room.id)).toEqual([...palace, ...arcedit]);
     expect(mansion.start).toBe("hall");
   });
 
@@ -204,8 +207,9 @@ describe("BundleRefSchema", () => {
         // (AUDIO-STREAM.md §1); nothing below is a claim about it.
         if (hanging.kind === "audio") continue;
         // The hall's poster wall shows einstruct; the Orrery's worlds are spectre's.
+        // A room of a tree's area ("arcedit/results/grove") shows its tree's.
         const guest: Record<string, string> = { hall: "einstruct", orrery: "spectre" };
-        expect(hanging.bundle.exhibit?.tree).toBe(guest[room.id] ?? room.id);
+        expect(hanging.bundle.exhibit?.tree).toBe(guest[room.id] ?? room.id.split("/")[0]);
         expect(hanging.bundle.exhibit?.kind).toBe(hanging.kind);
         expect(hanging.bundle.id).toMatch(/^[0-9a-f]{16}$/);
         // A hanging pinned to a bundle names the same bundle as its fallback id.

@@ -300,3 +300,22 @@ Append-only. A decision names the day, the ruling, and the alternative it beat.
   terrace's side stairs, nothing left standing in a walk. Beat lighting
   by three.js lights (per-object cost, no occlusion) and by per-room
   materials (the material budget).
+
+- **2026-09-16 · The first tree area: arcedit's eighteen rooms off the
+  gallery.** Manuel, on the list of what could go live next: "do all that
+  and put it live", and "I approve all exhibits because I need to see them
+  first anyway". arcedit's authored area (TREE-AREAS.md §8,
+  `results/grove/area.json`) is folded into mansion.json at (+10, 0, +31.5)
+  so its entrance is the gallery's east cabinet door at z 34, opened; the
+  canvas room at a tenth of the scale keeps its own coordinates like the
+  Orrery; its eight bundles hang as approved. Decided along the way: (1) a
+  room of an area takes its tree's finish and, when wider than deep, runs
+  its vault, route and lamps along x; (2) inner doors stop 0.6 m under the
+  lower ceiling so the lintel name fits; (3) four hangings moved and every
+  tape got a stand foot to meet the label rules, arcedit-22 told the
+  numbers; (4) an entrance panel goes round the corner when its short wall
+  has no room beside the door; (5) the draw, triangle and door-sign budgets
+  scale per room (about fifteen batches and fourteen thousand triangles a
+  room, 200,000 sign triangles for the world); (6) one presence room
+  "arcedit" for the whole area, in `SEED_ROOMS` and added live with
+  `set_room`, no module publish. The area's furniture is not rendered.

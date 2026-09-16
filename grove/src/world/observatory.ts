@@ -35,7 +35,20 @@ const ROOM_FINISH: Record<string, Partial<Record<Finish, string>>> = {
   phototroph: { wall: "#292326", floor: "#241e1b", inset: "#171418", stone: "#62564b", brass: "#b59668", light: "#ffdb9d", blue: "#d2aa73", roof: "#251f23" },
   orangery: { wall: "#263846", inset: "#172632", stone: "#667b88", brass: "#899eaa", light: "#ddf1ff", blue: "#a9d9f0", roof: "#203443" },
   belvedere: { wall: "#1b2c3c", inset: "#121f2b", stone: "#5c6b77", roof: "#172838" },
+  // arcedit's area: slate walls and the editor's yellow in the lamps, one finish for all its rooms.
+  arcedit: { wall: "#141b26", floor: "#0f1620", inset: "#0c121a", stone: "#4c5766", brass: "#a8905c", light: "#ffe4ad", blue: "#d1a94b", roof: "#111a26" },
 };
+/**
+ * Which finish a room takes: its own, or its tree's for the rooms of an area
+ * ("arcedit/results/grove" is finished as "arcedit"), so an area's rooms
+ * share materials as well as a look (TREE-AREAS.md §7).
+ */
+function finishOf(roomId: string): Partial<Record<Finish, string>> | undefined {
+  return ROOM_FINISH[roomId] ?? ROOM_FINISH[roomId.split("/")[0]!];
+}
+function finishKey(roomId: string): string {
+  return ROOM_FINISH[roomId] ? roomId : roomId.split("/")[0]!;
+}
 /** Rooms whose walls carry brass sconces between the panels. */
 const SCONCED = ["hall", "gallery", "orangery", "belvedere", "world-engine"];
 /** Rooms with a colonnade along their long walls. */
@@ -44,8 +57,8 @@ const materials = new Map<string, MeshBasicMaterial>();
 const geometries = new Map<Primitive, BufferGeometry>();
 
 function material(finish: Finish, roomId: string): MeshBasicMaterial {
-  const override = ROOM_FINISH[roomId]?.[finish];
-  const key = override ? `${roomId}-${finish}` : finish;
+  const override = finishOf(roomId)?.[finish];
+  const key = override ? `${finishKey(roomId)}-${finish}` : finish;
   let result = materials.get(key);
   if (!result) {
     const luminous = finish === "light" || finish === "blue";
@@ -173,12 +186,31 @@ function geometry(kind: Primitive): BufferGeometry {
   return result;
 }
 
+/**
+ * A room of a tree's area (TREE-AREAS.md): a chamber under an entrance, or
+ * the entrance itself. The palace's own rooms all run along z; an area's
+ * corridors alternate, so an area's room wider than it is deep is turned:
+ * its vault, its route and its lamps follow x.
+ */
+export function areaRoom(room: Room, mansion: Mansion | null): boolean {
+  return room.id.includes("/") || (mansion?.rooms.some(r => r.id.startsWith(`${room.id}/`)) ?? false);
+}
+export function runsAlongX(room: Room, mansion: Mansion | null): boolean {
+  return areaRoom(room, mansion) && room.bounds.max[0] - room.bounds.min[0] > room.bounds.max[2] - room.bounds.min[2];
+}
+
 class Builder {
   readonly group = new Group();
   readonly batches = new Map<string, { kind: Primitive; finish: Finish; transforms: Matrix4[] }>();
   /** Every luminous element placed, as the light it gives (lightfield.ts). */
   readonly emitters: Emitter[] = [];
-  constructor(readonly room: Room, readonly mansion: Mansion | null) { this.group.name = `${room.id}-shell`; }
+  readonly area: boolean;
+  readonly turned: boolean;
+  constructor(readonly room: Room, readonly mansion: Mansion | null) {
+    this.group.name = `${room.id}-shell`;
+    this.area = areaRoom(room, mansion);
+    this.turned = runsAlongX(room, mansion);
+  }
   add(kind: Primitive, finish: Finish, x: number, y: number, z: number, sx: number, sy: number, sz: number, rotation = new Quaternion()): void {
     if (Math.min(sx, sy, sz) <= 0) return;
     const key = `${kind}-${finish}`;
@@ -193,7 +225,7 @@ class Builder {
    * points, so a cornice lights the whole wall it runs along.
    */
   private emit(kind: Primitive, finish: Finish, x: number, y: number, z: number, sx: number, sy: number, sz: number, rotation: Quaternion): void {
-    const colour = new Color(ROOM_FINISH[this.room.id]?.[finish] ?? OBSERVATORY_PALETTE[finish]);
+    const colour = new Color(finishOf(this.room.id)?.[finish] ?? OBSERVATORY_PALETTE[finish]);
     const dim = finish === "blue" ? 0.45 : 1;
     let power: number, reach: number;
     if (kind === "box") {
@@ -317,9 +349,11 @@ function chamberWalls(b: Builder): void {
         if (!hangingNear(room, wall, p, 0.3)) {
           wallBox(b, wall, "inset", p, y0 + (y1 - y0) * 0.48, 0.65, (y1 - y0) * 0.78, 0.012, 0.162);
           wallBox(b, wall, "stone", p + 0.36, y0 + (y1 - y0) * 0.48, 0.12, (y1 - y0) * 0.85, 0.18, 0.17);
-          if (SCONCED.includes(room.id)) {
-            wallBox(b, wall, "brass", p - 0.02, y0 + 2.8, 0.16, 0.95, 0.09, 0.19);
-            wallBox(b, wall, "light", p - 0.02, y0 + 2.8, 0.055, 0.74, 0.025, 0.285);
+          // An area's corridors, the rooms with three or more open doors, carry sconces too.
+          if (SCONCED.includes(room.id) || (b.area && room.doorways.filter(d => !d.closed).length >= 3)) {
+            const sconceY = Math.min(y0 + 2.8, y1 - 0.75);
+            wallBox(b, wall, "brass", p - 0.02, sconceY, 0.16, 0.95, 0.09, 0.19);
+            wallBox(b, wall, "light", p - 0.02, sconceY, 0.055, 0.74, 0.025, 0.285);
           }
         }
       }
@@ -433,20 +467,29 @@ function stepsOf(b: Builder, flight: Flight, y0: number): void {
 /** A faceted barrel vault with a real, open clerestory along its crown. */
 function vault(b: Builder): void {
   const room = b.room, [x0, y0, z0] = room.bounds.min, [x1, y1, z1] = room.bounds.max;
-  const cx = (x0 + x1) / 2, width = x1 - x0, depth = z1 - z0;
+  // The vault spans the room's short way, u, and runs its long way, v: the
+  // palace's rooms all run along z, but an area's corridors alternate, so a
+  // turned room maps (u, v) onto (z, x) and its ribs stand across z.
+  const turned = b.turned;
+  const [u0, u1, v0, v1] = turned ? [z0, z1, x0, x1] : [x0, x1, z0, z1];
+  const at = (u: number, v: number): [number, number] => (turned ? [v, u] : [u, v]);
+  const turn = turned ? new Quaternion().setFromAxisAngle(UNIT, Math.PI / 2) : new Quaternion();
+  const cu = (u0 + u1) / 2, width = u1 - u0, depth = v1 - v0, cx = (x0 + x1) / 2;
   const doorTop = Math.max(y0, ...room.doorways.map(d => b.doorBase(d) + d.height));
   const spring = Math.max(y0 + (y1 - y0) * 0.6, doorTop + 0.15);
   const rise = Math.max(0.25, y1 - spring - 0.12), radius = width / 2 - 0.19;
   const positions: number[] = [], colors: number[] = [];
-  const roofColor = new Color(ROOM_FINISH[room.id]?.roof ?? OBSERVATORY_PALETTE.roof);
+  const roofColor = new Color(finishOf(room.id)?.roof ?? OBSERVATORY_PALETTE.roof);
   const steps = 32;
   for (let i = 0; i < steps; i++) {
     const a = Math.PI * i / steps, c = Math.PI * (i + 1) / steps;
     if (Math.abs(Math.cos((a + c) / 2) * radius) < width * 0.075) continue;
-    const xa = cx + Math.cos(a) * radius, xb = cx + Math.cos(c) * radius;
+    const ua = cu + Math.cos(a) * radius, ub = cu + Math.cos(c) * radius;
     const ya = spring + Math.sin(a) * rise, yb = spring + Math.sin(c) * rise;
-    positions.push(xa, ya, z0 + 0.17, xb, yb, z0 + 0.17, xb, yb, z1 - 0.17,
-      xa, ya, z0 + 0.17, xb, yb, z1 - 0.17, xa, ya, z1 - 0.17);
+    const [xa0, za0] = at(ua, v0 + 0.17), [xb0, zb0] = at(ub, v0 + 0.17);
+    const [xa1, za1] = at(ua, v1 - 0.17), [xb1, zb1] = at(ub, v1 - 0.17);
+    positions.push(xa0, ya, za0, xb0, yb, zb0, xb1, yb, zb1,
+      xa0, ya, za0, xb1, yb, zb1, xa1, ya, za1);
     const shade = 0.62 + 0.38 * Math.sin((a + c) / 2);
     for (let vertex = 0; vertex < 6; vertex++) colors.push(roofColor.r * shade, roofColor.g * shade, roofColor.b * shade);
   }
@@ -455,15 +498,19 @@ function vault(b: Builder): void {
   roof.setAttribute("color", new Float32BufferAttribute(colors, 3));
   roof.computeVertexNormals();
   const mesh = new Mesh(roof, roofMaterial()); mesh.name = "observatory-vault"; b.group.add(mesh);
-  const ribSpacing = room.id === "hall" ? 3.7 : room.id === "spectre" ? 4.3 : 4.8;
-  const ribs = Math.max(3, Math.ceil(depth / ribSpacing));
+  // An area's chambers are many and small: ribs every six metres, two at least.
+  const ribSpacing = room.id === "hall" ? 3.7 : room.id === "spectre" ? 4.3 : b.area ? 6 : 4.8;
+  const ribs = Math.max(b.area ? 2 : 3, Math.ceil(depth / ribSpacing));
   for (let i = 0; i <= ribs; i++) {
-    const z = z0 + 0.3 + (depth - 0.6) * i / ribs;
-    b.add("arch", "stone", cx, spring - 0.10, z, radius - 0.015, rise, 4);
-    b.add("arch", "brass", cx, spring - 0.15, z, radius - 0.075, rise - 0.055, 2);
-    b.add("arch", room.id === "hall" || room.id === "orangery" ? "light" : "blue", cx, spring - 0.19, z, radius - 0.1, rise - 0.075, 0.42);
+    const [x, z] = at(cu, v0 + 0.3 + (depth - 0.6) * i / ribs);
+    b.add("arch", "stone", x, spring - 0.10, z, radius - 0.015, rise, 4, turn);
+    b.add("arch", "brass", x, spring - 0.15, z, radius - 0.075, rise - 0.055, 2, turn);
+    b.add("arch", room.id === "hall" || room.id === "orangery" ? "light" : "blue", x, spring - 0.19, z, radius - 0.1, rise - 0.075, 0.42, turn);
   }
-  for (const side of [-1, 1]) b.box("blue", cx + side * width * 0.078, y1 - 0.11, (z0 + z1) / 2, 0.04, 0.035, depth - 0.3);
+  for (const side of [-1, 1]) {
+    const [x, z] = at(cu + side * width * 0.078, (v0 + v1) / 2);
+    b.box("blue", x, y1 - 0.11, z, turned ? depth - 0.3 : 0.04, 0.035, turned ? 0.04 : depth - 0.3);
+  }
   // Oculi distinguish the quieter chambers. They hang above the exhibit envelope.
   if (["hall", "phototroph", "spectre", "greenhouse", "belvedere"].includes(room.id)) {
     const radius = room.id === "hall" ? 2.6 : 1.65;
@@ -510,15 +557,27 @@ function chandeliers(b: Builder): void {
   if (["gallery", "orangery", "world-engine", "einstruct", "phototroph", "belvedere"].includes(room.id)) {
     const count = Math.max(1, Math.round(depth / 12));
     for (let i = 0; i < count; i++) chandelier(b, cx, y1, z0 + depth * (i + 0.5) / count, Math.min(1.6, (x1 - x0) * 0.09), 2);
+    return;
+  }
+  if (b.area) {
+    // One every twelve metres of the long way, a single tier: an area has
+    // many rooms, and a low chamber hangs its halo just under the ribs.
+    const length = b.turned ? x1 - x0 : depth, across = b.turned ? depth : x1 - x0;
+    const count = Math.max(1, Math.round(length / 12));
+    const drop = Math.min(1.5, Math.max(0.7, y1 - room.bounds.min[1] - 2.55));
+    for (let i = 0; i < count; i++) {
+      const v = (b.turned ? x0 : z0) + length * (i + 0.5) / count;
+      chandelier(b, b.turned ? v : cx, y1, b.turned ? (z0 + z1) / 2 : v, Math.min(1.2, across * 0.13), 1, drop);
+    }
   }
 }
-function chandelier(b: Builder, x: number, y1: number, z: number, radius: number, tiers: number): void {
+function chandelier(b: Builder, x: number, y1: number, z: number, radius: number, tiers: number, drop = 1.5): void {
   for (let i = 0; i < tiers; i++) {
-    const y = y1 - 1.5 + i * 0.32, r = radius - i * 0.34;
+    const y = y1 - drop + i * 0.32, r = radius - i * 0.34;
     b.add("halo", "brass", x, y, z, r, r, 0.85, FLAT);
     b.add("halo", "light", x, y - 0.055, z, r - 0.015, r - 0.015, 0.22, FLAT);
   }
-  for (const dx of [-radius * 0.73, radius * 0.73]) b.bar("brass", new Vector3(x + dx, y1 - 1.45, z), new Vector3(x + dx, y1 - 0.2, z), 0.018);
+  for (const dx of [-radius * 0.73, radius * 0.73]) b.bar("brass", new Vector3(x + dx, y1 - drop + 0.05, z), new Vector3(x + dx, y1 - 0.2, z), 0.018);
 }
 
 function chamberFloor(b: Builder): void {
@@ -526,7 +585,10 @@ function chamberFloor(b: Builder): void {
   const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
   b.box("floor", cx, y0 - 0.1, cz, x1 - x0, 0.2, z1 - z0);
   // A continuous central route gives the enfilade a direction without arrows.
-  for (const side of [-1, 1]) b.box("brass", cx + side * 1.42, y0 + 0.006, cz, 0.025, 0.012, z1 - z0);
+  for (const side of [-1, 1]) {
+    if (b.turned) b.box("brass", cx, y0 + 0.006, cz + side * 1.42, x1 - x0, 0.012, 0.025);
+    else b.box("brass", cx + side * 1.42, y0 + 0.006, cz, 0.025, 0.012, z1 - z0);
+  }
   for (let z = z0 + 2; z < z1; z += 2) b.box("joint", cx, y0 + 0.004, z, x1 - x0 - 0.32, 0.008, 0.012);
   for (let x = x0 + 2; x < x1; x += 2) b.box("joint", x, y0 + 0.004, cz, 0.012, 0.008, z1 - z0 - 0.32);
 }

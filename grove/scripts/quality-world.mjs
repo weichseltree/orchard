@@ -102,13 +102,14 @@ try {
     return { rooms, batches, instances, tapes: app.world.tapes.filter(Boolean).length };
   });
   report.world = world;
-  check('All 15 rooms use runtime architecture (14 Observatory, the Orrery in space)', world.rooms.length === 15
-    && world.rooms.filter((room) => room.architecture === 'observatory').length === 14
+  check('All 33 rooms use runtime architecture (32 Observatory, the Orrery in space)', world.rooms.length === 33
+    && world.rooms.filter((room) => room.architecture === 'observatory').length === 32
     && world.rooms.filter((room) => room.architecture === 'space').length === 1, world.rooms);
-  check('Architecture stays below 260 draw batches across the whole world', world.batches < 260, world.batches);
-  // Three tapes: einstruct's two sheets and phototroph's capture. spectre's worlds
-  // are a planet hanging (no fixture in the demo), and the terrace's moon is gone.
-  check('Synthetic playback fixtures loaded', world.tapes === 3, world.tapes);
+  check('Architecture stays near fifteen draw batches a room across the whole world', world.batches < world.rooms.length * 16, world.batches);
+  // Six tapes: einstruct's two sheets, phototroph's capture, and arcedit's three
+  // (two episodes and the canvas). spectre's worlds are a planet hanging (no
+  // fixture in the demo), and the terrace's moon is gone.
+  check('Synthetic playback fixtures loaded', world.tapes === 6, world.tapes);
   await page.evaluate(() => {
     window.grove.view.renderer.setAnimationLoop(null);
     for (const video of document.querySelectorAll('video')) video.pause();

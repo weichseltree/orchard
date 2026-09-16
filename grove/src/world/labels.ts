@@ -243,6 +243,11 @@ function wallObstacles(room: Room, wall: Wall, except?: string): Span[] {
   return spans;
 }
 
+/** The middle of a doorway's opening, on the floor. */
+function doorPointOf(d: Doorway): Vector3 {
+  return d.axis === "x" ? new Vector3(d.at, 0, d.center) : new Vector3(d.center, 0, d.at);
+}
+
 /**
  * The wall the introduction panel hangs on, and the door it stands beside.
  * A chamber's is the open doorway nearest the hall by graph distance (ties
@@ -268,10 +273,9 @@ export function entranceWall(room: Room, mansion: Mansion): { wall: Wall; door: 
   if (!pool.length) return null;
   const rank = (d: Doorway): number => distances.get(d.to) ?? Number.POSITIVE_INFINITY;
   const nearest = Math.min(...pool.map(rank));
-  const doorPoint = (d: Doorway): Vector3 => (d.axis === "x" ? new Vector3(d.at, 0, d.center) : new Vector3(d.center, 0, d.at));
   const door = pool
     .filter((d) => rank(d) === nearest)
-    .sort((a, b) => doorPoint(a).distanceTo(spawn) - doorPoint(b).distanceTo(spawn))[0]!;
+    .sort((a, b) => doorPointOf(a).distanceTo(spawn) - doorPointOf(b).distanceTo(spawn))[0]!;
   return { wall: wallOfDoor(room, door), door };
 }
 
@@ -409,14 +413,35 @@ export function planRoomLabels(room: Room, labels: Labels, mansion: Mansion): Pl
     const entrance = entranceWall(room, mansion);
     if (entrance) {
       const { wall, door } = entrance;
+      const half = PANEL.width / 2;
+      const fits = (w: Wall, c: number, obstacles: readonly Span[]): boolean =>
+        c - half >= w.min + CORNER_MARGIN_M - 1e-6 && c + half <= w.max - CORNER_MARGIN_M + 1e-6
+        && !obstacles.some((o) => overlaps([c - half, c + half], o));
       const dir = rightAlong(wall);
       const start = door
         ? door.center + dir * (door.width / 2 + DOOR_JAMB_M + DOOR_GAP_M)
         : along(wall, spawn) + dir * DOOR_GAP_M;
-      const obstacles = [...wallObstacles(room, wall), ...spansOn(wall)];
-      const c = placeAlongWall(wall, start, PANEL.width / 2, dir, obstacles);
-      spansOn(wall).push([c - PANEL.width / 2, c + PANEL.width / 2]);
-      plans.push(wallPlaque(wall, room, c, floor + PANEL.top - PANEL.height / 2, PANEL, { kind: "entrance", text: roomText }));
+      let on = wall;
+      let obstacles = [...wallObstacles(room, wall), ...spansOn(wall)];
+      let c = placeAlongWall(wall, start, half, dir, obstacles);
+      if (door && !fits(wall, c, obstacles)) {
+        // A short end wall with its door in the middle (a chamber of a tree's
+        // area) has no room beside the door: the panel goes round the corner
+        // onto the side wall, the nearer corner first, as a museum would.
+        const doorAlong = along(wall, doorPointOf(door));
+        const sides = walls(room).filter((w) => w.axis !== wall.axis)
+          .sort((p, q) => Math.abs(p.at - doorAlong) - Math.abs(q.at - doorAlong));
+        for (const side of sides) {
+          const inward = Math.abs(wall.at - side.min) < 1e-6 ? 1 : -1;
+          const sideObstacles = [...wallObstacles(room, side), ...spansOn(side)];
+          const candidate = placeAlongWall(side, wall.at + inward * DOOR_GAP_M, half, inward, sideObstacles);
+          if (!fits(side, candidate, sideObstacles)) continue;
+          on = side; c = candidate; obstacles = sideObstacles;
+          break;
+        }
+      }
+      spansOn(on).push([c - half, c + half]);
+      plans.push(wallPlaque(on, room, c, floor + PANEL.top - PANEL.height / 2, PANEL, { kind: "entrance", text: roomText }));
     } else {
       // A cell of the grounds, or the Orrery: a reading stand ahead and to
       // the left of where the visitor lands, turned back to face them.

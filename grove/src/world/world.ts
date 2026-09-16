@@ -86,6 +86,13 @@ export interface BuiltWorld {
   /** Loads more rooms (a doorway crossing widens the neighbourhood); rooms already loaded are skipped. */
   ensureRooms(ids: readonly string[]): Promise<void>;
   /**
+   * Resolves once every load in flight, and every load those started (a
+   * room's shell, its hangings, its wall text, door names and reading
+   * stands), has landed or failed. The quality suite's room tour waits on
+   * it, so what one lap built is drawn before the next lap counts (issue #6).
+   */
+  settled(): Promise<void>;
+  /**
    * Draw the rooms of one scale and hide the rest. Rooms of different scales
    * share one coordinate space but never one view: a portal's far view shows
    * the other scale, and stepping through it switches this.
@@ -247,17 +254,17 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
     // whether or not the tape loads and the wall text has a plate to face.
     for (const hanging of room.hangings) {
       if (hanging.kind !== "tape" || stands.has(hanging.id)) continue;
-      stands.set(hanging.id, import("./stand").then(({ buildStand, standFoot, standFrame }) => {
+      stands.set(hanging.id, track(import("./stand").then(({ buildStand, standFoot, standFrame }) => {
         const foot = standFoot(hanging, room.bounds.min[1]);
         const stand = buildStand(standFrame(foot.position, foot.rotationDeg), PALETTE.accent);
         groupFor(room).add(stand.group);
         return stand;
-      }));
+      })));
     }
     // The museum's wall text: an introduction panel and one label per
     // exhibit, in the visitor's language. Text on the walls is not a room,
     // so it never holds a room up; it lands when the language file has.
-    void labelsOnce().then((labels) => {
+    void track(labelsOnce().then((labels) => {
       if (!labels || labelGroups.has(room.id)) return;
       return import("./labels").then(({ buildRoomLabels }) => {
         const group = buildRoomLabels(room, labels, locale, { mansion });
@@ -271,7 +278,18 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
           if (labelGroups.get(room.id) === group) group.add(buildDoorSigns(room, signs, font));
         });
       });
-    }).catch((error: unknown) => onNotice(`labels ${room.id}: ${message(error)}`));
+    }).catch((error: unknown) => onNotice(`labels ${room.id}: ${message(error)}`)));
+  }
+
+  /** Every load in flight; a load that starts another adds it here too, so `settled` follows the chain. */
+  const inflight = new Set<Promise<unknown>>();
+  function track<T>(load: Promise<T>): Promise<T> {
+    inflight.add(load);
+    load.finally(() => inflight.delete(load)).catch(() => undefined);
+    return load;
+  }
+  async function settled(): Promise<void> {
+    while (inflight.size > 0) await Promise.allSettled([...inflight]);
   }
 
   const locale = options.locale ?? "en";
@@ -293,10 +311,10 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
   function ensureShell(room: Room): Promise<void> {
     const pending = shellLoads.get(room.id);
     if (pending) return pending;
-    const loading = loadShell(room).catch((error: unknown) => {
+    const loading = track(loadShell(room).catch((error: unknown) => {
       shellLoads.delete(room.id);
       throw error;
-    });
+    }));
     shellLoads.set(room.id, loading);
     return loading;
   }
@@ -431,9 +449,9 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
         // A live audio hanging has no bundle at all, so it never wants the
         // exhibit table; an archived one may.
         const wantsExhibits = room.hangings.some((hanging) => hanging.bundle?.exhibit !== undefined);
-        hangings = (wantsExhibits ? exhibitsOnce() : Promise.resolve(null))
+        hangings = track((wantsExhibits ? exhibitsOnce() : Promise.resolve(null))
           .then((exhibits) => Promise.all(loadHangings(room, exhibits)))
-          .then(() => undefined);
+          .then(() => undefined));
         hangingLoads.set(id, hangings);
       }
       pending.push(hangings);
@@ -456,6 +474,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
     audios: [],
     load: () => ensureRooms(neighbourhood(mansion, options.startRoom ?? mansion.start)),
     ensureRooms: (ids) => ensureRooms(ids),
+    settled,
     setScaleVisible(scale) {
       visibleScale = scale;
       for (const roomGroup of roomGroups.values()) roomGroup.visible = roomGroup.userData.scale === scale;

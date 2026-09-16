@@ -103,8 +103,15 @@ describe("planRoomLabels over mansion.json", () => {
         it(`${name} faces its reader`, () => {
           const n = normalOf(plan);
           if (plan.mount === "wall") {
+            // Toward the room's middle, or, on the side wall of a long corridor
+            // (an area's, sixty-eight metres by five), straight off the wall
+            // into the room: a step forward stays inside and a step back leaves.
             const toCentre = roomCentre(room).sub(plan.position).setY(0).normalize();
-            expect(n.dot(toCentre)).toBeGreaterThan(0.3);
+            const inner = box(room);
+            const level = (p: Vector3): Vector3 => p.clone().setY((room.bounds.min[1] + room.bounds.max[1]) / 2);
+            const offWall = inner.containsPoint(level(plan.position.clone().addScaledVector(n, 0.5)))
+              && !inner.containsPoint(level(plan.position.clone().addScaledVector(n, -0.5)));
+            expect(n.dot(toCentre) > 0.3 || offWall, `normal ${n.toArray().map((v) => v.toFixed(2)).join(",")}`).toBe(true);
           } else if (plan.facing === "spawn") {
             const toSpawn = spawn.clone().sub(plan.position).setY(0).normalize();
             const horizontal = n.clone().setY(0).normalize();

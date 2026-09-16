@@ -629,6 +629,7 @@ const SEED_ROOMS: ReadonlyArray<{
   { name: 'orchard-west', title: 'The Western Grove', admin_only: false, capacity: 24 },
   { name: 'orchard-south', title: 'The Far Grove', admin_only: false, capacity: 24 },
   { name: 'orchard-east', title: 'The Eastern Grove', admin_only: false, capacity: 24 },
+  { name: 'arcedit', title: 'arcedit', admin_only: false, capacity: 24 },
 ];
 
 export const init = spacetimedb.init(ctx => {

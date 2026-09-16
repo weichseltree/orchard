@@ -138,6 +138,7 @@ describe("buildDoorSigns", () => {
       (group.userData as { dispose(): void }).dispose();
     }
     console.info(`door signs: ${meshes} meshes, ${Math.round(triangles)} triangles`);
-    expect(triangles).toBeLessThan(60_000);
+    // The palace's fifteen rooms set some 45,000; arcedit's area adds forty signed doorways (TREE-AREAS.md).
+    expect(triangles).toBeLessThan(200_000);
   });
 });
