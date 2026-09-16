@@ -801,6 +801,9 @@ view.start((dt, time, rawDt) => {
     }
     guide.setRoom(body.crossedInto);
     notice(roomTitle(labelsLoaded(locale), body.crossedInto) ?? roomById(mansion, body.crossedInto)?.title ?? body.crossedInto);
+    // Acted on: cleared here, once, rather than at the start of `step`, so a
+    // teleport earlier in the frame is not erased before it is seen.
+    body.crossedInto = null;
   }
 
   view.camera.getWorldPosition(headWorld);
@@ -902,6 +905,19 @@ Object.defineProperty(window, "grove", {
       gameSurface: gameSurface.snapshot(),
     }),
     provenance,
+    /**
+     * Stands the body in the middle of a room, through the same `teleport` a
+     * controller uses, locks included. For the browser quality suite's room
+     * tour (scripts/quality-browser.mjs); false when the room is unknown or
+     * refused.
+     */
+    visit: (roomId: string): boolean => {
+      const room = roomById(mansion, roomId);
+      if (!room) return false;
+      const x = (room.bounds.min[0] + room.bounds.max[0]) / 2;
+      const z = (room.bounds.min[2] + room.bounds.max[2]) / 2;
+      return teleport(body, mansion, x, z, lockedRoom);
+    },
     get world() {
       return world;
     },
