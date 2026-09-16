@@ -643,6 +643,17 @@ function dropFromArea(ctx: Ctx, tree: string, who: Identity) {
   if (ctx.db.whereabouts.identity.find(who)?.room === tree) dropFromWorld(ctx, who);
 }
 
+/**
+ * A pause or an unlink is a kill switch: whoever stands in the area's room
+ * is put out of the world now, the host excepted, so nobody keeps seeing
+ * what the switch withdrew. They may rejoin elsewhere at once.
+ */
+function evictArea(ctx: Ctx, tree: string) {
+  for (const w of [...ctx.db.whereabouts.room.filter(tree)]) {
+    if (!isAdminIdentity(ctx, w.identity)) dropFromWorld(ctx, w.identity);
+  }
+}
+
 /** An admin acted, so the area is maintained (SANDBOX-TRUST.md §1.4: confirmation ages). */
 function confirmArea(ctx: Ctx, tree: string) {
   const a = ctx.db.area.tree.find(tree);
@@ -1093,6 +1104,8 @@ export const removeTree = spacetimedb.reducer(
   { name: t.string() },
   (ctx, { name }) => {
     requireAdmin(ctx);
+    // A linked area is not removed by the way: unlinking it is a ruling of its own (SANDBOX-TRUST.md §1.4).
+    if (ctx.db.area.tree.find(name)) throw new SenderError('unlink the area first');
     for (const e of [...ctx.db.exhibit.tree.filter(name)]) ctx.db.exhibit.id.delete(e.id);
     if (ctx.db.tree.name.find(name)) ctx.db.tree.name.delete(name);
   }
@@ -1156,7 +1169,11 @@ export const linkArea = spacetimedb.reducer(
   }
 );
 
-/** Unlinking takes the area's admins and sanctions with it; the tree row stays. */
+/**
+ * Unlinking takes the area's admins and sanctions with it and closes its
+ * room: the room row stays, shut, so `join` keeps refusing it and the client
+ * keeps its door locked; whoever stands in it is put out. The tree row stays.
+ */
 export const unlinkArea = spacetimedb.reducer(
   { tree: t.string() },
   (ctx, { tree }) => {
@@ -1165,6 +1182,9 @@ export const unlinkArea = spacetimedb.reducer(
     for (const r of [...ctx.db.area_admin.tree.filter(tree)]) ctx.db.area_admin.id.delete(r.id);
     for (const s of [...ctx.db.area_sanction.tree.filter(tree)]) ctx.db.area_sanction.key.delete(s.key);
     ctx.db.area.tree.delete(tree);
+    const room = ctx.db.room.name.find(tree);
+    if (room) ctx.db.room.name.update({ ...room, open: false });
+    evictArea(ctx, tree);
   }
 );
 
@@ -1186,6 +1206,7 @@ export const setAreaState = spacetimedb.reducer(
       if (a.host_paused) throw new SenderError('paused by the host');
     }
     ctx.db.area.tree.update({ ...a, state, confirmed_at: ctx.timestamp });
+    if (state === 'paused') evictArea(ctx, tree);
   }
 );
 
@@ -1194,6 +1215,7 @@ export const hostPauseArea = spacetimedb.reducer(
   (ctx, { tree, paused }) => {
     requireAdmin(ctx);
     ctx.db.area.tree.update({ ...areaOrThrow(ctx, tree), host_paused: paused });
+    if (paused) evictArea(ctx, tree);
   }
 );
 
@@ -1256,6 +1278,7 @@ export const areaUnban = spacetimedb.reducer(
   (ctx, { tree, who }) => {
     requireAreaAdmin(ctx, tree);
     if (ctx.db.area_sanction.key.find(sanctionKey(tree, who))) putAreaSanction(ctx, tree, who, { until: EPOCH, reason: '' });
+    confirmArea(ctx, tree);
   }
 );
 

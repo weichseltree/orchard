@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import subprocess
 
-from .sync import DB, SPACETIME_DIR, _cli, call
+from .sync import DB, SPACETIME_DIR, _command, call
 
 STATES = ("draft", "live", "paused")
 #: The licence gate (SANDBOX-TRUST.md §5): the module's list, mirrored so a wrong id is refused before any call.
@@ -69,9 +69,13 @@ def drop_admin(tree: str, identity: str) -> None:
 
 
 def listing() -> str:
-    """The area table as the CLI prints it (public, no admin needed)."""
-    r = subprocess.run([_cli(), "sql", DB,
-                        "select tree, repo, commit, state, host_paused, linked_at, confirmed_at from area"],
+    """The area table as the CLI prints it (public, no admin needed).
+
+    `select *`, because `commit` is a keyword of the CLI's SQL dialect; and
+    through `_command`, so a local or test server is honoured as for every
+    other live call.
+    """
+    r = subprocess.run([*_command("sql"), DB, "select * from area"],
                        cwd=SPACETIME_DIR, capture_output=True, text=True, timeout=60)
     out = (r.stdout + r.stderr).replace(
         "WARNING: This command is UNSTABLE and subject to breaking changes.", "").strip()

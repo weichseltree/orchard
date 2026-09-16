@@ -331,8 +331,19 @@ async function main(): Promise<void> {
     cli("sql", "-s", "local", "--anonymous", DB, "SELECT tree FROM area").ok
     && !cli("sql", "-s", "local", "--anonymous", DB, "SELECT * FROM area_admin").ok
     && !cli("sql", "-s", "local", "--anonymous", DB, "SELECT * FROM area_sanction").ok);
+  admin("host_pause_area", '"probe"', "false");
+  admin("set_area_state", '"probe"', '"live"');
+  await eve.conn.reducers.join({ name: "eve", room: "probe" });
+  await sleep(200);
+  const standing = () => cli("sql", "-s", "local", DB, "SELECT * FROM whereabouts WHERE room = 'probe'").out;
+  check("a visitor stands in the live area", standing().includes(eve.hex));
+  await ann.conn.reducers.setAreaState({ tree: "probe", state: "paused" });
+  await sleep(300);
+  check("a pause puts whoever stands in the area out", !standing().includes(eve.hex));
+  check("remove_tree refuses a tree whose area is linked", admin("remove_tree", '"probe"').out.includes("unlink the area first"));
   admin("unlink_area", '"probe"');
   check("unlinking takes the area's admins with it", !cli("sql", "-s", "local", DB, "SELECT * FROM area_admin WHERE tree = 'probe'").out.includes(ann.hex));
+  check("...and shuts its room, so it is not an ordinary room afterwards", (await refusal(eve.conn.reducers.join({ name: "eve", room: "probe" }))).includes("room closed"));
 
   // --- the token gate and the per-network cap ---
   if (!AUTH) {

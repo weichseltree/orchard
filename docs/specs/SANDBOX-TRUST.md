@@ -709,6 +709,11 @@ no table of the old module touched:
   ban), which `join` and `say` apply in that area's room and nowhere else,
   and which can never touch an admin of the world. Expired bans are swept
   with the others.
+- A pause, the host's or the area's, and an unlink put whoever stands in
+  the area's room out of the world at once (the host excepted): the switch
+  withdraws what they were seeing. An unlink also shuts the presence room,
+  so it is not an ordinary room afterwards, and `remove_tree` refuses a tree
+  whose area is linked: unlinking is a ruling of its own.
 - Reducers: `link_area` (with the licence), `unlink_area`, `host_pause_area` (host only);
   `set_area_state` (the host any state; an area admin between `live` and
   `paused`, never out of `draft`, never out of a host pause);
