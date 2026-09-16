@@ -117,7 +117,13 @@ and a panel is one more draw call and one more texture against a 150-call,
 only when the text changes, never per frame; 22 mm cap height at 1.5 m, which
 is roughly 40 px on the panel.
 
-## 6. Stage four — speaking in a headset, which orchard cannot finish
+## 6. Stage four — speaking in a headset
+
+*As built (2026-09-16): (2) shipped as the wrist menu, and voice shipped too —
+not through Cloudflare Realtime but as push-to-talk transcribed by Deepgram,
+which needs no SFU because talking to Faye is one client and one service
+(§1). Spatial voice between visitors is still (3) as written below. The rest
+of this section is the plan as it was made.*
 
 **There is no keyboard in an `immersive-vr` session.** The Quest browser
 raises a system keyboard for a focused DOM input in flat mode, and not in an
@@ -149,7 +155,7 @@ follow `AUDIO-STREAM.md` §6 rather than be invented separately.
 She is an admin, and an admin bypasses the ban check, the join throttle, the
 per-network cap and room capacity. That is the correct identity for a host
 standing in their own world, and it is why the script refuses any URI that is
-not local.
+not local unless it is run with `--live` and her own identity.
 
 - **She never claims a run succeeded.** `completed exit=0` is also what a
   kill, an OOM and a time-budget stop record. Enforced by a test.
@@ -187,6 +193,8 @@ not local.
    speech, and a visitor-locked panel only for the scrolling log.
 3. **Is the canned-ask menu worth building, or does VR input simply wait for
    voice?** Recommendation: build it; it is small, and item 7 has no date.
+   *Built, and voice to Faye then shipped anyway through Deepgram; item 7,
+   spatial voice between visitors, still has no date.*
 4. **May a `cue` name a bundle, or only a built-in effect?** Stage two ships
    built-ins only. Letting a cue name a content-hashed bundle is the general
    answer and needs a rule for what happens when a client does not have the

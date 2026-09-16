@@ -11,6 +11,12 @@ describe("namesFaye", () => {
     }
   });
 
+  it("hears it the way the module stores the line", () => {
+    // `cleanText` removes format characters before Faye reads it.
+    expect(namesFaye("fa\u202Eye, what is running?")).toBe(true);
+    expect(namesFaye("fa\u200Bye")).toBe(true);
+  });
+
   it("does not hear it inside another word", () => {
     expect(namesFaye("fayence is lovely")).toBe(false);
   });

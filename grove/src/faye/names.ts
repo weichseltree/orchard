@@ -37,9 +37,16 @@ export const FAYE_NAME = "Great Admin Spirit Faye";
  */
 export const FAYE_ROOM = "grove";
 
-/** Whether a line is addressed to her. */
+/**
+ * Whether a line is addressed to her, read the way the module will store it.
+ * `say` runs `cleanText` first -- invisible format characters removed (the
+ * zero-width joiner kept), control characters and runs of whitespace
+ * collapsed -- so "fa\u202Eye" arrives as "faye" and she answers it. The
+ * client's notice must follow the line she actually receives.
+ */
 export function namesFaye(text: string): boolean {
-  return NAMES.test(text.toLowerCase());
+  const stored = text.replace(/\p{Cf}/gu, (c) => (c === "\u200D" ? c : "")).replace(/[\s\p{Cc}]+/gu, " ");
+  return NAMES.test(stored.toLowerCase());
 }
 
 /**

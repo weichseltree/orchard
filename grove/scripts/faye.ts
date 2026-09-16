@@ -264,9 +264,6 @@ async function main(): Promise<void> {
   speaker.holdUntil(joining.then(() => speaker.heldUntilGap(performance.now())));
   await joining;
   console.log(`faye: standing in "${FAYE_ROOM}" as "${FAYE_NAME}"`);
-  if (FAYE_NAME.length > 24) {
-    console.warn(`faye: the module clips names at 24 characters, so this shows as "${FAYE_NAME.slice(0, 24)}"`);
-  }
 
   // Queued, not awaited: replies may already be waiting ahead of it, and the
   // pose, the poll and the signal handlers below must not wait on them. A
