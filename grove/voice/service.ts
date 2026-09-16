@@ -131,9 +131,9 @@ export async function handle(request: Request, env: VoiceEnv, deps: VoiceDeps): 
   if (origin && origin !== url.origin) return json({ error: "wrong origin" }, 403);
 
   const token = bearer(request);
-  if (!token) return json({ error: "a grove token is needed to speak" }, 401);
+  if (!token) return json({ error: "enter the Mind Palace before speaking" }, 401);
   if (!(await deps.verify(token, url.origin))) {
-    return json({ error: "that grove token is not valid here" }, 403);
+    return json({ error: "your Mind Palace pass is not valid here" }, 403);
   }
 
   if (path === "/grant") return grant(env, deps);

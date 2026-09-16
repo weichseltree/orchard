@@ -159,8 +159,8 @@ export class AudioExhibit {
       cached: false,
       scientific_content: false,
       note: this.hanging.live
-        ? "A live exhibit: a name with no bytes behind it, never cached and never hashed (PACKAGES.md, AUDIO-STREAM.md §1). The sound is the provider's; the placement of each node in this room is the grove's, from the topology the provider published."
-        : "An archived audio bundle, content-hashed like every other bundle. The sound is the provider's; the placement is the grove's.",
+        ? "A live exhibit: a name with no bytes behind it, never cached and never hashed (PACKAGES.md, AUDIO-STREAM.md §1). The sound is the provider's; the placement of each node in this room is the Mind Palace's, from the topology the provider published."
+        : "An archived audio bundle, content-hashed like every other bundle. The sound is the provider's; the placement is the Mind Palace's.",
       state: this.state,
       nodes: this.nodes.length,
       positioned: positionedCount(this.field.assignment),
