@@ -41,6 +41,20 @@ describe("intentOf", () => {
   it("falls back to help when named but not understood", () => {
     expect(intentOf("faye sing me a song")).toBe("help");
   });
+
+  it("answers to the name a transcriber writes instead of hers", () => {
+    // Spoken, "Faye" comes back as an ordinary word. Ignoring those is
+    // indistinguishable from a dead microphone, which reads as broken.
+    expect(intentOf("fay what is running")).toBe("running");
+    expect(intentOf("hey fae")).toBe("greeting");
+    expect(intentOf("fey help")).toBe("help");
+  });
+
+  it("still does not answer to a longer word that starts the same way", () => {
+    expect(intentOf("fayette is running")).toBe("none");
+    expect(intentOf("faylight")).toBe("none");
+    expect(intentOf("feyd is here")).toBe("none");
+  });
 });
 
 describe("replyTo", () => {

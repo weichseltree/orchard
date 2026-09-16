@@ -119,7 +119,7 @@ export default defineConfig(({ command }) => ({
   preview: { port: 4173, strictPort: true },
   test: {
     root,
-    include: ["src/**/*.test.ts", "auth/**/*.test.ts", "build/**/*.test.ts"],
+    include: ["src/**/*.test.ts", "auth/**/*.test.ts", "build/**/*.test.ts", "voice/**/*.test.ts"],
     environment: "node",
   },
 }));

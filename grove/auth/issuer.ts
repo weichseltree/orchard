@@ -76,6 +76,38 @@ function keysFrom(source: string): Promise<Keys> {
   return keys;
 }
 
+/**
+ * A check that a caller holds a live grove token, for routes beside this one.
+ *
+ * `verifyOurs` deliberately does not look at `exp`: renewal accepts a token
+ * long past it (`RENEW_WITHIN_S`), which is right for handing an identity on
+ * and wrong for anything that spends money or grants access. Everything that
+ * is not renewal should use this, which checks signature, issuer, audience
+ * AND expiry, and returns the claims so a caller can read the identity.
+ *
+ * Returns null for every failure, with no detail: a caller that distinguishes
+ * "bad signature" from "expired" tells an attacker which half to work on.
+ */
+export async function verifyLive(
+  request: Request,
+  env: AuthEnv,
+  token: string,
+  nowS: number = Math.floor(Date.now() / 1000),
+): Promise<Record<string, unknown> | null> {
+  if (!env.AUTH_SIGNING_KEY) return null;
+  let claims: Record<string, unknown> | null;
+  try {
+    claims = await verifyOurs(await keysFrom(env.AUTH_SIGNING_KEY), token, issuerFor(request, env));
+  } catch {
+    return null;
+  }
+  if (!claims) return null;
+  if (claims.aud !== AUDIENCE) return null;
+  const exp = typeof claims.exp === "number" ? claims.exp : 0;
+  if (exp <= nowS) return null;
+  return claims;
+}
+
 export function issuerFor(request: Request, env: AuthEnv): string {
   return (env.AUTH_ISSUER || `${new URL(request.url).origin}/auth`).replace(/\/+$/, "");
 }

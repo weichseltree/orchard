@@ -36,6 +36,23 @@ export const EMPTY_STATE: FayeState = {
 export type Intent = "greeting" | "running" | "peer" | "help" | "none";
 
 /**
+ * The spellings that count as her name.
+ *
+ * "faye" alone is right for typed chat and wrong for spoken chat: a
+ * transcriber hears a one-syllable name it does not know and writes the
+ * common word -- fay, fae, fey. She would then ignore a visitor who plainly
+ * addressed her, and there is no way for them to tell that from a dead
+ * microphone, so the mishearing reads as the whole feature being broken.
+ *
+ * The alternative is to rewrite the transcript before it is sent, which puts
+ * words the visitor did not say into the room's log. Widening what she
+ * answers to keeps the log honest and costs only the chance that someone
+ * says "fae" in a grove and gets a reply -- a far cheaper mistake than
+ * silence.
+ */
+export const NAMES = /\b(faye|fay|fae|fey)\b/;
+
+/**
  * Whether a line is addressed to Faye, and what it asks.
  *
  * She answers only when named. A room where every sentence might summon a
@@ -44,7 +61,7 @@ export type Intent = "greeting" | "running" | "peer" | "help" | "none";
  */
 export function intentOf(text: string): Intent {
   const line = text.toLowerCase();
-  if (!/\bfaye\b/.test(line)) return "none";
+  if (!NAMES.test(line)) return "none";
   if (/\b(help|what can you|commands?)\b/.test(line)) return "help";
   if (/\b(peer|legion|mirror|other box)\b/.test(line)) return "peer";
   if (/\b(running|busy|compute|jobs?|runs?|status|going on)\b/.test(line)) return "running";
