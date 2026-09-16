@@ -373,6 +373,16 @@ async function gameSurfaceAudit() {
     check('game surface: lifecycle events reach the exact parent', (await page.evaluate(() => window.grove.metrics().gameSurface.lastEvent)) === 'game-ended');
     await axeAudit(page, 'FTL Chess game surface');
     await page.getByRole('button', { name: 'Close', exact: true }).click();
+    // `dialog.close()` fires its close event as a QUEUED TASK, and the handler
+    // that removes the iframe and restores focus runs there (ui/game-surface.ts
+    // #closed). Sampling both the instant the click returns races that task:
+    // this check passed locally and failed in CI on identical bytes, and a
+    // rerun of the same commit went green. Wait for the teardown first -- but
+    // swallow the wait's own timeout and keep the assertion below as the
+    // verdict, so a real regression is still reported as a failed check with a
+    // name rather than as an error with a stack.
+    await page.locator('.game-surface-frame').waitFor({ state: 'detached', timeout: 10000 }).catch(() => undefined);
+    await page.waitForFunction(() => document.activeElement === document.getElementById('stage'), null, { timeout: 10000 }).catch(() => undefined);
     check('game surface: close tears down the iframe and restores the view', await page.locator('.game-surface-frame').count() === 0 && await page.locator('#stage').evaluate((el) => document.activeElement === el));
     check('game surface: no script or console errors', events.pageErrors.length + events.consoleErrors.length === 0, events);
   } finally { await context.close(); }
