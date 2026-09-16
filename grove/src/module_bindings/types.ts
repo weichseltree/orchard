@@ -16,6 +16,40 @@ export const Admin = __t.object("Admin", {
 });
 export type Admin = __Infer<typeof Admin>;
 
+export const Area = __t.object("Area", {
+  tree: __t.string(),
+  repo: __t.string(),
+  commit: __t.string(),
+  plan: __t.string(),
+  state: __t.string(),
+  hostPaused: __t.bool(),
+  linkedBy: __t.identity(),
+  linkedAt: __t.timestamp(),
+  confirmedAt: __t.timestamp(),
+});
+export type Area = __Infer<typeof Area>;
+
+export const AreaAdmin = __t.object("AreaAdmin", {
+  id: __t.u64(),
+  tree: __t.string(),
+  identity: __t.identity(),
+  addedBy: __t.identity(),
+  addedAt: __t.timestamp(),
+});
+export type AreaAdmin = __Infer<typeof AreaAdmin>;
+
+export const AreaSanction = __t.object("AreaSanction", {
+  key: __t.string(),
+  tree: __t.string(),
+  identity: __t.identity(),
+  muted: __t.bool(),
+  until: __t.timestamp(),
+  reason: __t.string(),
+  by: __t.identity(),
+  at: __t.timestamp(),
+});
+export type AreaSanction = __Infer<typeof AreaSanction>;
+
 export const Ban = __t.object("Ban", {
   identity: __t.identity(),
   network: __t.string(),

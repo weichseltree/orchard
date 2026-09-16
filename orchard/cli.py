@@ -253,6 +253,23 @@ def cmd_sync(a):
     sync_main([a.what])
 
 
+def cmd_area(a):
+    from . import area
+    if a.what == "link":
+        area.link(a.tree, repo=a.repo, commit=a.commit); print(f"linked {a.tree} (draft)")
+    elif a.what == "unlink":
+        area.unlink(a.tree); print(f"unlinked {a.tree}")
+    elif a.what == "state":
+        area.set_state(a.tree, a.state); print(f"{a.tree}: {a.state}")
+    elif a.what == "host-pause":
+        area.host_pause(a.tree, a.on == "on"); print(f"{a.tree}: host pause {a.on}")
+    elif a.what == "admin":
+        (area.add_admin if a.op == "add" else area.drop_admin)(a.tree, a.identity)
+        print(f"{a.tree}: {a.op} admin {a.identity[:12]}")
+    elif a.what == "list":
+        print(area.listing())
+
+
 def cmd_push(a):
     from .push import R2NotEnabled, cors_preflight, push, refresh_headers, wait_public
     try:
@@ -382,6 +399,21 @@ def main(argv=None):
     e = esub.add_parser("list", help="the exhibit table"); e.set_defaults(fn=cmd_exhibit_list)
     e = esub.add_parser("take-down", help="remove an exhibit by id")
     e.add_argument("id", type=int); e.set_defaults(fn=cmd_exhibit_take_down)
+
+    s = sub.add_parser("area", help="a linked repository's place in the world, and its admins")
+    asub = s.add_subparsers(dest="what", required=True)
+    e = asub.add_parser("link", help="link a tree as an area; it opens as a draft, admin-only")
+    e.add_argument("tree"); e.add_argument("--repo", default=""); e.add_argument("--commit", default="")
+    e = asub.add_parser("unlink", help="unlink an area; its admins and sanctions go with it")
+    e.add_argument("tree")
+    e = asub.add_parser("state", help="draft (admin-only), live, or paused")
+    e.add_argument("tree"); e.add_argument("state", choices=["draft", "live", "paused"])
+    e = asub.add_parser("host-pause", help="the host's own pause, which an area admin cannot lift")
+    e.add_argument("tree"); e.add_argument("on", choices=["on", "off"])
+    e = asub.add_parser("admin", help="grant or revoke an area admin (an area_admin row, never add_admin)")
+    e.add_argument("op", choices=["add", "drop"]); e.add_argument("tree"); e.add_argument("identity")
+    asub.add_parser("list", help="the area table")
+    s.set_defaults(fn=cmd_area)
 
     s = sub.add_parser("sync", help="the live database: push trees and the ledger, pull rulings")
     s.add_argument("what", choices=["trees", "snapshot", "rulings", "all", "install"])

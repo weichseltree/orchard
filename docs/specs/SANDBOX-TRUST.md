@@ -688,6 +688,44 @@ where the cautious answer costs something real.
     within what time? *Recommended: the Impressum address, 72 hours, stated on
     the privacy page, and unlink first and argue afterwards* (section 5).
 
+### Built, 2026-09-16 (the first step of the trust layer)
+
+The `area` and `area_admin` tables and the area-scoped moderation of ruling 4
+are in the module (`spacetime/spacetimedb/src/index.ts`, "areas"), additive,
+no table of the old module touched:
+
+- `area { tree (pk), repo, commit, plan, state, host_paused, linked_by,
+  linked_at, confirmed_at }`, public, so a client can read an area's state;
+  `plan` is empty while an area's plan ships in the build. `state` is
+  `draft` (the admin-only first venue: the host and the area's admins may
+  join its room, nobody else), `live`, or `paused` (the host alone);
+  `host_paused` is the host's own pause, which an area admin cannot lift.
+- `area_admin { id, tree, identity, added_by, added_at }`, private.
+- `area_sanction { key = tree:identity, tree, identity, muted, until, reason,
+  by, at }`, private: an area admin's mute and ban (a kick is a ten-minute
+  ban), which `join` and `say` apply in that area's room and nowhere else,
+  and which can never touch an admin of the world. Expired bans are swept
+  with the others.
+- Reducers: `link_area`, `unlink_area`, `host_pause_area` (host only);
+  `set_area_state` (the host any state; an area admin between `live` and
+  `paused`, never out of `draft`, never out of a host pause);
+  `add_area_admin`, `drop_area_admin`, `area_mute`, `area_kick`, `area_ban`,
+  `area_unban` (the host, or an admin of that area). Every one checks the
+  host first and the area's membership second; `requireAdmin` is untouched.
+- An area's presence room carries the tree's name: that is how `join` knows
+  which area a room belongs to, and what the sanctions key on.
+- The host's side from the command line: `orchard area link|unlink|state|
+  host-pause|admin|list` (orchard/area.py).
+- `grove/scripts/module-check.ts` holds twenty rules for it against a local
+  server: a draft turns visitors away and admits its admin, an area admin
+  cannot open the area or lift a host pause or act in another area or touch
+  an admin of the world, a mute and a ban hold in the area's room only, and
+  unlinking takes the admins along.
+
+Not yet built, in the order the rulings ask: live revocation in the client (a
+paused or unlinked area closes its doors without a deploy; the `area` table is
+the row it will watch), the licence gate, and the fetcher.
+
 ### Ruled by Manuel, 2026-09-16
 
 The recommendation stands unless marked **overruled**. Three of the overrulings

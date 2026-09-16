@@ -48,6 +48,8 @@ const URL_MAX = 2048;
 const ROOM_CAPACITY_MAX = 200;
 const POTENTIAL_MAX = 10;
 const EXHIBIT_KINDS = ['clip', 'still', 'master', 'tape', 'planet'] as const;
+const AREA_STATES = ['draft', 'live', 'paused'] as const;
+const COMMIT_MAX = 64;
 /** Room and tree names: they are ids in URLs, presence strings and bundle paths. */
 const IDENT = /^[a-z0-9][a-z0-9_.-]{0,63}$/;
 /**
@@ -279,6 +281,59 @@ const ban = table(
   }
 );
 
+// --- areas: a linked repository's place in the world, and its admins ---
+//
+// SANDBOX-TRUST.md §1, ruled 2026-09-16: the area and area_admin tables come
+// before any generation. An area is a tree, and its presence room carries the
+// tree's name, so `join` knows which area a room belongs to. `state` is the
+// kill switch: `draft` admits the host and the area's admins only (every new
+// area opens in an admin-only room), `live` everyone, `paused` the host
+// alone. `host_paused` is the host's own pause, which an area admin cannot
+// resume out of. An area admin is a row here, never an `admin` row: the
+// grant is scoped to the area and the host drops it in one call.
+const area = table(
+  { name: 'area', public: true },
+  {
+    tree: t.string().primaryKey(),
+    repo: t.string(),
+    commit: t.string(),
+    plan: t.string(),          // where the area's plan is served from; empty while it ships in the build
+    state: t.string(),         // draft | live | paused
+    host_paused: t.bool(),
+    linked_by: t.identity(),
+    linked_at: t.timestamp(),
+    confirmed_at: t.timestamp(),
+  }
+);
+
+const area_admin = table(
+  { name: 'area_admin' },
+  {
+    id: t.u64().primaryKey().autoInc(),
+    tree: t.string().index('btree'),
+    identity: t.identity().index('btree'),
+    added_by: t.identity(),
+    added_at: t.timestamp(),
+  }
+);
+
+// An area admin's moderation, scoped to their area: a mute and a ban (a kick
+// is a short ban) that hold in that area's room and nowhere else, and never
+// on an admin of the world. One row per area and identity.
+const area_sanction = table(
+  { name: 'area_sanction' },
+  {
+    key: t.string().primaryKey(),      // `<tree>:<identity hex>`
+    tree: t.string().index('btree'),
+    identity: t.identity().index('btree'),
+    muted: t.bool(),
+    until: t.timestamp(),              // the ban's end; EPOCH when there is none
+    reason: t.string(),
+    by: t.identity(),
+    at: t.timestamp(),
+  }
+);
+
 // Which room each online visitor is standing in: one row per online visitor,
 // kept in step with `visitor` by join, leave, disconnect and kick. The views
 // at the bottom start from the caller's row here.
@@ -353,6 +408,7 @@ const sweep_timer = table(
 const spacetimedb = schema({
   admin, room, visitor, pose, chat, broadcast, tree, exhibit, review_item, ruling, directive, snapshot,
   ban, whereabouts, connection, guest, throttle, join_throttle, report, setting, sweep_timer,
+  area, area_admin, area_sanction,
 });
 export default spacetimedb;
 
@@ -513,6 +569,73 @@ function putBan(ctx: Ctx, who: Identity, forMicros: bigint, reason: string, whol
   if (existing) ctx.db.ban.identity.update(row); else ctx.db.ban.insert(row);
 }
 
+function areaOrThrow(ctx: Ctx, tree: string) {
+  const a = ctx.db.area.tree.find(tree);
+  if (!a) throw new SenderError('no such area');
+  return a;
+}
+
+function isAreaAdmin(ctx: Ctx, tree: string, who: Identity): boolean {
+  for (const r of ctx.db.area_admin.tree.filter(tree)) if (r.identity.equals(who)) return true;
+  return false;
+}
+
+/** The host first, an admin of this area second, nobody else; and the area must exist. */
+function requireAreaAdmin(ctx: Ctx, tree: string) {
+  areaOrThrow(ctx, tree);
+  if (isAdmin(ctx) || isAreaAdmin(ctx, tree, ctx.sender)) return;
+  throw new SenderError('admin of this area only');
+}
+
+function sanctionKey(tree: string, who: Identity): string {
+  return `${tree}:${who.toHexString()}`;
+}
+
+function activeAreaBan(ctx: Ctx, tree: string, who: Identity) {
+  const s = ctx.db.area_sanction.key.find(sanctionKey(tree, who));
+  return s && micros(s.until) > micros(ctx.timestamp) ? s : null;
+}
+
+function areaMuted(ctx: Ctx, tree: string, who: Identity): boolean {
+  return ctx.db.area_sanction.key.find(sanctionKey(tree, who))?.muted ?? false;
+}
+
+/**
+ * Writes an area's sanction row for a visitor, keeping whatever the patch
+ * leaves out; a row that neither mutes nor bans any more is dropped. An
+ * admin of the world is never sanctioned in an area: the scope is the
+ * whole point of the grant.
+ */
+function putAreaSanction(ctx: Ctx, tree: string, who: Identity, patch: { muted?: boolean; until?: Timestamp; reason?: string }) {
+  if (isAdminIdentity(ctx, who)) throw new SenderError('an admin of the world cannot be sanctioned in an area');
+  const key = sanctionKey(tree, who);
+  const existing = ctx.db.area_sanction.key.find(key);
+  const row = {
+    key, tree, identity: who,
+    muted: patch.muted ?? existing?.muted ?? false,
+    until: patch.until ?? existing?.until ?? EPOCH,
+    reason: patch.reason !== undefined ? cleanText(patch.reason, REASON_MAX) : (existing?.reason ?? ''),
+    by: ctx.sender,
+    at: ctx.timestamp,
+  };
+  if (!row.muted && micros(row.until) <= micros(ctx.timestamp)) {
+    if (existing) ctx.db.area_sanction.key.delete(key);
+    return;
+  }
+  if (existing) ctx.db.area_sanction.key.update(row); else ctx.db.area_sanction.insert(row);
+}
+
+/** Out of the area's room now, if that is where they stand; the rest of the world is not this admin's. */
+function dropFromArea(ctx: Ctx, tree: string, who: Identity) {
+  if (ctx.db.whereabouts.identity.find(who)?.room === tree) dropFromWorld(ctx, who);
+}
+
+/** An admin acted, so the area is maintained (SANDBOX-TRUST.md §1.4: confirmation ages). */
+function confirmArea(ctx: Ctx, tree: string) {
+  const a = ctx.db.area.tree.find(tree);
+  if (a) ctx.db.area.tree.update({ ...a, confirmed_at: ctx.timestamp });
+}
+
 function throttleRow(ctx: Ctx) {
   return ctx.db.throttle.identity.find(ctx.sender)
     ?? { identity: ctx.sender, move_tokens: MOVE_BURST, move_at: EPOCH, report_at: EPOCH };
@@ -572,6 +695,9 @@ function sweepNowImpl(ctx: Ctx) {
   }
   for (const b of [...ctx.db.ban.iter()]) {
     if (micros(b.until) <= now) ctx.db.ban.identity.delete(b.identity);
+  }
+  for (const s of [...ctx.db.area_sanction.iter()]) {
+    if (!s.muted && micros(s.until) <= now) ctx.db.area_sanction.key.delete(s.key);
   }
   for (const v of [...ctx.db.visitor.iter()]) {
     if (v.online || now - micros(v.last_seen) <= VISITOR_KEEP) continue;
@@ -672,6 +798,12 @@ export const join = spacetimedb.reducer(
     const admin = isAdmin(ctx);
     if (!admin) {
       if (activeBan(ctx, ctx.sender)) throw new SenderError('banned');
+      const a = ctx.db.area.tree.find(room);
+      if (a) {
+        if (activeAreaBan(ctx, room, ctx.sender)) throw new SenderError('banned from this area');
+        if (a.host_paused || a.state === 'paused') throw new SenderError('this area is paused');
+        if (a.state === 'draft' && !isAreaAdmin(ctx, room, ctx.sender)) throw new SenderError('this area is not open yet');
+      }
       if (!spendJoin(ctx)) throw new SenderError('slow down');
       const network = ctx.db.guest.identity.find(ctx.sender)?.network;
       if (network && onlineFromNetwork(ctx, network) >= PER_NETWORK_ONLINE) {
@@ -727,7 +859,7 @@ export const say = spacetimedb.reducer(
   { text: t.string() },
   (ctx, { text }) => {
     const v = online(ctx);
-    if (v.muted) throw new SenderError('muted');
+    if (v.muted || areaMuted(ctx, v.room, ctx.sender)) throw new SenderError('muted');
     const clean = cleanText(text, CHAT_MAX);
     if (!clean) return;
     if (micros(ctx.timestamp) - micros(v.last_said) < CHAT_MIN_GAP) {
@@ -979,6 +1111,131 @@ export const takeDown = spacetimedb.reducer(
   (ctx, { id }) => {
     requireAdmin(ctx);
     if (ctx.db.exhibit.id.find(id)) ctx.db.exhibit.id.delete(id);
+  }
+);
+
+// --- areas (SANDBOX-TRUST.md §1; every reducer checks the host first and the area's membership second) ---
+
+/** The host links a repository as an area; relinking updates its repo and commit and keeps its state. */
+export const linkArea = spacetimedb.reducer(
+  { tree: t.string(), repo: t.string(), commit: t.string() },
+  (ctx, { tree, repo, commit }) => {
+    requireAdmin(ctx);
+    requireIdent(tree, 'tree');
+    if (!ctx.db.tree.name.find(tree)) throw new SenderError('no such tree');
+    const existing = ctx.db.area.tree.find(tree);
+    const clean = { repo: checkUrl(repo, 'repo', true), commit: cleanText(commit, COMMIT_MAX) };
+    if (existing) {
+      ctx.db.area.tree.update({ ...existing, ...clean, confirmed_at: ctx.timestamp });
+      return;
+    }
+    ctx.db.area.insert({
+      tree, ...clean, plan: '', state: 'draft', host_paused: false,
+      linked_by: ctx.sender, linked_at: ctx.timestamp, confirmed_at: ctx.timestamp,
+    });
+  }
+);
+
+/** Unlinking takes the area's admins and sanctions with it; the tree row stays. */
+export const unlinkArea = spacetimedb.reducer(
+  { tree: t.string() },
+  (ctx, { tree }) => {
+    requireAdmin(ctx);
+    areaOrThrow(ctx, tree);
+    for (const r of [...ctx.db.area_admin.tree.filter(tree)]) ctx.db.area_admin.id.delete(r.id);
+    for (const s of [...ctx.db.area_sanction.tree.filter(tree)]) ctx.db.area_sanction.key.delete(s.key);
+    ctx.db.area.tree.delete(tree);
+  }
+);
+
+/**
+ * The host sets any state. An admin of the area pauses and resumes it, and
+ * that is all: opening an area out of `draft` is the host's call, and a host
+ * pause is not theirs to lift.
+ */
+export const setAreaState = spacetimedb.reducer(
+  { tree: t.string(), state: t.string() },
+  (ctx, { tree, state }) => {
+    requireAreaAdmin(ctx, tree);
+    const a = areaOrThrow(ctx, tree);
+    if (!(AREA_STATES as readonly string[]).includes(state)) {
+      throw new SenderError(`state must be one of ${AREA_STATES.join(', ')}`);
+    }
+    if (!isAdmin(ctx)) {
+      if (a.state === 'draft' || state === 'draft') throw new SenderError("opening an area is the host's call");
+      if (a.host_paused) throw new SenderError('paused by the host');
+    }
+    ctx.db.area.tree.update({ ...a, state, confirmed_at: ctx.timestamp });
+  }
+);
+
+export const hostPauseArea = spacetimedb.reducer(
+  { tree: t.string(), paused: t.bool() },
+  (ctx, { tree, paused }) => {
+    requireAdmin(ctx);
+    ctx.db.area.tree.update({ ...areaOrThrow(ctx, tree), host_paused: paused });
+  }
+);
+
+export const addAreaAdmin = spacetimedb.reducer(
+  { tree: t.string(), who: t.identity() },
+  (ctx, { tree, who }) => {
+    requireAreaAdmin(ctx, tree);
+    if (!isAreaAdmin(ctx, tree, who)) {
+      ctx.db.area_admin.insert({ id: 0n, tree, identity: who, added_by: ctx.sender, added_at: ctx.timestamp });
+    }
+    confirmArea(ctx, tree);
+  }
+);
+
+export const dropAreaAdmin = spacetimedb.reducer(
+  { tree: t.string(), who: t.identity() },
+  (ctx, { tree, who }) => {
+    requireAreaAdmin(ctx, tree);
+    for (const r of [...ctx.db.area_admin.tree.filter(tree)]) if (r.identity.equals(who)) ctx.db.area_admin.id.delete(r.id);
+    confirmArea(ctx, tree);
+  }
+);
+
+export const areaMute = spacetimedb.reducer(
+  { tree: t.string(), who: t.identity(), muted: t.bool() },
+  (ctx, { tree, who, muted }) => {
+    requireAreaAdmin(ctx, tree);
+    putAreaSanction(ctx, tree, who, { muted });
+    confirmArea(ctx, tree);
+  }
+);
+
+/** Out of the area's room now, and not back in for ten minutes; a longer ban stays as it is. */
+export const areaKick = spacetimedb.reducer(
+  { tree: t.string(), who: t.identity() },
+  (ctx, { tree, who }) => {
+    requireAreaAdmin(ctx, tree);
+    const until = new Timestamp(micros(ctx.timestamp) + KICK_FOR);
+    const longer = activeAreaBan(ctx, tree, who);
+    putAreaSanction(ctx, tree, who, { until: longer && micros(longer.until) >= micros(until) ? longer.until : until, reason: 'kicked' });
+    dropFromArea(ctx, tree, who);
+    confirmArea(ctx, tree);
+  }
+);
+
+/** `minutes` 0 is for good. The ban holds in this area's room and nowhere else. */
+export const areaBan = spacetimedb.reducer(
+  { tree: t.string(), who: t.identity(), minutes: t.u32(), reason: t.string() },
+  (ctx, { tree, who, minutes, reason }) => {
+    requireAreaAdmin(ctx, tree);
+    const until = new Timestamp(micros(ctx.timestamp) + (minutes === 0 ? BAN_FOREVER : BigInt(minutes) * MINUTE));
+    putAreaSanction(ctx, tree, who, { until, reason });
+    dropFromArea(ctx, tree, who);
+    confirmArea(ctx, tree);
+  }
+);
+
+export const areaUnban = spacetimedb.reducer(
+  { tree: t.string(), who: t.identity() },
+  (ctx, { tree, who }) => {
+    requireAreaAdmin(ctx, tree);
+    if (ctx.db.area_sanction.key.find(sanctionKey(tree, who))) putAreaSanction(ctx, tree, who, { until: EPOCH, reason: '' });
   }
 );
 
