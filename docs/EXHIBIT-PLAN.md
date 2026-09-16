@@ -478,9 +478,8 @@ housekeeping commits.
 - **spectre, the moon.** ~~The chi12 ball above the orchard.~~ Replaced
   2026-09-15 by the Orrery: spectre's cutaway delivery (exhibit-v2, the
   measured surfaces) as a `planet` bundle behind the garden's armillary
-  portal (OBSERVATORY.md). Open ruling: whether the cutaway trio also
-  replaces the three point-cloud tapes in the Gravity Chamber, or stands
-  beside them.
+  portal (OBSERVATORY.md). Ruled 2026-09-16: no more point clouds for
+  spectre; the cutaway trio replaces the three tapes in the Gravity Chamber.
 - **premosaic, two posters.** On a wall of pruned trees, if the hall grows
   one; and commit the frozen JAX file as the reproduction pin.
 - **someotherlife, fund Spike C now?** One hour of your shooting, half a

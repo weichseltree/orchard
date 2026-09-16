@@ -130,6 +130,28 @@ describe("the Orrery in the document", () => {
     expect(neighbourhood(mansion, "hall")).not.toContain("orrery");
   });
 
+  it("hangs spectre's worlds as cutaways in the Gravity Chamber, with no point clouds left on that tree", () => {
+    const chamber = mansion.rooms.find((r) => r.id === "spectre")!;
+    expect(chamber.hangings.filter((h) => h.kind === "tape")).toEqual([]);
+    const planet = chamber.hangings.find((h) => h.kind === "planet")!;
+    expect(planet.kind).toBe("planet");
+    if (planet.kind !== "planet") return;
+    expect(planet.bundle.id).toBe("26f78b7516170d6d");
+    expect(planet.worlds.map((w) => w.world)).toEqual(["adiabat-chi0", "adiabat-chi6", "adiabat-chi12"]);
+    for (const world of planet.worlds) {
+      // Inside the chamber, clear of the floor, cut toward the doorway side.
+      expect(world.position[0]).toBeGreaterThan(chamber.bounds.min[0] + planet.radiusMeters);
+      expect(world.position[0]).toBeLessThan(chamber.bounds.max[0] - planet.radiusMeters);
+      expect(world.position[1] - planet.radiusMeters).toBeGreaterThan(0);
+      expect(world.cutToward![0]).toBeLessThan(world.position[0]);
+    }
+    for (const room of mansion.rooms) {
+      for (const hanging of room.hangings) {
+        if (hanging.kind === "tape") expect(hanging.bundle.exhibit?.tree, `${room.id}/${hanging.id}`).not.toBe("spectre");
+      }
+    }
+  });
+
   it("has no floating world outside any more", () => {
     for (const room of mansion.rooms) {
       for (const hanging of room.hangings) {

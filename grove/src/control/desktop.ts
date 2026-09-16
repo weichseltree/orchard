@@ -63,6 +63,9 @@ export function attachDesktopControls(
       case "KeyX":
         commands.cycleSpeed();
         return;
+      case "KeyC":
+        commands.cycleAtlas();
+        return;
       default:
         held.add(event.code);
         applyMotion();

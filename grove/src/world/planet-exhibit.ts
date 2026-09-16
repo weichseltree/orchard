@@ -17,8 +17,8 @@ import {
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MEDIA_BASE } from "../config";
 import { claimDecoder, holdsDecoder, releaseDecoder } from "../media/decoder-lease";
-import type { Screen, ScreenMode } from "../media/screen";
-import { PlanetBundleSchema, VideoBundleSchema, type PlanetBundle, type SurfaceSegment } from "../tape/bundle";
+import { ATLAS_ORDER, type Screen, type ScreenMode } from "../media/screen";
+import { PlanetBundleSchema, VideoBundleSchema, type PlanetBundle, type SurfaceSegment, type VideoBundle } from "../tape/bundle";
 import type { PlanetHanging } from "./schema";
 
 // spectre's cutaway worlds: three quarter-cut balls whose surface is the
@@ -222,12 +222,20 @@ class SurfaceStream {
 }
 
 const streams = new Map<string, SurfaceStream>();
+/** One glb parse per bundle; two hangings of one bundle (a chamber and the Orrery) clone its nodes. */
+const meshes = new Map<string, Promise<Awaited<ReturnType<GLTFLoader["loadAsync"]>>>>();
 let hlsModule: Promise<typeof import("hls.js")> | null = null;
 function loadHls(): Promise<typeof import("hls.js")> {
   return hlsModule ??= import("hls.js").catch((error: unknown) => {
     hlsModule = null;
     throw error;
   });
+}
+
+async function fetchAtlas(base: string): Promise<VideoBundle> {
+  const r = await fetch(`${base}bundle.json`);
+  if (!r.ok) throw new Error(`atlas bundle.json: HTTP ${r.status}`);
+  return VideoBundleSchema.parse(await r.json());
 }
 
 export class PlanetExhibit implements Screen {
@@ -240,8 +248,18 @@ export class PlanetExhibit implements Screen {
   readonly video: HTMLVideoElement;
   readonly material: MeshBasicMaterial;
   readonly stream: SurfaceStream;
-  readonly atlasBase: string;
-  readonly master: string;
+  /** The display modes the bundle carries, in display order. */
+  readonly atlases: readonly string[];
+  /** The mode showing now (or chosen for when it plays). */
+  atlas: string;
+  /** The planet bundle's directory, for the legends. */
+  readonly baseUrl: string;
+  /** Video bundle documents by mode, fetched as modes are asked for. */
+  #atlasDocs = new Map<string, Promise<{ base: string; doc: VideoBundle }>>();
+  /** Where the video plays from now: the current mode's master playlist. */
+  master: string;
+  /** A frame to return to once a new source's origin is measured. */
+  #seekTo = -1;
   /** The tape frame the geometry shows; -1 while at the glb's rest shape. */
   frame = -1;
   #mode: ScreenMode = "poster";
@@ -249,6 +267,7 @@ export class PlanetExhibit implements Screen {
   #texture: VideoTexture | null = null;
   #hls: { destroy(): void } | null = null;
   #origin: number | null = null;
+  #wasPlaying = false;
   #frameCallback: number | null = null;
   #waitingFor = -1;
   #attachment = 0;
@@ -263,8 +282,8 @@ export class PlanetExhibit implements Screen {
     material: MeshBasicMaterial,
     poster: Texture | null,
     stream: SurfaceStream,
-    atlasBase: string,
-    master: string,
+    baseUrl: string,
+    atlas: { mode: string; base: string; doc: VideoBundle },
     onNotice: ((message: string) => void) | undefined,
   ) {
     this.bundle = bundle;
@@ -272,8 +291,11 @@ export class PlanetExhibit implements Screen {
     this.material = material;
     this.#poster = poster;
     this.stream = stream;
-    this.atlasBase = atlasBase;
-    this.master = master;
+    this.baseUrl = baseUrl;
+    this.atlases = ATLAS_ORDER.filter((mode) => bundle.atlases[mode] !== undefined);
+    this.atlas = atlas.mode;
+    this.#atlasDocs.set(atlas.mode, Promise.resolve({ base: atlas.base, doc: atlas.doc }));
+    this.master = atlas.base + atlas.doc.master;
     this.#onNotice = onNotice;
     this.group.name = "planet";
     for (const world of worlds) this.group.add(world.node);
@@ -316,13 +338,15 @@ export class PlanetExhibit implements Screen {
     const atlas = bundle.atlases[mode];
     if (!atlas) throw new Error("the bundle names no beauty atlas");
     const atlasBase = `${MEDIA_BASE}/${atlas.bundle}/`;
-    const [atlasDoc, gltf] = await Promise.all([
-      fetch(`${atlasBase}bundle.json`).then(async (r) => {
-        if (!r.ok) throw new Error(`atlas bundle.json: HTTP ${r.status}`);
-        return VideoBundleSchema.parse(await r.json());
-      }),
-      new GLTFLoader().loadAsync(baseUrl + bundle.mesh),
-    ]);
+    let mesh = meshes.get(baseUrl);
+    if (!mesh) {
+      mesh = new GLTFLoader().loadAsync(baseUrl + bundle.mesh).catch((error: unknown) => {
+        meshes.delete(baseUrl);
+        throw error;
+      });
+      meshes.set(baseUrl, mesh);
+    }
+    const [atlasDoc, gltf] = await Promise.all([fetchAtlas(atlasBase), mesh]);
     if (gltf.animations.length) throw new Error("the mesh carries animations; the surface stream is the only clock");
     let stream = streams.get(baseUrl);
     if (!stream) {
@@ -406,7 +430,7 @@ export class PlanetExhibit implements Screen {
     const material = new MeshBasicMaterial({ map: poster, color: poster ? 0xffffff : 0x1b1f28, toneMapped: false, side: DoubleSide });
     material.name = "planet-atlas";
     for (const world of worlds) for (const prim of world.prims) prim.mesh.material = material;
-    return new PlanetExhibit(bundle, worlds, material, poster, stream, atlasBase, atlasBase + atlasDoc.master, onNotice);
+    return new PlanetExhibit(bundle, worlds, material, poster, stream, baseUrl, { mode, base: atlasBase, doc: atlasDoc }, onNotice);
   }
 
   get mode(): ScreenMode {
@@ -462,7 +486,10 @@ export class PlanetExhibit implements Screen {
           // (0.0667 s in Chromium); measured here, never assumed.
           instance.on(Hls.Events.FRAG_BUFFERED, (_event, data) => {
             const start = data.frag.startPTS;
-            if (this.#origin === null && typeof start === "number" && Number.isFinite(start)) this.#origin = start;
+            if (this.#origin === null && typeof start === "number" && Number.isFinite(start)) {
+              this.#origin = start;
+              this.#resumeAfterSwitch();
+            }
           });
           instance.loadSource(this.master);
           instance.attachMedia(this.video);
@@ -479,6 +506,7 @@ export class PlanetExhibit implements Screen {
         this.video.src = this.master;
         this.#origin = 0;
         this.#mode = "native";
+        this.#resumeAfterSwitch();
       }
       this.#texture = new VideoTexture(this.video);
       this.#texture.flipY = false;
@@ -573,6 +601,62 @@ export class PlanetExhibit implements Screen {
     this.frame = -1;
   }
 
+  /** The legend image for a mode, from the planet bundle. */
+  legendUrl(mode: string): string | null {
+    const legend = this.bundle.atlases[mode]?.legend;
+    return legend ? this.baseUrl + legend : null;
+  }
+
+  /**
+   * Show another atlas: the same worlds, the same frame, a different
+   * measurement in the pixels. The video's source changes, so the clock's
+   * origin is measured again on the new stream (spectre's rule: never carry
+   * one source's origin to another) and the frame is sought once it is.
+   */
+  async setAtlas(mode: string): Promise<void> {
+    if (!this.bundle.atlases[mode]) throw new Error(`the bundle has no ${mode} atlas`);
+    if (mode === this.atlas) return;
+    let pending = this.#atlasDocs.get(mode);
+    if (!pending) {
+      const base = `${MEDIA_BASE}/${this.bundle.atlases[mode]!.bundle}/`;
+      pending = fetchAtlas(base).then((doc) => ({ base, doc })).catch((error: unknown) => {
+        this.#atlasDocs.delete(mode);
+        throw error;
+      });
+      this.#atlasDocs.set(mode, pending);
+    }
+    const { base, doc } = await pending;
+    if (this.#disposed) return;
+    this.atlas = mode;
+    this.master = base + doc.master;
+    if (this.#mode === "poster") return;
+    // Attached: swap the source under the same video element and texture.
+    this.#wasPlaying = !this.video.paused;
+    this.#seekTo = Math.max(0, this.frame);
+    this.video.pause();
+    this.#origin = null;
+    this.#waitingFor = -1;
+    if (this.#hls) {
+      const hls = this.#hls as { destroy(): void; loadSource(url: string): void; attachMedia(video: HTMLVideoElement): void };
+      // Fragment times arrive on the new source's first fragment; the listener is on the instance and stays.
+      hls.loadSource(this.master);
+    } else {
+      this.video.src = this.master;
+      this.#origin = 0;
+      this.#resumeAfterSwitch();
+    }
+  }
+
+  /** After a source change: back to the frame the visitor was on, then play if they were. */
+  #resumeAfterSwitch(): void {
+    if (this.#seekTo < 0 || this.#origin === null) return;
+    const frame = this.#seekTo;
+    this.#seekTo = -1;
+    if (frame > 0) this.video.currentTime = this.#origin + (frame + 0.25) / this.bundle.fps;
+    if (this.#wasPlaying) void this.video.play().catch(() => undefined);
+    this.#wasPlaying = false;
+  }
+
   togglePlay(): boolean {
     if (this.#mode === "poster") return false;
     if (this.video.paused) {
@@ -603,6 +687,8 @@ export class PlanetExhibit implements Screen {
     this.#texture = null;
     this.#waitingFor = -1;
     this.#origin = null;
+    this.#seekTo = -1;
+    this.#wasPlaying = false;
     this.material.map = this.#poster;
     this.material.color.set(this.#poster ? 0xffffff : 0x1b1f28);
     this.material.needsUpdate = true;
@@ -633,7 +719,9 @@ export class PlanetExhibit implements Screen {
       playback: this.#mode,
       surface_stream: `${this.stream.loadedSegments}/${this.stream.segments.length} segments`,
       clock_origin_s: this.#origin,
-      atlas: this.atlasBase,
+      atlas_mode: this.atlas,
+      atlas_description: this.bundle.atlases[this.atlas]?.description ?? "",
+      atlas: this.master,
       honesty: b.honesty,
       produced_by: b.produced_by,
       source: b.source,

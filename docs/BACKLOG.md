@@ -228,11 +228,12 @@ existing backlog entries; this pass did not implement them.
    over the terrace is replaced by the Orrery behind the garden's armillary
    portal (OBSERVATORY.md, "The Orrery and the portal"), where spectre's
    cutaway worlds stand at 40 m radius with their measured surfaces. Left
-   open by that change: a control for the other atlas modes (species,
-   temperature, pressure are bundled); a time slider for the planet (only
-   play and pause now); the far view through a portal in a headset session
-   (not rendered; the fade still happens); the 74 MB decoded surface stream
-   on a phone, unmeasured; the far view is tone-mapped as a whole.
+   open by that change: a time slider for the planet (only play and pause
+   now); the far view through a portal in a headset session (not rendered;
+   the fade still happens); the 74 MB decoded surface stream on a phone,
+   unmeasured; the far view is tone-mapped as a whole. Ruled 2026-09-16: the
+   atlas modes have a control (buttons and C); no more point clouds for
+   spectre, so the Gravity Chamber shows the cutaways too.
 34. ~~**The window reveal heads read as gold lintels**~~ Ruled white
    2026-09-13: the fill is a shade less saturated (1.0, 0.91, 0.80); judge
    after the rebake.

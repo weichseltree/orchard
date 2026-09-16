@@ -37,13 +37,14 @@ const content: Readonly<Record<string, ExhibitContent>> = {
   spectre: {
     source: "spectre",
     question: "How does a world find its middle?",
-    introduction: "Three self-gravitating balls start with the same mixture of heavy and light particles. The interaction between the two kinds changes across the trio.",
+    introduction: "Three self-gravitating worlds start with the same mixture of heavy and light particles; the strength with which the two kinds repel each other differs across the trio. Each is cut open, its surface the measured edge of the particles and its interior measured from them, frame by frame.",
     lookFor: [
-      "Move through time across the three tapes. Compare where the heavy particles collect at corresponding moments.",
-      "Walk around a ball. Its surface can hide what is happening near the centre; a view from outside is only part of the evidence.",
+      "Let the record run and compare the three cut faces at the same moment. Where the two kinds repel most, the heavy kind gathers at the centre soonest.",
+      "Switch what the faces show: composition, temperature or pressure. The lit view adds a glow that encodes temperature; it is not emitted light.",
+      "Walk round a world and back to its cut. The surface alone would hide the centre; the cut is the evidence.",
     ],
-    limitation: "These runs do not separate unmixing from shared cooling as the cause of a heavy centre.",
-    species: "The warm, dark particles are the heavy kind; the pale particles are the light kind. Their masses are in a two-to-one ratio. Colour marks kind, not heat.",
+    limitation: "One recorded run per world, and nothing interpolated. These runs do not separate unmixing from shared cooling as the cause of a heavy centre.",
+    species: "Iron-warm regions hold more of the heavy kind, pale regions more of the light kind; their masses are in a two-to-one ratio. In the temperature and pressure views, colour is the measured field on the legend's scale.",
     evidenceAnchor: "spectre",
   },
   phototroph: {

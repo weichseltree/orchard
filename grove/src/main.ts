@@ -29,7 +29,7 @@ import mansionDocument from "./world/mansion.json";
 import { parseMansion, roomById } from "./world/schema";
 import { buildWorld, exhibitRoom, neighbourhood, type BuiltWorld } from "./world/world";
 import { PortalSystem } from "./world/portal";
-import type { Screen } from "./media/screen";
+import { ATLAS_LABELS, type Screen } from "./media/screen";
 import type { TapeExhibit } from "./world/tape-exhibit";
 
 // The grove. Boot order matters: the canvas renders within a frame of the
@@ -115,6 +115,7 @@ const hud = new Hud(hudRoot, {
     hud.setSpeed(speed);
   },
   onUnmute: () => void toggleAudio(),
+  onAtlas: (mode) => void chooseAtlas(mode),
   onProvenance: () => provenance.toggle(view.camera),
   onReport: (identity, reason) =>
     presence.report(identity, reason).then(
@@ -233,6 +234,12 @@ const commands: Commands = {
     for (const other of world?.tapes ?? []) other?.setSpeed(speed);
     hud.setSpeed(speed);
     notice(`${speed}x`);
+  },
+  cycleAtlas: () => {
+    const screen = activeScreen;
+    if (!screen?.atlases || !screen.atlas) return;
+    const next = screen.atlases[(screen.atlases.indexOf(screen.atlas) + 1) % screen.atlases.length]!;
+    void chooseAtlas(next);
   },
   toggleProvenance: () => provenance.toggle(view.camera),
   togglePerf: () => {
@@ -372,6 +379,7 @@ function handOverVideo(force = false): void {
   activeScreen = nearest;
   hud.setUnmuteAvailable(false);
   hud.setMuted(nearest?.muted ?? true);
+  syncAtlasHud();
   if (!nearest) return;
   void nearest.attach().then((playing) => {
     if (playing && activeScreen === nearest) {
@@ -379,6 +387,34 @@ function handOverVideo(force = false): void {
       if (nearest.togglePlay) hud.setPlaying(true);
     }
   });
+}
+
+/** The mode buttons follow the screen that holds the decoder: a planet's modes, or nothing. */
+function syncAtlasHud(): void {
+  const screen = activeScreen;
+  if (!screen?.atlases || !screen.atlas) {
+    hud.setAtlas(null);
+    return;
+  }
+  hud.setAtlas({
+    modes: screen.atlases.map((id) => ({ id, label: ATLAS_LABELS[id] ?? id })),
+    current: screen.atlas,
+    legend: screen.legendUrl?.(screen.atlas) ?? null,
+  });
+}
+
+async function chooseAtlas(mode: string): Promise<void> {
+  const screen = activeScreen;
+  if (!screen?.setAtlas || !screen.atlases?.includes(mode)) return;
+  try {
+    await screen.setAtlas(mode);
+    if (activeScreen === screen) {
+      syncAtlasHud();
+      notice(ATLAS_LABELS[mode] ?? mode);
+    }
+  } catch (error) {
+    notice(`That view could not load: ${message(error)}`);
+  }
 }
 
 // The HUD's frame and source-time readout follows the tape nearest the visitor; the

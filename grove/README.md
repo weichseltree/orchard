@@ -44,7 +44,9 @@ has no effect in a production build.
 | Release pointer | Esc | — | — |
 
 On desktop, **X** changes playback speed, **M** toggles video sound when
-available, and **F** opens frame timing. Sound starts muted until you choose
+available, **C** cycles what spectre's cut-open worlds show (lit,
+composition, temperature, pressure; the buttons below the view do the
+same), and **F** opens frame timing. Sound starts muted until you choose
 to play it. WebXR requires a compatible browser and a secure context; hand
 tracking is not implemented. Quest and iPhone hardware acceptance remains
 open in [BACKLOG.md](../docs/BACKLOG.md).

@@ -32,6 +32,8 @@ export interface HudCallbacks {
   onScrub(fraction: number): void;
   onScrubEnd(): void;
   onSpeed(speed: Speed): void;
+  /** A planet's display mode was chosen. */
+  onAtlas(mode: string): void;
   onUnmute(): void;
   onProvenance(): void;
   /** Resolves when the server took the report; rejects with its reason. */
@@ -69,6 +71,10 @@ export class Hud {
   #slider: HTMLInputElement;
   #time: HTMLElement;
   #speed: HTMLSelectElement;
+  #atlas: HTMLElement;
+  #atlasButtons: HTMLElement;
+  #legend: HTMLImageElement;
+  #onAtlas: (mode: string) => void;
   #perf: HTMLElement;
   #scrubbing = false;
 
@@ -201,6 +207,21 @@ export class Hud {
     });
     this.#scrubber.append(this.#playButton, this.#slider, this.#time, this.#speed);
     root.append(this.#scrubber);
+
+    // A planet's display modes, with the legend of the one showing; where the
+    // scrubber would be, because a planet has play and pause but no slider.
+    this.#onAtlas = callbacks.onAtlas;
+    this.#atlas = div("atlas panel");
+    this.#atlas.hidden = true;
+    this.#atlasButtons = div("atlas-modes");
+    this.#atlasButtons.setAttribute("role", "group");
+    this.#atlasButtons.setAttribute("aria-label", "what the worlds show (C cycles)");
+    this.#legend = document.createElement("img");
+    this.#legend.className = "atlas-legend";
+    this.#legend.alt = "";
+    this.#legend.hidden = true;
+    this.#atlas.append(this.#atlasButtons, this.#legend);
+    root.append(this.#atlas);
 
     this.provenancePanel = div("provenance panel");
     this.provenancePanel.hidden = true;
@@ -406,6 +427,28 @@ export class Hud {
 
   setPlaying(playing: boolean): void {
     this.#playButton.textContent = playing ? "Pause" : "Play";
+  }
+
+  /**
+   * Show a planet's modes, or hide the panel with null. `legend` is the image
+   * of the current mode's colour scale, when the bundle has one.
+   */
+  setAtlas(state: { modes: ReadonlyArray<{ id: string; label: string; title?: string }>; current: string; legend: string | null } | null): void {
+    this.#atlas.hidden = state === null;
+    if (!state) return;
+    this.#atlasButtons.replaceChildren(...state.modes.map((mode) => {
+      const element = button(mode.label, "btn small", () => this.#onAtlas(mode.id));
+      element.setAttribute("aria-pressed", String(mode.id === state.current));
+      if (mode.title) element.title = mode.title;
+      return element;
+    }));
+    if (state.legend) {
+      if (this.#legend.src !== state.legend) this.#legend.src = state.legend;
+      this.#legend.hidden = false;
+    } else {
+      this.#legend.hidden = true;
+      this.#legend.removeAttribute("src");
+    }
   }
 
   setSpeed(speed: Speed): void {

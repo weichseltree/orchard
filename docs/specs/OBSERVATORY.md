@@ -16,7 +16,7 @@ faceted grove sculptures and garden armillary are designed architecture.
 | --- | --- | --- |
 | The Observatory | Which question draws you in? | Arrival, guide and routes into the chambers |
 | The Mixing Chamber | When do two kinds stop mixing? | An annihilation tape beside its shuffled control; two video panels |
-| The Gravity Chamber | How does a world find its middle? | Three heavy/light mixtures with different interaction strengths; a silent excerpt |
+| The Gravity Chamber | How does a world find its middle? | spectre's three worlds cut open at walking scale, with lit, composition, temperature and pressure views; a silent excerpt |
 | The Binding Chamber | What lets two atoms stay together? | One recorded three-body capture |
 | The Reconstruction Gallery | What does a new viewpoint reveal? | Three still studies of a classroom reconstruction and its limitations |
 | The Lantern Walk and Long Gallery | Space between questions | Architecture and open routes |
@@ -63,14 +63,22 @@ scale and both ends to lie inside their rooms, and `crossPortal` refuses a
 body whose scale is not the end's. Rooms of one scale are drawn together;
 the other scale is visible only through a portal.
 
+Ruled 2026-09-16: no more point clouds for spectre. The Gravity Chamber's
+three tape hangings are replaced by the same planet bundle at 1.5 m radius,
+each world cut toward the doorway side, and the four atlas modes have a
+control: buttons with the current mode's legend where the scrubber would
+be, and C cycles them. A switch changes the video's source under the same
+texture, measures the new stream's clock origin afresh and seeks back to
+the frame the visitor was on (`PlanetExhibit.setAtlas`).
+
 Stated limits: the far view is not rendered while a headset session
 presents (the sphere is then a plain shimmer and the fade still happens);
 the far view is tone-mapped as a whole, so exhibits seen through it are
 graded once where they are not graded directly; the surface stream is
 34 MB on the wire and 74 MB decoded, fetched when the worlds first play,
-and no phone or headset measurement exists yet; the display modes
-(species, temperature, pressure) are bundled but no control switches them;
-the planet has no time slider, only play and pause (Space).
+and no phone or headset measurement exists yet; the planet has no time
+slider, only play and pause (Space); a mode switch re-buffers the video, so
+it pauses for a moment on a slow link.
 
 ## Architecture and navigation
 

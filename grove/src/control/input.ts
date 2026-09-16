@@ -30,6 +30,8 @@ export interface Commands {
   togglePlay(): void;
   nudgeFrames(delta: number): void;
   cycleSpeed(): void;
+  /** The next display mode of the room's planet, when there is one. */
+  cycleAtlas(): void;
   toggleProvenance(): void;
   togglePerf(): void;
   toggleUnmute(): void;

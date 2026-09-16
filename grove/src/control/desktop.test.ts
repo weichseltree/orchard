@@ -28,6 +28,7 @@ beforeEach(() => {
   canvas = Object.assign(new ElementStub("canvas"), { requestPointerLock: vi.fn().mockResolvedValue(undefined) });
   commands = {
     togglePlay: vi.fn(), nudgeFrames: vi.fn(), cycleSpeed: vi.fn(),
+    cycleAtlas: vi.fn(),
     toggleProvenance: vi.fn(), togglePerf: vi.fn(), toggleUnmute: vi.fn(),
   };
   vi.stubGlobal("HTMLElement", ElementStub);

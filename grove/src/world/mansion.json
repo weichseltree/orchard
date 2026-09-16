@@ -704,87 +704,59 @@
       ],
       "hangings": [
         {
-          "id": "spectre-chi0",
-          "kind": "tape",
-          "title": "Planet from scratch, chi 0: the same seed, no chemistry",
+          "id": "spectre-worlds",
+          "kind": "planet",
+          "title": "Planet from scratch: three worlds cut open, with their measured surfaces",
           "bundle": {
-            "exhibit": {
-              "tree": "spectre",
-              "kind": "tape",
-              "bundle": "a8ec9bed055fd471"
-            },
-            "id": "a8ec9bed055fd471"
+            "id": "26f78b7516170d6d"
           },
           "position": [
             14,
-            1.5,
-            -21.5
-          ],
-          "rotationDeg": [
             0,
-            0,
-            0
-          ],
-          "longSideMeters": 3.6,
-          "palette": [
-            "#5e4b3e",
-            "#ebe6de"
-          ]
-        },
-        {
-          "id": "spectre-chi6",
-          "kind": "tape",
-          "title": "Planet from scratch, chi 6",
-          "bundle": {
-            "exhibit": {
-              "tree": "spectre",
-              "kind": "tape",
-              "bundle": "8794241278d990fa"
-            },
-            "id": "8794241278d990fa"
-          },
-          "position": [
-            14,
-            1.5,
             -17
           ],
-          "rotationDeg": [
-            0,
-            0,
-            0
-          ],
-          "longSideMeters": 3.6,
-          "palette": [
-            "#5e4b3e",
-            "#ebe6de"
-          ]
-        },
-        {
-          "id": "spectre-chi12",
-          "kind": "tape",
-          "title": "Planet from scratch, chi 12: heavy things find the middle",
-          "bundle": {
-            "exhibit": {
-              "tree": "spectre",
-              "kind": "tape",
-              "bundle": "64546061a0b52660"
+          "radiusMeters": 1.5,
+          "atlas": "beauty",
+          "worlds": [
+            {
+              "world": "adiabat-chi0",
+              "position": [
+                14,
+                1.75,
+                -21
+              ],
+              "cutToward": [
+                9,
+                1.6,
+                -17
+              ]
             },
-            "id": "64546061a0b52660"
-          },
-          "position": [
-            14,
-            1.5,
-            -12.5
-          ],
-          "rotationDeg": [
-            0,
-            0,
-            0
-          ],
-          "longSideMeters": 3.6,
-          "palette": [
-            "#5e4b3e",
-            "#ebe6de"
+            {
+              "world": "adiabat-chi6",
+              "position": [
+                14,
+                1.75,
+                -17
+              ],
+              "cutToward": [
+                9,
+                1.6,
+                -17
+              ]
+            },
+            {
+              "world": "adiabat-chi12",
+              "position": [
+                14,
+                1.75,
+                -13
+              ],
+              "cutToward": [
+                9,
+                1.6,
+                -17
+              ]
+            }
           ]
         },
         {
