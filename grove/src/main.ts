@@ -10,6 +10,7 @@ import { XrControls, requestXrSession, watchXrSupport } from "./control/xr";
 import { deploymentTokenSource } from "./net/auth";
 import { Avatars } from "./net/avatars";
 import { knowsCue } from "./world/broadcast";
+import { Turnstile } from "./world/turnstile";
 import { VOICE_URL } from "./config";
 import type { WorldChat } from "./ui/world-chat";
 import type { WristMenu } from "./ui/wrist-menu";
@@ -311,6 +312,7 @@ const presence = new Presence(
       if (!knowsCue(action.cue)) return;
       if (action.text.trim() !== "") notice(action.text);
       if (action.cue === "update") updates?.checkNow();
+      if (action.cue === "turnstile") turnstile.hold(action.holdMs, action.text, performance.now());
     },
   },
   // The grove's token service, when this build has one (a human check, then
@@ -333,6 +335,7 @@ let chatLines: readonly ChatEntry[] = [];
 // controls only report inputs, so the menu's rules stay pure and tested.
 /** Bound once the update watcher starts; an `update` cue before then is a no-op. */
 let updates: GroveUpdates | null = null;
+const turnstile = new Turnstile();
 
 let askState = CLOSED;
 let wristMenu: WristMenu | null = null;
@@ -537,6 +540,10 @@ function presenceRoomFor(roomId: string): string {
  * there are no locks.
  */
 function lockedRoom(roomId: string): boolean {
+  // A turnstile cue holds every way out of the room at once, through this one
+  // question, so it cannot disagree with the ordinary locks about where a
+  // visitor may stand (world/turnstile.ts).
+  if (turnstile.closed(performance.now())) return true;
   return !demo && !presence.canEnter(presenceRoomFor(roomId));
 }
 
@@ -549,6 +556,11 @@ function tellAboutLock(roomId: string | null): void {
   }
   if (roomId === toldAboutLock) return;
   toldAboutLock = roomId;
+  const held = turnstile.why(performance.now());
+  if (held !== null) {
+    notice(`The doors are held: ${held}.`);
+    return;
+  }
   const title = roomById(mansion, roomId)?.title ?? roomId;
   const why = presence.whyLocked(presenceRoomFor(roomId));
   notice(why === null ? `${title} is not open just now.` : `${title}: ${why}.`);
@@ -801,6 +813,11 @@ view.start((dt, time, rawDt) => {
   hud.setHere(presence.here);
 
   provenance.update(view.camera, presenting);
+  if (turnstile.opened(performance.now())) {
+    // Said once, so a visitor who stopped trying the door knows they can go.
+    toldAboutLock = null;
+    notice("The doors are open again.");
+  }
   worldNotices.update(view.camera, presenting);
   worldChat?.update(view.camera, presenting);
 

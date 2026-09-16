@@ -216,8 +216,13 @@ not local.
 - The `update` cue: every open page checks for a new build now and requires it,
   still only at a safe moment (#16).
 
-Not landed: the `turnstile` cue, whose meaning is not yet ruled, and the
-`DEEPGRAM_API_KEY` Pages secret, which only Manuel holds. Until that secret is
+- The `turnstile` cue, ruled by Manuel on 2026-09-16 as "close the doorways":
+  for the broadcast's lifetime every way out of the room -- doorway, teleport,
+  portal -- is held, through the same `lockedRoom` question the ordinary locks
+  use, capped at ten minutes on the client as well as in the module. The room
+  says why when a visitor tries a door, and says once when the doors open.
+
+Not landed: the `DEEPGRAM_API_KEY` Pages secret, which only Manuel holds. Until that secret is
 set, `/voice/grant` answers 503 and the button stays hidden.
 
 Nothing here is published to maincloud, `DEEPGRAM_API_KEY` is not in secrets,

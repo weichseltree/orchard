@@ -161,9 +161,13 @@ describe("knowsCue", () => {
     expect(knowsCue("update")).toBe(true);
   });
 
-  it("does not claim a cue that is named in the brief but has no effect yet", () => {
+  it("knows the turnstile cue, which holds the doorways", () => {
+    expect(knowsCue("turnstile")).toBe(true);
+  });
+
+  it("does not claim a cue nothing is built for", () => {
     // Claiming one fires a moment nobody sees, and reports nothing wrong.
-    expect(knowsCue("turnstile")).toBe(false);
+    expect(knowsCue("fireworks")).toBe(false);
   });
 
   it("does not know a bundle it has never fetched", () => {

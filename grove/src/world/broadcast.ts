@@ -138,17 +138,17 @@ export class BroadcastGate {
  * Whether this build can play a named cue.
  *
  * This list is what is IMPLEMENTED, not what is planned: `notice` shows its
- * words, and `update` makes every open page check for a new build and require
- * it (ui/update.ts, at a safe moment). `turnstile` is named in the brief and has
- * no effect behind it yet, so it is deliberately absent -- a client that claims
- * a cue it cannot draw fires a moment nobody sees and reports nothing wrong.
+ * words, `update` makes every open page check for a new build and require it
+ * (ui/update.ts, at a safe moment), and `turnstile` holds the doorways shut for
+ * the broadcast's lifetime (world/turnstile.ts). A client that claimed a cue it
+ * could not act on would fire a moment nobody sees and report nothing wrong.
  *
  * An unknown cue is SILENCE, not a fallback notice: a cue is a moment, it
  * cannot wait for a download, and showing its text instead would turn a
  * missing animation into a wall of words nobody asked for. VR-PRESENCE §8
  * ruling 4 is whether a cue may ever name a content-hashed bundle.
  */
-export const CUES = new Set(["notice", "update"]);
+export const CUES = new Set(["notice", "update", "turnstile"]);
 
 export function knowsCue(cue: string): boolean {
   return CUES.has(cue);
