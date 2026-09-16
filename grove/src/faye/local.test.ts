@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isLoopback } from "./local";
+import { connectionPolicy, isLoopback, type ConnectionRequest } from "./local";
 
 describe("isLoopback", () => {
   it("admits this machine", () => {
@@ -32,5 +32,42 @@ describe("isLoopback", () => {
     for (const uri of ["", "not a uri", "127.0.0.1:3000"]) {
       expect(isLoopback(uri), uri).toBe(false);
     }
+  });
+});
+
+describe("connectionPolicy", () => {
+  const base: ConnectionRequest = { uri: "wss://maincloud.spacetimedb.com", live: false, cliConfig: "", tokenFile: "", home: "/home/manuel" };
+  const ask = (over: Partial<ConnectionRequest>) => connectionPolicy({ ...base, ...over });
+
+  it("stands in the live world only when told so explicitly", () => {
+    // A mistyped URI must still fail, as the allowlist made it fail before.
+    expect(ask({ tokenFile: "/t" })).toMatchObject({ ok: false });
+    expect(ask({ live: true, tokenFile: "/t" })).toEqual({ ok: true, token: "token-file" });
+  });
+
+  it("never carries a CLI's token into the live world", () => {
+    // The maincloud CLI's token is the publisher; a long-running script must not hold it.
+    expect(ask({ live: true, cliConfig: "/home/manuel/.config/spacetime/cli.toml", tokenFile: "/t" })).toMatchObject({ ok: false });
+    expect(ask({ live: true, cliConfig: "/scratch/cli.toml" })).toMatchObject({ ok: false });
+  });
+
+  it("needs her own identity live", () => {
+    expect(ask({ live: true })).toMatchObject({ ok: false });
+  });
+
+  it("keeps the local rule: a local cli.toml, never the maincloud one", () => {
+    const local = { uri: "ws://127.0.0.1:3000" };
+    expect(ask({ ...local, cliConfig: "/scratch/stdb/cli.toml" })).toEqual({ ok: true, token: "cli-config" });
+    expect(ask({ ...local })).toMatchObject({ ok: false });
+    expect(ask({ ...local, cliConfig: "/home/manuel/.config/spacetime/cli.toml" })).toMatchObject({ ok: false });
+    expect(ask({ ...local, cliConfig: "/home/manuel/.config/spacetime/cli.toml/" })).toMatchObject({ ok: false });
+  });
+
+  it("lets a local run use a token file too", () => {
+    expect(ask({ uri: "ws://localhost:3000", tokenFile: "/t" })).toEqual({ ok: true, token: "token-file" });
+  });
+
+  it("does not treat a look-alike host as local, even with --live absent", () => {
+    expect(ask({ uri: "ws://127.0.0.1.evil.test:3000", cliConfig: "/scratch/cli.toml" })).toMatchObject({ ok: false });
   });
 });

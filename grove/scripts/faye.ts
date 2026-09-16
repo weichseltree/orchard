@@ -10,17 +10,24 @@
 //   spacetime --config-path <scratch>/stdb/cli.toml publish -s local -p <copy of ../spacetime/spacetimedb> orchard --yes
 //   pnpm tsx scripts/faye.ts --db orchard --cli-config <scratch>/stdb/cli.toml
 //
-// LOCAL ONLY, and it refuses anything else. Faye joins as an admin, and an
-// admin bypasses the ban check, the join throttle, the per-network cap and the
-// room capacity (spacetime/spacetimedb/src/index.ts, `join`). That is the
-// right identity for a host standing in their own world and the wrong one to
-// point at maincloud, where it would be a real host appearing unannounced.
-import { readFileSync, readdirSync } from "node:fs";
+// Local by default; the live world only with --live (ruled by Manuel,
+// 2026-09-16). Faye joins as an admin, and an admin bypasses the ban check,
+// the join throttle, the per-network cap and room capacity
+// (spacetime/spacetimedb/src/index.ts, `join`). Live, that admin is her OWN
+// identity -- made once with --new-identity, granted with `add_admin`, revoked
+// with `remove_admin` -- and never the CLI's publisher token (src/faye/local.ts).
+//
+//   pnpm tsx scripts/faye.ts --uri wss://maincloud.spacetimedb.com --live \
+//     --token-file ~/.config/orchard/faye.token --new-identity   # once
+//   pnpm tsx scripts/faye.ts --uri wss://maincloud.spacetimedb.com --live \
+//     --token-file ~/.config/orchard/faye.token                  # the service
+import { readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { homedir } from "node:os";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
 import type { Identity } from "spacetimedb";
 import { DbConnection } from "../src/module_bindings";
-import { isLoopback } from "../src/faye/local";
+import { connectionPolicy } from "../src/faye/local";
 import {
   EMPTY_CURSOR, accumulate, announce, peerIsSilent, readFeed,
   type Cursor, type TreeTitles,
@@ -32,6 +39,12 @@ const { values: args } = parseArgs({
     uri: { type: "string", default: "ws://127.0.0.1:3000" },
     db: { type: "string", default: "orchard" },
     "cli-config": { type: "string", default: "" },
+    /** The public world. Required for any server that is not this machine. */
+    live: { type: "boolean", default: false },
+    /** Faye's own identity token, one line. Required live; mode 600. */
+    "token-file": { type: "string", default: "" },
+    /** Make that identity: connect with none, write its token, print it, exit. */
+    "new-identity": { type: "boolean", default: false },
     room: { type: "string", default: "grove" },
     // NAME_MAX is 24 and `cleanName` clips silently, so a longer name is
     // truncated rather than refused: "The Great Admin Spirit Faye" (27) would
@@ -54,13 +67,21 @@ const { values: args } = parseArgs({
 
 const URI = args.uri;
 const DB = args.db;
-if (!isLoopback(URI)) {
-  console.error(`faye joins as an admin and moves under her own power: local servers only (got ${URI})`);
+// Who she is and where she may stand (src/faye/local.ts): the public world
+// only with --live, and there only with her own identity, never a CLI's.
+const policy = connectionPolicy({
+  uri: URI,
+  live: args.live ?? false,
+  cliConfig: args["cli-config"] ?? "",
+  tokenFile: args["token-file"] ?? "",
+  home: homedir(),
+});
+if (!args["new-identity"] && !policy.ok) {
+  console.error(`faye: ${policy.reason}`);
   process.exit(2);
 }
-if (!args["cli-config"]) {
-  console.error("--cli-config is required: the LOCAL cli.toml whose token init made admin");
-  console.error("(never ~/.config/spacetime/cli.toml -- that token is maincloud's admin)");
+if (args["new-identity"] && !args["token-file"]) {
+  console.error("faye: --new-identity needs --token-file, where the new identity's token is written");
   process.exit(2);
 }
 
@@ -96,18 +117,26 @@ function parseAt(raw: string): { x: number; y: number; z: number } {
   return { x, y, z };
 }
 
-function connect(token: string): Promise<{ conn: DbConnection; hex: string; identity: Identity }> {
+/** Faye's own token: the first line of the file, which nobody but her user may read. */
+function ownToken(path: string): string {
+  const mode = statSync(path).mode & 0o077;
+  if (mode !== 0) throw new Error(`${path} is readable by others (mode ${(statSync(path).mode & 0o777).toString(8)}); chmod 600 it`);
+  const token = readFileSync(path, "utf8").split("\n")[0]?.trim() ?? "";
+  if (!token) throw new Error(`no token in ${path}`);
+  return token;
+}
+
+function connect(token: string | null): Promise<{ conn: DbConnection; hex: string; identity: Identity; token: string }> {
   return new Promise((resolve, reject) => {
     // A connection the module refuses in clientConnected arrives as a
     // disconnect, not as a connect error (module-check.ts says so).
     const timer = setTimeout(() => reject(new Error("no answer in 10 s")), 10_000);
-    DbConnection.builder()
-      .withUri(URI)
-      .withDatabaseName(DB)
-      .withToken(token)
-      .onConnect((conn, identity) => {
+    const builder = DbConnection.builder().withUri(URI).withDatabaseName(DB);
+    // No token means the server mints a new identity and hands its token back.
+    (token ? builder.withToken(token) : builder)
+      .onConnect((conn, identity, issued) => {
         clearTimeout(timer);
-        resolve({ conn, hex: identity.toHexString(), identity });
+        resolve({ conn, hex: identity.toHexString(), identity, token: issued });
       })
       .onConnectError((_ctx, error) => {
         clearTimeout(timer);
@@ -136,7 +165,28 @@ async function main(): Promise<void> {
   const turnSeconds = Number(args.turn);
   if (!Number.isFinite(turnSeconds) || turnSeconds < 0) throw new Error("--turn wants a number of seconds");
 
-  const { conn, hex, identity } = await connect(publisherToken(args["cli-config"]));
+  if (args["new-identity"]) {
+    // Made over HTTP, not by connecting: the live module refuses any connection
+    // that is neither admin nor carrying a grove-issued token ("connect through
+    // the grove"), so an identity minted by connecting would be refused before
+    // it could ever be made admin. `POST /v1/identity` creates one without
+    // touching the database at all.
+    const path = args["token-file"] ?? "";
+    const http = URI.replace(/^ws(s?):/, "http$1:").replace(/\/+$/, "");
+    const response = await fetch(`${http}/v1/identity`, { method: "POST" });
+    if (!response.ok) throw new Error(`${http}/v1/identity answered ${response.status}`);
+    const made = (await response.json()) as { identity?: string; token?: string };
+    if (!made.identity || !made.token) throw new Error("the identity endpoint returned no identity or token");
+    // `wx`: never overwrite. An identity that has been made admin and then
+    // replaced by accident is a host nobody can remove without knowing it.
+    writeFileSync(path, `${made.token}\n`, { mode: 0o600, flag: "wx" });
+    console.log(`faye: new identity ${made.identity}, token written to ${path}`);
+    console.log(`faye: make it a host with: spacetime call -s maincloud ${DB} add_admin '"0x${made.identity}"'`);
+    return;
+  }
+
+  const token = policy.ok && policy.token === "token-file" ? ownToken(args["token-file"] ?? "") : publisherToken(args["cli-config"] ?? "");
+  const { conn, hex, identity } = await connect(token);
   console.log(`faye: connected to ${DB} at ${URI} as ${hex.slice(0, 16)}…`);
 
   // The two views the grove itself watches, scoped by the server to the room

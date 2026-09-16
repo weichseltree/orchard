@@ -1,0 +1,30 @@
+[Unit]
+Description=Faye, the Great Admin Spirit, standing in the live Mind Palace
+# She reads the compute from expdash; without it she stands there and says
+# she has not heard from the compute yet, which is true and harmless.
+After=network-online.target
+Wants=network-online.target
+# A refused connection (her admin removed, the module unreachable) must not
+# become a reconnect storm against maincloud: five tries in fifteen minutes,
+# then systemd gives up until someone looks.
+StartLimitIntervalSec=900
+StartLimitBurst=5
+
+[Service]
+Type=simple
+# Her own worktree, pinned to origin/main by deploy/faye-install.sh -- never the
+# main checkout, whose branch changes under whoever is working in it.
+WorkingDirectory=@FAYE@/grove
+ExecStart=@NODE@ @FAYE@/grove/node_modules/tsx/dist/cli.mjs scripts/faye.ts --uri wss://maincloud.spacetimedb.com --db orchard --live --token-file @HOME@/.config/orchard/faye.token --trees @FAYE@/trees
+# SIGINT, not SIGTERM: her handler calls `leave`, so she walks out of the room
+# instead of lingering as a disconnected capsule until the sweep.
+KillSignal=SIGINT
+TimeoutStopSec=15
+Restart=on-failure
+RestartSec=60
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=orchard-faye
+
+[Install]
+WantedBy=default.target
