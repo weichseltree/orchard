@@ -29,7 +29,7 @@ Numbers marked **budget** are proposals, not measurements.
 | A visitor SEES a world event | **works** — `broadcast` is subscribed and gated (`world/broadcast.ts`) |
 | Her speech in an immersive session | **works** — the capsule panel is scene geometry, so a headset shows it |
 | The chat LOG in an immersive session | **missing** — still DOM; §5 |
-| A visitor SPEAKS with their voice | **half** — the transcriber is built and tested (`src/voice/`), nothing calls it yet; §6 |
+| A visitor SPEAKS with their voice | **works in flat mode** — hold-to-talk in the chat panel; still no way to start it in an immersive session (§6) |
 
 Updated 2026-09-16. Stage one and most of stage two are done; what is left is
 the scrolling log in a headset, and the wiring that would let a person speak.

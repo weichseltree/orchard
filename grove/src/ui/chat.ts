@@ -23,6 +23,20 @@ export interface ChatPanelCallbacks {
   onSend(text: string): Promise<void>;
   /** Called when the line opens or closes, so the caller can release the pointer. */
   onFocusChange?(open: boolean): void;
+  /**
+   * Push-to-talk, when this build and this browser have it. Absent means no
+   * microphone is shown at all -- a control that fails when pressed is worse
+   * than one that was never there.
+   */
+  voice?: VoicePushToTalk;
+}
+
+/** The half of `VoiceCapture` this panel drives (src/voice/capture.ts). */
+export interface VoicePushToTalk {
+  begin(): Promise<void>;
+  end(): void;
+  /** Takes the microphone permission early; see the note on the button below. */
+  prime(): Promise<boolean>;
 }
 
 export class ChatPanel {
@@ -32,6 +46,9 @@ export class ChatPanel {
   readonly #form: HTMLFormElement;
   readonly #input: HTMLInputElement;
   readonly #send: HTMLButtonElement;
+  #mic: HTMLButtonElement | null = null;
+  #caption: HTMLParagraphElement | null = null;
+  #talking = false;
   readonly #callbacks: ChatPanelCallbacks;
   readonly #now: () => number;
 
@@ -70,6 +87,26 @@ export class ChatPanel {
     this.#send.textContent = "Say";
     this.#form.append(this.#input, this.#send);
 
+    // Push-to-talk, not open-mic. An always-on microphone in a shared room
+    // transcribes every side conversation in the visitor's house and bills for
+    // it; holding a key is also the only honest way to show someone when they
+    // are being heard.
+    if (callbacks.voice) {
+      this.#mic = document.createElement("button");
+      this.#mic.type = "button";
+      this.#mic.className = "chat-mic";
+      this.#mic.textContent = "Hold to talk";
+      this.#mic.setAttribute("aria-label", "Hold to speak to the room");
+      this.#form.append(this.#mic);
+      this.#caption = document.createElement("p");
+      this.#caption.className = "chat-caption";
+      this.#caption.hidden = true;
+      // The live caption is a running guess and changes constantly; announcing
+      // every revision would make a screen reader unusable.
+      this.#caption.setAttribute("aria-live", "off");
+      this.root.append(this.#caption);
+    }
+
     this.root.append(this.#log, this.#form);
     parent.append(this.root);
 
@@ -85,6 +122,19 @@ export class ChatPanel {
         this.close();
       }
     });
+    if (this.#mic) {
+      // Pointer events, not mouse: this must work with a finger and a stylus.
+      // `pointerleave` and `pointercancel` matter as much as `pointerup` --
+      // dragging off the button or having the gesture stolen would otherwise
+      // leave the microphone open with nothing on screen saying so.
+      this.#mic.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        void this.#startTalking();
+      });
+      for (const type of ["pointerup", "pointerleave", "pointercancel"] as const) {
+        this.#mic.addEventListener(type, () => this.#stopTalking());
+      }
+    }
     this.#input.addEventListener("focus", () => this.#callbacks.onFocusChange?.(true));
     this.#input.addEventListener("blur", () => this.#callbacks.onFocusChange?.(false));
     this.#refreshSend();
@@ -131,6 +181,66 @@ export class ChatPanel {
   /** Something the room should read that nobody said: a refusal, a notice. */
   addSystemLine(text: string): void {
     this.addLine({ id: `system-${this.#now()}-${text.length}`, name: "", text, mine: false, at: this.#now() });
+  }
+
+  /**
+   * Takes the microphone permission while the DOM is still on screen.
+   *
+   * This is not an optimisation. A permission prompt CANNOT be raised inside
+   * an immersive session, so a visitor who enters VR without having granted
+   * the microphone finds it simply dead, with no prompt and nothing to press.
+   * Call this before offering the headset.
+   */
+  primeVoice(): Promise<boolean> {
+    return this.#callbacks.voice?.prime() ?? Promise.resolve(false);
+  }
+
+  /** The live guess at what is being said. Never sent anywhere. */
+  showCaption(text: string): void {
+    if (!this.#caption) return;
+    this.#caption.textContent = text;
+    this.#caption.hidden = text.trim() === "";
+  }
+
+  /**
+   * A finished utterance. It goes through the typed path on purpose, so it
+   * inherits the rate limit, the clip to CHAT_TEXT_MAX and the give-it-back
+   * behaviour when the module refuses -- a spoken line that vanishes is worse
+   * than a typed one, because there is nothing to retype.
+   */
+  sayHeard(text: string): void {
+    if (this.#disposed) return;
+    this.showCaption("");
+    if (!isSendable(text)) return;
+    this.#input.value = text;
+    this.#refreshSend();
+    void this.#submit();
+  }
+
+  async #startTalking(): Promise<void> {
+    const voice = this.#callbacks.voice;
+    if (!voice || this.#talking || this.#disposed) return;
+    this.#talking = true;
+    this.#setMicLive(true);
+    try {
+      await voice.begin();
+    } catch {
+      this.#talking = false;
+      this.#setMicLive(false);
+    }
+  }
+
+  #stopTalking(): void {
+    if (!this.#talking) return;
+    this.#talking = false;
+    this.#setMicLive(false);
+    this.#callbacks.voice?.end();
+  }
+
+  #setMicLive(live: boolean): void {
+    if (!this.#mic) return;
+    this.#mic.classList.toggle("chat-mic-live", live);
+    this.#mic.textContent = live ? "Listening…" : "Hold to talk";
   }
 
   async #submit(): Promise<void> {
@@ -191,6 +301,7 @@ export class ChatPanel {
   dispose(): void {
     if (this.#disposed) return;
     this.#disposed = true;
+    this.#stopTalking();
     if (this.#gapTimer !== null) clearTimeout(this.#gapTimer);
     this.#gapTimer = null;
     this.root.remove();

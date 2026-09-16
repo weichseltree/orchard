@@ -10,6 +10,9 @@ import { XrControls, requestXrSession, watchXrSupport } from "./control/xr";
 import { deploymentTokenSource } from "./net/auth";
 import { Avatars } from "./net/avatars";
 import { knowsCue } from "./world/broadcast";
+import { VOICE_URL } from "./config";
+import { voiceSupported } from "./voice/support";
+import type { VoiceCapture } from "./voice/capture";
 import { Presence } from "./net/presence";
 import { ChatPanel } from "./ui/chat";
 import { installAssetMap } from "./render/asset-map";
@@ -197,6 +200,17 @@ function notice(text: string, sticky = false): void {
 
 // Room chat, flat mode only (VR-PRESENCE.md §3). Hidden until the link is up:
 // there is nothing to say to a room you are visiting on your own.
+// One token source for the whole page: presence and voice both need the
+// grove token, and two managers would mean two human checks.
+const tokenSource = demo ? undefined : deploymentTokenSource(hudRoot);
+
+// Voice is offered only when this build has the route AND this browser can
+// actually record (VR-PRESENCE §6). The capture object is built after the
+// panel because its callbacks talk to the panel, so the panel is handed a
+// thin driver rather than the object itself.
+let voiceCapture: VoiceCapture | null = null;
+const canSpeak = Boolean(VOICE_URL && tokenSource && voiceSupported());
+
 const chat = new ChatPanel(hudRoot, {
   onSend: (text) => presence.say(text),
   // A locked pointer cannot be typed past, so the line takes it and the next
@@ -204,7 +218,46 @@ const chat = new ChatPanel(hudRoot, {
   onFocusChange: (open) => {
     if (open && document.pointerLockElement) document.exitPointerLock();
   },
+  voice: canSpeak
+    ? {
+        begin: async () => {
+          await loadVoice();
+          await voiceCapture?.begin();
+        },
+        end: () => voiceCapture?.end(),
+        prime: async () => {
+          await loadVoice();
+          return (await voiceCapture?.prime()) ?? false;
+        },
+      }
+    : undefined,
 });
+
+/**
+ * Loads the voice code on demand, once.
+ *
+ * Voice is a few dozen kB that most visitors never press, so it is not in the
+ * startup bundle -- `voice/support.ts` is import-free precisely so the button
+ * can be offered without it. `prime()` runs this early, so the first press is
+ * not waiting on a download as well as a permission prompt.
+ */
+let voiceLoad: Promise<void> | null = null;
+function loadVoice(): Promise<void> {
+  if (!canSpeak) return Promise.resolve();
+  voiceLoad ??= import("./voice/browser").then(({ browserVoice }) => {
+    voiceCapture = browserVoice(
+      { base: VOICE_URL, token: tokenSource },
+      {
+        onUtterance: (text) => chat.sayHeard(text),
+        onCaption: (text) => chat.showCaption(text),
+        // A failed microphone is something to read in the room, not a console
+        // message: the visitor pressed a button and deserves an answer.
+        onError: (message) => chat.addSystemLine(message),
+      },
+    );
+  });
+  return voiceLoad;
+}
 
 const presence = new Presence(
   {
@@ -253,7 +306,7 @@ const presence = new Presence(
   },
   // The grove's token service, when this build has one (a human check, then
   // a token that carries the visitor's identity from visit to visit).
-  demo ? {} : { token: deploymentTokenSource(hudRoot) },
+  tokenSource ? { token: tokenSource } : {},
 );
 let lastLinkDetail = "";
 

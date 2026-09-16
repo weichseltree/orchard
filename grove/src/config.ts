@@ -20,6 +20,14 @@ export const SPACETIME_DB: string = env.VITE_SPACETIME_DB ?? "orchard";
 export const AUTH_URL: string = trimSlash(env.VITE_AUTH_URL ?? "/auth");
 
 /**
+ * The voice route, a Pages Function beside /auth, and off for the same reason
+ * in `vite` (which runs no Functions). Off also means the microphone is not
+ * offered at all: the route holds the Deepgram key, so without it there is
+ * nothing a client could do with a microphone but fail.
+ */
+export const VOICE_URL: string = trimSlash(env.VITE_VOICE_URL ?? "/voice");
+
+/**
  * Cloudflare Turnstile's site key (public by design). Empty: no human check is
  * run in the browser, which matches a token service without TURNSTILE_SECRET.
  */
