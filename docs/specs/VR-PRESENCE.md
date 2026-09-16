@@ -28,7 +28,7 @@ Numbers marked **budget** are proposals, not measurements.
 | A visitor SAYS anything | **works** — `presence.say`, rate-limited by the panel so "slow down" never reaches a person |
 | A visitor SEES a world event | **works** — `broadcast` is subscribed and gated (`world/broadcast.ts`) |
 | Her speech in an immersive session | **works** — the capsule panel is scene geometry, so a headset shows it |
-| The chat LOG in an immersive session | **missing** — still DOM; §5 |
+| The chat LOG in an immersive session | **works** — a canvas panel, visitor-locked, built on the first session |
 | A visitor SPEAKS with their voice | **works in flat mode** — hold-to-talk in the chat panel; still no way to start it in an immersive session (§6) |
 
 Updated 2026-09-16. Stage one and most of stage two are done; what is left is
@@ -195,6 +195,20 @@ not local.
 - `grove/src/voice/transcript.ts`, `capture.ts`, `grove/voice/service.ts` — the
   transcriber, the push-to-talk loop, and the route that holds the key.
 
-Not landed: §5's scrolling log as a panel, §6's wiring, and every cue but
-`notice`. Nothing in this document is published to maincloud, and
-`DEEPGRAM_API_KEY` is not in secrets.
+- `grove/src/ui/world-chat.ts` — §5's log as scene geometry, visitor-locked,
+  redrawn only when the text changes.
+- `grove/src/voice/browser.ts`, `support.ts`, `ui/chat.ts` — §6's hold-to-talk.
+
+Not landed: every cue but `notice`, and any way to START speaking inside an
+immersive session — the button is DOM, so a headset can now READ everything
+and still cannot talk. §6's menu of canned asks (ruling 3) is the next step
+and does not wait on anything.
+
+Nothing here is published to maincloud, `DEEPGRAM_API_KEY` is not in secrets,
+and the CSP does not yet allow the Deepgram socket.
+
+**The startup budget is nearly spent.** `startupJsGzipBytes` is 214,587
+against a 215,000 ceiling: 413 bytes. Both features added here are loaded on
+demand — voice on the first press, the log panel on the first session — and
+that deferral is what keeps it under. The next thing on the startup path needs
+either its own deferral or a deliberate ruling on the ceiling.

@@ -11,6 +11,8 @@ import { deploymentTokenSource } from "./net/auth";
 import { Avatars } from "./net/avatars";
 import { knowsCue } from "./world/broadcast";
 import { VOICE_URL } from "./config";
+import type { WorldChat } from "./ui/world-chat";
+import type { ChatEntry } from "./ui/chat-log";
 import { voiceSupported } from "./voice/support";
 import type { VoiceCapture } from "./voice/capture";
 import { Presence } from "./net/presence";
@@ -218,6 +220,10 @@ const chat = new ChatPanel(hudRoot, {
   onFocusChange: (open) => {
     if (open && document.pointerLockElement) document.exitPointerLock();
   },
+  onLinesChanged: (lines) => {
+    chatLines = lines;
+    worldChat?.setLines(lines);
+  },
   voice: canSpeak
     ? {
         begin: async () => {
@@ -309,6 +315,26 @@ const presence = new Presence(
   tokenSource ? { token: tokenSource } : {},
 );
 let lastLinkDetail = "";
+
+// The chat log a headset can read. DOM is not shown in an immersive session,
+// so the same lines are drawn into a canvas and hung in front of the visitor.
+//
+// Built on the first session rather than at startup: it is a panel only a
+// headset ever sees, and the startup budget is what a visitor downloads before
+// they can walk around. Voice is deferred for the same reason.
+let worldChat: WorldChat | null = null;
+let worldChatLoad: Promise<void> | null = null;
+let chatLines: readonly ChatEntry[] = [];
+view.renderer.xr.addEventListener("sessionstart", () => {
+  worldChatLoad ??= import("./ui/world-chat").then(({ WorldChat: Panel }) => {
+    const panel = new Panel();
+    // Whatever was already said, so entering VR mid-conversation is not a
+    // blank panel until the next line.
+    panel.setLines(chatLines);
+    view.scene.add(panel.panel);
+    worldChat = panel;
+  });
+});
 
 let perfOpen = false;
 let nextPerfReport = 0;
@@ -722,6 +748,7 @@ view.start((dt, time, rawDt) => {
 
   provenance.update(view.camera, presenting);
   worldNotices.update(view.camera, presenting);
+  worldChat?.update(view.camera, presenting);
 
   // A live audio exhibit's field needs the visitor's head every frame -- that
   // is the whole of what makes a positioned source mean anything -- but the

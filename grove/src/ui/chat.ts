@@ -29,6 +29,11 @@ export interface ChatPanelCallbacks {
    * than one that was never there.
    */
   voice?: VoicePushToTalk;
+  /**
+   * The log changed. Pushed rather than polled so the immersive panel is not
+   * re-read every frame at 72 Hz to discover that nothing was said.
+   */
+  onLinesChanged?(lines: readonly ChatEntry[]): void;
 }
 
 /** The half of `VoiceCapture` this panel drives (src/voice/capture.ts). */
@@ -296,6 +301,8 @@ export class ChatPanel {
       return item;
     }));
     this.#log.scrollTop = this.#log.scrollHeight;
+    // The same log, for the panel a headset can actually show (ui/world-chat.ts).
+    this.#callbacks.onLinesChanged?.(this.#lines);
   }
 
   dispose(): void {
