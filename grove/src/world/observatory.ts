@@ -67,19 +67,22 @@ function stoneSurface(material: MeshBasicMaterial, finish: Finish, quiet: boolea
   material.onBeforeCompile = shader => {
     // The baked light field, shared by every architectural material (lightfield.ts).
     Object.assign(shader.uniforms, lightFieldUniforms);
-    shader.vertexShader = `varying vec3 observatoryWorld; varying vec3 observatoryCenter;\n${shader.vertexShader}`;
+    shader.vertexShader = `varying vec3 observatoryWorld; varying vec3 observatoryCenter; varying vec3 observatoryNormal;\n${shader.vertexShader}`;
     shader.vertexShader = shader.vertexShader.replace("#include <begin_vertex>", `
       #include <begin_vertex>
       vec4 architecturePosition = vec4(transformed, 1.0);
       vec4 architectureCenter = vec4(0.0, 0.0, 0.0, 1.0);
+      vec3 architectureNormal = normal;
       #ifdef USE_INSTANCING
         architecturePosition = instanceMatrix * architecturePosition;
         architectureCenter = instanceMatrix * architectureCenter;
+        architectureNormal = mat3(instanceMatrix) * architectureNormal;
       #endif
       observatoryWorld = (modelMatrix * architecturePosition).xyz;
       observatoryCenter = (modelMatrix * architectureCenter).xyz;
+      observatoryNormal = normalize(mat3(modelMatrix) * architectureNormal);
     `);
-    shader.fragmentShader = `varying vec3 observatoryWorld; varying vec3 observatoryCenter;
+    shader.fragmentShader = `varying vec3 observatoryWorld; varying vec3 observatoryCenter; varying vec3 observatoryNormal;
       uniform sampler3D uLightField; uniform vec3 uFieldMin; uniform vec3 uFieldInvSize; uniform float uFieldGain;
       float stoneHash(vec2 p) {
         vec3 q = fract(vec3(p.xyx) * .1031);

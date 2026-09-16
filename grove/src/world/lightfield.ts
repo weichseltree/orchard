@@ -57,9 +57,16 @@ export const lightFieldUniforms = {
   uFieldGain: { value: 0 },
 };
 
-/** The stone shader's sampling of the field; `ambient` is the light where no lamp reaches. */
+/**
+ * The stone shader's sampling of the field. A surface samples a little way
+ * off itself along its normal, into the room it faces: a wall stands on the
+ * bound between two rooms' texels, and the trilinear filter would otherwise
+ * blend the neighbour's light through it.
+ */
+export const FIELD_SURFACE_OFFSET_M = 0.9;
 export const LIGHT_FIELD_GLSL = /* glsl */ `
-  vec3 fieldUvw = (observatoryWorld - uFieldMin) * uFieldInvSize;
+  vec3 fieldAt = observatoryWorld + observatoryNormal * ${FIELD_SURFACE_OFFSET_M.toFixed(2)};
+  vec3 fieldUvw = (fieldAt - uFieldMin) * uFieldInvSize;
   vec3 fieldLight = texture(uLightField, fieldUvw).rgb * ${(1 / ENCODE).toFixed(1)} * uFieldGain;
 `;
 

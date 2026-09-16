@@ -291,11 +291,23 @@ export class PortalSystem {
         mesh.quaternion.setFromUnitVectors(_zAxis, lens.normal);
         mesh.scale.setScalar(lens.radius);
         mesh.renderOrder = 900;
-        mesh.userData = { scale: room.scale ?? 1, sealed: door.to };
+        // Hidden until the room's shell stands: a lens without its recess would float.
+        mesh.visible = false;
+        mesh.userData = { scale: room.scale ?? 1, room: room.id, sealed: door.to };
         this.group.add(mesh);
         this.#sealedMeshes.push(mesh);
       }
     }
+  }
+
+  /** Rooms whose architecture has landed; a sealed lens shows only over its recess. */
+  readonly #readyRooms = new Set<string>();
+  #scale = 1;
+
+  /** A room's shell is in the scene: its sealed lenses may show. */
+  roomReady(roomId: string): void {
+    this.#readyRooms.add(roomId);
+    for (const mesh of this.#sealedMeshes) if (mesh.userData.room === roomId) mesh.visible = mesh.userData.scale === this.#scale;
   }
 
   /** The sealed doors' glass: the portal shader with no far view, no blend, and a dimmer tint. */
@@ -328,8 +340,9 @@ export class PortalSystem {
 
   /** Show the ends that belong to rooms of this scale. */
   setScale(scale: number): void {
+    this.#scale = scale;
     for (const [end, mesh] of this.#meshes) mesh.visible = end.scale === scale;
-    for (const mesh of this.#sealedMeshes) mesh.visible = mesh.userData.scale === scale;
+    for (const mesh of this.#sealedMeshes) mesh.visible = mesh.userData.scale === scale && this.#readyRooms.has(mesh.userData.room);
   }
 
   /** This system's own end matching `end` (the same portal and room), so callers may hold ends from another `portalEnds`. */
@@ -587,7 +600,7 @@ export class PortalSystem {
       mesh.visible = false;
     }
     const lensesWereVisible = this.#sealedMeshes.filter((mesh) => mesh.visible);
-    for (const mesh of this.#sealedMeshes) mesh.visible = mesh.userData.scale === end.toScale;
+    for (const mesh of this.#sealedMeshes) mesh.visible = mesh.userData.scale === end.toScale && this.#readyRooms.has(mesh.userData.room);
     setScaleVisible(end.toScale);
     const previous = renderer.getRenderTarget();
     renderer.setRenderTarget(target);
@@ -615,5 +628,10 @@ export class PortalSystem {
       mesh.geometry.dispose();
       (mesh.material as ShaderMaterial).dispose();
     }
+    // The lenses share one material and one cap; the cap is rebuilt by the next system.
+    this.#sealed.dispose();
+    sealedShape?.dispose();
+    sealedShape = null;
+    this.#sealedMeshes.length = 0;
   }
 }

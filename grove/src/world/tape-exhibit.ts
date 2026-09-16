@@ -1,18 +1,6 @@
-import {
-  Box3,
-  BoxGeometry,
-  Color,
-  Group,
-  MathUtils,
-  Mesh,
-  MeshBasicMaterial,
-  Object3D,
-  PlaneGeometry,
-  Quaternion,
-  Vector3,
-} from "three";
+import { Box3, Color, Group, MathUtils, Mesh, MeshBasicMaterial, Object3D, Vector3 } from "three";
 import { PALETTE } from "../config";
-import { STAND, standFoot, standFrame, standHeight, type StandFrame } from "./stand";
+import { buildStand, standFoot, standFrame, type Stand } from "./stand";
 import type { DeviceTier } from "../tape/bundle";
 import { TapeBundleSchema, pickVariant, tapeTimeUnit, variantSlots, type TapeBundle } from "../tape/bundle";
 import { TapeStream } from "../tape/stream";
@@ -49,6 +37,11 @@ export interface TapeExhibitOptions {
   scheduler?: ChunkScheduler;
   /** The room's floor (`bounds.min[1]`), where the reading stand's foot goes; 0 when absent. */
   floorY?: number;
+  /**
+   * The reading stand the room built for this hanging (world.ts), whose
+   * strip the tape drives. Absent, the tape builds one of its own and owns it.
+   */
+  stand?: Stand;
 }
 
 /**
@@ -148,17 +141,20 @@ export class TapeExhibit {
       ),
     );
 
-    // The same foot the wall text places its face from (stand.ts).
+    // The room's stand, or one of this tape's own on the same foot the wall text uses (stand.ts).
     const foot = standFoot(options.hanging, options.floorY ?? 0);
-    const stand = buildStand(standFrame(foot.position, foot.rotationDeg));
-    this.group.add(stand.group);
-    this.#stand = stand;
+    const stand = options.stand ?? buildStand(standFrame(foot.position, foot.rotationDeg), PALETTE.accent);
+    if (!options.stand) {
+      this.group.add(stand.group);
+      this.#ownStand = stand;
+    }
     this.#progress = stand.progress;
     this.#light = stand.light;
     this.#progressWidth = stand.progressWidth;
     this.#applyProgress();
   }
-  #stand: Stand;
+  /** The stand this tape built for itself, to dispose; null when the room owns it. */
+  #ownStand: Stand | null = null;
 
   static async load(options: TapeExhibitOptions): Promise<TapeExhibit> {
     const base = options.baseUrl.endsWith("/") ? options.baseUrl : `${options.baseUrl}/`;
@@ -310,7 +306,7 @@ export class TapeExhibit {
     (this.#progress.material as MeshBasicMaterial).dispose();
     this.#light.geometry.dispose();
     (this.#light.material as MeshBasicMaterial).dispose();
-    this.#stand.dispose();
+    this.#ownStand?.dispose();
   }
 
   /** Called every frame, so it allocates nothing and writes nothing unchanged. */
@@ -323,99 +319,4 @@ export class TapeExhibit {
     this.#lampState = state;
     (this.#light.material as MeshBasicMaterial).color.copy(this.#lampColours[state]);
   }
-}
-
-interface Stand {
-  group: Group;
-  progress: Mesh;
-  light: Mesh;
-  progressWidth: number;
-  dispose(): void;
-}
-
-/** Turns a plate's back toward the reader's far side. */
-const ABOUT_FACE = new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), Math.PI);
-
-/**
- * The reading stand's body: a brass plate over a stem, dark on its back, a
- * dark strip along its foot carrying the lit bar for where the record stands
- * and the lamp for whether it runs. The plate's face above the strip is left
- * to the wall text (labels.ts), which paints it from the same frame.
- */
-function buildStand(frame: StandFrame): Stand {
-  const group = new Group();
-  group.name = "stand";
-  // The architecture's brass and inset (observatory.ts's palette), so the stand belongs to the room.
-  const brass = new MeshBasicMaterial({ color: 0xa98551 });
-  const dark = new MeshBasicMaterial({ color: 0x101b27 });
-  const track = new MeshBasicMaterial({ color: 0x1a221c });
-  const height = standHeight();
-  const disposables: Array<{ dispose(): void }> = [brass, dark, track];
-
-  const plate = new Mesh(new BoxGeometry(STAND.width + 2 * STAND.border, height + 2 * STAND.border, STAND.thickness), brass);
-  plate.name = "stand-plate";
-  plate.position.copy(frame.centre);
-  plate.quaternion.copy(frame.quaternion);
-  group.add(plate);
-  disposables.push(plate.geometry);
-
-  const back = new Mesh(new PlaneGeometry(STAND.width, height), dark);
-  back.name = "stand-back";
-  back.position.copy(frame.centre).addScaledVector(frame.normal, -(STAND.thickness / 2 + 0.002));
-  back.quaternion.copy(frame.quaternion).multiply(ABOUT_FACE);
-  group.add(back);
-  disposables.push(back.geometry);
-
-  // The strip and its controls, in the plate's own frame: x to the reader's right, y up the plate, z off it.
-  const controls = new Group();
-  controls.name = "stand-controls";
-  controls.position.copy(frame.stripCentre).addScaledVector(frame.normal, STAND.thickness / 2 + 0.002);
-  controls.quaternion.copy(frame.quaternion);
-  group.add(controls);
-  const strip = new Mesh(new PlaneGeometry(STAND.width, STAND.stripHeight), dark);
-  strip.name = "stand-strip";
-  controls.add(strip);
-  disposables.push(strip.geometry);
-
-  const width = STAND.width - 0.3;
-  const bar = new Group();
-  bar.position.set(-0.08, 0, 0.002);
-  controls.add(bar);
-  const rail = new Mesh(new PlaneGeometry(width, 0.04), track);
-  rail.name = "stand-track";
-  bar.add(rail);
-  disposables.push(rail.geometry);
-  const progress = new Mesh(new PlaneGeometry(width, 0.04), new MeshBasicMaterial({ color: PALETTE.accent }));
-  progress.name = "stand-progress";
-  progress.position.z = 0.001;
-  progress.scale.x = 0.001;
-  bar.add(progress);
-  const light = new Mesh(new PlaneGeometry(0.06, 0.06), new MeshBasicMaterial({ color: PALETTE.accent }));
-  light.name = "stand-lamp";
-  light.position.set(width / 2 + 0.09, 0, 0.001);
-  bar.add(light);
-
-  // The stem up under the plate, and its foot on the floor.
-  const stemHeight = Math.max(0.1, frame.centre.y - frame.foot.y - 0.06);
-  const stem = new Mesh(new BoxGeometry(0.08, stemHeight, 0.08), brass);
-  stem.name = "stand-stem";
-  stem.position.set(frame.foot.x, frame.foot.y + stemHeight / 2, frame.foot.z);
-  group.add(stem);
-  disposables.push(stem.geometry);
-  const base = new Mesh(new BoxGeometry(0.56, 0.03, 0.42), dark);
-  base.name = "stand-base";
-  base.position.set(frame.foot.x, frame.foot.y + 0.015, frame.foot.z);
-  base.rotation.y = Math.atan2(frame.front.x, frame.front.z);
-  group.add(base);
-  disposables.push(base.geometry);
-
-  return {
-    group,
-    progress,
-    light,
-    progressWidth: width,
-    dispose: () => {
-      for (const d of disposables) d.dispose();
-    },
-  };
 }
