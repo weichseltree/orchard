@@ -204,43 +204,8 @@ async function main(): Promise<void> {
   // we are in. Faye sees exactly what any visitor sees -- no more.
   await subscribe(conn, ["SELECT * FROM people_here", "SELECT * FROM poses_here", "SELECT * FROM chat_here"]);
 
-  await conn.reducers.join({ name: args.name, room: args.room });
-  console.log(`faye: standing in "${args.room}" as "${args.name}"`);
-  if (args.name.length > 24) {
-    console.warn(`faye: the module clips names at 24 characters, so this shows as "${args.name.slice(0, 24)}"`);
-  }
-
-  if (args.say) {
-    // `join` stamps last_said with the join time, so the first line is inside
-    // CHAT_MIN_GAP (0.7 s) and comes back "slow down". Wait it out -- and a
-    // refused greeting must never cost Faye her presence, which is the point
-    // of standing here at all.
-    await sleep(CHAT_MIN_GAP_MS + 200);
-    await conn.reducers.say({ text: args.say }).catch((error: unknown) => {
-      console.warn(`faye: greeting refused (${error instanceof Error ? error.message : String(error)})`);
-    });
-  }
-
   const titles = readTreeTitles(args.trees);
   if (titles.size > 0) console.log(`faye: ${titles.size} tree label(s) loaded from ${args.trees}`);
-
-  const startedAt = Date.now();
-  // Standing on the spot, turning slowly: a presence, not a pacing NPC.
-  // Nothing here pretends to walk -- the body has no collision and no
-  // navigation, and a capsule sliding through a wall reads as a bug.
-  const sendPose = () => {
-    if (life.leaving) return;
-    const yaw = turnSeconds > 0
-      ? ((Date.now() - startedAt) / 1000 / turnSeconds) * Math.PI * 2
-      : 0;
-    conn.reducers.move({ x: at.x, y: at.y, z: at.z, yaw: wrapAngle(yaw) }).catch((error: unknown) => {
-      console.warn(`faye: move refused (${error instanceof Error ? error.message : String(error)})`);
-    });
-  };
-  sendPose();
-  // Standing still is one pose; turning is a stream, at a rate maincloud is
-  // not paying for around the clock (TURN_POSE_HZ says why).
-  const timer = turnSeconds > 0 ? setInterval(sendPose, 1000 / TURN_POSE_HZ) : null;
 
   // What she knows, for answering a visitor who speaks to her. Updated by the
   // poll loop; read by the chat handler.
@@ -249,7 +214,10 @@ async function main(): Promise<void> {
   // Every line already in the room when she arrives is history; she hears
   // only what is said after her own join, by the module's clock
   // (src/faye/listen.ts). Listening does not wait on the compute feed: with
-  // no feed she still answers, and says she has not heard from it.
+  // no feed she still answers, and says she has not heard from it. Registered
+  // BEFORE `join`: a line said between the join and a later registration --
+  // the greeting's wait alone is 0.9 s -- would be inserted with no handler
+  // and never replayed. Until her own row is in the view, nothing is new.
   const joinedAt = (): bigint | null => {
     for (const person of conn.db.peopleHere.iter()) {
       if (person.identity.isEqual(identity)) return person.lastSeen.microsSinceUnixEpoch;
@@ -271,6 +239,41 @@ async function main(): Promise<void> {
       });
     })();
   });
+
+  await conn.reducers.join({ name: args.name, room: args.room });
+  console.log(`faye: standing in "${args.room}" as "${args.name}"`);
+  if (args.name.length > 24) {
+    console.warn(`faye: the module clips names at 24 characters, so this shows as "${args.name.slice(0, 24)}"`);
+  }
+
+  if (args.say) {
+    // `join` stamps last_said with the join time, so the first line is inside
+    // CHAT_MIN_GAP (0.7 s) and comes back "slow down". Wait it out -- and a
+    // refused greeting must never cost Faye her presence, which is the point
+    // of standing here at all.
+    await sleep(CHAT_MIN_GAP_MS + 200);
+    await conn.reducers.say({ text: args.say }).catch((error: unknown) => {
+      console.warn(`faye: greeting refused (${error instanceof Error ? error.message : String(error)})`);
+    });
+  }
+
+  const startedAt = Date.now();
+  // Standing on the spot, turning slowly: a presence, not a pacing NPC.
+  // Nothing here pretends to walk -- the body has no collision and no
+  // navigation, and a capsule sliding through a wall reads as a bug.
+  const sendPose = () => {
+    if (life.leaving) return;
+    const yaw = turnSeconds > 0
+      ? ((Date.now() - startedAt) / 1000 / turnSeconds) * Math.PI * 2
+      : 0;
+    conn.reducers.move({ x: at.x, y: at.y, z: at.z, yaw: wrapAngle(yaw) }).catch((error: unknown) => {
+      console.warn(`faye: move refused (${error instanceof Error ? error.message : String(error)})`);
+    });
+  };
+  sendPose();
+  // Standing still is one pose; turning is a stream, at a rate maincloud is
+  // not paying for around the clock (TURN_POSE_HZ says why).
+  const timer = turnSeconds > 0 ? setInterval(sendPose, 1000 / TURN_POSE_HZ) : null;
 
   // What she has taken in of the compute, and what she has already said about
   // the peer. Both live only as long as she stands here: a spirit that
