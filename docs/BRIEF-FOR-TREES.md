@@ -7,7 +7,7 @@ already show, what it takes from you, and what to answer.
 
 ## What the orchard is, in three lines
 
-A public VR world at https://weichseltree.com/grove/ (desktop, Quest browser,
+A public VR world at https://weichseltree.com/mind/ (desktop, Quest browser,
 phone): a hall and one room per tree, baked light, presence. A fund that buys
 episode theses (one viewer question, one measured number, one picture) for the
 weichseltree channel, and a studio that finishes them. Your repo is a tree;

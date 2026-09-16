@@ -82,7 +82,7 @@ opted into. The home box rule generalizes: a node only ever connects outward.
 
 - **M0 the hall**: static mansion, one hall and one room, baked light, one
   video wall, one streamed tape you can stand in. Desktop, Quest, phone.
-  Deployed to weichseltree.com/grove from Cloudflare Pages and R2.
+  Deployed to weichseltree.com/mind from Cloudflare Pages and R2.
 - **M1 company**: presence, poses, chat, spatial voice through SpacetimeDB and
   Cloudflare Realtime; the greenhouse with the review queue and rulings.
 - **M2 bundles**: `orchard bundle` produces variants from a tree's artefacts;

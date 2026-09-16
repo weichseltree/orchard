@@ -333,7 +333,7 @@ button; stored in local storage like the name) and linked from the HUD:
 ### 2.4 Onboarding flow
 
 1. A link, from the README, an episode, a post: `weichseltree.com` or a
-   room link `weichseltree.com/grove/#spectre` (room deep links: a small
+   room link `weichseltree.com/mind/#spectre` (room deep links: a small
    client change).
 2. The holding page: what it is in one line, Enter the grove, device hints.
 3. The grove loads: Turnstile runs (usually invisible), the token service
@@ -853,7 +853,7 @@ this document's.
 UptimeRobot's free plan: 50 monitors at 5-minute intervals, email alerts,
 one status page (via search; not fetched from UptimeRobot's own page).
 Better Stack's free plan: 10 monitors at 3 minutes. Either is enough. Five
-monitors: `https://weichseltree.com/`, `https://weichseltree.com/grove/`,
+monitors: `https://weichseltree.com/`, `https://weichseltree.com/mind/`,
 one known bundle object on `media.weichseltree.com` (a HEAD returns 405,
 so a GET with a range), `https://weichseltree.com/auth/jwks.json`, and the
 SpacetimeDB HTTP endpoint for the database. Alerts to the Impressum

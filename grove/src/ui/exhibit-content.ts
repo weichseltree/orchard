@@ -146,7 +146,7 @@ export function roomHref(search: string, id: string): string {
   const params = new URLSearchParams(search);
   for (const key of ["yaw", "pitch", "x", "z"]) params.delete(key);
   params.set("room", id);
-  return `/grove/?${params}`;
+  return `/mind/?${params}`;
 }
 
 /** Keep the suggested sequence within the rooms reachable through open doors. */

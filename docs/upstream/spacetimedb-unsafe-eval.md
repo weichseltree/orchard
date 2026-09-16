@@ -25,7 +25,7 @@ site; ours retried the room join forever with a "connecting" status.
 
 **Why it matters**
 
-A WebXR site (ours: https://www.weichseltree.com/grove/) wants the strictest
+A WebXR site (ours: https://weichseltree.com/mind/) wants the strictest
 CSP it can carry: `script-src 'self' 'wasm-unsafe-eval'` plus `blob:` for
 workers. `'unsafe-eval'` re-opens `eval`, `new Function` and string timers
 for every script on the page, which is the single biggest relaxation a

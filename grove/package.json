@@ -1,9 +1,9 @@
 {
-  "name": "@weichseltree/grove",
+  "name": "@weichseltree/weichselmind",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "The grove: research rooms, particle playback and a local demo for desktop, touch and WebXR.",
+  "description": "Weichselmind: research rooms, particle playback and a local demo for desktop, touch and WebXR.",
   "license": "AGPL-3.0-or-later",
   "packageManager": "pnpm@10.29.2",
   "engines": {
@@ -12,7 +12,7 @@
   "scripts": {
     "prepare:assets": "node scripts/copy-basis.mjs",
     "dev": "pnpm run prepare:assets && vite",
-    "demo": "pnpm run dev:bundle && pnpm run dev --open /grove/?demo",
+    "demo": "pnpm run dev:bundle && pnpm run dev --open /mind/?demo",
     "build": "pnpm run prepare:assets && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",

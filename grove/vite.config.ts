@@ -50,7 +50,7 @@ function localContent(): Plugin {
   };
 }
 
-// Two pages out of one build: the site home at / and the app at /grove/.
+// Two pages out of one build: the site home at / and the app at /mind/.
 // Base is "/" because Cloudflare Pages serves this project at the domain root.
 export default defineConfig(({ command }) => ({
   base: "/",
@@ -111,7 +111,7 @@ export default defineConfig(({ command }) => ({
     rolldownOptions: {
       input: {
         home: fileURLToPath(new URL("index.html", import.meta.url)),
-        grove: fileURLToPath(new URL("grove/index.html", import.meta.url)),
+        mind: fileURLToPath(new URL("mind/index.html", import.meta.url)),
       },
     },
   },

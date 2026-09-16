@@ -1,4 +1,4 @@
-# Hosting: weichseltree.com, the grove, and what runs where
+# Hosting: weichseltree.com, Weichselmind, and what runs where
 
 Decided 2026-09-11. Stack: **SpacetimeDB for world state, Cloudflare for
 delivery, no Supabase, no Google endpoints in the client.** GCP stays for
@@ -20,7 +20,7 @@ here**; test from a mainland vantage point before launch.
 | piece | where | why |
 |---|---|---|
 | world state: presence, avatar poses, chat, rooms, exhibits, review queue, rulings, directives, board snapshots, bans, reports | SpacetimeDB cloud (credits), module in `spacetime/` | built for multiplayer state; reducers enforce guest vs admin, views scope people to a room ([SECURITY.md](SECURITY.md)); SirBase is an outbound-only client |
-| static site and WebXR client (`/`, `/grove`, `/privacy`) | Cloudflare Pages, `grove/` | free, on the domain already fronted by Cloudflare |
+| static site and WebXR client (`/`, `/mind`, `/privacy`) | Cloudflare Pages, `grove/` | free, on the domain already fronted by Cloudflare; `/grove` permanently redirects to `/mind` |
 | the token service (`/auth`): Turnstile, then a signed token per visitor | a Pages Function in the same project, `grove/functions/auth` | no login and no server of ours; SpacetimeDB checks its tokens against the keys it publishes |
 | episode proxies, stills, tapes for walk-inside | Cloudflare R2 | zero egress fees; video egress is the only cost that scales with viewers |
 | voice | Cloudflare Realtime TURN + SFU | non-Google TURN; SFU when a room passes ~8 |
