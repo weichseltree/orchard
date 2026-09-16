@@ -34,7 +34,7 @@ describe("requestGrant", () => {
     const fetcher = vi.fn();
     await expect(
       requestGrant({ base: "/voice", token: async () => null }, fetcher as unknown as typeof fetch),
-    ).rejects.toThrow(/grove token/);
+    ).rejects.toThrow(/enter the Mind Palace/);
     // And never reaches the route, so an unauthenticated call is not made.
     expect(fetcher).not.toHaveBeenCalled();
   });

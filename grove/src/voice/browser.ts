@@ -28,7 +28,7 @@ export async function requestGrant(config: VoiceConfig, fetcher: typeof fetch = 
   // be used here, and asking for a fresh one would raise a human check in the
   // middle of someone holding a button down.
   const token = config.token ? await config.token(false) : null;
-  if (!token) throw new Error("a grove token is needed to speak");
+  if (!token) throw new Error("enter the Mind Palace before speaking");
   const response = await fetcher(`${config.base}/grant`, {
     method: "POST",
     headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
