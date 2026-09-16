@@ -328,6 +328,48 @@ describe("join refusal", () => {
     expect(notices.some((n) => n.includes("refused"))).toBe(false);
   });
 
+  it("does not let a dead connection's expiry cut short the new connection's lock", async () => {
+    // #dropped clears #refused, but the timers it scheduled keep running. An
+    // old one firing after a reconnect would delete a refusal the NEW
+    // connection had just recorded, unlocking a door the server had shut.
+    const timers: Array<{ fn: () => void; ms: number }> = [];
+    let handlers!: TransportHandlers;
+    const presence = new Presence(
+      {},
+      {
+        transport: (h) => (handlers = h),
+        storage: memoryStorage(),
+        setTimer: (fn, ms) => {
+          timers.push({ fn, ms });
+          return timers.length as unknown as ReturnType<typeof setTimeout>;
+        },
+        clearTimer: () => undefined,
+      },
+    );
+    const full = { rooms: ["grove", "einstruct"], refuse: (r: string) => (r === "einstruct" ? "room full" : null) };
+    presence.connect("grove");
+    handlers.onConnect(stubConnection(full), "abc", "token");
+    await settle(20);
+    presence.join("einstruct");
+    await settle(20);
+    expect(presence.canEnter("einstruct")).toBe(false);
+
+    handlers.onDisconnect(new Error("socket dropped"));
+    timers[timers.length - 1]!.fn(); // the reconnect
+    handlers.onConnect(stubConnection(full), "abc", "token");
+    await settle(20);
+    presence.join("einstruct");
+    await settle(20);
+    expect(presence.canEnter("einstruct")).toBe(false);
+
+    const expiries = timers.filter((t) => t.ms === REFUSAL_TTL_MS);
+    expect(expiries).toHaveLength(2);
+    expiries[0]!.fn(); // the stale one, from the connection that dropped
+    expect(presence.canEnter("einstruct")).toBe(false);
+    expiries[1]!.fn(); // this connection's own
+    expect(presence.canEnter("einstruct")).toBe(true);
+  });
+
   it("does not re-ask on later join calls, so nothing loops", async () => {
     const connection = stubConnection({ refuse: () => "admin only" });
     let handlers!: TransportHandlers;

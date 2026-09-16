@@ -707,7 +707,14 @@ export class Presence {
   #refuse(room: string, reason: string): void {
     if (this.joinedRoom !== null) this.#poseSuppressed = true;
     this.#refused.add(room);
-    this.#setTimer(() => this.#refused.delete(room), REFUSAL_TTL_MS);
+    // Pinned to this connection. #dropped clears #refused outright, but the
+    // timers it scheduled keep running: without this, a timer from a dead
+    // connection would delete a refusal the NEW connection had just recorded,
+    // cutting its lock short and letting the join be retried at once.
+    const generation = this.#connectionGeneration;
+    this.#setTimer(() => {
+      if (generation === this.#connectionGeneration) this.#refused.delete(room);
+    }, REFUSAL_TTL_MS);
     this.#wantRoom = null;
     const notice = `presence: "${room}" refused (${reason})`;
     this.#callbacks.onNotice?.(notice);

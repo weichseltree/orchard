@@ -189,6 +189,14 @@ export interface PortalFrame {
   live: boolean;
   /** Shows the rooms of one scale and hides the rest. */
   setScaleVisible: (scale: number) => void;
+  /**
+   * Whether the room on the far side may not be entered. A portal is a
+   * doorway for this purpose: crossing into a room presence would refuse puts
+   * the body in one room and the visitor's presence in another. The blend and
+   * the far view still run, so a locked portal is seen through and not
+   * stepped through, which is what a portal is.
+   */
+  locked?: (roomId: string) => boolean;
 }
 
 interface Afterglow {
@@ -199,6 +207,8 @@ interface Afterglow {
 export class PortalSystem {
   readonly group = new Group();
   readonly ends: PortalEnd[];
+  /** The room a portal would have led to this frame, had `locked` allowed it. */
+  lockedOut: string | null = null;
   #meshes = new Map<PortalEnd, Mesh>();
   #armed = new Map<PortalEnd, boolean>();
   #inside = new Map<PortalEnd, boolean>();
@@ -317,6 +327,7 @@ export class PortalSystem {
 
     let crossing: Crossing | null = null;
     let through: PortalEnd | null = null;
+    let lockedOut: string | null = null;
     let nearest: PortalEnd | null = null;
     let nearestDistance = Infinity;
     let nearestBlend = 0;
@@ -360,8 +371,17 @@ export class PortalSystem {
         nearestBlend = t;
       }
       if (!crossing && armed) {
-        crossing = crossPortal(end, body, _eye, coreFor(state.intent));
-        if (crossing) through = end;
+        const step = crossPortal(end, body, _eye, coreFor(state.intent));
+        // Asked here rather than inside crossPortal so that function stays a
+        // pure statement about geometry, and so a refusal can be told apart
+        // from "not standing in the core". Intent is left to build normally:
+        // a locked portal that dimmed as you approached would read as a bug
+        // in the blend rather than as a door that will not open.
+        if (step && frame.locked?.(step.room)) lockedOut ??= step.room;
+        else if (step) {
+          crossing = step;
+          through = end;
+        }
       }
     }
 
@@ -421,6 +441,7 @@ export class PortalSystem {
       this.#liveEnd = null;
       this.#lastRoom = crossing.room;
     }
+    this.lockedOut = lockedOut;
     return crossing;
   }
 
