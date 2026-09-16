@@ -18,6 +18,10 @@ describe("local demo", () => {
     const hangings = demo.rooms.flatMap((room) => room.hangings);
     expect(new Set(hangings.map((h) => h.kind))).toEqual(new Set(["tape", "video"]));
     for (const hanging of hangings) {
+      // The demo is bundles on disk. A live audio exhibit has no bytes to
+      // make a fixture of (AUDIO-STREAM.md §1), and demoMansion's allowlist
+      // drops it; the kind assertion above is what holds that.
+      if (hanging.kind === "audio") continue;
       expect(hanging.title).toContain("Synthetic");
       expect(hanging.bundle.exhibit).toBeUndefined();
       expect(hanging.bundle.id).toBe("");
@@ -45,6 +49,7 @@ describe("local demo", () => {
       expect(demo.rooms[i]?.doorways).toEqual(production.rooms[i]?.doorways);
       expect(demo.rooms[i]?.bounds).toEqual(production.rooms[i]?.bounds);
     }
-    expect(production.rooms.some((room) => room.hangings.some((h) => h.bundle.exhibit))).toBe(true);
+    expect(production.rooms.some((room) =>
+      room.hangings.some((h) => h.kind !== "audio" && h.bundle.exhibit))).toBe(true);
   });
 });

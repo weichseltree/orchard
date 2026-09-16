@@ -183,6 +183,9 @@ describe("BundleRefSchema", () => {
           expect(hanging.bundle.exhibit).toBeUndefined();
           continue;
         }
+        // A live audio exhibit is a name with no bytes and no exhibit row
+        // (AUDIO-STREAM.md §1); nothing below is a claim about it.
+        if (hanging.kind === "audio") continue;
         // The hall's poster wall shows einstruct; the Orrery's worlds are spectre's.
         const guest: Record<string, string> = { hall: "einstruct", orrery: "spectre" };
         expect(hanging.bundle.exhibit?.tree).toBe(guest[room.id] ?? room.id);
@@ -212,7 +215,9 @@ function wallOf(room: Room, door: Doorway): Wall {
 
 function postersOf(room: Room): Array<{ wall: Wall; center: number; width: number }> {
   return room.hangings.flatMap((hanging) => {
-    if (hanging.kind === "tape" || hanging.kind === "planet") return [];
+    // Nothing that stands in the room's volume rather than on a wall: a tape
+    // box, one of spectre's worlds, or a live audio exhibit's topology.
+    if (hanging.kind === "tape" || hanging.kind === "planet" || hanging.kind === "audio") return [];
     const [x, , z] = hanging.position;
     const candidates: Array<[Wall, number, number]> = [
       ["-x", Math.abs(x - room.bounds.min[0]), z], ["+x", Math.abs(x - room.bounds.max[0]), z],

@@ -210,6 +210,7 @@ let lastLinkDetail = "";
 
 let perfOpen = false;
 let nextPerfReport = 0;
+let nextAudioReassign = 0;
 let scrubbingUntil = 0;
 
 const commands: Commands = {
@@ -606,6 +607,22 @@ view.start((dt, time, rawDt) => {
 
   provenance.update(view.camera, presenting);
   worldNotices.update(view.camera, presenting);
+
+  // A live audio exhibit's field needs the visitor's head every frame -- that
+  // is the whole of what makes a positioned source mean anything -- but the
+  // ranking of which node gets which source only changes when the visitor has
+  // MOVED, and rebuilding a panner is not free. So the listener moves at frame
+  // rate and the sources are re-ranked four times a second
+  // (AUDIO-STREAM.md §5, grove/src/audio/field.ts).
+  if (world && world.audios.length > 0) {
+    view.camera.getWorldDirection(_forward);
+    const reassign = time >= nextAudioReassign;
+    if (reassign) nextAudioReassign = time + 250;
+    for (const audio of world.audios) {
+      audio.setListener([headWorld.x, headWorld.y, headWorld.z], [_forward.x, _forward.y, _forward.z]);
+      if (reassign) audio.reassign();
+    }
+  }
 
   if (perfOpen && time >= nextPerfReport) {
     nextPerfReport = time + 500;

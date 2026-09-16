@@ -1,8 +1,12 @@
 // A live audio exhibit: LL-HLS, Opus in fMP4, played through a hidden
-// <audio> element (AUDIO-STREAM.md §3). Non-positioned only -- this plays
-// straight into the room's ambient bed, not as a per-node spatial source.
-// Positioned sources (§5) are follow-up work gated on the per-tier
-// simultaneous-source measurement §7 item 2 owes.
+// <audio> element (AUDIO-STREAM.md §3). This class is the CARRIER and the
+// fall-behind rule, and nothing else: it knows how to be a stream and how to
+// go silent, not where it is heard.
+//
+// Where it is heard is `audio/field.ts`. Unmuted, the element feeds that
+// graph's non-positioned bed, and the per-node positioned sources §5 asks
+// for hang off the same graph. Both are still against the §5 budget, which
+// is unmeasured (§7 item 2).
 //
 // The exhibit's URL is never handed to the service worker as anything but
 // network (`grove/src/sw/policy.ts`'s EXHIBIT_PATH): no `cache.put`, no
@@ -124,6 +128,31 @@ export class ExhibitStream {
     if (shouldFallSilent(lag, this.#maxLagSeconds)) {
       this.#fallSilent(`fell behind the live edge by ${lag.toFixed(1)}s`);
     }
+  }
+
+  /**
+   * Let it be heard. Autoplay is granted muted, so the element starts muted
+   * and a room control calls this on a real interaction. When the element
+   * feeds an `AudioField` (`audio/field.ts`), unmuting it hands the sound to
+   * that graph rather than straight to the speakers, and the field's master
+   * gain is what a volume control then moves.
+   *
+   * A silent or disposed stream stays muted: there is nothing to unmute, and
+   * §3's fall-behind rule must not be undone by a control.
+   */
+  unmute(): void {
+    if (this.#state !== "live") return;
+    this.audio.muted = false;
+    this.audio.removeAttribute("muted");
+    void this.audio.play().catch(() => undefined);
+  }
+
+  mute(): void {
+    this.audio.muted = true;
+  }
+
+  get muted(): boolean {
+    return this.audio.muted;
   }
 
   /**
