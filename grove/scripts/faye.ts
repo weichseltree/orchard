@@ -33,6 +33,7 @@ import {
   type Cursor, type TreeTitles,
 } from "../src/faye/events";
 import { EMPTY_STATE, replyTo, type FayeState } from "../src/faye/reply";
+import { Speaker, TURN_POSE_HZ, isNewLine, onDisconnectAction } from "../src/faye/listen";
 
 const { values: args } = parseArgs({
   options: {
@@ -87,12 +88,13 @@ if (args["new-identity"] && !args["token-file"]) {
 
 // The module's own limits. Breaking any of them is a thrown reducer, not a
 // silent clamp, so they are read from the module rather than guessed.
-const MOVE_RATE = 20;          // tokens per second, burst 10
-const TICK_HZ = 10;            // half the rate: a spirit never spends its burst
 const WORLD_HALF_EXTENT_M = 500;
 const WORLD_Y_MIN_M = -50;
 const WORLD_Y_MAX_M = 100;
 const CHAT_MIN_GAP_MS = 700;
+
+/** Whether the socket has come up, and whether she is walking out on purpose. */
+const life = { connected: false, leaving: false };
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -136,6 +138,7 @@ function connect(token: string | null): Promise<{ conn: DbConnection; hex: strin
     (token ? builder.withToken(token) : builder)
       .onConnect((conn, identity, issued) => {
         clearTimeout(timer);
+        life.connected = true;
         resolve({ conn, hex: identity.toHexString(), identity, token: issued });
       })
       .onConnectError((_ctx, error) => {
@@ -144,7 +147,15 @@ function connect(token: string | null): Promise<{ conn: DbConnection; hex: strin
       })
       .onDisconnect((_ctx, error) => {
         clearTimeout(timer);
-        reject(error ?? new Error("disconnected"));
+        // src/faye/listen.ts: a drop after connecting must end the process,
+        // or the unit stays "active" with her capsule gone from the room.
+        const action = onDisconnectAction(life);
+        if (action === "reject") {
+          reject(error ?? new Error("disconnected"));
+        } else if (action === "exit-failed") {
+          console.error(`faye: lost the connection (${error instanceof Error ? error.message : "closed"}); exiting for a restart`);
+          process.exit(1);
+        }
       })
       .build();
   });
@@ -193,65 +204,94 @@ async function main(): Promise<void> {
   // we are in. Faye sees exactly what any visitor sees -- no more.
   await subscribe(conn, ["SELECT * FROM people_here", "SELECT * FROM poses_here", "SELECT * FROM chat_here"]);
 
-  await conn.reducers.join({ name: args.name, room: args.room });
+  const titles = readTreeTitles(args.trees);
+  if (titles.size > 0) console.log(`faye: ${titles.size} tree label(s) loaded from ${args.trees}`);
+
+  // What she knows, for answering a visitor who speaks to her. Updated by the
+  // poll loop; read by the chat handler.
+  let known: FayeState = EMPTY_STATE;
+
+  // Everything she says goes through one queue (src/faye/listen.ts).
+  const speaker = new Speaker((text) => conn.reducers.say({ text }), {
+    gapMs: CHAT_MIN_GAP_MS + 200,
+    // Monotonic: a wall clock stepped forward by NTP would end a gap early.
+    now: () => performance.now(),
+    sleep,
+    onRefused: (text, error) => {
+      console.warn(`faye: "${text}" refused (${error instanceof Error ? error.message : String(error)})`);
+    },
+    onDropped: (text) => console.warn(`faye: too many lines waiting; not saying "${text}"`),
+  });
+  // Her row's `last_seen` as it stood before THIS run's join. A restart after a
+  // crash reuses the identity and the module may not have seen the old socket
+  // close, so a row can already be in the view; its `last_seen` would let
+  // through lines that run already answered. The cut is the first `last_seen`
+  // that differs from it -- which is the join's own commit, visible as soon as
+  // the join's rows land, rather than when its acknowledgement is processed.
+  let before: bigint | null | undefined;
+
+  // Every line already in the room when she arrives is history; she hears
+  // only what is said after her own join, by the module's clock
+  // (src/faye/listen.ts). Listening does not wait on the compute feed: with
+  // no feed she still answers, and says she has not heard from it. Registered
+  // BEFORE `join`: a line said between the join and a later registration --
+  // the greeting's wait alone is 0.9 s -- would be inserted with no handler
+  // and never replayed. Until this run's join is in the view, nothing is new.
+  const ownLastSeen = (): bigint | null => {
+    for (const person of conn.db.peopleHere.iter()) {
+      if (person.identity.isEqual(identity)) return person.lastSeen.microsSinceUnixEpoch;
+    }
+    return null;
+  };
+  const joinedAt = (): bigint | null => {
+    if (before === undefined) return null; // not asked to join yet
+    const seen = ownLastSeen();
+    return seen === null || seen === before ? null : seen;
+  };
+  conn.db.chatHere.onInsert((_ctx, row) => {
+    if (life.leaving) return;
+    const line = { sender: row.sender.toHexString(), atMicros: row.at.microsSinceUnixEpoch };
+    if (!isNewLine(line, hex, joinedAt())) return;
+    const answer = replyTo(row.text, known, titles);
+    if (!answer) return;
+    console.log(`faye: ${row.name} said "${row.text}" -> "${answer}"`);
+    void speaker.say(answer, { droppable: true });
+  });
+
+  before = ownLastSeen();
+  // The speaker is held from BEFORE the join until its acknowledgement and the
+  // hold after it: the handler is live, and a reply to a line said while the
+  // join is in flight must not go out inside the gap `join` just stamped.
+  const joining = conn.reducers.join({ name: args.name, room: args.room });
+  speaker.holdUntil(joining.then(() => speaker.heldUntilGap(performance.now())));
+  await joining;
   console.log(`faye: standing in "${args.room}" as "${args.name}"`);
   if (args.name.length > 24) {
     console.warn(`faye: the module clips names at 24 characters, so this shows as "${args.name.slice(0, 24)}"`);
   }
 
-  if (args.say) {
-    // `join` stamps last_said with the join time, so the first line is inside
-    // CHAT_MIN_GAP (0.7 s) and comes back "slow down". Wait it out -- and a
-    // refused greeting must never cost Faye her presence, which is the point
-    // of standing here at all.
-    await sleep(CHAT_MIN_GAP_MS + 200);
-    await conn.reducers.say({ text: args.say }).catch((error: unknown) => {
-      console.warn(`faye: greeting refused (${error instanceof Error ? error.message : String(error)})`);
-    });
-  }
+  // Queued, not awaited: replies may already be waiting ahead of it, and the
+  // pose, the poll and the signal handlers below must not wait on them. A
+  // refused greeting is logged and never costs Faye her presence.
+  if (args.say) void speaker.say(args.say);
 
-  const titles = readTreeTitles(args.trees);
-  if (titles.size > 0) console.log(`faye: ${titles.size} tree label(s) loaded from ${args.trees}`);
-
-  let leaving = false;
   const startedAt = Date.now();
-  const timer = setInterval(() => {
-    if (leaving) return;
-    // Standing on the spot, turning slowly: a presence, not a pacing NPC.
-    // Nothing here pretends to walk -- the body has no collision and no
-    // navigation, and a capsule sliding through a wall reads as a bug.
+  // Standing on the spot, turning slowly: a presence, not a pacing NPC.
+  // Nothing here pretends to walk -- the body has no collision and no
+  // navigation, and a capsule sliding through a wall reads as a bug.
+  const sendPose = () => {
+    if (life.leaving) return;
     const yaw = turnSeconds > 0
       ? ((Date.now() - startedAt) / 1000 / turnSeconds) * Math.PI * 2
       : 0;
     conn.reducers.move({ x: at.x, y: at.y, z: at.z, yaw: wrapAngle(yaw) }).catch((error: unknown) => {
       console.warn(`faye: move refused (${error instanceof Error ? error.message : String(error)})`);
     });
-  }, 1000 / Math.min(TICK_HZ, MOVE_RATE));
-
-  // What she knows, for answering a visitor who speaks to her. Updated by the
-  // poll loop; read by the chat handler.
-  let known: FayeState = EMPTY_STATE;
-
-  // Every line already in the room when she arrives is history. Answering it
-  // would have her walk in replying to a conversation that finished hours ago,
-  // so the subscription's initial rows are skipped and only what is said from
-  // now on is heard.
-  let listening = false;
-  conn.db.chatHere.onInsert((_ctx, row) => {
-    if (!listening || leaving) return;
-    // Her own lines come back through the same view; answering them is a loop.
-    if (row.sender.isEqual(identity)) return;
-    const answer = replyTo(row.text, known, titles);
-    if (!answer) return;
-    console.log(`faye: ${row.name} said "${row.text}" -> "${answer}"`);
-    void (async () => {
-      // The gap is per speaker, and an announcement may have just used it.
-      await sleep(CHAT_MIN_GAP_MS + 200);
-      await conn.reducers.say({ text: answer }).catch((error: unknown) => {
-        console.warn(`faye: reply refused (${error instanceof Error ? error.message : String(error)})`);
-      });
-    })();
-  });
+  };
+  sendPose();
+  // Standing still is one pose; turning is a stream, at a rate maincloud is
+  // not paying for around the clock (TURN_POSE_HZ says why).
+  const timer = turnSeconds > 0 ? setInterval(sendPose, 1000 / TURN_POSE_HZ) : null;
 
   // What she has taken in of the compute, and what she has already said about
   // the peer. Both live only as long as she stands here: a spirit that
@@ -263,7 +303,7 @@ async function main(): Promise<void> {
   if (!Number.isFinite(pollSeconds) || pollSeconds < 0) throw new Error("--poll wants seconds");
 
   const pollOnce = async (): Promise<void> => {
-    if (leaving) return;
+    if (life.leaving) return;
     let doc: unknown;
     try {
       const response = await fetch(args["status-url"], { cache: "no-store" });
@@ -294,9 +334,7 @@ async function main(): Promise<void> {
     if (firstPoll) {
       firstPoll = false;
       peerWasSilent = peerIsSilent(reading.mirror);
-      listening = true;
       console.log(`faye: baseline taken at ${reading.events.length} event(s); watching ${reading.hosts.join(", ")}`);
-      console.log("faye: listening — say her name in the room");
       return;
     }
 
@@ -313,26 +351,37 @@ async function main(): Promise<void> {
     peerWasSilent = silentNow;
 
     for (const text of lines) {
-      if (leaving) return;
-      await conn.reducers.say({ text }).catch((error: unknown) => {
-        console.warn(`faye: line refused (${error instanceof Error ? error.message : String(error)})`);
-      });
-      // CHAT_MIN_GAP is 0.7 s per speaker; crowding it throws "slow down".
-      await sleep(CHAT_MIN_GAP_MS + 200);
+      if (life.leaving) return;
+      await speaker.say(text);
     }
   };
 
   let pollTimer: ReturnType<typeof setInterval> | null = null;
   if (pollSeconds > 0) {
-    void pollOnce();
-    pollTimer = setInterval(() => void pollOnce(), pollSeconds * 1000);
+    // One poll at a time. Each can queue announcements that take 0.9 s apiece
+    // to say; with a short --poll, overlapping polls would pile them up behind
+    // one another faster than she can speak, with every reply behind them.
+    let polling = false;
+    const pollAlone = async (): Promise<void> => {
+      if (polling) return;
+      polling = true;
+      try {
+        await pollOnce();
+      } finally {
+        polling = false;
+      }
+    };
+    void pollAlone();
+    pollTimer = setInterval(() => void pollAlone(), pollSeconds * 1000);
     console.log(`faye: watching the compute every ${pollSeconds}s`);
   }
 
+  console.log("faye: listening — say her name in the room");
+
   const farewell = async (signal: string) => {
-    if (leaving) return;
-    leaving = true;
-    clearInterval(timer);
+    if (life.leaving) return;
+    life.leaving = true;
+    if (timer !== null) clearInterval(timer);
     if (pollTimer !== null) clearInterval(pollTimer);
     // Without this the capsule stands there until the connection times out.
     try {
