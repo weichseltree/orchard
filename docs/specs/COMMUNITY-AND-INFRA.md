@@ -95,7 +95,7 @@ licence list (section 4.5).
 pnpm install`; every change comes with a test or says why not; the studio
 checks (LAWS) apply to anything a viewer sees; commit messages in the
 DECISIONS voice (what, and what it beat); sign off every commit (DCO, below);
-no GPU job outside `gpurun` on Manuel's boxes (contributors have their own
+no GPU job outside `exp run --lane gpu` on Manuel's boxes (contributors have their own
 boxes and this line is for the trees); rulings are Manuel's, and a PR that
 needs one says so in its title; be plain, be short (`brand/VOICE.md`).
 

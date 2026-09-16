@@ -95,7 +95,7 @@ def cmd_ledger(a):
     print(f"lane-hours total {vs['total_h']:.0f}, on video {vs['video_h']:.0f} ({100*vs['video_h']/max(vs['total_h'],1):.0f}%)\n")
     print(f"== spend, last {a.days} days ==")
     _table([[s['repo'], f"{s['gpu_h']:.1f}", f"{s['cpu_h']:.1f}", f"{s['none_h']:.1f}", f"{s['video_h']:.1f}", s['n'], s['n_failed'], f"{s['wait_h']:.0f}"]
-            for s in snap["spend_recent"][:15]], ["repo", "gpu_h", "cpu_h", "exprun_h", "video_h", "n", "failed", "wait_h"])
+            for s in snap["spend_recent"][:15]], ["repo", "gpu_h", "cpu_h", "none_h", "video_h", "n", "failed", "wait_h"])
     print("\n== GPU queue wait by EXP_PRIO tier ==")
     _table([[t, v['n'], f"{v['median_min']:.0f}", f"{v['p90_h']:.1f}", f"{v['max_h']:.1f}", f"{v['total_h']:.0f}"]
             for t, v in sorted(snap["queue_wait"].items())], ["tier", "n", "median_min", "p90_h", "max_h", "total_h"])

@@ -52,10 +52,10 @@ Cycles lightmap onto a second UV set and writes the client's asset:
     grove/tools/patch_hall_glb.py  the one post-review edit to the shipped bytes
 
 Nothing is modelled by hand: change a constant at the top of the script and the
-hall changes.  The bake runs on the CPU under `exprun`; no CUDA context is ever
+hall changes.  The bake runs on the CPU under `exp run --lane cpu`; no CUDA context is ever
 opened.
 
-    exprun /home/manuel/tools/blender/blender --background --factory-startup \
+    exp run orchard-hall-bake --prio 10 --lane cpu -- /home/manuel/tools/blender/blender --background --factory-startup \
         --python grove/tools/bake_hall.py -- --samples 1024 --res 2048 \
         --out grove/public/assets/hall
 
@@ -248,26 +248,22 @@ the first one.
 
 ### Launch discipline, and one trap
 
-    EXP_NAME=orchard-hall-bake-1024 \
-    EXP_LOG=$PWD/logs/orchard-hall-bake-1024.log \
-      setsid nohup exprun /home/manuel/tools/blender/blender --background \
+    exp run orchard-hall-bake-1024 --prio 10 --lane cpu -- \
+      /home/manuel/tools/blender/blender --background \
         --factory-startup --python grove/tools/bake_hall.py -- \
         --samples 1024 --res 2048 --out grove/public/assets/hall \
-        > logs/orchard-hall-bake-1024.log 2>&1 & disown
+        > logs/orchard-hall-bake-1024.log 2>&1
     exp wait orchard-hall-bake-1024 --done-when 'BAKE OK samples=1024 res=2048'
 
-**Set `EXP_LOG`.**  `exprun` records the log path only from the environment;
-without it the job still runs and still reports `completed exit=0`, but
-`exp wait --done-when` has no log to read and exits 1 saying "NO LOG -- cannot
-verify anything ran".  That is what happened on the production run here (the
-gate was checked by hand against the same file afterwards, and demonstrated
-properly on the `--grid-floor` run).  The script's last line is deliberately
+**Let `exp run` own the lane.**  Do not set `GPU_LOCK` or start `nohup`
+yourself; the launcher records the log and keeps the lane serialised. The
+script's last line is deliberately
 `BAKE OK samples=… res=… bake_s=… total_s=…`, which no crash, kill or
 time-budget stop can produce.
 
 ## Verification
 
-    exprun uv run --with pygltflib python grove/tools/verify_hall.py \
+    exp run orchard-verify-hall --prio 5 --lane cpu -- uv run --with pygltflib python grove/tools/verify_hall.py \
         grove/public/assets/hall
 
 asserts, and prints, all of: one mesh, TEXCOORD_0 and TEXCOORD_1 on every

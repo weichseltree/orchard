@@ -95,9 +95,10 @@ minutes.
 
 ## Rules that reach into your repo
 
-- Every GPU or render job goes through `gpurun` / `exprun` with an
-  `EXP_PRIO` (`~/.claude/CLAUDE.md`); the manifest's `budget.prio_cap` is the
-  highest you may stamp without a ruling.
+- Every GPU, render, or long-running local job goes through
+  `exp run <name> --prio <n> --lane gpu|cpu -- ...`; never set `GPU_LOCK`
+  or call old `gpurun` / `exprun` wrappers directly. The manifest's
+  `budget.prio_cap` is the highest priority you may stamp without a ruling.
 - Outputs on disk under `results/`, never `/tmp`.
 - Simulation footage is never interpolated, upscaled or generated (LAWS 9);
   stock only with a provenance sidecar.

@@ -27,6 +27,7 @@ from . import EXP_STATUS, EXPDASH_URL
 VIDEO_RE = re.compile(r"render|film|video|narrat|episode|studio|animatic|styleframe|vo-", re.I)
 GPU_LOCKS = ("gpu0.lock", "gputest.lock")
 REPO_PATH_RE = re.compile(r"/home/manuel/(?:weichseltree|kaggle|lanework/repos)/([^/]+)/")
+EXPDASH_METRICS_SCHEMA = "expdash/metrics/1"
 
 
 @dataclass
@@ -63,6 +64,9 @@ def _box(r: dict, path: Path) -> str:
 
 
 def _lane(r: dict) -> str:
+    lane = r.get("lane")
+    if lane in ("gpu", "cpu", "none", "remote"):
+        return lane
     lk = r.get("lock")
     if lk is None:
         return "remote"
@@ -200,41 +204,88 @@ def stream_usage(root: Path = EXP_STATUS) -> dict[str, dict]:
 
     The encoder appends one JSON object per accounted interval:
     `{"stream_id", "provider", "kind": "encode"|"tts", "hours", "cost_usd"}`.
+    New producers may instead append ExpDash metric records
+    (`schema: expdash/metrics/1`) with names `stream.encode.hours`,
+    `stream.encode.cost_usd` and `stream.tts.cost_usd`.
     This only reads and aggregates; the service that encodes a live exhibit
     owns appending the meter entry (AUDIO-STREAM.md §6).
     """
     f = root / ".audio_usage.jsonl"
     out: dict[str, dict] = {}
-    if not f.exists():
-        return out
-    for line in f.read_text().splitlines():
-        try:
-            r = json.loads(line)
-        except json.JSONDecodeError:
-            continue
-        stream_id = r.get("stream_id")
+    if f.exists():
+        for line in f.read_text().splitlines():
+            try:
+                r = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            stream_id = r.get("stream_id")
+            if not isinstance(stream_id, str) or not stream_id:
+                continue
+            kind = r.get("kind")
+            if kind not in ("encode", "tts"):
+                continue
+            try:
+                hours = float(r.get("hours") or 0)
+                cost_usd = float(r.get("cost_usd") or 0)
+            except (TypeError, ValueError):
+                continue
+            a = out.setdefault(stream_id, {
+                "provider": r.get("provider") or "",
+                "encode_hours": 0.0,
+                "encode_cost_usd": 0.0,
+                "tts_cost_usd": 0.0,
+            })
+            if kind == "encode":
+                a["encode_hours"] += hours
+                a["encode_cost_usd"] += cost_usd
+            else:
+                a["tts_cost_usd"] += cost_usd
+    for r in _metric_records(root):
+        labels = r.get("labels") or {}
+        stream_id = labels.get("stream_id")
         if not isinstance(stream_id, str) or not stream_id:
             continue
-        kind = r.get("kind")
-        if kind not in ("encode", "tts"):
-            continue
+        name = r.get("name")
         try:
-            hours = float(r.get("hours") or 0)
-            cost_usd = float(r.get("cost_usd") or 0)
+            value = float(r.get("value"))
         except (TypeError, ValueError):
             continue
         a = out.setdefault(stream_id, {
-            "provider": r.get("provider") or "",
+            "provider": labels.get("provider") or "",
             "encode_hours": 0.0,
             "encode_cost_usd": 0.0,
             "tts_cost_usd": 0.0,
         })
-        if kind == "encode":
-            a["encode_hours"] += hours
-            a["encode_cost_usd"] += cost_usd
-        else:
-            a["tts_cost_usd"] += cost_usd
+        if name == "stream.encode.hours":
+            a["encode_hours"] += value
+        elif name == "stream.encode.cost_usd":
+            a["encode_cost_usd"] += value
+        elif name == "stream.tts.cost_usd":
+            a["tts_cost_usd"] += value
     return out
+
+
+def _metric_records(root: Path) -> list[dict]:
+    records = []
+    for f in root.rglob("*.jsonl"):
+        if f.name in (".api_usage.jsonl", ".audio_usage.jsonl"):
+            continue
+        for line in f.read_text(errors="replace").splitlines():
+            try:
+                r = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if not isinstance(r, dict) or r.get("schema") != EXPDASH_METRICS_SCHEMA:
+                continue
+            metrics = r.get("metrics")
+            if isinstance(metrics, list):
+                shared_labels = r.get("labels") or {}
+                for m in metrics:
+                    if isinstance(m, dict):
+                        records.append({**m, "labels": {**shared_labels, **(m.get("labels") or {})}})
+            else:
+                records.append(r)
+    return records
 
 
 def expdash_status(url: str = EXPDASH_URL, timeout: float = 3.0) -> dict | None:

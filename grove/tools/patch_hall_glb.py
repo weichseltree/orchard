@@ -7,7 +7,7 @@ have to be re-baked.  `bake_hall.py` was fixed to produce all of this directly,
 so a future bake needs no patch; this script exists so the edit that was made to
 the shipped bytes is reproducible and reviewable.
 
-    exprun uv run python grove/tools/patch_hall_glb.py grove/public/assets/hall
+    exp run orchard-patch-hall --prio 5 --lane cpu -- uv run python grove/tools/patch_hall_glb.py grove/public/assets/hall
 
 What it changes, and why (review findings 1, 3, 4, 5):
 

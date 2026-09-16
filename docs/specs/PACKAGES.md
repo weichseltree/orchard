@@ -84,8 +84,8 @@ The rule: **shared code is a versioned package, depended on by git tag.**
   reading every schema they ever wrote.
 - The studio code to be extracted from spectre's `film-final` tag (BACKLOG 31)
   follows the same path: a package under `orchard/packages/`, pinned by tag.
-- `expmetrics.py` stays a copy (CLAUDE.md says why: guarded import, no-op
-  outside gpurun); the seven copies were byte-identical on 2026-09-13.
+- `expmetrics.py` stays a copy (guarded import, no-op outside `exp run`);
+  the seven copies were byte-identical on 2026-09-13.
 
 **Private shared packages.** The same rule applies to code shared between
 private repos. Keep the package in its producing repo under `packages/<name>/`,

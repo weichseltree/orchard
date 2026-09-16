@@ -2,7 +2,7 @@
 """
 verify_hall.py -- check the WP3 hall asset the way the client will meet it.
 
-    exprun uv run --with pygltflib python grove/tools/verify_hall.py \
+    exp run orchard-verify-hall --prio 5 --lane cpu -- uv run --with pygltflib python grove/tools/verify_hall.py \
         grove/public/assets/hall
 
 Exits 0 and prints "VERIFY OK" only if every assertion holds.

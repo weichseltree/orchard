@@ -5,7 +5,7 @@ palace.py -- build the palace from mansion.json and bake it room by room.
 Grown out of bake_hall.py (imported for its mesh builder, bake, denoise and
 export helpers). Run inside Blender 4.2, headless, on the CPU:
 
-    exprun /home/manuel/tools/blender/blender --background \
+    exp run palace-hall --prio 5 --lane cpu -- /home/manuel/tools/blender/blender --background \
         --python grove/tools/palace/palace.py -- --room hall --samples 512
 
 Modes (one per run):

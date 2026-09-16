@@ -27,7 +27,7 @@ here**; test from a mainland vantage point before launch.
 | the ledger, the studio, renders | SirBase and Legion, this repo | never exposed; pushes snapshots up, pulls rulings down |
 | LLM and TTS calls | SirBase, keys in `~/.config/ptstudio/secrets.env` | metered by expusage.py into the ledger |
 
-The home box makes outbound connections only. No tunnel to expdash, gpurun or
+The home box makes outbound connections only. No tunnel to expdash, `exp run` or
 the node API; the node token stays the security boundary it is in `~/.claude/CLAUDE.md`.
 
 ## Secrets

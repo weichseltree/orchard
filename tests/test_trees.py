@@ -1,9 +1,10 @@
 """The two manifest copies: the repo's orchard.yaml is canonical, trees/<name>.yaml its mirror."""
 import pytest
 import yaml
+from pydantic import ValidationError
 
 import orchard.portfolio as P
-from orchard.manifest import Stage, load
+from orchard.manifest import Producers, Stage, load
 
 
 @pytest.fixture
@@ -103,3 +104,19 @@ def test_sync_rulings_and_exhibit_approve_keep_both_copies_in_step(fund, monkeyp
     rep = exhibit.hang(b, approve=True, push=False, verbose=False)
     assert rep["approved_in"] == str(home / "planted/orchard.yaml")
     assert load(trees / "planted.yaml").artefacts[0].approved
+
+
+def test_manifest_producer_templates_must_use_exp_run_lanes():
+    producers = Producers(
+        lane="gpu",
+        render="exp run tree-render --prio 5 --lane gpu -- uv run python render.py",
+    )
+    assert producers.render.startswith("exp run ")
+
+    with pytest.raises(ValidationError, match="legacy launcher"):
+        Producers(lane="gpu", render="gpurun uv run python render.py")
+    with pytest.raises(ValidationError, match="GPU_LOCK"):
+        Producers(lane="gpu", env={"GPU_LOCK": "$HOME/.cache/gpu0.lock"},
+                  render="exp run tree-render --prio 5 --lane gpu -- uv run python render.py")
+    with pytest.raises(ValidationError, match="--lane gpu"):
+        Producers(lane="gpu", render="exp run tree-render --prio 5 -- uv run python render.py")

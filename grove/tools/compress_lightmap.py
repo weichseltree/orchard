@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Compress the hall's baked lightmap to KTX2 and record it, without a rebake.
 
-    exprun python grove/tools/compress_lightmap.py grove/public/assets/hall
+    exp run orchard-compress-lightmap --prio 5 --lane cpu -- python grove/tools/compress_lightmap.py grove/public/assets/hall
 
 Writes `lightmap.ktx2` (2048², what desktops and headsets load) and
 `lightmap-1024.ktx2` (the phone tier) beside `lightmap.png`, UASTC quality 2

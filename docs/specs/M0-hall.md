@@ -216,8 +216,8 @@ ceiling, six tall windows on one long wall with sun through them, a doorway
 posters, a floor with a subtle material. Bake Cycles diffuse+indirect to a
 2048² lightmap on UV2, export `hall.glb` (Draco off, KTX2 lightmap via
 `toktx` if available, else PNG and say so). Bake on the CPU under
-`exprun` (`EXP_NAME=orchard-hall-bake`), or on the GPU only through
-`exp run orchard-hall-bake --prio 10 -- …` (never a bare CUDA context). Keep
+`exp run orchard-hall-bake --prio 10 --lane cpu -- …`, or on the GPU only through
+`exp run orchard-hall-bake-gpu --prio 10 --lane gpu -- …` (never a bare CUDA context). Keep
 the bake under 30 min; sample count is the knob. Record samples, time, and
 Blender version in `docs/impl/WP3-hall-bake.md` and in the glb `extras`.
 
