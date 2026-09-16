@@ -1,5 +1,5 @@
 import type { Mansion } from "../world/schema";
-import { resolveMove, BODY_RADIUS } from "../world/navigation";
+import { reachableRooms, resolveMove, BODY_RADIUS } from "../world/navigation";
 import { floorAt } from "../world/terrain";
 import type { InputState } from "./input";
 
@@ -129,13 +129,20 @@ export function clampPitch(pitch: number): number {
   return pitch < -MAX_PITCH ? -MAX_PITCH : pitch > MAX_PITCH ? MAX_PITCH : pitch;
 }
 
-/** Teleport: only onto a floor inside a room, and never into a locked one. */
+/**
+ * Teleport: only onto a floor inside a room, never into a locked one, and by
+ * default only into a room the body could walk to -- not through a closed
+ * doorway, and not past a locked room on the way. `walls: false` drops the
+ * last rule for a caller that jumps between rooms on purpose (the quality
+ * suite's room tour); locks still hold.
+ */
 export function teleport(
   body: Body,
   mansion: Mansion,
   x: number,
   z: number,
   locked?: (roomId: string) => boolean,
+  { walls = true }: { walls?: boolean } = {},
 ): boolean {
   const room = mansion.rooms.find(
     (r) =>
@@ -146,6 +153,7 @@ export function teleport(
   );
   if (!room) return false;
   if (room.id !== body.room && locked?.(room.id)) return false;
+  if (walls && room.id !== body.room && !reachableRooms(mansion, body.room, locked).has(room.id)) return false;
   body.x = x;
   body.z = z;
   if (room.id !== body.room) {

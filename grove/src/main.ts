@@ -909,8 +909,9 @@ Object.defineProperty(window, "grove", {
     provenance,
     /**
      * Stands the body in the middle of a room, through the same `teleport` a
-     * controller uses, locks included. For the browser quality suite's room
-     * tour (scripts/quality-browser.mjs); false when the room is unknown or
+     * controller uses, locks included but closed doors not: the tour must
+     * reach rooms no walk does. For the browser quality suite's room tour
+     * (scripts/quality-browser.mjs); false when the room is unknown or
      * refused.
      */
     visit: (roomId: string): boolean => {
@@ -918,7 +919,7 @@ Object.defineProperty(window, "grove", {
       if (!room) return false;
       const x = (room.bounds.min[0] + room.bounds.max[0]) / 2;
       const z = (room.bounds.min[2] + room.bounds.max[2]) / 2;
-      return teleport(body, mansion, x, z, lockedRoom);
+      return teleport(body, mansion, x, z, lockedRoom, { walls: false });
     },
     get world() {
       return world;

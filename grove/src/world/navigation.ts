@@ -153,3 +153,30 @@ export function insideRoom(room: Room, x: number, z: number, radius = 0): boolea
 export function roomAt(mansion: Mansion, x: number, z: number): Room | undefined {
   return mansion.rooms.find((room) => insideRoom(room, x, z));
 }
+
+/**
+ * The rooms a body in `from` could walk to: across doorways that are not
+ * closed and lead to rooms `locked` does not refuse, the same walls
+ * `resolveMove` enforces. A teleport must stay inside this set, or a pointer
+ * aimed through a sealed doorway would land where no walk could go. A portal is
+ * not a doorway, so the far side of one is a different set.
+ */
+export function reachableRooms(
+  mansion: Mansion,
+  from: string,
+  locked?: (roomId: string) => boolean,
+): Set<string> {
+  const seen = new Set([from]);
+  const queue = [from];
+  while (queue.length) {
+    const room = mansion.rooms.find((r) => r.id === queue.pop());
+    if (!room) continue;
+    for (const door of room.doorways) {
+      if (door.closed || seen.has(door.to) || locked?.(door.to)) continue;
+      if (!mansion.rooms.some((r) => r.id === door.to)) continue;
+      seen.add(door.to);
+      queue.push(door.to);
+    }
+  }
+  return seen;
+}
