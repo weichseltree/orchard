@@ -79,6 +79,18 @@ describe("extrudeText", () => {
     for (let i = 0; i < position.length; i += 3) expect(position[i + 2]! === 0 || position[i + 2]! === SIGN.depth).toBe(true);
   });
 
+  it("winds every triangle with its normal, so a front-sided material shows the returns", () => {
+    const { position, normal } = extrudeText("OB", font, SIGN.size, SIGN.depth);
+    for (let t = 0; t < position.length; t += 9) {
+      const ax = position[t]!, ay = position[t + 1]!, az = position[t + 2]!;
+      const ux = position[t + 3]! - ax, uy = position[t + 4]! - ay, uz = position[t + 5]! - az;
+      const vx = position[t + 6]! - ax, vy = position[t + 7]! - ay, vz = position[t + 8]! - az;
+      const gx = uy * vz - uz * vy, gy = uz * vx - ux * vz, gz = ux * vy - uy * vx;
+      const dot = gx * normal[t]! + gy * normal[t + 1]! + gz * normal[t + 2]!;
+      expect(dot, `triangle at ${t / 9}`).toBeGreaterThan(0);
+    }
+  });
+
   it("advances the pen by each glyph's width, spaces included", () => {
     const one = extrudeText("I", font, SIGN.size, SIGN.depth);
     const two = extrudeText("I I", font, SIGN.size, SIGN.depth);

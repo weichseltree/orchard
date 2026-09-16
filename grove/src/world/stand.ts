@@ -46,6 +46,23 @@ export function standHeight(): number {
 }
 
 /**
+ * Where a tape's stand stands: the document's `pedestal` when it authors
+ * one, else half the long side ahead of the sheet's centre on +z, a step
+ * back. Always on the room's floor. Both the tape and the wall text place
+ * from this, so a document without a `pedestal` still gets one stand with
+ * the text on it.
+ */
+export function standFoot(
+  hanging: { position: readonly [number, number, number]; longSideMeters: number; pedestal?: { position: readonly [number, number, number]; rotationDeg: readonly [number, number, number] } | undefined },
+  floor: number,
+): { position: [number, number, number]; rotationDeg: readonly [number, number, number] } {
+  if (hanging.pedestal) {
+    return { position: [hanging.pedestal.position[0], floor, hanging.pedestal.position[2]], rotationDeg: hanging.pedestal.rotationDeg };
+  }
+  return { position: [hanging.position[0], floor, hanging.position[2] + hanging.longSideMeters / 2 + 0.6], rotationDeg: [0, 0, 0] };
+}
+
+/**
  * Where a stand's plate is for a foot and a yaw (degrees about y; 0 faces +z).
  * Plate up-vector (0, sin t, -cos t) and normal (0, cos t, sin t) in the
  * stand's frame with the reader at +z: a rotation of -(90° - t) about x,

@@ -6,7 +6,9 @@ typeface.py -- a three.js typeface JSON out of a TrueType or OpenType font.
         --chars latin --name "Cinzel" --weight 700
 
 The door signs (grove/src/world/door-signs.ts) extrude the room names out of
-this file with three's TextGeometry. The format is the one FontLoader reads:
+this file themselves (flattened curves, earcut, their own side walls), not
+with three's TextGeometry, which would drag three's shape and extrusion
+classes into the startup chunk. The format is the one three's FontLoader reads:
 per glyph the advance (`ha`) and an outline in font units as a path string,
 "m x y", "l x y", "q cx cy x y", "b c1x c1y c2x c2y x y", "z". Only the
 characters asked for go in, so the file stays a few tens of kilobytes and

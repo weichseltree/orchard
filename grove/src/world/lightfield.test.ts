@@ -68,13 +68,15 @@ describe("bakeLightField over mansion.json", () => {
   });
 
   it("keeps the hall's light out of the workshop, whose only door is closed", () => {
-    const workshop = room("greenhouse");
-    const inside = brightness(lightAt(field, 15, 2, 8));
-    const ownLamps = emitters.filter((e) => e.room === workshop.id);
-    // Whatever light is there is the workshop's own, not the hall's; with no lamps it is dark.
-    if (ownLamps.length === 0) expect(inside).toBe(0);
-    const hallSide = brightness(lightAt(field, 9, 2, 7));
-    expect(hallSide).toBeGreaterThan(0.1);
+    // Bake without the workshop's own lamps: whatever remains inside would be the hall's.
+    const withoutOwn = bakeLightField(mansion, emitters.filter((e) => e.room !== "greenhouse"));
+    const [x0, y0, z0] = room("greenhouse").bounds.min, [x1, , z1] = room("greenhouse").bounds.max;
+    for (let x = x0 + 1; x < x1; x += 2) for (let z = z0 + 1; z < z1; z += 2) {
+      expect(brightness(lightAt(withoutOwn, x, y0 + 2, z)), `${x},${z}`).toBe(0);
+    }
+    // While the hall's side of that wall is lit.
+    expect(brightness(lightAt(field, 9, 2, 7))).toBeGreaterThan(0.1);
+    withoutOwn.dispose();
   });
 
   it("spills through an open doorway but fades", () => {

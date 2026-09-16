@@ -579,12 +579,15 @@ export class PortalSystem {
         hidden.push(child);
       }
     }
-    // The ends go, not the group: a sealed door's lens is part of the far room's look.
+    // The ends go, not the group: a sealed door's lens is part of the far
+    // room's look, so the lenses of the far scale show and the rest hide.
     const endsWereVisible: Mesh[] = [];
     for (const mesh of this.#meshes.values()) {
       if (mesh.visible) endsWereVisible.push(mesh);
       mesh.visible = false;
     }
+    const lensesWereVisible = this.#sealedMeshes.filter((mesh) => mesh.visible);
+    for (const mesh of this.#sealedMeshes) mesh.visible = mesh.userData.scale === end.toScale;
     setScaleVisible(end.toScale);
     const previous = renderer.getRenderTarget();
     renderer.setRenderTarget(target);
@@ -592,6 +595,8 @@ export class PortalSystem {
     renderer.render(scene, far);
     renderer.setRenderTarget(previous);
     setScaleVisible(end.scale);
+    for (const mesh of this.#sealedMeshes) mesh.visible = false;
+    for (const mesh of lensesWereVisible) mesh.visible = true;
     for (const mesh of endsWereVisible) mesh.visible = true;
     for (const child of hidden) child.visible = true;
     this.#farRenders += 1;

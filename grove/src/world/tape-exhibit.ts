@@ -12,7 +12,7 @@ import {
   Vector3,
 } from "three";
 import { PALETTE } from "../config";
-import { STAND, standFrame, standHeight, type StandFrame } from "./stand";
+import { STAND, standFoot, standFrame, standHeight, type StandFrame } from "./stand";
 import type { DeviceTier } from "../tape/bundle";
 import { TapeBundleSchema, pickVariant, tapeTimeUnit, variantSlots, type TapeBundle } from "../tape/bundle";
 import { TapeStream } from "../tape/stream";
@@ -47,6 +47,8 @@ export interface TapeExhibitOptions {
   pixelRatio: number;
   onNotice?: (message: string) => void;
   scheduler?: ChunkScheduler;
+  /** The room's floor (`bounds.min[1]`), where the reading stand's foot goes; 0 when absent. */
+  floorY?: number;
 }
 
 /**
@@ -146,8 +148,9 @@ export class TapeExhibit {
       ),
     );
 
-    const frame = standFrame(options.hanging.pedestal?.position ?? this.#edgeOfSheet(), options.hanging.pedestal?.rotationDeg ?? [0, 0, 0]);
-    const stand = buildStand(frame);
+    // The same foot the wall text places its face from (stand.ts).
+    const foot = standFoot(options.hanging, options.floorY ?? 0);
+    const stand = buildStand(standFrame(foot.position, foot.rotationDeg));
     this.group.add(stand.group);
     this.#stand = stand;
     this.#progress = stand.progress;
@@ -278,11 +281,6 @@ export class TapeExhibit {
 
   setPixelRatio(ratio: number): void {
     this.volume.setPixelRatio(ratio);
-  }
-
-  /** Default pedestal spot: the near edge of the sheet, if none is authored. */
-  #edgeOfSheet(): [number, number, number] {
-    return [(this.bounds.min.x + this.bounds.max.x) / 2, 0, this.bounds.max.z];
   }
 
   provenance(): Record<string, unknown> {

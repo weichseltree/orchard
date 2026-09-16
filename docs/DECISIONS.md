@@ -272,7 +272,7 @@ Append-only. A decision names the day, the ruling, and the alternative it beat.
   built: (1) a closed doorway is a real aperture, no pier or sconce
   crosses it, with a dark recess and a brass halo behind a shallow lens
   drawn by the portal shader with no far view and a dimmer tint
-  (`sealedLens`, portal.ts's sealed material): a portal not yet lit, one
+  (`sealedLens` in sealed.ts, portal.ts's sealed material): a portal not yet lit, one
   material for all of them; (2) every doorway with surrounds carries the
   name of the room beyond in brass letters extruded from Cinzel (SIL OFL,
   `fonts/cinzel.json` made by `tools/typeface.py`, loaded lazily), in the

@@ -207,14 +207,16 @@ export function extrudeText(text: string, font: Typeface, size: number, depth: n
       }
     }
     for (const k of contours) {
-      const hole = signedArea(k) >= 0;
       for (let i = 0, n = k.length; i < n; i += 2) {
         const j = (i + 2) % n;
         const ax = k[i]!, ay = k[i + 1]!, bx = k[j]!, by = k[j + 1]!;
         const dx = bx - ax, dy = by - ay, len = Math.hypot(dx, dy) || 1;
-        // Outward of a clockwise outer is to the left of travel; of a hole, to the right.
-        const nx = (hole ? dy : -dy) / len, ny = (hole ? -dx : dx) / len;
-        position.push(ax, ay, 0, bx, by, 0, bx, by, depth, ax, ay, 0, bx, by, depth, ax, ay, depth);
+        // The unfilled side is to the left of travel for both senses: a
+        // clockwise outer has the letter on its right, a counter-clockwise
+        // hole has the letter on its right too. The quads are wound so their
+        // geometric normal is that same left, since the material culls backs.
+        const nx = -dy / len, ny = dx / len;
+        position.push(ax, ay, 0, bx, by, depth, bx, by, 0, ax, ay, 0, ax, ay, depth, bx, by, depth);
         for (let v = 0; v < 6; v++) normal.push(nx, ny, 0);
       }
     }

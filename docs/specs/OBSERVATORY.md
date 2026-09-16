@@ -199,7 +199,7 @@ phone or headset frame measurement exists for the larger rooms yet.
 **Sealed doors.** A closed doorway (`closed: true` in mansion.json) is an
 aperture like any other: the wall's piers, panels and sconces stop at it.
 Behind it stands a dark recess with a reveal, and over the recess a brass
-halo round a shallow lens (`sealedLens` in observatory.ts) that the portal
+halo round a shallow lens (`sealedLens` in sealed.ts, shared with portal.ts and the light bake) that the portal
 system draws with the portal shader, no far view, blend zero, a dimmer
 tint (`SEALED_TINT`): a portal not yet lit. One shared material, one
 shared cap geometry; the lens is visual only, navigation treats the door

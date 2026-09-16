@@ -336,6 +336,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
             tier: device.tier,
             pixelRatio: Math.min(window.devicePixelRatio, device.maxPixelRatio),
             onNotice,
+            floorY: room.bounds.min[1],
             ...(options.scheduler ? { scheduler: options.scheduler } : {}),
           }))
             .then((tape) => {

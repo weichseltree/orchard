@@ -13,7 +13,7 @@ import {
 } from "three";
 import { wrap } from "../ui/worldnotice";
 import { OBSERVATORY_PALETTE } from "./observatory";
-import { STAND, standFrame } from "./stand";
+import { STAND, standFoot, standFrame } from "./stand";
 import type { Labels } from "./labels/index";
 import type { Doorway, Hanging, Mansion, Room } from "./schema";
 
@@ -53,7 +53,6 @@ export const LECTERN = { width: 0.85, height: 0.6375, top: 1.05, tiltDeg: 30, te
 export const ENTRANCE_LECTERN = { width: 1.1, height: 0.825, top: 1.1, tiltDeg: 30, texture: [1024, 768] as const };
 /** A lectern stands this far in front of a floor exhibit's footprint. */
 const LECTERN_STANDOFF_M = 1.2;
-/** ...or this far beside a tape's pedestal (pedestal radius 0.32, tape-exhibit.ts). */
 
 /** What the visitor reads for a tree: the room and tree stay `spectre`, the repository is coarsen (docs/specs/NAMING.md). */
 const REPOSITORY_NAME: Readonly<Record<string, string>> = { spectre: "coarsen" };
@@ -457,13 +456,14 @@ export function planRoomLabels(room: Room, labels: Labels, mansion: Mansion): Pl
     // its near edge (tape-exhibit.ts), placed from the same frame (stand.ts).
     // Any other floor exhibit gets a lectern in front of its footprint on the
     // spawn's side.
-    if (hanging.kind === "tape" && hanging.pedestal) {
-      const frame = standFrame(hanging.pedestal.position, hanging.pedestal.rotationDeg);
+    if (hanging.kind === "tape") {
+      const foot = standFoot(hanging, floor);
+      const frame = standFrame(foot.position, foot.rotationDeg);
       plans.push({
         kind: "label", mount: "stand", facing: "stand", hangingId: hanging.id,
         position: frame.faceCentre, quaternion: frame.quaternion,
         width: STAND.width, height: STAND.faceHeight, texture: STAND.texture,
-        foot: frame.foot.clone().setY(floor), text,
+        foot: frame.foot.clone(), text,
       });
       continue;
     }

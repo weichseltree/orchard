@@ -100,16 +100,18 @@ export function bakeLightField(mansion: Mansion, emitters: readonly Emitter[]): 
 
   // Which region each cell centre stands in, once: a chamber by its bounds, the grounds as one.
   const region = new Array<string | null>(nx * ny * nz).fill(null);
+  const within = (room: Room, x: number, y: number, z: number, slack: number): boolean => {
+    const [x0, y0, z0] = room.bounds.min, [x1, y1, z1] = room.bounds.max;
+    return x >= x0 - slack && x <= x1 + slack && y >= y0 - slack && y <= y1 + slack && z >= z0 - slack && z <= z1 + slack;
+  };
   for (let iz = 0; iz < nz; iz++) for (let iy = 0; iy < ny; iy++) for (let ix = 0; ix < nx; ix++) {
     const x = min.x + (ix + 0.5) * FIELD_CELL_XZ_M, y = min.y + (iy + 0.5) * FIELD_CELL_Y_M, z = min.z + (iz + 0.5) * FIELD_CELL_XZ_M;
-    for (const room of rooms) {
-      const [x0, y0, z0] = room.bounds.min, [x1, y1, z1] = room.bounds.max;
-      // Half a cell of slack: the walls themselves stand on the bounds and must be lit from inside.
-      if (x >= x0 - 1 && x <= x1 + 1 && y >= y0 - 1 && y <= y1 + 1 && z >= z0 - 1 && z <= z1 + 1) {
-        region[(iz * ny + iy) * nx + ix] = regionOf(room);
-        break;
-      }
-    }
+    // The room that holds the cell's centre; failing that, the nearest one
+    // within half a cell, so the walls themselves, which stand on the
+    // bounds, are lit from inside. A cell inside one room never takes a
+    // neighbour's light through the wall between them.
+    const home = rooms.find((room) => within(room, x, y, z, 0)) ?? rooms.find((room) => within(room, x, y, z, 1));
+    if (home) region[(iz * ny + iy) * nx + ix] = regionOf(home);
   }
 
   const all: Emitter[] = emitters.filter((e) => byId.has(e.room));
