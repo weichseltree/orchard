@@ -26,6 +26,17 @@ export const Ban = __t.object("Ban", {
 });
 export type Ban = __Infer<typeof Ban>;
 
+export const Broadcast = __t.object("Broadcast", {
+  id: __t.u64(),
+  kind: __t.string(),
+  cue: __t.string(),
+  text: __t.string(),
+  room: __t.string(),
+  at: __t.timestamp(),
+  expiresAt: __t.timestamp(),
+});
+export type Broadcast = __Infer<typeof Broadcast>;
+
 export const Chat = __t.object("Chat", {
   id: __t.u64(),
   room: __t.string(),
