@@ -474,7 +474,7 @@ def bundle_files(bundle_dir) -> list[tuple[str, Path]]:
     while the chunks it points at are not.
     """
     root = Path(bundle_dir)
-    files = [(str(p.relative_to(root)).replace(os.sep, "/"), p)
+    files = [(p.relative_to(root).as_posix(), p)
              for p in sorted(root.rglob("*")) if p.is_file()]
     files = [f for f in files if f[0] != INDEX_KEY]
     return ([f for f in files if f[0] != "bundle.json"]
@@ -500,17 +500,17 @@ def expected_digests(bundle_dir) -> dict[str, str]:
     doc = json.loads((root / "bundle.json").read_text())
     out: dict[str, str] = {}
     if doc.get("poster") and doc.get("poster_sha256"):
-        out[doc["poster"]] = doc["poster_sha256"]
+        out[Path(doc["poster"]).as_posix()] = doc["poster_sha256"]
     for v in (doc.get("variants") or {}).values():
         for c in v.get("chunks") or []:
-            out[c["file"]] = c["sha256"]
+            out[Path(c["file"]).as_posix()] = c["sha256"]
     if isinstance(doc.get("files"), dict):
         for rel, f in doc["files"].items():
-            out[rel] = f["sha256"]
+            out[Path(rel).as_posix()] = f["sha256"]
     media = doc.get("media")
     if media and (root / media).exists():
         for f in json.loads((root / media).read_text()).get("files") or []:
-            out[f["file"]] = f["sha256"]
+            out[Path(f["file"]).as_posix()] = f["sha256"]
     return out
 
 

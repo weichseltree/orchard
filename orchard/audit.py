@@ -952,6 +952,20 @@ def pnpm_exe() -> str | None:
     return None
 
 
+def _run_script(path: str, *args: str) -> list[str]:
+    p = Path(path)
+    try:
+        head = p.read_bytes()[:128]
+    except OSError:
+        return [path, *args]
+    if not head.startswith(b"#!"):
+        return [path, *args]
+    shell = shutil.which("bash") or shutil.which("sh")
+    if shell is None:
+        return [path, *args]
+    return [shell, path, *args]
+
+
 def check_bindings(repo: Repo) -> list[Finding]:
     rule, rel = "bindings", "grove/package.json"
     doc, _ = _json(repo.path / rel)
@@ -960,7 +974,8 @@ def check_bindings(repo: Repo) -> list[Finding]:
     pnpm = pnpm_exe()
     if pnpm is None:
         return [skip(rule, "pnpm not found", rel)]
-    r = run([pnpm, "-C", "grove", "run", "check:bindings"], repo.path, BINDINGS_TIMEOUT)
+    cmd = _run_script(pnpm, "-C", "grove", "run", "check:bindings")
+    r = run(cmd, repo.path, BINDINGS_TIMEOUT)
     last = next((ln.strip() for ln in reversed(r.text.splitlines()) if ln.strip().startswith("bindings:")), "")
     if r.rc == 0:
         return [ok(rule, last or "check:bindings passes", "grove/src/module_bindings")]

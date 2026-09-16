@@ -9,6 +9,7 @@ Values never reach logs or the dashboard; `status()` reports names only.
 from __future__ import annotations
 
 import os
+import shlex
 from functools import lru_cache
 from pathlib import Path
 
@@ -32,7 +33,12 @@ def _parse(path: Path) -> dict[str, str]:
         if line.startswith("export "):
             line = line[7:]
         k, v = line.split("=", 1)
-        v = v.strip().strip('"').strip("'")
+        v = v.strip()
+        if len(v) >= 2 and v[0] == v[-1] and v[0] in "\"'":
+            try:
+                v = shlex.split(v, posix=True)[0]
+            except (ValueError, IndexError):
+                continue
         if v:
             out[k.strip()] = v
     return out

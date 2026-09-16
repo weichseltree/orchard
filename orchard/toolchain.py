@@ -102,9 +102,82 @@ def version_matches(found: str | None, expected: str) -> bool:
 def resolve(name: str) -> str | None:
     """The first candidate path for `name` that exists and is executable."""
     for c in TOOLS[name].candidates():
-        if c and Path(c).is_file() and os.access(c, os.X_OK):
+        if not c:
+            continue
+        p = Path(c)
+        if not p.is_file():
+            continue
+        if os.access(c, os.X_OK):
+            return str(c)
+        try:
+            text = p.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        if text.startswith("#!"):
             return str(c)
     return None
+
+
+def _bash_env() -> dict[str, str]:
+    env = os.environ.copy()
+    if os.name != "nt":
+        return env
+    git_roots = [
+        Path(r"C:\Program Files\Git"),
+        Path(r"C:\Program Files\Git\usr\bin"),
+        Path(r"C:\Program Files\Git\bin"),
+        Path(r"C:\Program Files\Git\mingw64\bin"),
+    ]
+    extra = [str(p) for p in git_roots if p.exists()]
+    if extra:
+        env["PATH"] = os.pathsep.join([*extra, env.get("PATH", "")])
+    env.setdefault("MSYSTEM", "MINGW64")
+    return env
+
+
+@lru_cache(maxsize=1)
+def _bash_drive_prefix() -> str:
+    """The Windows-drive mount used by the available bash (WSL or Git Bash)."""
+    if os.name != "nt":
+        return ""
+    try:
+        mounted = subprocess.run(
+            ["bash", "-c", "test -d /mnt/c"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=10,
+            env=_bash_env(),
+        ).returncode == 0
+    except (OSError, subprocess.SubprocessError):
+        mounted = False
+    return "/mnt" if mounted else ""
+
+
+def _bash_path(path: str) -> str:
+    if os.name != "nt":
+        return path
+    p = path.replace("\\", "/")
+    if len(p) >= 2 and p[1] == ":":
+        drive = p[0].lower()
+        rest = p[2:].lstrip("/")
+        return f"{_bash_drive_prefix()}/{drive}/{rest}"
+    return p
+
+
+def _run_tool(path: str, args: tuple[str, ...]) -> str:
+    if os.name == "nt":
+        p = Path(path)
+        try:
+            head = p.read_bytes()[:2]
+        except OSError:
+            head = b""
+        if head.startswith(b"#!") or p.suffix.lower() in {".sh", ".bash"}:
+            out = subprocess.run(["bash", _bash_path(str(p)), *args], capture_output=True,
+                                 text=True, timeout=60, env=_bash_env())
+            return (out.stdout or "") + "\n" + (out.stderr or "")
+    out = subprocess.run([path, *args], capture_output=True, text=True, timeout=60,
+                         env=_bash_env())
+    return (out.stdout or "") + "\n" + (out.stderr or "")
 
 
 @lru_cache(maxsize=None)
@@ -115,9 +188,7 @@ def probe(name: str) -> Probe:
     if path is None:
         return Probe(name, tool.expected, None, None, None)
     try:
-        out = subprocess.run([path, *tool.args], capture_output=True, text=True,
-                             timeout=60)
-        text = (out.stdout or "") + "\n" + (out.stderr or "")
+        text = _run_tool(path, tool.args)
     except (OSError, subprocess.SubprocessError) as exc:
         return Probe(name, tool.expected, path, None, f"{type(exc).__name__}: {exc}")
     m = re.search(tool.pattern, text)

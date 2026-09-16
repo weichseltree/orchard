@@ -221,10 +221,10 @@ def file_digests(root: Path, exclude=("bundle.json",)) -> dict[str, dict]:
     the bytes it ships and not only the recipe that made them.
     """
     root = Path(root)
-    return {str(p.relative_to(root)).replace(os.sep, "/"):
+    return {p.relative_to(root).as_posix():
             {"sha256": sha256_file(p), "bytes": p.stat().st_size}
             for p in sorted(root.rglob("*"))
-            if p.is_file() and str(p.relative_to(root)) not in exclude}
+            if p.is_file() and p.relative_to(root).as_posix() not in exclude}
 
 
 def _intact(bundle_dir: Path, bid: str) -> bool:
@@ -893,6 +893,8 @@ def bundle_video(mp4, tree: str, title: str, out_root=None, *,
         if verbose:
             print("  " + " ".join(cmd), flush=True)
         subprocess.run(cmd, check=True)
+        master_path = staging / "master.m3u8"
+        master_path.write_text(master_path.read_text().replace("\\", "/"))
         t_encode = time.perf_counter() - t_start
 
         poster_at = max(0.0, duration * 0.10)

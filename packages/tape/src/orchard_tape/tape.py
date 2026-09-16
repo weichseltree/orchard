@@ -64,6 +64,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import stat
 import subprocess
 import sys
 import time
@@ -619,8 +620,7 @@ class TapeReader:
         self.channels = [Channel(c["name"], c["dtype"], c["width"],
                                  c["quantized"]) for c in self.header["channels"]]
         self.frames = self._read_index()
-        self._blob = np.memmap(self.path / "data.bin", dtype=np.uint8,
-                               mode="r") if self.frames else None
+        self._blob = None
         self.trailer = None
         tp = self.path / "trailer.json"
         if tp.exists():
@@ -630,6 +630,24 @@ class TapeReader:
         # taken at construction: this reader's view of the tape does not grow,
         # so a quantity derived from it cannot go stale within its lifetime.
         self._max_disp = None
+
+    def _blob_for_reads(self):
+        if self._blob is None and self.frames:
+            self._blob = np.memmap(self.path / "data.bin", dtype=np.uint8,
+                                  mode="r")
+        return self._blob
+
+    def __del__(self):
+        blob = getattr(self, "_blob", None)
+        if blob is not None:
+            try:
+                blob.flush()
+            except Exception:  # pragma: no cover - interpreter shutdown
+                pass
+            try:
+                del self._blob
+            except AttributeError:  # pragma: no cover - partially torn state
+                pass
 
     def _read_index(self):
         """A TORN FINAL LINE IS EXPECTED, not an error. The writer flushes
@@ -658,7 +676,7 @@ class TapeReader:
 
     def frame(self, i: int) -> dict:
         rec = self.frames[i]
-        raw = self._blob[rec["off"]: rec["off"] + rec["len"]]
+        raw = self._blob_for_reads()[rec["off"]: rec["off"] + rec["len"]]
         n, pos_ = rec["n"], 0
         out = {"i": rec["i"], "step": rec["step"], "t": rec["t"], "n": n}
         for c in self.channels:
@@ -864,6 +882,9 @@ class TapeReader:
 
     def _write_disp_cache(self, value) -> str:
         p = self.path / "max_displacement.json"
+        mode = self.path.stat().st_mode if self.path.exists() else 0
+        if os.name == "nt" and not (mode & stat.S_IWUSR):
+            return "not written (read-only results dir)"
         try:
             p.write_text(json.dumps(
                 {"schema": "video/tape/maxdisp/1",

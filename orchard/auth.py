@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import json
 import os
+import shlex
 import shutil
 import subprocess
 import sys
@@ -30,6 +31,36 @@ import urllib.error
 import urllib.request
 
 from .secrets import PATHS, get, load, require
+
+
+def _bash_path(path) -> str:
+    """A shell-safe path for bash on Windows. Prefer the accessed mount and quote it
+    so the shell treats it as a single filename even with spaces or special chars.
+    """
+    p = os.fspath(path)
+    if os.name != "nt":
+        return shlex.quote(p)
+    p = p.replace("\\", "/")
+    if p.startswith("//"):
+        return shlex.quote(p)
+    if len(p) >= 2 and p[1] == ":":
+        drive = p[0].lower()
+        rest = p[2:].lstrip("/")
+        candidates = [
+            f"/mnt/{drive}/{rest}" if rest else f"/mnt/{drive}/",
+            f"/{drive}/{rest}" if rest else f"/{drive}/",
+        ]
+        for candidate in candidates:
+            try:
+                if subprocess.run(["bash", "-lc", f"test -e {shlex.quote(candidate)}"],
+                                  stdout=subprocess.DEVNULL,
+                                  stderr=subprocess.DEVNULL,
+                                  check=False).returncode == 0:
+                    return shlex.quote(candidate)
+            except OSError:
+                pass
+        return shlex.quote(candidates[0])
+    return shlex.quote(p)
 
 PROJECT = "weichseltree"
 WIDGET = "grove token service"
@@ -62,12 +93,14 @@ def keygen(write: bool) -> list[str]:
     out = subprocess.run([node, "--input-type=module", "-e", _KEYGEN_JS],
                          capture_output=True, text=True, check=True).stdout
     keys = json.loads(out)
-    lines = {"AUTH_SIGNING_KEY": f"AUTH_SIGNING_KEY='{keys['signing']}'",
-             "AUTH_NETWORK_KEY": f"AUTH_NETWORK_KEY={keys['network']}"}
+    lines = {
+        "AUTH_SIGNING_KEY": f"AUTH_SIGNING_KEY={json.dumps(keys['signing'])}",
+        "AUTH_NETWORK_KEY": f"AUTH_NETWORK_KEY={json.dumps(keys['network'])}",
+    }
     if write:
         path = _secrets_file()
         path.parent.mkdir(parents=True, exist_ok=True)
-        with open(path, "a") as f:
+        with open(path, "a", newline="\n") as f:
             f.write("\n# The grove's token service (orchard auth keygen). Rotating the signing\n"
                     "# key logs every visitor out once; the network key re-keys every ban.\n")
             for k in missing:
@@ -114,7 +147,7 @@ def turnstile() -> str | None:
                            {"name": WIDGET, "domains": WIDGET_DOMAINS, "mode": "managed", "region": "world"})
         sitekey, secret = made["sitekey"], made["secret"]
     path = _secrets_file()
-    with open(path, "a") as f:
+    with open(path, "a", newline="\n") as f:
         f.write(f"\n# Turnstile widget \"{WIDGET}\" (orchard auth turnstile). The site key is public.\n")
         f.write(f"TURNSTILE_SITEKEY={sitekey}\nTURNSTILE_SECRET={secret}\n")
     os.chmod(path, 0o600)

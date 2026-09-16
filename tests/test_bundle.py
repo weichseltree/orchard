@@ -1142,7 +1142,7 @@ def test_push_refuses_a_bundle_that_does_not_match_its_manifest(small_bundle):
     chunk = next(small_bundle.glob("vr-high/c*.bin"))
     chunk.write_bytes(chunk.read_bytes()[:-8])
     assert verify_local(small_bundle)["mismatched"] == [
-        str(chunk.relative_to(small_bundle))]
+        chunk.relative_to(small_bundle).as_posix()]
     cf = FakeCF()
     with pytest.raises(ValueError, match="does not match its own manifest"):
         push(small_bundle, bucket="b", cf=cf, verbose=False)
