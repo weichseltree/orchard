@@ -219,6 +219,7 @@ async function main(): Promise<void> {
     onRefused: (text, error) => {
       console.warn(`faye: "${text}" refused (${error instanceof Error ? error.message : String(error)})`);
     },
+    onDropped: (text) => console.warn(`faye: too many lines waiting; not saying "${text}"`),
   });
   // Her row's `last_seen` as it stood before THIS run's join. A restart after a
   // crash reuses the identity and the module may not have seen the old socket
@@ -253,25 +254,25 @@ async function main(): Promise<void> {
     const answer = replyTo(row.text, known, titles);
     if (!answer) return;
     console.log(`faye: ${row.name} said "${row.text}" -> "${answer}"`);
-    void speaker.say(answer);
+    void speaker.say(answer, { droppable: true });
   });
 
   before = ownLastSeen();
-  // The hold starts BEFORE the join: the handler is live, and a reply to a
-  // line said after the join commits but before its acknowledgement would
-  // otherwise go straight out inside the gap `join` just stamped.
-  speaker.heldUntilGap(Date.now());
-  await conn.reducers.join({ name: args.name, room: args.room });
+  // The speaker is held from BEFORE the join until its acknowledgement and the
+  // hold after it: the handler is live, and a reply to a line said while the
+  // join is in flight must not go out inside the gap `join` just stamped.
+  const joining = conn.reducers.join({ name: args.name, room: args.room });
+  speaker.holdUntil(joining.then(() => speaker.heldUntilGap(Date.now())));
+  await joining;
   console.log(`faye: standing in "${args.room}" as "${args.name}"`);
   if (args.name.length > 24) {
     console.warn(`faye: the module clips names at 24 characters, so this shows as "${args.name.slice(0, 24)}"`);
   }
 
-  // `join` stamps last_said with the join time, so the first line is inside
-  // CHAT_MIN_GAP (0.7 s) and would come back "slow down"; the queue waits it
-  // out. A refused greeting is logged and never costs Faye her presence.
-  speaker.heldUntilGap(Date.now());
-  if (args.say) await speaker.say(args.say);
+  // Queued, not awaited: replies may already be waiting ahead of it, and the
+  // pose, the poll and the signal handlers below must not wait on them. A
+  // refused greeting is logged and never costs Faye her presence.
+  if (args.say) void speaker.say(args.say);
 
   const startedAt = Date.now();
   // Standing on the spot, turning slowly: a presence, not a pacing NPC.

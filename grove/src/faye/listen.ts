@@ -65,7 +65,17 @@ export interface SpeakerOptions {
   now: () => number;
   sleep: (ms: number) => Promise<unknown>;
   onRefused: (text: string, error: unknown) => void;
+  /** A droppable line was not queued because too many were already waiting. */
+  onDropped: (text: string) => void;
 }
+
+/**
+ * How many lines may wait in the queue before a droppable one is turned away.
+ * A visitor may say a line every 0.7 s and she answers one every 0.9 s, so a
+ * room that keeps asking would otherwise grow the queue without end and push
+ * her announcements back behind replies nobody is still waiting for.
+ */
+export const SPEAKER_QUEUE_MAX = 4;
 
 /**
  * Everything Faye says, one line at a time, spaced by the module's gap.
@@ -81,6 +91,8 @@ export interface SpeakerOptions {
 export class Speaker {
   #chain: Promise<void> = Promise.resolve();
   #lastAt = Number.NEGATIVE_INFINITY;
+  #waiting = 0;
+  #gate: Promise<unknown> = Promise.resolve();
   readonly #send: (text: string) => Promise<void>;
   readonly #options: SpeakerOptions;
 
@@ -90,29 +102,51 @@ export class Speaker {
   }
 
   /**
-   * Treat `at` as the last line sent. Called right after joining: a first
-   * join stamps `last_said`, and a rejoin keeps the previous run's, which may
-   * be moments old after a restart. Neither is visible from here, so the
-   * first line waits out the gap whichever it was.
+   * Treat `at` as the last line sent. Called once the join is acknowledged: a
+   * first join stamps `last_said`, and a rejoin keeps the previous run's,
+   * which may be moments old after a restart. Neither is visible from here,
+   * so the first line waits out the gap whichever it was.
    */
   heldUntilGap(at: number): void {
     this.#lastAt = Math.max(this.#lastAt, at);
   }
 
-  /** Queues a line. Resolves once it was sent or refused; never rejects. */
-  say(text: string): Promise<void> {
+  /**
+   * Sends nothing until `settled` has settled, whichever way. For the join:
+   * her chat handler is live before it, and a reply queued while the join is
+   * in flight must not time its gap from before the join's own stamp.
+   */
+  holdUntil(settled: Promise<unknown>): void {
+    this.#gate = settled.then(() => undefined, () => undefined);
+  }
+
+  /**
+   * Queues a line. Resolves once it was sent, refused or dropped; never
+   * rejects. A `droppable` line (a reply) is turned away when the queue is
+   * full; an undroppable one (an announcement, the greeting) never is.
+   */
+  say(text: string, options: { droppable?: boolean } = {}): Promise<void> {
+    if (options.droppable && this.#waiting >= SPEAKER_QUEUE_MAX) {
+      this.#options.onDropped(text);
+      return Promise.resolve();
+    }
+    this.#waiting++;
     this.#chain = this.#chain.then(async () => {
       const { gapMs, now, sleep, onRefused } = this.#options;
-      const wait = this.#lastAt + gapMs - now();
-      if (wait > 0) await sleep(wait);
+      await this.#gate;
+      // Re-read after each sleep: a hold can move while this line waits.
+      for (let wait = this.#lastAt + gapMs - now(); wait > 0; wait = this.#lastAt + gapMs - now()) {
+        await sleep(wait);
+      }
+      this.#waiting--;
       try {
         await this.#send(text);
       } catch (error) {
         onRefused(text, error);
       }
-      // From the COMPLETED call, refused or not: stamped before the send, a
-      // slow round trip would bring the next call to the module inside the
-      // gap it measures from its own commit.
+      // Stamped AFTER the call completes, refused or not: the module measures
+      // the gap from its own commit, so a clock stamped at the start would let
+      // a slow round trip bring the next call inside it.
       this.#lastAt = now();
     });
     return this.#chain;
