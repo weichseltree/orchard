@@ -33,8 +33,8 @@ const { values: args } = parseArgs({ options: {
   scope: { type: 'string', default: 'all' }, samples: { type: 'string', default: '1' },
 } });
 if (args.dist && args['base-url']) throw new Error('Choose --dist or --base-url, not both.');
-if (!['all', 'landing', 'app', 'transfer'].includes(args.scope)) throw new Error('scope must be all, landing, app or transfer');
-if (args.dist && args.scope === 'app') throw new Error('--scope app needs the development demo; use --scope all or transfer for a production build.');
+if (!['all', 'landing', 'app', 'transfer', 'memory'].includes(args.scope)) throw new Error('scope must be all, landing, app, transfer or memory');
+if (args.dist && ['app', 'memory'].includes(args.scope)) throw new Error('--scope app and memory need the development demo; use --scope all or transfer for a production build.');
 const samples = Number(args.samples);
 if (!Number.isInteger(samples) || samples < 1 || samples > 10) throw new Error('samples must be an integer from 1 to 10');
 const output = resolve(grove, args.out);
@@ -53,6 +53,8 @@ const report = {
     'The static server models identity or gzip and cache policy headers, not CDN Brotli or conditional 304 responses.',
     'Readiness is observed when the start room architecture enters the scene; it is not GPU completion.',
     'App resource snapshots use a 1.5 s observation window after first room readiness; later streaming is not included.',
+    'Frame times are SwiftShader software rendering on a CI runner. They are recorded against the 72 Hz budget (13.8 ms p95) but never enforced here: a pass would not prove a Quest holds it, and a fail would measure the runner.',
+    'The room tour counts renderer-owned geometries, textures and programs. It finds GPU objects the page keeps creating; it cannot see a leak in plain JavaScript memory.',
   ],
 };
 const profiles = [
@@ -68,7 +70,12 @@ const packageManager = process.env.npm_execpath;
 
 function runPackageScript(name) {
   if (!packageManager) throw new Error('quality:browser must be run through pnpm');
-  execFileSync(process.execPath, [packageManager, 'run', name], { cwd: grove, stdio: 'pipe' });
+  // `npm_execpath` is a JavaScript entry point when pnpm came from npm (as in
+  // CI), and a native executable when it came from pnpm's standalone installer
+  // (`pnpm-exe`). Handing the native one to node fails with a SyntaxError on
+  // the ELF header, so run it directly.
+  const script = /\.(c|m)?js$/.test(packageManager);
+  execFileSync(script ? process.execPath : packageManager, [...(script ? [packageManager] : []), 'run', name], { cwd: grove, stdio: 'pipe' });
 }
 
 async function screenshot(page, name, fullPage = false) {
@@ -349,6 +356,72 @@ async function metricsAudit(page, name, injectStall = false) {
   }
 }
 
+/** Polls until the renderer's object counts stop changing, so a lap reads a settled room. */
+async function settledRendering(page, { quietMs = 1000, timeoutMs = 20000 } = {}) {
+  const started = Date.now();
+  let last = null;
+  let quietSince = Date.now();
+  while (Date.now() - started < timeoutMs) {
+    const now = await page.evaluate(() => {
+      const { geometries, textures, programs } = window.grove.metrics().rendering;
+      return { geometries, textures, programs };
+    });
+    if (last && now.geometries === last.geometries && now.textures === last.textures && now.programs === last.programs) {
+      if (Date.now() - quietSince >= quietMs) return { ...now, settled: true };
+    } else {
+      quietSince = Date.now();
+    }
+    last = now;
+    await page.waitForTimeout(250);
+  }
+  return { ...last, settled: false };
+}
+
+/**
+ * Issue #6: nothing is recreated every time a room is visited.
+ *
+ * Rooms load as a visitor comes near and are never unloaded, so the first
+ * lap of the building legitimately grows the renderer's geometries, textures
+ * and programs. A SECOND lap over rooms that are all already loaded must not
+ * grow them at all: growth there is something rebuilt on each arrival and
+ * never disposed, which is a leak whose size is the number of crossings.
+ * Counted in renderer objects, so the check is the same on a CI runner and a
+ * headset; frame times are only recorded, per this report's limits.
+ */
+async function roomTourAudit() {
+  const profile = profiles[0];
+  const { context, page, events } = await newPage(profile);
+  const name = 'room tour';
+  try {
+    await ready(page, '/mind/?demo');
+    if (await page.locator('dialog[open]').count()) await page.keyboard.press('Escape');
+    const rooms = await page.evaluate(() => window.grove.mansion.rooms.map((room) => room.id));
+    const start = await page.evaluate(() => window.grove.body.room);
+    const laps = [];
+    for (let lap = 1; lap <= 2; lap++) {
+      const refused = [];
+      const unsettled = [];
+      for (const room of rooms) {
+        if (!(await page.evaluate((id) => window.grove.visit(id), room))) refused.push(room);
+        const counts = await settledRendering(page);
+        if (!counts.settled) unsettled.push(room);
+      }
+      await page.evaluate((id) => window.grove.visit(id), start);
+      const end = await settledRendering(page);
+      laps.push({ lap, refused, unsettled, ...end });
+    }
+    const frames = await page.evaluate(() => window.grove.metrics().frames);
+    report.measurements.push({ kind: 'room-tour', rooms: rooms.length, laps, frames: { p50Ms: frames.p50Ms, p95Ms: frames.p95Ms, p99Ms: frames.p99Ms, sessionStalls: frames.sessionStalls }, frameBudgetP95Ms: 13.8, frameBudgetEnforced: false });
+    const [first, second] = laps;
+    check(`${name}: every room can be visited`, first.refused.length === 0, first.refused);
+    check(`${name}: every room settles`, first.unsettled.length + second.unsettled.length === 0, { first: first.unsettled, second: second.unsettled });
+    for (const kind of ['geometries', 'textures', 'programs']) {
+      check(`${name}: a second lap creates no ${kind}`, second[kind] <= first[kind], { first: first[kind], second: second[kind] });
+    }
+    check(`${name}: no script or console errors`, events.pageErrors.length + events.consoleErrors.length === 0, events);
+  } finally { await context.close(); }
+}
+
 async function recoveryAudit() {
   const { context, page } = await newPage(profiles[0], { disableGraphics: true });
   try {
@@ -425,6 +498,7 @@ try {
     await gameSurfaceAudit();
     await recoveryAudit();
   }
+  if (!args.dist && ['all', 'app', 'memory'].includes(args.scope)) await roomTourAudit();
 } catch (error) {
   report.errors.push([error?.stack ?? String(error), error?.stdout?.toString(), error?.stderr?.toString()].filter(Boolean).join('\n'));
 } finally {

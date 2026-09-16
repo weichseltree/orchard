@@ -86,6 +86,37 @@ cache comparisons describe HTTP caching. Production mode checks the built
 site and geometry with live services unavailable; demo mode checks playable
 synthetic media. Neither is a live-service acceptance test.
 
+### Room tour: leaks across room visits (#6)
+
+```bash
+pnpm quality:browser --scope memory --out ../results/quality/memory.json
+```
+
+The demo is walked through every room twice via `window.grove.visit`, which
+enters a room through the same `teleport` a controller uses. Each visit waits
+until the renderer's geometry, texture and program counts stop changing.
+Rooms load as a visitor nears them and are never unloaded, so the first lap
+legitimately grows those counts. The second lap must not: any growth there is
+something rebuilt on each arrival and never disposed, so the leak grows with
+the number of crossings. It also runs as part of `--scope all`, which CI uses.
+
+Measured 2026-09-16: 15 rooms, both laps end at 115 geometries, 24 textures
+and 13 programs. The check was verified against a deliberate leak (one mesh per
+crossing, never disposed): the second lap reported 147 geometries against the
+first lap's 131, and the check failed as it should.
+
+**Frame times in this suite are recorded, not enforced.** CI renders with
+SwiftShader on a shared runner; the same tour measured p95 750 ms there. A
+13.8 ms (72 Hz) budget checked against that would fail on every commit and say
+nothing about a Quest, and loosening it until it passed would say nothing
+either. The report carries `frameBudgetP95Ms` and `frameBudgetEnforced: false`
+so the number is kept next to the reason it is not a gate. Frame budgets need
+the device (DEVICE-TIERS.md).
+
+What it cannot see: memory held in plain JavaScript (arrays, closures,
+worker buffers). Renderer object counts catch GPU objects the page keeps
+creating, which is the leak a room tour is most likely to cause.
+
 The [Playwright accessibility guide](https://playwright.dev/docs/accessibility-testing)
 explains why automatic scans complement manual and assistive-technology
 testing. Zero detected violations does not establish full accessibility.
