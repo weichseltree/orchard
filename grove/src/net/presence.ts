@@ -1,5 +1,4 @@
 import {
-  FALLBACK_ROOM,
   MOVE_EPSILON_M,
   MOVE_EPSILON_YAW_RAD,
   MOVE_MIN_INTERVAL_MS,
@@ -42,6 +41,14 @@ export const RECONNECT_MAX_MS = 30000;
  * every visitor back in the same millisecond. Pure, so the schedule is a test
  * rather than a claim.
  */
+/**
+ * How long a refusal locks a door. Long enough that a visitor leaning on a
+ * full room's doorway does not hammer the reducer, short enough that a room
+ * emptying, opening or being added is noticed by walking into it again rather
+ * than by reloading the page.
+ */
+export const REFUSAL_TTL_MS = 15_000;
+
 export function reconnectDelay(attempt: number, random: () => number = Math.random): number {
   const step = Math.max(0, Math.min(30, Math.floor(attempt)));
   const base = Math.min(RECONNECT_MAX_MS, RECONNECT_MIN_MS * 2 ** step);
@@ -103,7 +110,7 @@ export interface PresenceConnection {
     peopleHere: TableEvents<VisitorRow>;
     /** Their poses: likewise. */
     posesHere: TableEvents<PoseRow>;
-    room: { iter(): Iterable<{ name: string }> };
+    room: { iter(): Iterable<{ name: string; open: boolean; admin_only: boolean }> };
     exhibit: { iter(): Iterable<ExhibitRow> };
   };
   reducers: {
@@ -211,7 +218,13 @@ export class Presence {
   #dirty = false;
   #wantRoom: string | null = null;
   #joining = false;
-  /** Stop publishing poses while the body is in a room whose next crossing was refused. */
+  /**
+   * Stop publishing poses while the body is in a room whose next crossing was
+   * refused. A backstop rather than the mechanism: `#refuse` now clears
+   * `joinedRoom` and calls `leave`, which stops poses by the guard below and
+   * deletes the pose row outright. This keeps the poses stopped even if that
+   * ever regresses, and costs one comparison.
+   */
   #poseSuppressed = false;
   /** Reused: a pose goes out ten times a second and must not allocate. */
   #lastSent = { x: Number.NaN, y: 0, z: 0, yaw: 0, at: Number.NEGATIVE_INFINITY };
@@ -219,7 +232,12 @@ export class Presence {
   #disposed = false;
   #attempt = 0;
   #retryTimer: ReturnType<typeof setTimeout> | null = null;
-  /** Rooms the server refused this session: asked for again only on request. */
+  /**
+   * Rooms refused on this connection. A refusal locks the door rather than
+   * being remembered forever: it expires after REFUSAL_TTL_MS so a room that
+   * filled up and emptied again is walked into rather than needing a reload,
+   * and it is cleared outright when the connection drops.
+   */
   #refused = new Set<string>();
   #transport: PresenceTransport;
   #random: () => number;
@@ -570,6 +588,12 @@ export class Presence {
     this.joinedRoom = null;
     this.#joining = false;
     this.#poseSuppressed = false;
+    // A refusal is an answer from one connection, not a fact about the world.
+    // The room may have been full, closed, or missing from the room table and
+    // added since; a visitor whose socket dropped should not have to reload
+    // the page to be let in. Everything else about the old connection is
+    // cleared here, and this belongs with it.
+    this.#refused.clear();
     if (this.peers.size > 0) {
       this.peers.clear();
       this.#callbacks.onPeersChanged?.(this.peers);
@@ -590,9 +614,10 @@ export class Presence {
     const want = this.#wantRoom;
     if (!connection || this.status !== "online" || this.#joining || !want) return;
     if (want === this.joinedRoom) return;
-    if (this.#refused.has(want)) return;
-    if (!this.#roomExists(connection, want)) {
-      this.#refuse(want, `no room "${want}" server-side`);
+    const locked = this.whyLocked(want);
+    if (locked !== null) {
+      // Already refused on this connection: the door is shut and said so.
+      if (locked !== "refused a moment ago") this.#refuse(want, locked);
       return;
     }
     this.#joining = true;
@@ -601,13 +626,24 @@ export class Presence {
       .then(() => {
         this.joinedRoom = want;
         this.#poseSuppressed = false;
-        // Once per connection: the views follow us from room to room.
-        if (!this.#subscription) this.#subscribe(connection);
-        else this.#dirty = true;
+        // Once per connection: the views follow us from room to room. Guarded
+        // because this runs inside the join's promise chain: anything thrown
+        // here would otherwise be caught below and reported as the server
+        // refusing the room, which since a refusal locks the door would show
+        // a view problem to the visitor as a locked room.
+        try {
+          if (!this.#subscription) this.#subscribe(connection);
+          else this.#dirty = true;
+        } catch (error: unknown) {
+          const why = `presence: the room's views did not open (${message(error)})`;
+          this.#callbacks.onNotice?.(why);
+          console.warn(`[presence] ${why}`);
+        }
         this.#resetPose(); // the first pose of a new room always goes out
       })
       .catch((error: unknown) => {
         // "room full", "room closed", "admin only": an answer, not a hiccup.
+        // Only the reducer's own refusals reach here now.
         this.#refuse(want, message(error));
       })
       .finally(() => {
@@ -619,20 +655,37 @@ export class Presence {
   }
 
   /**
-   * Records a refusal, says why, and falls back to the grove once. Never
-   * re-asks for the refused room by itself.
+   * Records a refusal, locks the door for a while, and leaves the visitor
+   * present nowhere rather than present somewhere they are not.
+   *
+   * The old behaviour was to stay in the room already joined. That is what put
+   * a phantom in the grove: poses kept flowing and the server tagged them with
+   * the room the visitor was recorded in, so their avatar stood in the grove
+   * at the coordinates of the room they had actually walked into -- sixty
+   * metres out through a wall, for the Far Grove. Being visible nowhere is the
+   * honest answer to "you cannot be here", and `leave` clears the pose row so
+   * nothing is left frozen behind.
    */
   #refuse(room: string, reason: string): void {
     if (this.joinedRoom !== null) this.#poseSuppressed = true;
     this.#refused.add(room);
-    this.#wantRoom = this.joinedRoom;
+    this.#setTimer(() => this.#refused.delete(room), REFUSAL_TTL_MS);
+    this.#wantRoom = null;
     const notice = `presence: "${room}" refused (${reason})`;
     this.#callbacks.onNotice?.(notice);
     console.info(`[presence] ${notice}`);
-    if (room !== FALLBACK_ROOM && this.joinedRoom === null && !this.#refused.has(FALLBACK_ROOM)) {
-      this.#callbacks.onNotice?.(`presence: falling back to "${FALLBACK_ROOM}"`);
-      this.#wantRoom = FALLBACK_ROOM;
-      this.#pump();
+    const connection = this.#connection;
+    if (this.joinedRoom !== null && this.joinedRoom !== room && connection) {
+      this.joinedRoom = null;
+      this.#resetPose();
+      if (this.peers.size > 0) {
+        this.peers.clear();
+        this.#callbacks.onPeersChanged?.(this.peers);
+      }
+      connection.reducers.leave({}).catch(() => {
+        // Nothing to retry: the pose stops either way, and a dropped socket
+        // takes the visitor offline server-side within the sweep.
+      });
     }
   }
 
@@ -643,12 +696,31 @@ export class Presence {
     this.#pendingStop = false;
   }
 
-  #roomExists(connection: PresenceConnection, room: string): boolean {
+  /**
+   * Why this visitor may not be in `room` right now, or null if they may.
+   *
+   * Offline, and before the room table has arrived, the answer is always null:
+   * a world that cannot ask the server is not a world with locked doors, and
+   * the reducer stays the authority on anything this cannot see. Capacity is
+   * exactly that -- the client cannot count people in a room it is not in --
+   * so a full room is refused on arrival rather than locked in advance.
+   */
+  whyLocked(room: string): string | null {
+    if (this.#refused.has(room)) return "refused a moment ago";
+    const connection = this.#connection;
+    if (!connection || this.status !== "online") return null;
     const rooms = [...connection.db.room.iter()];
-    // Before the room table has arrived there is nothing to check against;
-    // let the reducer be the authority and report its refusal.
-    if (rooms.length === 0) return true;
-    return rooms.some((r) => r.name === room);
+    if (rooms.length === 0) return null;
+    const row = rooms.find((r) => r.name === room);
+    if (!row) return `no room "${room}" server-side`;
+    if (!row.open) return "room closed";
+    if (row.admin_only && !this.me?.host) return "admin only";
+    return null;
+  }
+
+  /** Whether a visitor may walk into `room`; the doorway is a wall if not. */
+  canEnter(room: string): boolean {
+    return this.whyLocked(room) === null;
   }
 
   #watchTables(connection: PresenceConnection): void {

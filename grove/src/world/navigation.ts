@@ -17,6 +17,13 @@ export interface MoveResult {
   room: string;
   /** True when this step crossed a doorway. */
   crossed: boolean;
+  /**
+   * The room behind a doorway this step was lined up with and `locked` refused,
+   * or null. A locked doorway is a wall, and a wall the body can see through
+   * needs a reason given or it reads as a bug; this is what the caller says it
+   * about. Only set while the body is actually in the opening.
+   */
+  locked: string | null;
 }
 
 interface Span {
@@ -61,6 +68,12 @@ function lateralOf(door: Doorway, x: number, z: number): number {
  * doorway whose opening it lines up with. Pure: the same inputs always give the
  * same answer, which is what the tests check and what keeps desktop, phone and
  * XR locomotion honest with each other.
+ *
+ * `locked` is asked about the room on the far side of each doorway, and a
+ * doorway it refuses behaves exactly like a `closed` one: a wall. The caller
+ * decides what locked means -- in the grove it is a room the server will not
+ * let this visitor into -- and a caller that passes nothing has no locks. The
+ * predicate must be pure for this function to stay pure.
  */
 export function resolveMove(
   mansion: Mansion,
@@ -68,14 +81,16 @@ export function resolveMove(
   from: { x: number; z: number },
   to: { x: number; z: number },
   radius: number = BODY_RADIUS,
+  locked?: (roomId: string) => boolean,
 ): MoveResult {
   const room = mansion.rooms.find((r) => r.id === roomId);
-  if (!room) return { x: to.x, z: to.z, room: roomId, crossed: false };
+  if (!room) return { x: to.x, z: to.z, room: roomId, crossed: false, locked: null };
 
   inset(room, radius, _spanX, _spanZ);
   const span = { x: _spanX, z: _spanZ };
   const open = _open;
   open.length = 0;
+  let lockedRoom: string | null = null;
   for (const door of room.doorways) {
     if (door.closed) continue;
     const neighbour = mansion.rooms.find((r) => r.id === door.to);
@@ -84,6 +99,12 @@ export function resolveMove(
     // going, or a sideways slide along the wall would pop it through.
     if (!inAperture(door, lateralOf(door, from.x, from.z), radius)) continue;
     if (!inAperture(door, lateralOf(door, to.x, to.z), radius)) continue;
+    // Asked only of a doorway the body is walking into, so that a lock is
+    // reported when it is met rather than for every door in the room.
+    if (locked?.(door.to)) {
+      lockedRoom ??= door.to;
+      continue;
+    }
     open.push({ door, neighbour });
     const axis = door.axis === "x" ? 0 : 2;
     const target = door.axis === "x" ? span.x : span.z;
@@ -109,10 +130,10 @@ export function resolveMove(
     // Re-clamp laterally: the neighbour may be a narrower room.
     const nx = door.axis === "x" ? x : clamp(_nSpanX, x);
     const nz = door.axis === "z" ? z : clamp(_nSpanZ, z);
-    return { x: nx, z: nz, room: neighbour.id, crossed: true };
+    return { x: nx, z: nz, room: neighbour.id, crossed: true, locked: lockedRoom };
   }
 
-  return { x, z, room: room.id, crossed: false };
+  return { x, z, room: room.id, crossed: false, locked: lockedRoom };
 }
 
 /** Whether a point is inside a room's footprint (used by teleport targeting). */

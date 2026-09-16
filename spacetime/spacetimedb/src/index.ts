@@ -515,16 +515,39 @@ function sweepNowImpl(ctx: Ctx) {
   }
 }
 
+/**
+ * Every room a visitor can stand in, and what it is called.
+ *
+ * This is the server half of the client's mansion.json: each room there names
+ * the presence room it joins, and joining one that is missing here is refused,
+ * so a visitor walking in sees nobody and is seen by nobody. `init` seeds
+ * these on a first publish and after a --delete-data republish; on a database
+ * that is already live a new room is added with `set_room`, which is why
+ * `pnpm check:rooms` compares this list against both mansion.json and the
+ * live table before a deploy ships a room that exists on one side only.
+ */
+const SEED_ROOMS: ReadonlyArray<{
+  name: string; title: string; admin_only: boolean; capacity: number;
+}> = [
+  { name: 'grove', title: 'The grove', admin_only: false, capacity: 24 },
+  { name: 'greenhouse', title: 'The greenhouse', admin_only: true, capacity: 4 },
+  { name: 'einstruct', title: 'The einstruct room', admin_only: false, capacity: 24 },
+  { name: 'world-engine', title: 'The world-engine room', admin_only: false, capacity: 24 },
+  { name: 'phototroph', title: 'The phototroph room', admin_only: false, capacity: 24 },
+  { name: 'spectre', title: 'The spectre room', admin_only: false, capacity: 24 },
+  { name: 'orangery', title: 'The orangery', admin_only: false, capacity: 24 },
+  { name: 'gallery', title: 'The gallery', admin_only: false, capacity: 24 },
+  { name: 'orrery', title: 'The Orrery', admin_only: false, capacity: 24 },
+  { name: 'terrace', title: 'The Horizon Terrace', admin_only: false, capacity: 24 },
+  { name: 'parterre', title: 'The Meridian Garden', admin_only: false, capacity: 24 },
+  { name: 'orchard-west', title: 'The Western Grove', admin_only: false, capacity: 24 },
+  { name: 'orchard-south', title: 'The Far Grove', admin_only: false, capacity: 24 },
+  { name: 'orchard-east', title: 'The Eastern Grove', admin_only: false, capacity: 24 },
+];
+
 export const init = spacetimedb.init(ctx => {
   if (!ctx.db.admin.identity.find(ctx.sender)) ctx.db.admin.insert({ identity: ctx.sender, added_at: ctx.timestamp });
-  ctx.db.room.insert({ name: 'grove', title: 'The grove', admin_only: false, open: true, capacity: 24 });
-  ctx.db.room.insert({ name: 'greenhouse', title: 'The greenhouse', admin_only: true, open: true, capacity: 4 });
-  // Tree rooms the client's mansion.json knows about. Added on maincloud with
-  // set_room as each room shipped; listed here so a --delete-data republish
-  // keeps them.
-  for (const name of ['einstruct', 'world-engine', 'phototroph', 'spectre']) {
-    ctx.db.room.insert({ name, title: `The ${name} room`, admin_only: false, open: true, capacity: 24 });
-  }
+  for (const room of SEED_ROOMS) ctx.db.room.insert({ ...room, open: true });
   ensureSweep(ctx);
 });
 

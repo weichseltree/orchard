@@ -293,6 +293,29 @@ Only table definitions belong in `schema({...})`. Row and object builders used a
 
 Named runtime exports are reserved for values registered with SpacetimeDB, such as reducers, lifecycle hooks, views, procedures, HTTP exports, and visibility filters. Keep ordinary helper functions and constants unexported.
 
+Breaking that rule is caught late and reported misleadingly. Exporting a plain
+constant makes the loader try to register it, and the module dies at startup:
+
+```
+Error: Uncaught TypeError: exporting something that is not a spacetime export
+  at registerModuleExports (spacetimedb/dist/server/index.mjs:8658)
+```
+
+Three things about finding it:
+
+- **`spacetime build` prints "Build finished successfully" AFTER that error.**
+  The error is thrown during module registration and scrolls past above it, so
+  the last line lies. Grep the output for `error` rather than reading the tail.
+- **`tsc --noEmit` cannot catch this at all.** It is a runtime registration
+  error, not a type error; an exported `const` is perfectly well-typed.
+- **`spacetime generate` does catch it**, failing the same way. In this repo
+  that means `pnpm -C grove run check:bindings` covers it and so does the
+  deploy, which runs that first. Only a hand-built module is exposed.
+
+If something outside the module needs a constant, either keep it unexported and
+have the outside reader parse the source, or put it in its own file that both
+the module and the reader import. Do not export it from the module entry.
+
 ## Imports
 
 Schema builders and module exports come from `spacetimedb/server`. Runtime value classes such as `ScheduleAt`, `Timestamp`, and `ConnectionId` come from the root `spacetimedb` package; `Range` comes from `spacetimedb/server`:
