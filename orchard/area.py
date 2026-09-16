@@ -1,6 +1,6 @@
 """Areas: a linked repository's place in the world, and who rules inside it.
 
-    uv run orchard area link <tree> [--repo URL] [--commit SHA]
+    uv run orchard area link <tree> --licence SPDX [--repo URL] [--commit SHA]
     uv run orchard area unlink <tree>
     uv run orchard area state <tree> draft|live|paused
     uv run orchard area host-pause <tree> on|off
@@ -23,6 +23,13 @@ import subprocess
 from .sync import DB, SPACETIME_DIR, _cli, call
 
 STATES = ("draft", "live", "paused")
+#: The licence gate (SANDBOX-TRUST.md §5): the module's list, mirrored so a wrong id is refused before any call.
+LICENCES = (
+    "MIT", "ISC", "BSD-2-Clause", "BSD-3-Clause", "Apache-2.0", "MPL-2.0",
+    "GPL-2.0-only", "GPL-2.0-or-later", "GPL-3.0-only", "GPL-3.0-or-later",
+    "LGPL-2.1-only", "LGPL-2.1-or-later", "LGPL-3.0-only", "LGPL-3.0-or-later",
+    "AGPL-3.0-only", "AGPL-3.0-or-later", "CC0-1.0", "CC-BY-4.0", "CC-BY-SA-4.0", "Unlicense",
+)
 
 
 def _identity(hex_: str) -> str:
@@ -33,8 +40,10 @@ def _identity(hex_: str) -> str:
     return f"0x{h}"
 
 
-def link(tree: str, repo: str = "", commit: str = "") -> None:
-    call("link_area", tree, repo, commit)
+def link(tree: str, licence: str, repo: str = "", commit: str = "") -> None:
+    if licence not in LICENCES:
+        raise ValueError(f"licence must be an SPDX id that permits redistribution, one of {LICENCES}; not {licence!r}")
+    call("link_area", tree, repo, commit, licence)
 
 
 def unlink(tree: str) -> None:

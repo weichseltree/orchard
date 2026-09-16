@@ -256,7 +256,7 @@ def cmd_sync(a):
 def cmd_area(a):
     from . import area
     if a.what == "link":
-        area.link(a.tree, repo=a.repo, commit=a.commit); print(f"linked {a.tree} (draft)")
+        area.link(a.tree, a.licence, repo=a.repo, commit=a.commit); print(f"linked {a.tree} under {a.licence} (draft)")
     elif a.what == "unlink":
         area.unlink(a.tree); print(f"unlinked {a.tree}")
     elif a.what == "state":
@@ -402,8 +402,9 @@ def main(argv=None):
 
     s = sub.add_parser("area", help="a linked repository's place in the world, and its admins")
     asub = s.add_subparsers(dest="what", required=True)
-    e = asub.add_parser("link", help="link a tree as an area; it opens as a draft, admin-only")
-    e.add_argument("tree"); e.add_argument("--repo", default=""); e.add_argument("--commit", default="")
+    e = asub.add_parser("link", help="link a tree as an area under a redistributable licence; it opens as a draft, admin-only")
+    e.add_argument("tree"); e.add_argument("--licence", required=True, help="SPDX id, e.g. MIT, Apache-2.0, AGPL-3.0-only")
+    e.add_argument("--repo", default=""); e.add_argument("--commit", default="")
     e = asub.add_parser("unlink", help="unlink an area; its admins and sanctions go with it")
     e.add_argument("tree")
     e = asub.add_parser("state", help="draft (admin-only), live, or paused")

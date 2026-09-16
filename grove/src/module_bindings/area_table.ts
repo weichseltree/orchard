@@ -14,6 +14,7 @@ export default __t.row({
   tree: __t.string().primaryKey(),
   repo: __t.string(),
   commit: __t.string(),
+  licence: __t.string(),
   plan: __t.string(),
   state: __t.string(),
   hostPaused: __t.bool().name("host_paused"),

@@ -20,6 +20,7 @@ export const Area = __t.object("Area", {
   tree: __t.string(),
   repo: __t.string(),
   commit: __t.string(),
+  licence: __t.string(),
   plan: __t.string(),
   state: __t.string(),
   hostPaused: __t.bool(),

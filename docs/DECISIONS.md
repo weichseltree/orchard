@@ -356,7 +356,10 @@ Append-only. A decision names the day, the ruling, and the alternative it beat.
   `set_area_state` (an area admin only between `live` and `paused`) and the
   admin-of-the-area reducers for membership and moderation. An area's
   presence room carries the tree's name, so the same name scopes joins,
-  sanctions and, later, the plan. Additive: no table of the old module
+  sanctions and, later, the plan. The licence gate of ruling 7 is on the
+  link: `link_area` takes an SPDX identifier and refuses any that is not on
+  the module's list of licences permitting redistribution, so no licence
+  means no link. Additive: no table of the old module
   changes, so the publish keeps every row. `orchard area ...` is the host's
   command line. Live revocation in the client, the licence gate and the
   fetcher follow, in that order.

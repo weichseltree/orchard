@@ -50,6 +50,18 @@ const POTENTIAL_MAX = 10;
 const EXHIBIT_KINDS = ['clip', 'still', 'master', 'tape', 'planet'] as const;
 const AREA_STATES = ['draft', 'live', 'paused'] as const;
 const COMMIT_MAX = 64;
+/**
+ * The licence gate (SANDBOX-TRUST.md §5, ruling 7): a repository renders in
+ * the world only under a licence that permits redistribution, named by its
+ * SPDX identifier at link time. No licence means all rights reserved, which
+ * is not enough to put someone's prose on a wall we serve.
+ */
+const LICENCES = [
+  'MIT', 'ISC', 'BSD-2-Clause', 'BSD-3-Clause', 'Apache-2.0', 'MPL-2.0',
+  'GPL-2.0-only', 'GPL-2.0-or-later', 'GPL-3.0-only', 'GPL-3.0-or-later',
+  'LGPL-2.1-only', 'LGPL-2.1-or-later', 'LGPL-3.0-only', 'LGPL-3.0-or-later',
+  'AGPL-3.0-only', 'AGPL-3.0-or-later', 'CC0-1.0', 'CC-BY-4.0', 'CC-BY-SA-4.0', 'Unlicense',
+] as const;
 /** Room and tree names: they are ids in URLs, presence strings and bundle paths. */
 const IDENT = /^[a-z0-9][a-z0-9_.-]{0,63}$/;
 /**
@@ -297,6 +309,7 @@ const area = table(
     tree: t.string().primaryKey(),
     repo: t.string(),
     commit: t.string(),
+    licence: t.string(),       // an SPDX identifier from LICENCES, checked at link time
     plan: t.string(),          // where the area's plan is served from; empty while it ships in the build
     state: t.string(),         // draft | live | paused
     host_paused: t.bool(),
@@ -1116,15 +1129,22 @@ export const takeDown = spacetimedb.reducer(
 
 // --- areas (SANDBOX-TRUST.md §1; every reducer checks the host first and the area's membership second) ---
 
-/** The host links a repository as an area; relinking updates its repo and commit and keeps its state. */
+/**
+ * The host links a repository as an area, under a licence that permits
+ * redistribution; relinking updates its repo, commit and licence and keeps
+ * its state.
+ */
 export const linkArea = spacetimedb.reducer(
-  { tree: t.string(), repo: t.string(), commit: t.string() },
-  (ctx, { tree, repo, commit }) => {
+  { tree: t.string(), repo: t.string(), commit: t.string(), licence: t.string() },
+  (ctx, { tree, repo, commit, licence }) => {
     requireAdmin(ctx);
     requireIdent(tree, 'tree');
     if (!ctx.db.tree.name.find(tree)) throw new SenderError('no such tree');
+    if (!(LICENCES as readonly string[]).includes(licence)) {
+      throw new SenderError(`licence must be one that permits redistribution: ${LICENCES.join(', ')}`);
+    }
     const existing = ctx.db.area.tree.find(tree);
-    const clean = { repo: checkUrl(repo, 'repo', true), commit: cleanText(commit, COMMIT_MAX) };
+    const clean = { repo: checkUrl(repo, 'repo', true), commit: cleanText(commit, COMMIT_MAX), licence };
     if (existing) {
       ctx.db.area.tree.update({ ...existing, ...clean, confirmed_at: ctx.timestamp });
       return;

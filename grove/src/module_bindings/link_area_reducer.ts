@@ -14,4 +14,5 @@ export default {
   tree: __t.string(),
   repo: __t.string(),
   commit: __t.string(),
+  licence: __t.string(),
 };

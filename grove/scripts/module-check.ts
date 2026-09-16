@@ -289,9 +289,11 @@ async function main(): Promise<void> {
   // --- areas: a linked repository's admins rule inside it, and nowhere else (SANDBOX-TRUST.md §1) ---
   const hex = (v: Visitor) => JSON.stringify(`0x${v.hex}`);
   admin("set_room", '"probe"', '"probe"', "false", "true", "24");
-  check("a guest cannot link an area", (await refusal(ann.conn.reducers.linkArea({ tree: "probe", repo: "", commit: "" }))).includes("admin only"));
-  check("an area must be a tree the database knows", admin("link_area", '"nosuch"', '""', '""').out.includes("no such tree"));
-  check("the host links an area", admin("link_area", '"probe"', '"https://example.com/probe.git"', '"abc1234"').ok
+  check("a guest cannot link an area", (await refusal(ann.conn.reducers.linkArea({ tree: "probe", repo: "", commit: "", licence: "MIT" }))).includes("admin only"));
+  check("an area must be a tree the database knows", admin("link_area", '"nosuch"', '""', '""', '"MIT"').out.includes("no such tree"));
+  check("the licence gate: no redistributable licence, no link", admin("link_area", '"probe"', '""', '""', '"proprietary"').out.includes("licence must be")
+    && admin("link_area", '"probe"', '""', '""', '""').out.includes("licence must be"));
+  check("the host links an area", admin("link_area", '"probe"', '"https://example.com/probe.git"', '"abc1234"', '"MIT"').ok
     && cli("sql", "-s", "local", DB, "SELECT state FROM area WHERE tree = 'probe'").out.includes("draft"));
   check("a new area opens in an admin-only room: a visitor is turned away while it is a draft",
     (await refusal(bob.conn.reducers.join({ name: "bob", room: "probe" }))).includes("not open yet"));
@@ -317,7 +319,7 @@ async function main(): Promise<void> {
   check("an area kick takes the visitor out of the area's room", !names(ann).includes("bob"));
   check("an area admin cannot touch an admin of the world", (await refusal(ann.conn.reducers.areaBan({ tree: "probe", who: boss.identity, minutes: 0, reason: "x" }))).includes("cannot be sanctioned"));
   admin("upsert_tree", '"probe2"', '"q"', '"active"', '"thesis"', "5");
-  admin("link_area", '"probe2"', '""', '""');
+  admin("link_area", '"probe2"', '""', '""', '"MIT"');
   check("an area admin has no say in another area", (await refusal(ann.conn.reducers.setAreaState({ tree: "probe2", state: "paused" }))).includes("admin of this area only"));
   check("an area admin can pause their own area", (await refusal(ann.conn.reducers.setAreaState({ tree: "probe", state: "paused" }))) === "");
   const eve = await connect();
