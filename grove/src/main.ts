@@ -224,7 +224,17 @@ const presence = new Presence(
       }
     },
     onNotice: (text) => notice(text),
-    onChat: (line) => chat.addLine(line),
+    onChat: (line) => {
+      chat.addLine(line);
+      // A peer's line hangs above their capsule for a few seconds (avatars.ts),
+      // which is the one part of chat a headset can see. The line carries a
+      // name, not an identity; the room's peers resolve it.
+      if (!line.mine) {
+        for (const peer of presence.peers.values()) {
+          if (peer.name === line.name) avatars.speak(peer.identity, line.text);
+        }
+      }
+    },
   },
   // The grove's token service, when this build has one (a human check, then
   // a token that carries the visitor's identity from visit to visit).
