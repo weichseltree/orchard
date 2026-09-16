@@ -10,10 +10,10 @@ depend on it.
 FORMAT's version is `SCHEMA`, which changes only on a breaking change to the
 bytes, and a reader keeps reading every schema it ever wrote.
 """
-from .score import (FIELDS, RATE_HZ, SCHEMA, Frame, NodeState, ScoreIntegrityError,
-                    ScoreReader, ScoreWriter)
+from .score import (FIELDS, LIVE_WINDOW, RATE_HZ, SCHEMA, Frame, LiveScoreWriter, NodeState,
+                    ScoreIntegrityError, ScoreReader, ScoreWriter)
 
 __version__ = "1.0.0"
 
-__all__ = ["SCHEMA", "RATE_HZ", "FIELDS", "NodeState", "Frame", "ScoreWriter",
+__all__ = ["SCHEMA", "RATE_HZ", "FIELDS", "LIVE_WINDOW", "NodeState", "Frame", "ScoreWriter", "LiveScoreWriter",
            "ScoreReader", "ScoreIntegrityError", "__version__"]

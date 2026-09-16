@@ -101,9 +101,21 @@ class FakeNode {
   connect(target: unknown): unknown { return target; }
   disconnect(): void {}
 }
-class FakeGain extends FakeNode { gain = { setValueAtTime() {} }; }
+class FakeGain extends FakeNode { gain = { value: 1, setValueAtTime() {}, setTargetAtTime() {} }; }
+const oscillators: unknown[] = [];
+const fakeParam = () => ({ value: 0, setValueAtTime() {}, setTargetAtTime() {} });
+class FakeOscillator extends FakeNode {
+  type = "sine"; frequency = fakeParam(); detune = fakeParam();
+  constructor() { super(); oscillators.push(this); }
+  start(): void {}
+  stop(): void {}
+}
 class FakeContext {
   currentTime = 0;
+  createOscillator(): FakeOscillator { return new FakeOscillator(); }
+  createBiquadFilter(): FakeNode & { type: string; frequency: ReturnType<typeof fakeParam> } {
+    return Object.assign(new FakeNode(), { type: "lowpass", frequency: fakeParam() });
+  }
   destination = new FakeNode();
   listener = {};
   createGain(): FakeGain { return new FakeGain(); }
@@ -224,5 +236,69 @@ describe("AudioExhibit.load", () => {
     expect(exhibit.bounds.min.toArray()).toEqual([-1, -3.4, -8]);
     expect(exhibit.bounds.max.toArray()).toEqual([9, 6.6, 2]);
     exhibit.dispose();
+  });
+});
+
+describe("per-node voices from the live score (#14)", () => {
+  const score = {
+    schema: "orchard/score/1", rate_hz: 10,
+    frames: [{ index: 1, t: 0.1, nodes: { api: { rate: 5, burstiness: 0, template_entropy: 2, fan_out: 1, anomaly_z: 0, health: 1 } } }],
+  };
+  const byUrl = (answers: Record<string, unknown>) =>
+    vi.fn(async (url: string) => {
+      const file = url.slice(url.lastIndexOf("/") + 1);
+      return file in answers ? new Response(JSON.stringify(answers[file])) : new Response("", { status: 404 });
+    });
+
+  it("builds a synthesised voice for each positioned node when the exhibit publishes a score", async () => {
+    stubBrowser();
+    oscillators.length = 0;
+    const fetchImpl = byUrl({ "topology.json": topology, "score.live.json": score });
+    const exhibit = await AudioExhibit.load({ hanging: hanging(), tier: "desktop", fetch: fetchImpl as unknown as typeof fetch });
+    exhibit.setListener([4, 1.6, -3], [0, 0, -1]);
+    exhibit.reassign();
+    // Two nodes on a desktop budget, each a tone and a tremolo oscillator.
+    expect(oscillators.length).toBe(4);
+    const scoreCall = fetchImpl.mock.calls.find(([url]) => String(url).endsWith("score.live.json")) as unknown as [string, RequestInit];
+    expect(scoreCall[1].cache).toBe("no-store");
+    exhibit.tick();
+    exhibit.dispose();
+  });
+
+  it("keeps the bed alone when there is no score, as before #14", async () => {
+    stubBrowser();
+    oscillators.length = 0;
+    const exhibit = await AudioExhibit.load({ hanging: hanging(), tier: "desktop", fetch: byUrl({ "topology.json": topology }) as unknown as typeof fetch });
+    exhibit.setListener([4, 1.6, -3], [0, 0, -1]);
+    exhibit.reassign();
+    expect(oscillators.length).toBe(0);
+    exhibit.dispose();
+  });
+
+  it("does not build voices over a document that is not a score", async () => {
+    stubBrowser();
+    oscillators.length = 0;
+    const exhibit = await AudioExhibit.load({ hanging: hanging(), tier: "desktop", fetch: byUrl({ "topology.json": topology, "score.live.json": { hello: "world" } }) as unknown as typeof fetch });
+    exhibit.setListener([4, 1.6, -3], [0, 0, -1]);
+    exhibit.reassign();
+    expect(oscillators.length).toBe(0);
+    exhibit.dispose();
+  });
+
+  it("stops polling the score when the exhibit is disposed", async () => {
+    stubBrowser();
+    vi.useFakeTimers();
+    try {
+      const fetchImpl = byUrl({ "topology.json": topology, "score.live.json": score });
+      const exhibit = await AudioExhibit.load({ hanging: hanging(), tier: "desktop", fetch: fetchImpl as unknown as typeof fetch });
+      await vi.advanceTimersByTimeAsync(2_500);
+      const polled = fetchImpl.mock.calls.length;
+      expect(polled).toBeGreaterThan(2);
+      exhibit.dispose();
+      await vi.advanceTimersByTimeAsync(5_000);
+      expect(fetchImpl.mock.calls.length).toBe(polled);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

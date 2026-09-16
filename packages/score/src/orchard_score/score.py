@@ -14,6 +14,7 @@ and nothing else. LogSwarm produces scores; orchard reads and bundles them
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
@@ -84,20 +85,8 @@ class ScoreWriter:
         self._frames.append(Frame(index=index, t=t, nodes=dict(nodes)))
 
     def close(self) -> None:
-        doc = {
-            "schema": SCHEMA,
-            "rate_hz": self.rate_hz,
-            "provider": self.provider,
-            "run_seed": self.run_seed,
-            "fields": list(FIELDS),
-            "nodes": list(self._node_ids),
-            "frames": [
-                {"index": fr.index, "t": fr.t,
-                 "nodes": {nid: ns.as_dict() for nid, ns in fr.nodes.items()}}
-                for fr in self._frames
-            ],
-        }
-        self.path.write_text(json.dumps(doc, sort_keys=True, separators=(",", ":")))
+        self.path.write_text(_encode(self.rate_hz, self.provider, self.run_seed,
+                                     self._node_ids, self._frames))
 
     def __enter__(self):
         return self
@@ -105,6 +94,77 @@ class ScoreWriter:
     def __exit__(self, exc_type, exc, tb):
         if exc_type is None:
             self.close()
+
+
+def _encode(rate_hz, provider, run_seed, node_ids, frames) -> str:
+    """The one serialisation of a score, archived or live."""
+    doc = {
+        "schema": SCHEMA,
+        "rate_hz": rate_hz,
+        "provider": provider,
+        "run_seed": run_seed,
+        "fields": list(FIELDS),
+        "nodes": list(node_ids),
+        "frames": [
+            {"index": fr.index, "t": fr.t,
+             "nodes": {nid: ns.as_dict() for nid, ns in fr.nodes.items()}}
+            for fr in frames
+        ],
+    }
+    return json.dumps(doc, sort_keys=True, separators=(",", ":"))
+
+
+#: Frames kept in `score.live.json`. It must outlast the reader's poll: the
+#: grove polls once a second at a 10 Hz score, so anything over 10 frames
+#: loses nothing; 30 leaves room for a slow poll and a slow edge.
+LIVE_WINDOW = 30
+
+
+class LiveScoreWriter:
+    """Publishes `score.live.json` while a stream runs (#14, AUDIO-STREAM.md §5).
+
+    The SAME `orchard/score/1` document a `ScoreWriter` archives, holding only
+    the most recent `window` frames, rewritten after every frame. No second
+    schema: a reader of the archive reads the live file, and the grove
+    synthesises each positioned node's voice from it.
+
+    Every write replaces the file atomically (write beside it, then
+    `os.replace`), so a reader polling mid-write sees the previous window or
+    the next one, never half of either -- a torn JSON document would silence
+    the whole room for a poll.
+    """
+
+    def __init__(self, path, *, window: int = LIVE_WINDOW, rate_hz: float = RATE_HZ,
+                 provider: str = "", run_seed: int | None = None):
+        if window < 1:
+            raise ValueError("window must be at least one frame")
+        self.path = Path(path)
+        self.window = window
+        self.rate_hz = rate_hz
+        self.provider = provider
+        self.run_seed = run_seed
+        self._frames: list[Frame] = []
+        self._node_ids: list[str] = []
+
+    def append(self, index: int, t: float, nodes: dict[str, NodeState]) -> None:
+        """Adds a frame and publishes the window. Indices only increase, as in
+        the archive; a restarted run is a new writer."""
+        if self._frames and index <= self._frames[-1].index:
+            raise ScoreIntegrityError(
+                f"frame index must increase: {index} after {self._frames[-1].index}")
+        self._frames.append(Frame(index=index, t=t, nodes=dict(nodes)))
+        del self._frames[:-self.window]
+        # The node list names who is in the window now, not everyone ever seen:
+        # a node that left the system should not be listed forever.
+        seen: list[str] = []
+        for fr in self._frames:
+            for nid in fr.nodes:
+                if nid not in seen:
+                    seen.append(nid)
+        self._node_ids = seen
+        tmp = self.path.with_name(f".{self.path.name}.tmp")
+        tmp.write_text(_encode(self.rate_hz, self.provider, self.run_seed, self._node_ids, self._frames))
+        os.replace(tmp, self.path)
 
 
 class ScoreReader:
