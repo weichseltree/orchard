@@ -158,3 +158,50 @@ describe("speaking", () => {
     expect(cache).not.toContain("immutable");
   });
 });
+
+describe("a refusal from Deepgram", () => {
+  const refused = () =>
+    vi.fn(async () =>
+      new Response(
+        JSON.stringify({ err_code: "FORBIDDEN", err_msg: `Insufficient permissions for key ${KEY} in project acme`, request_id: "req-1" }),
+        { status: 403, headers: { "content-type": "application/json" } },
+      ),
+    ) as unknown as typeof fetch;
+
+  it("is logged with its code, so a 502 can be explained without reproducing it", async () => {
+    // The first live failure was a bare 502 nobody could diagnose.
+    const log = vi.fn();
+    const response = await handle(post("/voice/grant"), ENV, deps({ fetch: refused(), log }));
+    expect(response.status).toBe(502);
+    expect(log).toHaveBeenCalledWith({ voice: "grant", status: 403, err_code: "FORBIDDEN", request_id: "req-1" });
+  });
+
+  it("never logs Deepgram's message, which can name the account and the key", async () => {
+    const log = vi.fn();
+    await handle(post("/voice/grant"), ENV, deps({ fetch: refused(), log }));
+    const logged = JSON.stringify(log.mock.calls);
+    expect(logged).not.toContain(KEY);
+    expect(logged).not.toContain("acme");
+    expect(logged).not.toContain("Insufficient");
+  });
+
+  it("still tells the visitor nothing about why", async () => {
+    const response = await handle(post("/voice/grant"), ENV, deps({ fetch: refused(), log: vi.fn() }));
+    const text = await response.text();
+    expect(text).not.toContain("FORBIDDEN");
+    expect(text).not.toContain("req-1");
+  });
+
+  it("logs a speak refusal the same way", async () => {
+    const log = vi.fn();
+    await handle(post("/voice/speak", { text: "hello" }), ENV, deps({ fetch: refused(), log }));
+    expect(log).toHaveBeenCalledWith({ voice: "speak", status: 403, err_code: "FORBIDDEN", request_id: "req-1" });
+  });
+
+  it("logs a refusal whose body is not JSON by its status alone", async () => {
+    const log = vi.fn();
+    const html = vi.fn(async () => new Response("<html>bad gateway</html>", { status: 502 })) as unknown as typeof fetch;
+    await handle(post("/voice/grant"), ENV, deps({ fetch: html, log }));
+    expect(log).toHaveBeenCalledWith({ voice: "grant", status: 502, err_code: null, request_id: null });
+  });
+});
