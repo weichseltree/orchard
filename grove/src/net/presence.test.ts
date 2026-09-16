@@ -197,6 +197,24 @@ describe("join refusal", () => {
     expect(presence.joinedRoom).toBeNull();
   });
 
+  it("stops publishing poses after a refused crossing", async () => {
+    const connection = stubConnection({ refuse: (room) => (room === "einstruct" ? "room full" : null) });
+    let handlers!: TransportHandlers;
+    const presence = new Presence({}, { transport: (h) => (handlers = h), storage: memoryStorage() });
+    presence.connect("grove");
+    handlers.onConnect(connection, "abc", "token");
+    await settle(20);
+    presence.sendPose(0, 0, 0, 0, 1000);
+    const beforeRefusal = connection.moves;
+
+    presence.join("einstruct");
+    await settle(20);
+    presence.sendPose(42, 0, -17, 1, 2000);
+
+    expect(presence.joinedRoom).toBe("grove");
+    expect(connection.moves).toBe(beforeRefusal);
+  });
+
   it("says so and stays put when the room is not in the room table", async () => {
     const notices: string[] = [];
     const connection = stubConnection({ rooms: ["grove"] });
