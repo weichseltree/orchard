@@ -211,6 +211,8 @@ export class Presence {
   #dirty = false;
   #wantRoom: string | null = null;
   #joining = false;
+  /** Stop publishing poses while the body is in a room whose next crossing was refused. */
+  #poseSuppressed = false;
   /** Reused: a pose goes out ten times a second and must not allocate. */
   #lastSent = { x: Number.NaN, y: 0, z: 0, yaw: 0, at: Number.NEGATIVE_INFINITY };
   #pendingStop = false;
@@ -294,7 +296,7 @@ export class Presence {
    */
   sendPose(x: number, y: number, z: number, yaw: number, now: number = performance.now()): void {
     const connection = this.#connection;
-    if (!connection || this.status !== "online" || !this.joinedRoom) return;
+    if (!connection || this.status !== "online" || !this.joinedRoom || this.#poseSuppressed) return;
     const last = this.#lastSent;
     const moved =
       Number.isNaN(last.x) ||
@@ -567,6 +569,7 @@ export class Presence {
     this.#exhibitsApplied = false;
     this.joinedRoom = null;
     this.#joining = false;
+    this.#poseSuppressed = false;
     if (this.peers.size > 0) {
       this.peers.clear();
       this.#callbacks.onPeersChanged?.(this.peers);
@@ -597,6 +600,7 @@ export class Presence {
       .join({ name: this.name, room: want })
       .then(() => {
         this.joinedRoom = want;
+        this.#poseSuppressed = false;
         // Once per connection: the views follow us from room to room.
         if (!this.#subscription) this.#subscribe(connection);
         else this.#dirty = true;
@@ -619,6 +623,7 @@ export class Presence {
    * re-asks for the refused room by itself.
    */
   #refuse(room: string, reason: string): void {
+    if (this.joinedRoom !== null) this.#poseSuppressed = true;
     this.#refused.add(room);
     this.#wantRoom = this.joinedRoom;
     const notice = `presence: "${room}" refused (${reason})`;
