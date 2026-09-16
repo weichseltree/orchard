@@ -10,6 +10,7 @@ import { XrControls, requestXrSession, watchXrSupport } from "./control/xr";
 import { deploymentTokenSource } from "./net/auth";
 import { Avatars } from "./net/avatars";
 import { Presence } from "./net/presence";
+import { ChatPanel } from "./ui/chat";
 import { installAssetMap } from "./render/asset-map";
 import { showOverdraw } from "./render/overdraw";
 import { EYE_HEIGHT, createView } from "./render/view";
@@ -186,10 +187,25 @@ function notice(text: string, sticky = false): void {
   console.info(`[grove] ${text}`);
 }
 
+// Room chat, flat mode only (VR-PRESENCE.md §3). Hidden until the link is up:
+// there is nothing to say to a room you are visiting on your own.
+const chat = new ChatPanel(hudRoot, {
+  onSend: (text) => presence.say(text),
+  // A locked pointer cannot be typed past, so the line takes it and the next
+  // click in the view gives it back (control/desktop.ts re-locks on click).
+  onFocusChange: (open) => {
+    if (open && document.pointerLockElement) document.exitPointerLock();
+  },
+});
+
 const presence = new Presence(
   {
     onStatus: (status, detail) => {
       hud.setMe(presence.me, presence.name);
+      // Chat is only meaningful with a link; single-player has no room to
+      // speak into, and a dead input is worse than no input.
+      if (status === "online") chat.show();
+      else chat.hide();
       if (status === "online") hud.setLink("connected");
       else if (status === "connecting") hud.setLink("connecting…");
       else {
@@ -201,6 +217,7 @@ const presence = new Presence(
       }
     },
     onNotice: (text) => notice(text),
+    onChat: (line) => chat.addLine(line),
   },
   // The grove's token service, when this build has one (a human check, then
   // a token that carries the visitor's identity from visit to visit).
@@ -288,7 +305,10 @@ function boot(): void {
   hud.setHere(1);
   hud.setLink(demo ? "local demo" : "connecting…");
   if (demo) notice("Local demo · synthetic particles", true);
-  else presence.connect(presenceRoomFor(body.room));
+  else {
+    presence.connect(presenceRoomFor(body.room));
+    chat.noteJoined();
+  }
 
   const built = buildWorld({
     mansion,
@@ -591,7 +611,12 @@ view.start((dt, time, rawDt) => {
     void world?.ensureRooms(neighbourhood(mansion, body.crossedInto)).catch((error: unknown) =>
       notice(`This room did not finish loading: ${message(error)}. Reload to try again.`, true));
     bodyPlaced = true;
-    if (!demo) presence.join(presenceRoomFor(body.crossedInto));
+    if (!demo) {
+      presence.join(presenceRoomFor(body.crossedInto));
+      // The module stamps its chat clock on join, so the first line straight
+      // after crossing would be refused; the panel holds the gap instead.
+      chat.noteJoined();
+    }
     guide.setRoom(body.crossedInto);
     notice(roomById(mansion, body.crossedInto)?.title ?? body.crossedInto);
   }
