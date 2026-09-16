@@ -214,7 +214,8 @@ async function main(): Promise<void> {
   // Everything she says goes through one queue (src/faye/listen.ts).
   const speaker = new Speaker((text) => conn.reducers.say({ text }), {
     gapMs: CHAT_MIN_GAP_MS + 200,
-    now: () => Date.now(),
+    // Monotonic: a wall clock stepped forward by NTP would end a gap early.
+    now: () => performance.now(),
     sleep,
     onRefused: (text, error) => {
       console.warn(`faye: "${text}" refused (${error instanceof Error ? error.message : String(error)})`);
@@ -262,7 +263,7 @@ async function main(): Promise<void> {
   // hold after it: the handler is live, and a reply to a line said while the
   // join is in flight must not go out inside the gap `join` just stamped.
   const joining = conn.reducers.join({ name: args.name, room: args.room });
-  speaker.holdUntil(joining.then(() => speaker.heldUntilGap(Date.now())));
+  speaker.holdUntil(joining.then(() => speaker.heldUntilGap(performance.now())));
   await joining;
   console.log(`faye: standing in "${args.room}" as "${args.name}"`);
   if (args.name.length > 24) {
@@ -357,8 +358,21 @@ async function main(): Promise<void> {
 
   let pollTimer: ReturnType<typeof setInterval> | null = null;
   if (pollSeconds > 0) {
-    void pollOnce();
-    pollTimer = setInterval(() => void pollOnce(), pollSeconds * 1000);
+    // One poll at a time. Each can queue announcements that take 0.9 s apiece
+    // to say; with a short --poll, overlapping polls would pile them up behind
+    // one another faster than she can speak, with every reply behind them.
+    let polling = false;
+    const pollAlone = async (): Promise<void> => {
+      if (polling) return;
+      polling = true;
+      try {
+        await pollOnce();
+      } finally {
+        polling = false;
+      }
+    };
+    void pollAlone();
+    pollTimer = setInterval(() => void pollAlone(), pollSeconds * 1000);
     console.log(`faye: watching the compute every ${pollSeconds}s`);
   }
 
