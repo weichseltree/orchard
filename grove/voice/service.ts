@@ -39,6 +39,8 @@ export type VerifyToken = (token: string, issuer: string) => Promise<boolean>;
 export interface VoiceDeps {
   fetch: typeof fetch;
   verify: VerifyToken;
+  /** Server-side only; never reaches the visitor. `console.error` in the Function. */
+  log?: (entry: Record<string, unknown>) => void;
   now?: () => number;
 }
 
@@ -93,6 +95,30 @@ export const LISTEN_PARAMS: Readonly<Record<string, string>> = {
 
 export function listenUrl(params: Record<string, string> = LISTEN_PARAMS): string {
   return `${LISTEN_URL}?${new URLSearchParams(params).toString()}`;
+}
+
+/**
+ * What reaches the server log when Deepgram refuses, and nothing more.
+ *
+ * The visitor never sees Deepgram's reply -- its `err_msg` can name the
+ * account or the key's label. But hiding it everywhere made a refusal
+ * undiagnosable: the first live failure was a 502 that nobody could explain
+ * without reproducing the call by hand. Deepgram's `err_code` is a fixed
+ * vocabulary (`FORBIDDEN`, `INVALID_AUTH`, ...), and together with the HTTP
+ * status and `request_id` it is enough to know what happened, and to quote to
+ * Deepgram's support. Read it with `wrangler pages deployment tail`.
+ */
+export async function upstreamFailure(route: string, response: Response): Promise<Record<string, unknown>> {
+  let code: unknown = null;
+  let requestId: unknown = null;
+  try {
+    const body = (await response.json()) as { err_code?: unknown; request_id?: unknown };
+    code = typeof body.err_code === "string" ? body.err_code : null;
+    requestId = typeof body.request_id === "string" ? body.request_id : null;
+  } catch {
+    // Not JSON; the status still says something.
+  }
+  return { voice: route, status: response.status, err_code: code, request_id: requestId };
 }
 
 function json(body: unknown, status: number, cache = "no-store"): Response {
@@ -151,7 +177,9 @@ async function grant(env: VoiceEnv, deps: VoiceDeps): Promise<Response> {
     body: JSON.stringify({ ttl_seconds: GRANT_TTL_S }),
   });
   if (!response.ok) {
-    // Never pass Deepgram's body through: it can name the account.
+    // Never pass Deepgram's body through: it can name the account. Log the
+    // parts that cannot (see `upstreamFailure`).
+    deps.log?.(await upstreamFailure("grant", response));
     return json({ error: "the transcriber would not answer" }, 502);
   }
   const body = (await response.json()) as { access_token?: string; expires_in?: number };
@@ -182,7 +210,10 @@ async function speak(request: Request, env: VoiceEnv, deps: VoiceDeps): Promise<
     },
     body: JSON.stringify({ text }),
   });
-  if (!response.ok) return json({ error: "the voice would not answer" }, 502);
+  if (!response.ok) {
+    deps.log?.(await upstreamFailure("speak", response));
+    return json({ error: "the voice would not answer" }, 502);
+  }
 
   // Her lines are deterministic and few (`src/faye/reply.ts`), so the same
   // sentence is the same audio every time and may be held for a long while.

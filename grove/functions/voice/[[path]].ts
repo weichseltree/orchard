@@ -16,5 +16,6 @@ export const onRequest = (context: {
 }): Promise<Response> =>
   handle(context.request, context.env, {
     fetch: (input, init) => fetch(input, init),
+    log: (entry) => console.error(JSON.stringify(entry)),
     verify: async (token) => (await verifyLive(context.request, context.env, token)) !== null,
   });
