@@ -29,7 +29,8 @@ Numbers marked **budget** are proposals, not measurements.
 | A visitor SEES a world event | **works** — `broadcast` is subscribed and gated (`world/broadcast.ts`) |
 | Her speech in an immersive session | **works** — the capsule panel is scene geometry, so a headset shows it |
 | The chat LOG in an immersive session | **works** — a canvas panel, visitor-locked, built on the first session |
-| A visitor SPEAKS with their voice | **works in flat mode** — hold-to-talk in the chat panel; still no way to start it in an immersive session (§6) |
+| A visitor SPEAKS with their voice | **works in flat mode** — hold-to-talk in the chat panel |
+| A visitor ASKS her something in a headset | **works** — a wrist menu of four asks: left B/Y, right stick, trigger (§6 option 2) |
 
 Updated 2026-09-16. Stage one and most of stage two are done; what is left is
 the scrolling log in a headset, and the wiring that would let a person speak.
@@ -199,16 +200,21 @@ not local.
   redrawn only when the text changes.
 - `grove/src/voice/browser.ts`, `support.ts`, `ui/chat.ts` — §6's hold-to-talk.
 
-Not landed: every cue but `notice`, and any way to START speaking inside an
-immersive session — the button is DOM, so a headset can now READ everything
-and still cannot talk. §6's menu of canned asks (ruling 3) is the next step
-and does not wait on anything.
+- `grove/src/ui/ask-menu.ts`, `wrist-menu.ts` — §6 option 2, ruled in by
+  Manuel on 2026-09-16: four asks on the left wrist. Left B/Y opens it, the
+  right stick's vertical steps, the trigger asks — and while it is open the
+  trigger does NOT toggle playback, or choosing a question would also pause the
+  tape behind it. A test holds every entry to the intent `intentOf` reads.
+
+Not landed: every cue but `notice`, and free speech in a headset, which is
+§6 option 3 (voice without the DOM button) and still to come.
 
 Nothing here is published to maincloud, `DEEPGRAM_API_KEY` is not in secrets,
 and the CSP does not yet allow the Deepgram socket.
 
-**The startup budget is nearly spent.** `startupJsGzipBytes` is 214,587
-against a 215,000 ceiling: 413 bytes. Both features added here are loaded on
+**The startup budget.** The ceiling was 215,000 when this was written and
+voice alone would have broken it; it is now 230,000 (raised for the palace's
+second pass, see `quality/budgets.json`) and this branch measures 222,156. Both features added here are loaded on
 demand — voice on the first press, the log panel on the first session — and
 that deferral is what keeps it under. The next thing on the startup path needs
 either its own deferral or a deliberate ruling on the ceiling.

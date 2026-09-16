@@ -14,6 +14,7 @@ import {
 import type { Renderer } from "../render/types";
 import { PALETTE } from "../config";
 import { deadzone, type Commands, type InputState } from "./input";
+import { stickStep, type AskEvent } from "../ui/ask-menu";
 
 // WebXR: smooth locomotion on the left stick, teleport on squeeze, the tape's
 // clock on the right stick, play/pause on the trigger and the provenance panel
@@ -34,6 +35,8 @@ const SESSION_INIT: XRSessionInit = {
 const BUTTON_TRIGGER = 0;
 const BUTTON_SQUEEZE = 1;
 const BUTTON_MENU = 4;
+/** B/Y: the ask menu (ui/ask-menu.ts). The only face button left free. */
+const BUTTON_ASK = 5;
 
 export async function isXrSupported(): Promise<boolean> {
   if (!navigator.xr) return false;
@@ -83,6 +86,15 @@ export interface XrControlsOptions {
   /** Called on a teleport release with the world-space floor point. */
   onTeleport: (x: number, z: number) => void;
   onNotice?: (message: string) => void;
+  /**
+   * The ask menu, when this page has one. While it is open the right trigger
+   * chooses an ask INSTEAD of toggling playback -- otherwise choosing a
+   * question would also pause the tape behind it.
+   */
+  askMenu?: {
+    isOpen(): boolean;
+    onEvent(event: AskEvent): void;
+  };
 }
 
 export class XrControls {
@@ -104,6 +116,9 @@ export class XrControls {
   #raycaster = new Raycaster();
   #warnedNoGamepad = false;
   #onNotice: ((message: string) => void) | undefined;
+  #askMenu: XrControlsOptions["askMenu"];
+  /** The right stick's vertical axis last frame, for one step per push. */
+  #askAxis = 0;
   #origin = new Vector3();
   #direction = new Vector3();
 
@@ -114,6 +129,7 @@ export class XrControls {
     this.#commands = options.commands;
     this.#onTeleport = options.onTeleport;
     this.#onNotice = options.onNotice;
+    this.#askMenu = options.askMenu;
 
     for (let i = 0; i < 2; i++) {
       const controller = options.renderer.xr.getController(i);
@@ -195,8 +211,20 @@ export class XrControls {
     // Snap turn on the right stick's vertical is a nausea trap; turning is
     // done with the neck in XR, so the right stick only scrubs.
 
+    const askMenu = this.#askMenu;
+    if (askMenu && this.#edge("ask", pressed(left, BUTTON_ASK) || pressed(right, BUTTON_ASK))) {
+      askMenu.onEvent("toggle");
+    }
+    const askAxis = rightAxes[3] ?? 0;
+    if (askMenu?.isOpen()) {
+      const step = stickStep(this.#askAxis, askAxis);
+      if (step) askMenu.onEvent(step);
+    }
+    this.#askAxis = askAxis;
+
     if (this.#edge("trigger", pressed(right, BUTTON_TRIGGER) || pressed(left, BUTTON_TRIGGER))) {
-      this.#commands.togglePlay();
+      if (askMenu?.isOpen()) askMenu.onEvent("choose");
+      else this.#commands.togglePlay();
     }
     if (this.#edge("menu", pressed(right, BUTTON_MENU) || pressed(left, BUTTON_MENU))) {
       this.#commands.toggleProvenance();
@@ -228,6 +256,15 @@ export class XrControls {
     this.marker.visible = false;
     for (const ray of this.#rays) ray.visible = false;
     this.#pressed.clear();
+    this.#askAxis = 0;
+    // A menu left open across sessions would come back holding a highlight
+    // nobody remembers choosing.
+    this.#askMenu?.onEvent("close");
+  }
+
+  /** The controller three is driving for a hand, for things worn on the wrist. */
+  controllerFor(hand: "left" | "right"): Group | undefined {
+    return this.#byHand.get(hand) ?? this.#controllers[hand === "left" ? 0 : 1];
   }
 
   dispose(): void {

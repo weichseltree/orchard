@@ -12,6 +12,8 @@ import { Avatars } from "./net/avatars";
 import { knowsCue } from "./world/broadcast";
 import { VOICE_URL } from "./config";
 import type { WorldChat } from "./ui/world-chat";
+import type { WristMenu } from "./ui/wrist-menu";
+import { CLOSED, stepAsk, type AskEvent } from "./ui/ask-menu";
 import type { ChatEntry } from "./ui/chat-log";
 import { voiceSupported } from "./voice/support";
 import type { VoiceCapture } from "./voice/capture";
@@ -325,15 +327,35 @@ let lastLinkDetail = "";
 let worldChat: WorldChat | null = null;
 let worldChatLoad: Promise<void> | null = null;
 let chatLines: readonly ChatEntry[] = [];
+// The ask menu: the only way to say anything from inside a headset, since the
+// microphone button is DOM (ui/ask-menu.ts). Its state lives here and XR
+// controls only report inputs, so the menu's rules stay pure and tested.
+let askState = CLOSED;
+let wristMenu: WristMenu | null = null;
+function onAskEvent(event: AskEvent): void {
+  const step = stepAsk(askState, event);
+  askState = step.state;
+  wristMenu?.wear(xr.controllerFor("left"));
+  wristMenu?.show(askState);
+  // Through the typed path, like a spoken line: the rate limit, the clip, and
+  // a refusal that lands in the log a headset can read rather than nowhere.
+  if (step.say) chat.sayHeard(step.say);
+}
+
 view.renderer.xr.addEventListener("sessionstart", () => {
-  worldChatLoad ??= import("./ui/world-chat").then(({ WorldChat: Panel }) => {
-    const panel = new Panel();
-    // Whatever was already said, so entering VR mid-conversation is not a
-    // blank panel until the next line.
-    panel.setLines(chatLines);
-    view.scene.add(panel.panel);
-    worldChat = panel;
-  });
+  worldChatLoad ??= Promise.all([import("./ui/world-chat"), import("./ui/wrist-menu")]).then(
+    ([{ WorldChat: Panel }, { WristMenu: Menu }]) => {
+      const panel = new Panel();
+      // Whatever was already said, so entering VR mid-conversation is not a
+      // blank panel until the next line.
+      panel.setLines(chatLines);
+      view.scene.add(panel.panel);
+      worldChat = panel;
+      wristMenu = new Menu();
+      wristMenu.wear(xr.controllerFor("left"));
+      wristMenu.show(askState);
+    },
+  );
 });
 
 let perfOpen = false;
@@ -387,6 +409,10 @@ const xr = new XrControls({
     if (!teleport(body, mansion, x, z, lockedRoom)) notice("nothing to stand on there");
   },
   onNotice: (text) => notice(text),
+  askMenu: {
+    isOpen: () => askState.open,
+    onEvent: onAskEvent,
+  },
 });
 view.scene.add(xr.marker);
 
