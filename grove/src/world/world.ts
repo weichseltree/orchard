@@ -16,6 +16,7 @@ import type { DeviceTier } from "../tape/bundle";
 import type { StillPanel } from "../media/still";
 import type { VideoWall } from "../media/videowall";
 import type { PlanetExhibit } from "./planet-exhibit";
+import type { AudioExhibit } from "./audio-exhibit";
 import { StillBundleSchema, VideoBundleSchema } from "../tape/bundle";
 import type { Provenance } from "../ui/provenance";
 import { bundleBaseOf, pickExhibit, type ExhibitRow } from "./exhibits";
@@ -67,6 +68,12 @@ export interface BuiltWorld {
   stills: StillPanel[];
   /** spectre's cutaway worlds, wherever they stand. */
   planets: PlanetExhibit[];
+  /**
+   * Live audio exhibits. The frame loop hands each one the visitor's head
+   * (`setListener`) and re-ranks its sources a few times a second
+   * (`reassign`); nothing else drives them.
+   */
+  audios: AudioExhibit[];
   /** Streams the start room's neighbourhood in. Resolves when everything that can load has. */
   load(): Promise<void>;
   /** Loads more rooms (a doorway crossing widens the neighbourhood); rooms already loaded are skipped. */
@@ -245,6 +252,36 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
   function loadHangings(room: Room, exhibits: ExhibitRow[] | null): Promise<void>[] {
     const pending: Promise<void>[] = [];
     for (const hanging of room.hangings) {
+      // A live audio exhibit is resolved before anything else, because it is
+      // the one hanging that is NOT a bundle: it is a name with no bytes
+      // behind it (AUDIO-STREAM.md §1), so `bundleUrl` has nothing to say
+      // about it. An archived `audio` bundle still carries a bundle ref and
+      // takes the ordinary path below.
+      if (hanging.kind === "audio") {
+        const archived = hanging.bundle ? bundleUrl(hanging.bundle, exhibits) : null;
+        if (hanging.bundle && archived === null) {
+          const ref = hanging.bundle.exhibit;
+          onNotice(`${hanging.id}: nothing is hung on ${ref?.tree} as ${ref?.kind} yet`);
+          continue;
+        }
+        pending.push(
+          import("./audio-exhibit").then(({ AudioExhibit }) => AudioExhibit.load({
+            hanging, archivedBase: archived, tier: device.tier, onNotice,
+          }))
+            .then((audio) => {
+              world.audios.push(audio);
+              roomOf.set(audio, room.id);
+              provenance.register({
+                id: `audio:${hanging.id}`,
+                title: hanging.title,
+                bounds: audio.bounds,
+                read: () => audio.provenance(),
+              });
+            })
+            .catch((error: unknown) => onNotice(`audio ${hanging.id}: ${message(error)}`)),
+        );
+        continue;
+      }
       const base = bundleUrl(hanging.bundle, exhibits);
       if (base === null) {
         const ref = hanging.bundle.exhibit;
@@ -337,7 +374,9 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
       await ensureShell(room);
       let hangings = hangingLoads.get(id);
       if (!hangings) {
-        const wantsExhibits = room.hangings.some((hanging) => hanging.bundle.exhibit !== undefined);
+        // A live audio hanging has no bundle at all, so it never wants the
+        // exhibit table; an archived one may.
+        const wantsExhibits = room.hangings.some((hanging) => hanging.bundle?.exhibit !== undefined);
         hangings = (wantsExhibits ? exhibitsOnce() : Promise.resolve(null))
           .then((exhibits) => Promise.all(loadHangings(room, exhibits)))
           .then(() => undefined);
@@ -360,6 +399,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
     },
     stills: [],
     planets: [],
+    audios: [],
     load: () => ensureRooms(neighbourhood(mansion, options.startRoom ?? mansion.start)),
     ensureRooms: (ids) => ensureRooms(ids),
     setScaleVisible(scale) {
@@ -373,6 +413,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
       for (const video of world.videos) video.dispose();
       for (const still of world.stills) still.dispose();
       for (const planet of world.planets) planet.dispose();
+      for (const audio of world.audios) audio.dispose();
     },
   };
   return world;

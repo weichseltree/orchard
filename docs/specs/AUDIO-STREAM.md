@@ -97,12 +97,95 @@ that space onto its own, and each node becomes a positioned source. A listener
 turns their head and places a service. That is the whole reason this is worth
 doing in VR rather than in a browser tab.
 
-`DEVICE-TIERS.md` now carries a positioned-audio-sources row: 16 on
-`vr-quest`, 32 on `vr-high` and desktop, 8 on `phone`, with the rest folded
-into one non-positioned bed (**budget**, all four, unmeasured — §7 item 2).
-The first landing of `grove/src/audio/` plays the non-positioned bed only;
-positioned per-node sources and the topology mapping are follow-up work,
-gated on that measurement.
+**The topology is a document, `orchard/topology/1`.** It is published beside
+the score, under the exhibit's own name, and it is part of the live exhibit —
+so it is never cached, never hashed, and fetched `no-store`. An `audio` bundle
+archives its topology the way it archives its score.
+
+```
+audio/live/<provider>/<stream-id>/topology.json   the nodes and the DAG
+audio/live/<provider>/<stream-id>/live.m3u8       the LL-HLS playlist (§3)
+```
+
+Every node carries an id, a `label` written for a listener (never the id and
+never a score field name — LAWS 5), and a position in the **unit cube**: each
+coordinate in [0, 1], `y` up, so a provider that lays its DAG out flat
+publishes a constant `y` and gets a floor plan rather than a wall. Edges are
+carried and must name published nodes.
+
+The room maps that cube onto itself. The hanging owns the map — centre, one
+`sizeMeters` and a turn about `y` — the way a `planet` hanging owns
+`radiusMeters`, so one topology stands small in a study and large in a hall
+without the provider knowing which room it is in. The map is **uniform on all
+three axes on purpose**: a non-uniform one would make a node's apparent
+direction depend on which way the room is long, and a direction meaning
+something is the entire point. A low room wants a smaller cube, not a
+squashed one.
+
+**A missing topology is not a failure.** It means the room does not know where
+the nodes are, so every node folds into the bed — which is what the room
+played before any of this. A dead topology is silence in the same way a dead
+stream is (§3).
+
+### The two DEVICE-TIERS rows disagree, and the cap is a ladder
+
+`DEVICE-TIERS.md` carries a positioned-audio-sources row — 16 on `vr-quest`,
+32 on `vr-high` and desktop, 8 on `phone` — and separately an
+`audio: convolvers / panners / HRTF` row. They do not agree. The second gives
+Quest 2 and Pico 4, both `vr-quest`, **six** panners and **no HRTF at all**, so
+`vr-quest` cannot have sixteen HRTF-panned sources: a tier budget has to hold
+on the weakest device in the tier.
+
+They are reconciled as a ladder rather than by picking one, because being
+positioned and being a `PannerNode` are not the same cost. Each node takes the
+best rung the budget still has room for, nearest listener first, and
+everything past the last rung folds into the bed:
+
+| rung | what it is | what it gives |
+|---|---|---|
+| `hrtf` | `PannerNode`, `panningModel: "HRTF"` | externalised, elevation |
+| `panner` | `PannerNode`, `panningModel: "equalpower"` | azimuth and distance |
+| `stereo` | `StereoPannerNode` on the listener-relative azimuth | left and right only |
+| `bed` | not positioned | the §5 bed |
+
+| tier | positioned | panners | HRTF |
+|---|---:|---:|---:|
+| `vr-quest` | 16 | 6 | 0 |
+| `vr-high` | 32 | 8 | 2 |
+| `phone` | 8 | 4 | 0 |
+| `desktop` | 32 | 16 | 4 |
+
+**On a Quest a node is placed by azimuth and distance, not externalised.**
+Quest 3 alone would allow two HRTF sources; Quest 2 and Pico 4 are in the tier
+and allow none. That is worth saying out loud because it is the flagship
+device for this whole idea.
+
+Every number above is still a **budget**. Nothing has been measured on a
+headset, and §7 item 2 now owes two numbers per tier rather than one.
+
+Rungs are assigned by **distance alone**, with hysteresis. A node's placed
+position never moves, so a distance ranking changes only when the visitor
+moves, which is slow; ranking by how active a node is would reshuffle the
+rungs at the score's 10 Hz and click on every reshuffle — and which activity
+deserves a rung is a sonification judgement, which is the provider's (§4), not
+the client's allocator's.
+
+### What is landed, and the one thing that is not
+
+Landed in `grove/src/audio/` and `grove/src/world/audio-exhibit.ts`: the
+topology document and its schema, the unit-cube map, the per-tier ladder and
+its selection, the Web Audio graph with a listener that follows the visitor's
+head at frame rate and re-ranks four times a second, the `audio` hanging kind,
+and the bed routed through that graph so one master gain governs the exhibit.
+
+Not landed, and **not orchard's to invent**: what a positioned source actually
+plays. §4 makes sonification the provider's and says it is deterministic and
+seeded so an archived bundle's hash means what a listener heard; a timbre
+invented in the client would be a second, unhashed sonification of the same
+run. So the field positions whatever voices it is given and ships none. Until
+that is settled the room plays the bed, positioned by nobody — which is
+exactly the behaviour §5 already described as the fallback. §8 carries the
+ruling this needs.
 
 ## 6. Ledger
 
@@ -126,7 +209,9 @@ Everything above is a proposal. Before any of it is a fact:
 
 1. Glass-to-ear latency measured on a real stream, on a headset and a phone,
    against §3's budget.
-2. Simultaneous positioned-source counts measured per tier, against §5's.
+2. Simultaneous positioned-source counts measured per tier, against §5's —
+   now **two** numbers per tier, positioned and panners, since §5's ladder
+   separates them, plus whether HRTF is affordable at all on `vr-quest`.
 3. One end-to-end run: a repo observed, a score recorded, an `audio` bundle
    produced, its hash reproduced from the score on a second machine.
 4. A silence measurement over a busy hour and an idle hour, against §4's 20%.
@@ -142,13 +227,43 @@ exhibit is the honest first venue.
 
 - `PACKAGES.md`: the exhibit definition in §1, and `audio` added to the kind
   list in §3. **Landed.**
-- `grove/`: service-worker pass-through for exhibit names (**landed**); a
-  positioned-source exhibit (**deferred**, §5); the fall-behind and
-  dead-stream behaviour in §3 (**landed**, minimal player).
+- `grove/`: service-worker pass-through for exhibit names (**landed**); the
+  fall-behind and dead-stream behaviour in §3 (**landed**, minimal player);
+  the positioned-source exhibit of §5 — topology document, unit-cube map,
+  per-tier ladder, the field and its listener, the `audio` hanging kind
+  (**landed**, `grove/src/audio/`, `grove/src/world/audio-exhibit.ts`),
+  **except** what a positioned source plays, which §5 says is not orchard's
+  to invent and which the ruling below is about.
+- **Nothing hangs yet.** `mansion.json` carries no `audio` hanging, and will
+  not until §7's last paragraph is satisfied: no stream from an observed repo
+  hangs in a public room before LogSwarm has a redaction and consent story.
+  The schema accepts one; the palace offers none.
 - `DEVICE-TIERS.md`: an audio-source row per tier. **Landed.**
 - A ledger meter for stream-hours. **Landed** on the reporting side
   (`orchard/ledger.py`); the encode/TTS side that appends usage entries is
   outside this repo.
+- **A ruling on where a positioned node's sound comes from.** This is the one
+  thing §5 cannot finish without, and it forks three ways:
+
+  1. **The client synthesises a voice per node from a live score feed.** One
+     stream, one decoder, works on every tier today. It costs the claim in §4:
+     what a visitor hears positioned is not the provider's seeded sonification,
+     so the archived bundle's hash no longer means what was heard. It also
+     needs a live score transport, which no section of this spec defines.
+  2. **The provider publishes a track per node.** Honest — the sonification
+     stays the provider's — and dead on arrival: `DEVICE-TIERS.md` budgets one
+     decoder, and six to sixteen concurrent hls.js sessions on a Quest is not
+     a thing.
+  3. **One multi-channel or Ambisonic stream, demuxed or decoded client-side.**
+     One decoder, the sonification stays the provider's, head-tracking works.
+     Ambisonics gives up the per-node cap entirely (the field is fixed, so a
+     tier cannot drop nodes into the bed) and a visitor cannot walk up to a
+     node; multi-channel Opus over MSE is not reliably a browser feature.
+
+  Nothing is built for any of them beyond the seam: `grove/src/audio/field.ts`
+  positions whatever voices it is handed and ships none. **(1) is the only one
+  buildable today and the only one that breaks §4**, which is why it is a
+  ruling and not a choice made in code.
 - A decision on whether LogSwarm is scouted and planted as a tree, and whether
   the score schema lives in `orchard/packages/` where both repos can pin it by
   tag per `PACKAGES.md` §2. **The schema's home is decided**: `orchard/packages/score/`.

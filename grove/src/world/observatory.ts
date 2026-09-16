@@ -150,7 +150,13 @@ class Builder {
 
 /** How wide a hanging is along its wall, for keeping the wall panels clear of it. */
 function hangingWidth(h: Room["hangings"][number]): number {
-  return h.kind === "tape" ? h.longSideMeters : h.kind === "planet" ? h.radiusMeters * 2 : h.widthMeters;
+  if (h.kind === "tape") return h.longSideMeters;
+  if (h.kind === "planet") return h.radiusMeters * 2;
+  // A live audio exhibit is a volume standing in the room, not a thing on a
+  // wall (audio/topology.ts places its topology around the visitor), so it
+  // clears no wall panel.
+  if (h.kind === "audio") return 0;
+  return h.widthMeters;
 }
 
 interface Wall { axis: "x" | "z"; at: number; inward: number; min: number; max: number }
