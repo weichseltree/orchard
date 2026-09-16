@@ -268,7 +268,7 @@ async function main(): Promise<void> {
   // checks every visitor-facing string itself.
   const url = '"https://media.weichseltree.com/abc/still.png"';
   admin("upsert_tree", '"probe"', '"Does it hold?"', '"active"', '"thesis"', "5");
-  check("hang refuses an exhibit kind the grove cannot show", admin("hang", '"probe"', '"planet"', '"t"', url, '""', '""').out.includes("kind must be one of"));
+  check("hang refuses an exhibit kind the grove cannot show", admin("hang", '"probe"', '"splat"', '"t"', url, '""', '""').out.includes("kind must be one of"));
   check("hang refuses a media URL that is not https", admin("hang", '"probe"', '"still"', '"t"', '"javascript:alert(1)"', '""', '""').out.includes("url must be an https URL"));
   check("hang refuses a title that is only invisible characters", admin("hang", '"probe"', '"still"', '"\\u202e\\u200b"', url, '""', '""').out.includes("title is empty"));
   admin("hang", '"probe"', '"still"', '"evil\\u202etxt.exe"', url, '""', '""');
