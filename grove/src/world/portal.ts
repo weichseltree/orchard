@@ -39,7 +39,7 @@ import {
   type IntentState,
 } from "./portal-intent";
 import { PORTAL_FRAGMENT, PORTAL_MELD, PORTAL_TINT, PORTAL_VERTEX } from "./portal-shader";
-import { SEALED_TINT, sealedLens } from "./observatory";
+import { SEALED_TINT, sealedLens } from "./sealed";
 
 // A portal is a blending of two spacetimes, not a plane with a frame. Each
 // end is a soft sphere: from outside it is a lens with no edge onto the
@@ -579,8 +579,12 @@ export class PortalSystem {
         hidden.push(child);
       }
     }
-    const portalsWereVisible = this.group.visible;
-    this.group.visible = false;
+    // The ends go, not the group: a sealed door's lens is part of the far room's look.
+    const endsWereVisible: Mesh[] = [];
+    for (const mesh of this.#meshes.values()) {
+      if (mesh.visible) endsWereVisible.push(mesh);
+      mesh.visible = false;
+    }
     setScaleVisible(end.toScale);
     const previous = renderer.getRenderTarget();
     renderer.setRenderTarget(target);
@@ -588,7 +592,7 @@ export class PortalSystem {
     renderer.render(scene, far);
     renderer.setRenderTarget(previous);
     setScaleVisible(end.scale);
-    this.group.visible = portalsWereVisible;
+    for (const mesh of endsWereVisible) mesh.visible = true;
     for (const child of hidden) child.visible = true;
     this.#farRenders += 1;
 

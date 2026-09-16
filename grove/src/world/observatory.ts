@@ -9,6 +9,7 @@ import type { RoomShell } from "./rooms";
 import { STAIR_MARGIN, STAIR_TREAD, flightsOf, moundHeight, stairSteps, type Flight } from "./terrain";
 import { LIGHT_FIELD_GLSL, applyLightField, bakeLightField, lightFieldUniforms, litRooms, type Emitter, type LightField } from "./lightfield";
 import { PORTAL_TINT } from "./portal-shader";
+import { SEALED_TINT, sealedLens } from "./sealed";
 
 // The palace's architecture, generated at runtime from mansion.json: a
 // nocturne of mineral walls, brass and luminous inlays. Rooms may stand at
@@ -139,26 +140,6 @@ export function emittersOf(mansion: Mansion): Emitter[] {
     }
   }
   return out;
-}
-
-/** The sealed doors' lens and glow: the portal's glass, dimmed, for a room not yet open. */
-export const SEALED_TINT = "#4b5f72";
-/** A closed doorway's lens fills this much of its narrower dimension. */
-export const SEALED_LENS_FRACTION = 0.42;
-/** How far a sealed lens stands into the wall from its room's face, metres. */
-export const SEALED_LENS_INSET_M = 0.12;
-
-/** The lens of a closed doorway: where it stands, how big, which way it faces. */
-export function sealedLens(room: Room, door: Doorway): { center: Vector3; radius: number; normal: Vector3 } | null {
-  if (!door.closed || door.width > 8) return null;
-  const wall = walls(room).find((w) => w.axis === door.axis && Math.abs(w.at - door.at) < 0.001);
-  if (!wall) return null;
-  const radius = Math.min(door.width, door.height) * SEALED_LENS_FRACTION;
-  const y = room.bounds.min[1] + door.height / 2;
-  const across = wall.at + wall.inward * SEALED_LENS_INSET_M;
-  const center = wall.axis === "x" ? new Vector3(across, y, door.center) : new Vector3(door.center, y, across);
-  const normal = wall.axis === "x" ? new Vector3(wall.inward, 0, 0) : new Vector3(0, 0, wall.inward);
-  return { center, radius, normal };
 }
 
 /** Fixed face shading makes the design legible without lights, textures or shadows. */

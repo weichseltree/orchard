@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import mansionDocument from "./mansion.json";
 import { parseMansion } from "./schema";
 import { bakeLightField, lightAt, litRooms } from "./lightfield";
-import { emittersOf, sealedLens } from "./observatory";
+import { emittersOf } from "./observatory";
+import { sealedLens } from "./sealed";
 
 // The light is baked out of the same document the rooms are built from, so
 // these run over mansion.json: every room has lamps, the lamps light the

@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { Font, type FontData } from "three/examples/jsm/loaders/FontLoader.js";
 import { Vector3 } from "three";
 import mansionDocument from "./mansion.json";
 import cinzel from "./fonts/cinzel.json";
@@ -8,10 +7,10 @@ import de from "./labels/de.json";
 import ja from "./labels/ja.json";
 import { parseLabels } from "./labels/index";
 import { parseMansion } from "./schema";
-import { SIGN, buildDoorSigns, canSet, letterGeometry, planDoorSigns, signed } from "./door-signs";
+import { SIGN, buildDoorSigns, canSet, extrudeText, glyphContours, letterGeometry, planDoorSigns, signed, type Typeface } from "./door-signs";
 
 const mansion = parseMansion(mansionDocument);
-const font = new Font(cinzel as unknown as FontData);
+const font = cinzel as unknown as Typeface;
 const labels = parseLabels(en);
 const labelsDe = parseLabels(de);
 const labelsJa = parseLabels(ja);
@@ -55,6 +54,36 @@ describe("planDoorSigns over mansion.json", () => {
     const geometry = letterGeometry(terrace, font);
     expect(geometry.getAttribute("position").count).toBeGreaterThan(0);
     geometry.dispose();
+  });
+});
+
+describe("extrudeText", () => {
+  it("reads a glyph's outline as closed contours with its holes", () => {
+    // O: an outer contour and one hole, opposite senses.
+    const contours = glyphContours(font.glyphs["O"]!, SIGN.size / font.resolution);
+    expect(contours).toHaveLength(2);
+    const area = (c: number[]) => { let a = 0; for (let i = 0; i < c.length; i += 2) { const j = (i + 2) % c.length; a += c[i]! * c[j + 1]! - c[j]! * c[i + 1]!; } return a / 2; };
+    expect(Math.sign(area(contours[0]!))).not.toBe(Math.sign(area(contours[1]!)));
+  });
+
+  it("extrudes front caps toward +z and sides round every contour, and no back cap", () => {
+    const { position, normal } = extrudeText("O", font, SIGN.size, SIGN.depth);
+    expect(position.length % 9).toBe(0);
+    let front = 0, side = 0, back = 0;
+    for (let i = 0; i < normal.length; i += 3) {
+      if (normal[i + 2]! > 0.5) front++; else if (normal[i + 2]! < -0.5) back++; else side++;
+    }
+    expect(front).toBeGreaterThan(0);
+    expect(side).toBeGreaterThan(0);
+    expect(back).toBe(0);
+    for (let i = 0; i < position.length; i += 3) expect(position[i + 2]! === 0 || position[i + 2]! === SIGN.depth).toBe(true);
+  });
+
+  it("advances the pen by each glyph's width, spaces included", () => {
+    const one = extrudeText("I", font, SIGN.size, SIGN.depth);
+    const two = extrudeText("I I", font, SIGN.size, SIGN.depth);
+    const maxX = (p: number[]) => Math.max(...p.filter((_, i) => i % 3 === 0));
+    expect(maxX(two.position)).toBeGreaterThan(maxX(one.position) + SIGN.size * 0.5);
   });
 });
 
