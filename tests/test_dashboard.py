@@ -116,3 +116,21 @@ def test_identity_parsing_rejects_anything_but_hex():
     assert dashboard._identity(ANN.upper().replace("0X", "0x")) == ANN
     assert dashboard._identity(["0x1234"]) == ""
     assert dashboard._identity(['0x" onclick="x']) == ""
+
+
+def test_render_stream_is_local_sse_and_descriptor_only_by_default(client):
+    response = client.get("/api/render/stream?session_id=alpha")
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/event-stream")
+    assert "event: renderer.model" in response.text
+    assert '"schema":"orchard/render-stream/1"' in response.text
+    assert '"session_id":"alpha"' in response.text
+    assert "event: renderer.pixels" not in response.text
+
+
+def test_render_stream_keeps_host_and_origin_boundaries(client):
+    assert client.get("/api/render/stream", headers={"Host": "attacker.example"}).status_code == 421
+    assert client.get(
+        "/api/render/stream?raw_frames=true",
+        headers={"Origin": "https://evil.example"},
+    ).status_code == 200  # GET remains read-only; no cross-origin write is enabled.

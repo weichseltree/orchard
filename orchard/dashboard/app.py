@@ -23,12 +23,13 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 from ..ledger import snapshot
 from ..portfolio import load_all
 from ..sync import _timestamp, call, sql
+from ..render_stream import ClientCapabilities, RenderStreamHub, StreamDescriptor
 
 app = FastAPI(title="orchard")
 HERE = Path(__file__).parent
@@ -42,6 +43,22 @@ SAFE_METHODS = {"GET", "HEAD"}
 IDENTITY = r"^0x[0-9a-f]{64}$"
 #: The module's DEFAULT_ISSUER (spacetime/spacetimedb/src/index.ts).
 DEFAULT_ISSUER = "https://www.weichseltree.com/auth"
+
+# The dashboard is the local transport boundary. Producers may replace this
+# hub in-process; clients always receive a descriptor even when no raw frame
+# source is configured.
+RENDER_STREAM = RenderStreamHub(
+    stream=StreamDescriptor(
+        stream_id="orchard-hybrid",
+        correlation_id="orchard-hybrid-model",
+        width=0,
+        height=0,
+        pixel_format="unknown",
+        fps=0,
+        transport="sse",
+        raw_frames=False,
+    )
+)
 
 
 def _hostname(value: str) -> str:
@@ -76,6 +93,22 @@ def api_portfolio():
 @app.get("/api/ledger")
 def api_ledger(days: int = 30):
     return JSONResponse(snapshot(days=days), headers={"Cache-Control": "no-store"})
+
+
+@app.get("/api/render/stream")
+def api_render_stream(raw_frames: bool = False, session_id: str | None = None):
+    """Send the renderer model and correlated display stream over local SSE.
+
+    ``raw_frames`` is a capability negotiation, not an authorization grant:
+    the hub emits frames only when both the client and the configured stream
+    support them. The existing localhost/Origin middleware remains in force.
+    """
+    capabilities = ClientCapabilities(raw_frames=raw_frames)
+    return StreamingResponse(
+        iter([RENDER_STREAM.sse(capabilities, session_id)]),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"},
+    )
 
 
 @app.get("/api/audit")
