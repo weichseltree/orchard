@@ -10,7 +10,7 @@
     "hall": {
       "title": "hall",
       "kicker": "Quale domanda la attira?",
-      "intro": "Benvenuti nel Mind Palace, un piccolo museo di ricerca costruito da una sola persona. Quattro sale si aprono da questo hall, ciascuna con il nome del repository open source di cui mostra il lavoro: einstruct, coarsen, world-engine e phototroph. Nulla qui è un'illustrazione. Le immagini in movimento sono simulazioni registrate, riprodotte fotogramma per fotogramma; le immagini fisse sono studi resi a partire da dati misurati, e ogni opera nomina il file da cui proviene. L'architettura fa solo da scena. La ricerca è il lavoro in corso di una persona, non il verdetto di un'istituzione, e ogni sala termina con una riga su ciò che le sue prove non possono ancora mostrare.",
+      "intro": "Benvenuti nel Mind Palace, un piccolo museo di ricerca costruito da una sola persona. Tre sale si aprono da questo hall, ciascuna con il nome del repository open source di cui mostra il lavoro: einstruct, world-engine e phototroph. Il quarto repository, coarsen, tiene i suoi mondi nell'orrery, raggiunto attraverso la sfera armillare del giardino. Nulla qui è un'illustrazione. Le immagini in movimento sono simulazioni registrate, riprodotte fotogramma per fotogramma; le immagini fisse sono studi resi a partire da dati misurati, e ogni opera nomina il file da cui proviene. L'architettura fa solo da scena. La ricerca è il lavoro in corso di una persona, non il verdetto di un'istituzione, e ogni sala termina con una riga su ciò che le sue prove non possono ancora mostrare.",
       "lookFor": "Legga il pannello alla porta di ogni sala prima dell'opera, poi la piccola etichetta accanto a ciascun pezzo.",
       "limit": "L'edificio fa da scena; solo i nastri e le immagini fisse portano prove, e «About this view» nomina esattamente ciò che sta guardando."
     },
@@ -20,13 +20,6 @@
       "intro": "einstruct è la ricerca aperta di una sola persona su ciò che una nuvola di particelle può sapere di sé dalle sole distanze, senza coordinate. Questa sala mostra il suo esperimento più semplice. Duecentomila particelle di due specie, A e B, vagano su un foglio; ogni volta che una A incontra una B, entrambe svaniscono. Questa è tutta la regola. Sul pavimento giace la simulazione registrata, riprodotta fotogramma per fotogramma senza alcuna interpolazione. Accanto giace il suo controllo, la stessa simulazione con le specie rimescolate ogni venti passi. In una, regioni di una sola specie crescono finché il foglio è un mosaico; nell'altra non si formano mai.",
       "lookFor": "Metta in pausa entrambi i nastri verso la fine e confronti la dimensione delle chiazze di una sola specie, poi torni indietro per vederle emergere.",
       "limit": "Il browser disegna un campione delle particelle, quindi non può misurare ogni regione vuota della simulazione completa; i numeri sulle etichette vengono dai file registrati."
-    },
-    "spectre": {
-      "title": "coarsen",
-      "kicker": "Come trova un mondo il proprio centro?",
-      "intro": "coarsen è la ricerca aperta di una sola persona su quanto grande e quanto a lungo possa girare un mondo fatto solo di particelle prima di smettere di misurarsi come materia reale. I tre globi qui sono un unico esperimento. Ogni mondo è iniziato come la stessa sfera di 508.744 particelle, una miscela uniforme di una specie pesante e una leggera, tenuta insieme dalla propria gravità sotto un cielo freddo. L'unica differenza tra loro è quanto fortemente le due specie si respingono. Ognuno è aperto: la superficie è il bordo misurato delle particelle, e l'interno è misurato a partire da esse, fotogramma per fotogramma, lungo 96 tempi dinamici.",
-      "lookFor": "Lasci scorrere la registrazione e confronti le tre facce tagliate nello stesso istante; dove le due specie si respingono di più, la specie pesante si raccoglie prima al centro.",
-      "limit": "Una sola simulazione registrata per mondo, nulla di interpolato. Queste simulazioni non separano la smiscelazione dal raffreddamento comune come causa di un centro pesante, quindi nessuna targa qui afferma che la smiscelazione l'abbia causato."
     },
     "world-engine": {
       "title": "world-engine",
@@ -45,7 +38,7 @@
     "orangery": {
       "title": "orangerie",
       "kicker": "Lasci viaggiare lo sguardo.",
-      "intro": "L'orangerie collega la sala di world-engine alla terrazza. È un luogo tra le opere: segua le porte aperte, guardi verso le sale, o esca sotto il cielo. C'è qui una partita a scacchi, aperta dalla Guida sopra la stanza.",
+      "intro": "L'orangerie collega la sala di world-engine alla terrazza. È un luogo tra le opere: segua le porte aperte, guardi verso le sale, o esca sotto il cielo. In fondo c'è un tavolo da scacchi: si avvicini per giocare, o apra la partita dalla Guida.",
       "lookFor": "Le tre porte sul lato del giardino danno tutte sulla terrazza."
     },
     "gallery": {
@@ -99,7 +92,7 @@
     "orrery": {
       "title": "orrery",
       "kicker": "Come trova un mondo il proprio centro?",
-      "intro": "L'orrery mostra i tre mondi di coarsen alla scala del cielo, raggiunti attraverso la sfera armillare del giardino. Si è rimpiccioliti cinquanta volte per stare qui; ogni globo misura ottanta metri. Sono le stesse simulazioni registrate della sala di coarsen: 508.744 particelle ciascuna, la stessa miscela uniforme di una specie pesante e una leggera, che differiscono solo per quanto fortemente le due si respingono. Ognuna è aperta verso il punto in cui si trova, con la superficie come bordo misurato delle particelle e l'interno misurato da esse. Le stelle sono uno sfondo disegnato, non un catalogo.",
+      "intro": "L'orrery mostra i tre mondi di coarsen alla scala del cielo, raggiunti attraverso la sfera armillare del giardino. Si è rimpiccioliti cinquanta volte per stare qui; ogni globo misura ottanta metri. Sono le simulazioni registrate di coarsen: 508.744 particelle ciascuna, la stessa miscela uniforme di una specie pesante e una leggera, che differiscono solo per quanto fortemente le due si respingono. Ognuna è aperta verso il punto in cui si trova, con la superficie come bordo misurato delle particelle e l'interno misurato da esse. Le stelle sono uno sfondo disegnato, non un catalogo.",
       "lookFor": "Cammini verso un mondo e osservi la sua faccia tagliata; il bagliore segna la materia più calda, una codifica della temperatura, non luce.",
       "limit": "Una sola simulazione registrata per mondo, nulla di interpolato. Un centro pesante non basta da solo a separare la smiscelazione dal raffreddamento comune come causa."
     },
@@ -217,10 +210,6 @@
     }
   },
   "exhibits": {
-    "hall-poster": {
-      "title": "A + B → nulla: un fotogramma del foglio",
-      "caption": "Un render fisso di un fotogramma tardivo della simulazione registrata di einstruct: 200.000 particelle di due specie su un foglio piano, ogni A che incontra una B svanisce con essa. Il colore distingue le due specie e nient'altro; le regioni non sono state disegnate, si sono formate."
-    },
     "einstruct-tape": {
       "title": "Annichilazione A + B su un foglio",
       "caption": "La simulazione registrata stessa, distesa sul pavimento: 801 fotogrammi lungo 400 unità di tempo simulato, 200.000 particelle all'inizio e 2.634 alla fine, da un'unica disposizione iniziale fissa (seme 0). Il colore nomina la specie, A o B; non mostra temperatura né velocità."
@@ -236,10 +225,6 @@
     "einstruct-wall-row": {
       "title": "Una riga non sa dove sia l'alto",
       "caption": "Un'animazione di 16 secondi dell'idea dietro einstruct: le distanze ordinate di un punto dai suoi otto vicini più prossimi, disegnate come barre. Ruoti la nuvola, la rifletta, la rinumeri, e le barre non si muovono; la ingrandisca, e ogni barra cresce. Una figura disegnata, senza colore misurato."
-    },
-    "spectre-worlds": {
-      "title": "Tre mondi aperti",
-      "caption": "Il trio di pianeti di coarsen a scala di passeggiata: tre sfere di 508.744 particelle da una stessa disposizione iniziale, 1.129 fotogrammi lungo 96 tempi dinamici ciascuna, con le due specie indifferenti, moderatamente e fortemente avverse dal più vicino al più lontano. Le regioni color ferro contengono più particelle pesanti, quelle pallide più leggere; il bagliore codifica la temperatura."
     },
     "spectre-wall": {
       "title": "Dal primo film: 42,8 secondi, muto",

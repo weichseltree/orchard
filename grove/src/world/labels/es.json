@@ -10,7 +10,7 @@
     "hall": {
       "title": "hall",
       "kicker": "¿Qué pregunta le atrae?",
-      "intro": "Bienvenido al Mind Palace, un pequeño museo de investigación construido por una sola persona. Cuatro salas se abren desde este hall, cada una con el nombre del repositorio de código abierto cuyo trabajo muestra: einstruct, coarsen, world-engine y phototroph. Nada aquí es una ilustración. Las imágenes en movimiento son simulaciones grabadas, reproducidas fotograma a fotograma; las imágenes fijas son estudios renderizados a partir de datos medidos, y cada pieza nombra el archivo del que procede. La arquitectura solo pone el escenario. La investigación es el trabajo en curso de una persona, no el veredicto de una institución, y cada sala termina con una línea sobre lo que sus pruebas aún no pueden mostrar.",
+      "intro": "Bienvenido al Mind Palace, un pequeño museo de investigación construido por una sola persona. Tres salas se abren desde este hall, cada una con el nombre del repositorio de código abierto cuyo trabajo muestra: einstruct, world-engine y phototroph. El cuarto repositorio, coarsen, guarda sus mundos en el orrery, al que se llega por la esfera armilar del jardín. Nada aquí es una ilustración. Las imágenes en movimiento son simulaciones grabadas, reproducidas fotograma a fotograma; las imágenes fijas son estudios renderizados a partir de datos medidos, y cada pieza nombra el archivo del que procede. La arquitectura solo pone el escenario. La investigación es el trabajo en curso de una persona, no el veredicto de una institución, y cada sala termina con una línea sobre lo que sus pruebas aún no pueden mostrar.",
       "lookFor": "Lea el panel en la puerta de cada sala antes de la pieza, y luego la pequeña etiqueta junto a cada obra.",
       "limit": "El edificio pone el escenario; solo las cintas y las imágenes fijas aportan pruebas, y «About this view» nombra exactamente lo que está mirando."
     },
@@ -20,13 +20,6 @@
       "intro": "einstruct es la investigación abierta de una sola persona sobre lo que una nube de partículas puede saber de sí misma solo a partir de las distancias, sin coordenadas. Esta sala muestra su experimento más sencillo. Doscientas mil partículas de dos clases, A y B, vagan por una lámina; cada vez que una A encuentra una B, ambas desaparecen. Esa es toda la regla. En el suelo yace la simulación grabada, reproducida fotograma a fotograma sin interpolar nada. A su lado yace su control, la misma simulación con las clases rebarajadas cada veinte pasos. En una, crecen regiones de una sola clase hasta que la lámina es un mosaico; en la otra nunca se forman.",
       "lookFor": "Pause ambas cintas cerca del final y compare el tamaño de las manchas de una sola clase; luego retroceda para verlas surgir.",
       "limit": "El navegador dibuja una muestra de las partículas, así que no puede medir cada región vacía de la simulación completa; los números de las etiquetas proceden de los archivos grabados."
-    },
-    "spectre": {
-      "title": "coarsen",
-      "kicker": "¿Cómo encuentra un mundo su centro?",
-      "intro": "coarsen es la investigación abierta de una sola persona sobre cuán grande y cuánto tiempo puede correr un mundo hecho solo de partículas antes de dejar de medirse como materia real. Los tres globos de aquí son un único experimento. Cada mundo comenzó como la misma bola de 508.744 partículas, una mezcla uniforme de una clase pesada y una ligera, unida por su propia gravedad bajo un cielo frío. La única diferencia entre ellos es con qué fuerza se repelen las dos clases. Cada uno está abierto: la superficie es el borde medido de las partículas, y el interior se mide a partir de ellas, fotograma a fotograma, durante 96 tiempos dinámicos.",
-      "lookFor": "Deje correr la grabación y compare las tres caras cortadas en el mismo instante; donde las dos clases más se repelen, la clase pesada se reúne antes en el centro.",
-      "limit": "Una sola simulación grabada por mundo, nada interpolado. Estas simulaciones no separan la desmezcla del enfriamiento común como causa de un centro pesado, así que ninguna placa afirma aquí que la desmezcla lo causó."
     },
     "world-engine": {
       "title": "world-engine",
@@ -45,7 +38,7 @@
     "orangery": {
       "title": "orangerie",
       "kicker": "Deje que sus ojos viajen.",
-      "intro": "La orangerie une la sala de world-engine con la terraza. Es un lugar entre piezas: siga las puertas abiertas, mire hacia las salas, o salga bajo el cielo. Aquí hay una partida de ajedrez, que se abre desde la Guía sobre la habitación.",
+      "intro": "La orangerie une la sala de world-engine con la terraza. Es un lugar entre piezas: siga las puertas abiertas, mire hacia las salas, o salga bajo el cielo. Al fondo hay una mesa de ajedrez: acérquese para jugar, o abra la partida desde la Guía.",
       "lookFor": "Las tres puertas del lado del jardín dan todas a la terraza."
     },
     "gallery": {
@@ -99,7 +92,7 @@
     "orrery": {
       "title": "orrery",
       "kicker": "¿Cómo encuentra un mundo su centro?",
-      "intro": "El orrery muestra los tres mundos de coarsen a la escala del cielo, a los que se llega por la esfera armilar del jardín. Se ha encogido cincuenta veces para estar aquí; cada globo mide ochenta metros. Son las mismas simulaciones grabadas que en la sala de coarsen: 508.744 partículas cada una, la misma mezcla uniforme de una clase pesada y una ligera, que solo difieren en la fuerza con que las dos se repelen. Cada una está abierta hacia donde usted está, con la superficie como borde medido de las partículas y el interior medido a partir de ellas. Las estrellas son un fondo diseñado, no un catálogo.",
+      "intro": "El orrery muestra los tres mundos de coarsen a la escala del cielo, a los que se llega por la esfera armilar del jardín. Se ha encogido cincuenta veces para estar aquí; cada globo mide ochenta metros. Son las simulaciones grabadas de coarsen: 508.744 partículas cada una, la misma mezcla uniforme de una clase pesada y una ligera, que solo difieren en la fuerza con que las dos se repelen. Cada una está abierta hacia donde usted está, con la superficie como borde medido de las partículas y el interior medido a partir de ellas. Las estrellas son un fondo diseñado, no un catálogo.",
       "lookFor": "Camine hacia un mundo y observe su cara cortada; el brillo marca la materia más caliente, una codificación de la temperatura, no luz.",
       "limit": "Una sola simulación grabada por mundo, nada interpolado. Un centro pesado no basta por sí solo para separar la desmezcla del enfriamiento común como causa."
     },
@@ -217,10 +210,6 @@
     }
   },
   "exhibits": {
-    "hall-poster": {
-      "title": "A + B → nada: un fotograma de la lámina",
-      "caption": "Un render fijo de un fotograma tardío de la simulación grabada de einstruct: 200.000 partículas de dos clases sobre una lámina plana, y toda A que encuentra una B desaparece con ella. El color distingue las dos clases y nada más; las regiones no se dibujaron, se formaron."
-    },
     "einstruct-tape": {
       "title": "Aniquilación A + B sobre una lámina",
       "caption": "La simulación grabada en sí, tendida en el suelo: 801 fotogramas a lo largo de 400 unidades de tiempo simulado, 200.000 partículas al principio y 2.634 al final, desde una única disposición inicial fija (semilla 0). El color nombra la clase, A o B; no muestra temperatura ni velocidad."
@@ -236,10 +225,6 @@
     "einstruct-wall-row": {
       "title": "Una fila no sabe hacia dónde está arriba",
       "caption": "Una animación de 16 segundos de la idea tras einstruct: las distancias ordenadas de un punto a sus ocho vecinos más cercanos, dibujadas como barras. Gire la nube, refléjela, renumérela, y las barras no se mueven; amplíela, y cada barra crece. Una figura dibujada, sin color medido."
-    },
-    "spectre-worlds": {
-      "title": "Tres mundos abiertos",
-      "caption": "El trío de planetas de coarsen a escala de paseo: tres bolas de 508.744 partículas desde una misma disposición inicial, 1.129 fotogramas a lo largo de 96 tiempos dinámicos cada una, con las dos clases indiferentes, moderadamente y fuertemente repelidas, del más cercano al más lejano. Las regiones color hierro contienen más partículas pesadas, las pálidas más ligeras; el brillo codifica la temperatura."
     },
     "spectre-wall": {
       "title": "De la primera película: 42,8 segundos, muda",

@@ -36,6 +36,8 @@ export interface VideoWallOptions {
   widthMeters: number;
   /** Picture aspect; 16/9 unless the bundle says otherwise. */
   aspect?: number;
+  /** Slower or faster than the clip's own clock; 1 (the default) is as recorded. */
+  playbackRate?: number;
   onNotice?: (message: string) => void;
 }
 
@@ -48,6 +50,8 @@ export class VideoWall implements Screen {
   readonly video: HTMLVideoElement;
   readonly master: string;
   readonly hasAudio = true;
+  /** The rate the wall plays at, as recorded is 1. */
+  readonly playbackRate: number;
 
   #mode: VideoWallMode = "poster";
   #texture: VideoTexture | null = null;
@@ -63,12 +67,14 @@ export class VideoWall implements Screen {
     video: HTMLVideoElement,
     master: string,
     poster: Texture | null,
+    playbackRate: number,
     onNotice: ((message: string) => void) | undefined,
   ) {
     this.mesh = mesh;
     this.video = video;
     this.master = master;
     this.#poster = poster;
+    this.playbackRate = playbackRate;
     this.#onNotice = onNotice;
   }
 
@@ -100,6 +106,12 @@ export class VideoWall implements Screen {
     video.muted = true;
     video.setAttribute("muted", "");
     video.preload = "auto";
+    // A wall may run slower than its clock (the hall's film, a quarter
+    // speed). load() resets playbackRate to defaultPlaybackRate, and
+    // release() calls load(), so both are set.
+    const playbackRate = options.playbackRate && options.playbackRate > 0 ? options.playbackRate : 1;
+    video.defaultPlaybackRate = playbackRate;
+    video.playbackRate = playbackRate;
     if (options.poster) video.poster = options.poster;
     // iOS Safari will not decode a detached <video> into a WebGL texture, and
     // `display: none` counts as detached: the wall goes black with no error.
@@ -127,7 +139,7 @@ export class VideoWall implements Screen {
     });
     const mesh = new Mesh(geometry, material);
     mesh.name = "video-wall";
-    return new VideoWall(mesh, video, options.master, poster, options.onNotice);
+    return new VideoWall(mesh, video, options.master, poster, playbackRate, options.onNotice);
   }
 
   /**
@@ -185,6 +197,7 @@ export class VideoWall implements Screen {
       material.map = this.#texture;
       material.color.set(0xffffff);
       material.needsUpdate = true;
+      this.video.playbackRate = this.playbackRate;
       // A rejected play() is normal before any interaction; the HUD button retries.
       void this.video.play().catch(() => undefined);
       return true;

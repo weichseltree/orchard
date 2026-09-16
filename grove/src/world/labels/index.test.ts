@@ -32,7 +32,6 @@ const measure = (locale: string, s: string) =>
 /** The tree rooms are titled after their repositories in every language. */
 const REPOSITORY_TITLES: Record<string, string> = {
   einstruct: "einstruct",
-  spectre: "coarsen",
   "world-engine": "world-engine",
   phototroph: "phototroph",
 };
@@ -114,7 +113,7 @@ describe("labelsFor", () => {
 
   it("roomTitle reads the visitor's title, and nothing for an unknown room or no labels", async () => {
     const labels = await labelsFor("en");
-    expect(roomTitle(labels, "spectre")).toBe("coarsen");
+    expect(roomTitle(labels, "orrery")).toBe("orrery");
     expect(roomTitle(labels, "hall")).toBe("hall");
     expect(roomTitle(await labelsFor("de"), "hall")).toBe("Halle");
     expect(roomTitle(labels, "nowhere")).toBeUndefined();

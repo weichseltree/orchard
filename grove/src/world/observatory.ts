@@ -814,9 +814,45 @@ function obelisk(b: Builder, x: number, z: number): void {
 function plan(room: Room, mansion: Mansion | null): Builder {
   const b = new Builder(room, mansion);
   if (room.fallback.kind === "ground") grounds(b);
-  else { chamberFloor(b); chamberWalls(b); vault(b); statuary(b); }
+  else { chamberFloor(b); chamberWalls(b); vault(b); statuary(b); gameTables(b); }
   flights(b);
   return b;
+}
+
+/**
+ * A table for every game surface that has a place in the room (the
+ * orangery's chess, ruled 2026-09-16): a stone pedestal under a brass-rimmed
+ * top with the board inlaid, two stools facing each other across it along
+ * the table's x axis, and a lamp hung over it. main.ts offers the game when
+ * the visitor stands at it; the board is a place, not a position.
+ */
+function gameTables(b: Builder): void {
+  for (const surface of b.room.gameSurfaces) {
+    if (!surface.position) continue;
+    const [x, , z] = surface.position;
+    const y = b.ground(x, z);
+    const turn = new Quaternion().setFromAxisAngle(UNIT, surface.yawDeg * Math.PI / 180);
+    const along = new Vector3(1, 0, 0).applyQuaternion(turn);
+    b.add("column", "stone", x, y + 0.04, z, 0.42, 0.08, 0.42);
+    b.add("column", "stone", x, y + 0.4, z, 0.2, 0.72, 0.2);
+    b.add("box", "brass", x, y + 0.775, z, 1.12, 0.05, 1.12, turn);
+    b.add("box", "inset", x, y + 0.806, z, 1.0, 0.012, 1.0, turn);
+    // The board: eight by eight, the pale squares laid over the dark inlay.
+    const square = 0.11;
+    for (let file = 0; file < 8; file++) for (let rank = 0; rank < 8; rank++) {
+      if ((file + rank) % 2 === 1) continue;
+      const local = new Vector3((file - 3.5) * square, 0, (rank - 3.5) * square).applyQuaternion(turn);
+      b.add("box", "stone", x + local.x, y + 0.815, z + local.z, square - 0.006, 0.006, square - 0.006, turn);
+    }
+    for (const side of [-1, 1]) {
+      const sx = x + along.x * 0.95 * side, sz = z + along.z * 0.95 * side;
+      b.add("column", "stone", sx, y + 0.24, sz, 0.19, 0.48, 0.19);
+      b.add("column", "brass", sx, y + 0.49, sz, 0.2, 0.02, 0.2);
+    }
+    b.add("halo", "brass", x, y + 2.3, z, 0.5, 0.5, 0.7, FLAT);
+    b.add("halo", "light", x, y + 2.25, z, 0.48, 0.48, 0.25, FLAT);
+    b.bar("brass", new Vector3(x, y + 2.35, z), new Vector3(x, b.room.bounds.max[1] - 0.05, z), 0.015);
+  }
 }
 
 export function buildObservatory(room: Room, mansion: Mansion | null = null): RoomShell {

@@ -10,7 +10,7 @@
     "hall": {
       "title": "Halle",
       "kicker": "Welche Frage zieht Sie an?",
-      "intro": "Willkommen im Mind Palace, einem kleinen Forschungsmuseum, das eine einzelne Person gebaut hat. Von dieser Halle gehen vier Kammern ab, jede nach dem quelloffenen Repositorium benannt, dessen Arbeit sie zeigt: einstruct, coarsen, world-engine und phototroph. Nichts hier ist eine Illustration. Die bewegten Bilder sind aufgezeichnete Simulationen, Bild für Bild abgespielt; die Standbilder sind Studien, aus gemessenen Daten gerendert; und jedes Exponat nennt die Datei, aus der es stammt. Die Architektur setzt nur den Rahmen. Die Forschung ist die laufende Arbeit einer Person, kein Urteil einer Institution, und jede Kammer endet mit einem Satz darüber, was ihre Belege noch nicht zeigen können.",
+      "intro": "Willkommen im Mind Palace, einem kleinen Forschungsmuseum, das eine einzelne Person gebaut hat. Von dieser Halle gehen drei Kammern ab, jede nach dem quelloffenen Repositorium benannt, dessen Arbeit sie zeigt: einstruct, world-engine und phototroph; coarsens Welten stehen im Orrery, hinter der Armillarsphäre im Garten. Nichts hier ist eine Illustration. Die bewegten Bilder sind aufgezeichnete Simulationen, Bild für Bild abgespielt; die Standbilder sind Studien, aus gemessenen Daten gerendert; und jedes Exponat nennt die Datei, aus der es stammt. Die Architektur setzt nur den Rahmen. Die Forschung ist die laufende Arbeit einer Person, kein Urteil einer Institution, und jede Kammer endet mit einem Satz darüber, was ihre Belege noch nicht zeigen können.",
       "lookFor": "Lesen Sie an jeder Kammertür zuerst die Tafel, dann das kleine Schild neben jedem Stück.",
       "limit": "Das Gebäude setzt den Rahmen; nur die Bänder und Standbilder tragen Belege, und „About this view“ nennt genau, was Sie gerade sehen."
     },
@@ -20,13 +20,6 @@
       "intro": "einstruct ist die offene Forschung einer einzelnen Person zu der Frage, was eine Punktwolke allein aus den Abständen ihrer Punkte über sich wissen kann, ganz ohne Koordinaten. Diese Kammer zeigt ihr einfachstes Experiment. Zweihunderttausend Teilchen zweier Sorten, A und B, wandern über eine Fläche; trifft ein A auf ein B, verschwinden beide. Das ist die ganze Regel. Am Boden liegt der aufgezeichnete Lauf, Bild für Bild abgespielt, nichts interpoliert. Daneben liegt seine Kontrolle: derselbe Lauf, nur werden die Sorten alle zwanzig Schritte neu gemischt. Im einen wachsen Gebiete einer einzigen Sorte, bis die Fläche ein Flickwerk ist; im anderen entstehen sie nie.",
       "lookFor": "Halten Sie beide Bänder spät an und vergleichen Sie die Größe der einfarbigen Flecken; dann spulen Sie zurück und sehen zu, wie sie entstehen.",
       "limit": "Der Browser zeichnet nur eine Stichprobe der Teilchen und kann daher nicht jede leere Region der vollen Simulation messen; die Zahlen auf den Schildern stammen aus den aufgezeichneten Dateien."
-    },
-    "spectre": {
-      "title": "coarsen",
-      "kicker": "Wie findet eine Welt ihre Mitte?",
-      "intro": "coarsen ist die offene Forschung einer einzelnen Person zu der Frage, wie groß und wie lange eine Welt aus nichts als Teilchen laufen kann, bevor sie aufhört, sich wie echte Materie zu messen. Die drei Kugeln hier sind ein Experiment. Jede Welt begann als derselbe Ball aus 508.744 Teilchen, eine gleichmäßige Mischung einer schweren und einer leichten Sorte, von der eigenen Schwerkraft unter einem kalten Himmel zusammengehalten. Der einzige Unterschied ist, wie stark sich die beiden Sorten abstoßen. Jede ist aufgeschnitten: Die Oberfläche ist der gemessene Rand der Teilchen, das Innere ist aus ihnen gemessen, Bild für Bild, über 96 dynamische Zeiten.",
-      "lookFor": "Lassen Sie die Aufzeichnung laufen und vergleichen Sie die drei Schnittflächen im selben Augenblick; wo sich die beiden Sorten am stärksten abstoßen, sammelt sich die schwere Sorte am frühesten in der Mitte.",
-      "limit": "Ein aufgezeichneter Lauf pro Welt, nichts interpoliert. Diese Läufe trennen nicht, ob die Entmischung oder eine gemeinsame Abkühlung die schwere Mitte verursacht; deshalb behauptet keine Tafel hier, die Entmischung habe sie verursacht."
     },
     "world-engine": {
       "title": "world-engine",
@@ -45,7 +38,7 @@
     "orangery": {
       "title": "Orangerie",
       "kicker": "Lassen Sie den Blick wandern.",
-      "intro": "Die Orangerie verbindet die Kammer von world-engine mit der Terrasse. Sie ist ein Ort zwischen den Exponaten: Folgen Sie den offenen Türen, blicken Sie zu den Kammern zurück oder treten Sie hinaus unter den Himmel. Hier gibt es ein Schachspiel; der Guide öffnet es über dem Raum.",
+      "intro": "Die Orangerie verbindet die Kammer von world-engine mit der Terrasse. Sie ist ein Ort zwischen den Exponaten: Folgen Sie den offenen Türen, blicken Sie zu den Kammern zurück oder treten Sie hinaus unter den Himmel. Hinten steht ein Schachtisch: Treten Sie heran, oder öffnen Sie es über den Guide.",
       "lookFor": "Die drei Türen zur Gartenseite führen alle auf die Terrasse."
     },
     "gallery": {
@@ -99,7 +92,7 @@
     "orrery": {
       "title": "Orrery",
       "kicker": "Wie findet eine Welt ihre Mitte?",
-      "intro": "Das Orrery zeigt die drei Welten von coarsen im Maßstab des Himmels, erreichbar durch die Armillarsphäre des Gartens. Sie sind fünfzigfach geschrumpft, um hier zu stehen; jeder Globus misst achtzig Meter. Es sind dieselben aufgezeichneten Läufe wie in der Kammer von coarsen: je 508.744 Teilchen, dieselbe gleichmäßige Mischung einer schweren und einer leichten Sorte, verschieden nur darin, wie stark sich die beiden Sorten abstoßen. Jede ist zu Ihrem Standort hin aufgeschnitten, ihre Oberfläche der gemessene Rand der Teilchen, ihr Inneres aus ihnen gemessen. Die Sterne sind eine gestaltete Kulisse, kein Katalog.",
+      "intro": "Das Orrery zeigt die drei Welten von coarsen im Maßstab des Himmels, erreichbar durch die Armillarsphäre des Gartens. Sie sind fünfzigfach geschrumpft, um hier zu stehen; jeder Globus misst achtzig Meter. Es sind die aufgezeichneten Läufe von coarsen: je 508.744 Teilchen, dieselbe gleichmäßige Mischung einer schweren und einer leichten Sorte, verschieden nur darin, wie stark sich die beiden Sorten abstoßen. Jede ist zu Ihrem Standort hin aufgeschnitten, ihre Oberfläche der gemessene Rand der Teilchen, ihr Inneres aus ihnen gemessen. Die Sterne sind eine gestaltete Kulisse, kein Katalog.",
       "lookFor": "Gehen Sie auf eine Welt zu und beobachten Sie ihre Schnittfläche; das Glühen markiert die heißeste Materie, eine Kodierung der Temperatur, kein Licht.",
       "limit": "Ein aufgezeichneter Lauf pro Welt, nichts interpoliert. Eine schwere Mitte trennt für sich genommen nicht, ob Entmischung oder gemeinsame Abkühlung ihre Ursache ist."
     },
@@ -217,10 +210,6 @@
     }
   },
   "exhibits": {
-    "hall-poster": {
-      "title": "A + B → nichts: ein Bild der Fläche",
-      "caption": "Ein Standbild eines späten Bildes aus dem aufgezeichneten Lauf von einstruct: 200.000 Teilchen zweier Sorten auf einer ebenen Fläche, wobei jedes A, das ein B trifft, mit ihm verschwindet. Die Farbe unterscheidet die beiden Sorten und sonst nichts; die Gebiete wurden nicht gezeichnet, sie sind entstanden."
-    },
     "einstruct-tape": {
       "title": "A + B verschwinden auf einer Fläche",
       "caption": "Der aufgezeichnete Lauf selbst, flach am Boden: 801 Bilder über 400 Zeiteinheiten der Simulation, 200.000 Teilchen am Anfang und 2.634 am Ende, aus einer festen Startanordnung (Saat 0). Die Farbe nennt die Sorte, A oder B; sie zeigt weder Temperatur noch Geschwindigkeit."
@@ -236,10 +225,6 @@
     "einstruct-wall-row": {
       "title": "Eine Reihe weiß nicht, wo oben ist",
       "caption": "16 Sekunden Animation zur Idee hinter einstruct: die sortierten Abstände eines Punktes zu seinen acht nächsten Nachbarn, als Balken gezeichnet. Drehen Sie die Wolke, spiegeln Sie sie, nummerieren Sie sie um, und die Balken rühren sich nicht; vergrößern Sie sie, und jeder Balken wächst. Eine gezeichnete Figur, ohne gemessene Farbe."
-    },
-    "spectre-worlds": {
-      "title": "Drei Welten, aufgeschnitten",
-      "caption": "Das Planetentrio von coarsen im Gehmaßstab: drei Bälle aus je 508.744 Teilchen aus einer Startanordnung, je 1.129 Bilder über 96 dynamische Zeiten, die beiden Sorten von nah nach fern gleichgültig, mäßig und stark abgeneigt. Eisenwarme Regionen halten mehr schwere Teilchen, blasse mehr leichte; das Glühen kodiert die Temperatur."
     },
     "spectre-wall": {
       "title": "Aus dem ersten Film: 42,8 Sekunden, stumm",

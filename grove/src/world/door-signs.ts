@@ -18,8 +18,18 @@ import { OBSERVATORY_PALETTE } from "./observatory";
 // triangulator is earcut, the same one three carries, as its own small
 // dependency of this chunk.
 
-/** The letters: cap height, depth, and how far off the wall the lintel's face stands (observatory.ts's surrounds). */
-export const SIGN = { size: 0.2, depth: 0.045, lintelFace: 0.4, lift: 0.28, standoff: 0.004 } as const;
+/**
+ * The letters: cap height, depth, how far off the wall the lintel's face
+ * stands (observatory.ts's surrounds), and the gap over the door, as a share
+ * of the cap height. 0.4 m reads from across a chamber (raised from 0.2 on
+ * 2026-09-16); a low room scales them to its headroom (`signSize`).
+ */
+export const SIGN = { size: 0.4, depth: 0.05, lintelFace: 0.4, lift: 0.9, standoff: 0.004 } as const;
+
+/** The cap height a door's sign gets: the full size where the ceiling allows, less over a door close under it (arcedit's chambers). */
+export function signSize(headroom: number): number {
+  return Math.min(SIGN.size, headroom * 0.4);
+}
 
 /** One glyph of a typeface file: its advance and outline in a 1000-unit em, as FontLoader reads them. */
 export interface Glyph {
@@ -43,6 +53,8 @@ export interface DoorSign {
   quaternion: Quaternion;
   /** The lintel's length: letters wider than this are scaled to fit. */
   maxWidth: number;
+  /** Cap height, metres. */
+  size: number;
   to: string;
 }
 
@@ -69,13 +81,15 @@ export function planDoorSigns(room: Room, labels: Labels | null, mansion: Mansio
     const inward = door.axis === "x" ? (Math.abs(door.at - x0) < 0.001 ? 1 : Math.abs(door.at - x1) < 0.001 ? -1 : 0)
       : (Math.abs(door.at - z0) < 0.001 ? 1 : Math.abs(door.at - z1) < 0.001 ? -1 : 0);
     if (inward === 0) continue;
-    const y = doorBase(room, door, mansion) + door.height + SIGN.lift;
+    const top = doorBase(room, door, mansion) + door.height;
+    const size = signSize(room.bounds.max[1] - top);
+    const y = top + SIGN.lift * size + size / 2;
     const across = door.at + inward * (SIGN.lintelFace + SIGN.standoff);
     const position = door.axis === "x" ? new Vector3(across, y, door.center) : new Vector3(door.center, y, across);
     const normal = door.axis === "x" ? new Vector3(inward, 0, 0) : new Vector3(0, 0, inward);
     const quaternion = new Quaternion().setFromUnitVectors(OUT, normal);
     const title = labels?.rooms[door.to]?.title?.trim();
-    out.push({ text: title || door.to, fallback: door.to, position, quaternion, maxWidth: door.width + 0.8, to: door.to });
+    out.push({ text: title || door.to, fallback: door.to, position, quaternion, maxWidth: door.width + 0.8, size, to: door.to });
   }
   return out;
 }
@@ -93,14 +107,17 @@ export function canSet(font: Typeface, text: string): boolean {
 
 let brass: MeshBasicMaterial | null = null;
 function signMaterial(): MeshBasicMaterial {
-  return (brass ??= new MeshBasicMaterial({ color: OBSERVATORY_PALETTE.brass, vertexColors: true }));
+  // The pale brass of the lamps rather than the dark brass of the rails: the
+  // letters have no light of their own, and the dull finish read as too dim
+  // over a door (ruled 2026-09-16).
+  return (brass ??= new MeshBasicMaterial({ color: OBSERVATORY_PALETTE.light, vertexColors: true }));
 }
 
 /** A closed outline of a glyph, flattened: x, y pairs in the sign's metres. */
 type Contour = number[];
 
-/** Segments a curve is drawn with: two at a cap height of 0.2 m read as drawn. */
-const CURVE_SEGMENTS = 2;
+/** Segments a curve is drawn with: three at a cap height of 0.32 m read as drawn. */
+const CURVE_SEGMENTS = 3;
 
 /**
  * A glyph's outline as contours, the curves flattened. The path is the
@@ -230,7 +247,7 @@ function shadeLetters(geometry: BufferGeometry): void {
   const normals = geometry.getAttribute("normal");
   const colours: number[] = [];
   for (let i = 0; i < normals.count; i++) {
-    const shade = 0.55 + 0.45 * Math.max(0, normals.getZ(i)) + 0.12 * Math.max(0, normals.getY(i));
+    const shade = 0.72 + 0.28 * Math.max(0, normals.getZ(i)) + 0.1 * Math.max(0, normals.getY(i));
     colours.push(shade, shade, shade);
   }
   geometry.setAttribute("color", new Float32BufferAttribute(colours, 3));
@@ -239,7 +256,7 @@ function shadeLetters(geometry: BufferGeometry): void {
 /** The letters of one sign, in the sign's frame: centred, facing +z, no wider than the lintel. */
 export function letterGeometry(sign: DoorSign, font: Typeface): BufferGeometry {
   const text = canSet(font, sign.text) ? sign.text : sign.fallback;
-  const { position, normal } = extrudeText(text, font, SIGN.size, SIGN.depth);
+  const { position, normal } = extrudeText(text, font, sign.size, SIGN.depth);
   const geometry = new BufferGeometry();
   geometry.setAttribute("position", new Float32BufferAttribute(position, 3));
   geometry.setAttribute("normal", new Float32BufferAttribute(normal, 3));

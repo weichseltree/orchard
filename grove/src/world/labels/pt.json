@@ -10,7 +10,7 @@
     "hall": {
       "title": "hall",
       "kicker": "Que pergunta o atrai?",
-      "intro": "Bem-vindo ao Mind Palace, um pequeno museu de investigação construído por uma só pessoa. Quatro salas abrem-se a partir deste hall, cada uma com o nome do repositório de código aberto cujo trabalho mostra: einstruct, coarsen, world-engine e phototroph. Nada aqui é uma ilustração. As imagens em movimento são simulações gravadas, reproduzidas fotograma a fotograma; as imagens fixas são estudos renderizados a partir de dados medidos, e cada peça nomeia o ficheiro de onde veio. A arquitectura apenas monta o cenário. A investigação é o trabalho em curso de uma pessoa, não o veredicto de uma instituição, e cada sala termina com uma linha sobre o que as suas provas ainda não conseguem mostrar.",
+      "intro": "Bem-vindo ao Mind Palace, um pequeno museu de investigação construído por uma só pessoa. Três salas abrem-se a partir deste hall, cada uma com o nome do repositório de código aberto cujo trabalho mostra: einstruct, world-engine e phototroph. O quarto repositório, coarsen, guarda os seus mundos no orrery, alcançado pela esfera armilar do jardim. Nada aqui é uma ilustração. As imagens em movimento são simulações gravadas, reproduzidas fotograma a fotograma; as imagens fixas são estudos renderizados a partir de dados medidos, e cada peça nomeia o ficheiro de onde veio. A arquitectura apenas monta o cenário. A investigação é o trabalho em curso de uma pessoa, não o veredicto de uma instituição, e cada sala termina com uma linha sobre o que as suas provas ainda não conseguem mostrar.",
       "lookFor": "Leia o painel à porta de cada sala antes da peça, e depois a pequena etiqueta ao lado de cada obra.",
       "limit": "O edifício monta o cenário; só as fitas e as imagens fixas trazem provas, e «About this view» nomeia exactamente o que está a ver."
     },
@@ -20,13 +20,6 @@
       "intro": "einstruct é a investigação aberta de uma só pessoa sobre o que uma nuvem de partículas pode saber de si mesma apenas pelas distâncias, sem coordenadas. Esta sala mostra a sua experiência mais simples. Duzentas mil partículas de duas espécies, A e B, vagueiam por uma folha; sempre que um A encontra um B, ambos desaparecem. É toda a regra. No chão está a simulação gravada, reproduzida fotograma a fotograma sem nada interpolado. Ao lado está o seu controlo, a mesma simulação com as espécies rebaralhadas a cada vinte passos. Numa, regiões de uma só espécie crescem até a folha ser um mosaico; na outra nunca se formam.",
       "lookFor": "Pause ambas as fitas perto do fim e compare o tamanho das manchas de uma só espécie; depois recue para as ver surgir.",
       "limit": "O navegador desenha uma amostra das partículas, por isso não pode medir cada região vazia da simulação completa; os números das etiquetas vêm dos ficheiros gravados."
-    },
-    "spectre": {
-      "title": "coarsen",
-      "kicker": "Como encontra um mundo o seu centro?",
-      "intro": "coarsen é a investigação aberta de uma só pessoa sobre quão grande e por quanto tempo um mundo feito só de partículas pode correr antes de deixar de se medir como matéria real. Os três globos aqui são uma única experiência. Cada mundo começou como a mesma bola de 508 744 partículas, uma mistura uniforme de uma espécie pesada e de uma leve, mantida pela própria gravidade sob um céu frio. A única diferença entre eles é a força com que as duas espécies se repelem. Cada um está aberto: a superfície é o bordo medido das partículas, e o interior é medido a partir delas, fotograma a fotograma, ao longo de 96 tempos dinâmicos.",
-      "lookFor": "Deixe a gravação correr e compare as três faces cortadas no mesmo instante; onde as duas espécies mais se repelem, a espécie pesada junta-se mais cedo no centro.",
-      "limit": "Uma só simulação gravada por mundo, nada interpolado. Estas simulações não separam a desmistura do arrefecimento comum como causa de um centro pesado, pelo que nenhuma placa aqui afirma que a desmistura o causou."
     },
     "world-engine": {
       "title": "world-engine",
@@ -45,7 +38,7 @@
     "orangery": {
       "title": "laranjal",
       "kicker": "Deixe os olhos viajar.",
-      "intro": "O laranjal liga a sala de world-engine ao terraço. É um lugar entre peças: siga as portas abertas, olhe para trás na direcção das salas, ou saia para debaixo do céu. Há aqui uma partida de xadrez, aberta a partir do Guia sobre a sala.",
+      "intro": "O laranjal liga a sala de world-engine ao terraço. É um lugar entre peças: siga as portas abertas, olhe para trás na direcção das salas, ou saia para debaixo do céu. Ao fundo há uma mesa de xadrez: aproxime-se para jogar, ou abra a partida a partir do Guia.",
       "lookFor": "As três portas do lado do jardim dão todas para o terraço."
     },
     "gallery": {
@@ -99,7 +92,7 @@
     "orrery": {
       "title": "orrery",
       "kicker": "Como encontra um mundo o seu centro?",
-      "intro": "O orrery mostra os três mundos de coarsen à escala do céu, alcançados pela esfera armilar do jardim. Encolheu cinquenta vezes para estar aqui; cada globo tem oitenta metros. São as mesmas simulações gravadas da sala de coarsen: 508 744 partículas cada, a mesma mistura uniforme de uma espécie pesada e de uma leve, que diferem apenas na força com que as duas se repelem. Cada um está aberto na direcção de onde está, com a superfície como bordo medido das partículas e o interior medido a partir delas. As estrelas são um fundo desenhado, não um catálogo.",
+      "intro": "O orrery mostra os três mundos de coarsen à escala do céu, alcançados pela esfera armilar do jardim. Encolheu cinquenta vezes para estar aqui; cada globo tem oitenta metros. São as simulações gravadas de coarsen: 508 744 partículas cada, a mesma mistura uniforme de uma espécie pesada e de uma leve, que diferem apenas na força com que as duas se repelem. Cada um está aberto na direcção de onde está, com a superfície como bordo medido das partículas e o interior medido a partir delas. As estrelas são um fundo desenhado, não um catálogo.",
       "lookFor": "Caminhe para um mundo e observe a sua face cortada; o brilho marca a matéria mais quente, uma codificação da temperatura, não luz.",
       "limit": "Uma só simulação gravada por mundo, nada interpolado. Um centro pesado não basta por si só para separar a desmistura do arrefecimento comum como causa."
     },
@@ -217,10 +210,6 @@
     }
   },
   "exhibits": {
-    "hall-poster": {
-      "title": "A + B → nada: um fotograma da folha",
-      "caption": "Um render fixo de um fotograma tardio da simulação gravada de einstruct: 200 000 partículas de duas espécies numa folha plana, cada A que encontra um B desaparecendo com ele. A cor distingue as duas espécies e nada mais; as regiões não foram desenhadas, formaram-se."
-    },
     "einstruct-tape": {
       "title": "Aniquilação A + B numa folha",
       "caption": "A própria simulação gravada, estendida no chão: 801 fotogramas ao longo de 400 unidades de tempo simulado, 200 000 partículas no início e 2 634 no fim, a partir de uma única disposição inicial fixa (semente 0). A cor nomeia a espécie, A ou B; não mostra temperatura nem velocidade."
@@ -236,10 +225,6 @@
     "einstruct-wall-row": {
       "title": "Uma linha não sabe para onde é cima",
       "caption": "Uma animação de 16 segundos da ideia por trás de einstruct: as distâncias ordenadas de um ponto aos seus oito vizinhos mais próximos, desenhadas como barras. Rode a nuvem, espelhe-a, renumere-a, e as barras não se movem; amplie-a, e cada barra cresce. Uma figura desenhada, sem cor medida."
-    },
-    "spectre-worlds": {
-      "title": "Três mundos abertos",
-      "caption": "O trio de planetas de coarsen à escala de um passeio: três bolas de 508 744 partículas a partir de uma mesma disposição inicial, 1 129 fotogramas ao longo de 96 tempos dinâmicos cada, com as duas espécies indiferentes, moderadamente e fortemente avessas do mais próximo ao mais distante. As regiões cor de ferro contêm mais partículas pesadas, as pálidas mais leves; o brilho codifica a temperatura."
     },
     "spectre-wall": {
       "title": "Do primeiro filme: 42,8 segundos, mudo",

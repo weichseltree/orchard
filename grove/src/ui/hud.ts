@@ -36,6 +36,8 @@ export interface HudCallbacks {
   onAtlas(mode: string): void;
   onUnmute(): void;
   onProvenance(): void;
+  /** The game whose table the visitor stands at. */
+  onOpenGame(): void;
   /** Resolves when the server took the report; rejects with its reason. */
   onReport(identity: string, reason: string): Promise<void>;
   /** Resolves when the server took the new name. */
@@ -64,6 +66,9 @@ export class Hud {
   #link: HTMLElement;
   #notices: HTMLElement;
   #hint: HTMLElement;
+  #gameOffer: HTMLElement;
+  #gameButton: HTMLButtonElement;
+  #gameKey: HTMLElement;
   #vrButton: HTMLButtonElement;
   #unmuteButton: HTMLButtonElement;
   #scrubber: HTMLElement;
@@ -171,6 +176,14 @@ export class Hud {
     this.#hint = div("hint panel");
     this.#hint.hidden = true;
     root.append(this.#hint);
+
+    // The game at the table the visitor stands at (main.ts offers it).
+    this.#gameOffer = div("game-offer panel");
+    this.#gameOffer.hidden = true;
+    this.#gameButton = button("Play", "btn accent", callbacks.onOpenGame);
+    this.#gameKey = span("game-key");
+    this.#gameOffer.append(this.#gameButton, this.#gameKey);
+    root.append(this.#gameOffer);
 
     this.#scrubber = div("scrubber panel");
     this.#scrubber.hidden = true;
@@ -419,6 +432,15 @@ export class Hud {
   setHint(text: string | null): void {
     this.#hint.textContent = text ?? "";
     this.#hint.hidden = text === null;
+  }
+
+  /** Offer the game whose table the visitor stands at, or hide the offer with null. `key` names the key that also opens it. */
+  setGameOffer(state: { title: string; key: string | null } | null): void {
+    this.#gameOffer.hidden = state === null;
+    if (!state) return;
+    this.#gameButton.textContent = `Play ${state.title}`;
+    this.#gameKey.textContent = state.key ? `or press ${state.key}` : "";
+    this.#gameKey.hidden = state.key === null;
   }
 
   setScrubberVisible(visible: boolean): void {

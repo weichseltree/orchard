@@ -32,24 +32,28 @@ describe("the exhibit companion", () => {
   });
 
   it("suggests only research chambers reachable through open doors, in a stable order", () => {
-    expect(researchRooms(mansion).map((room) => room.id)).toEqual(["einstruct", "spectre", "phototroph", "world-engine"]);
+    expect(researchRooms(mansion).map((room) => room.id)).toEqual(["einstruct", "orrery", "phototroph", "world-engine"]);
     const isolated = structuredClone(mansion);
     for (const room of isolated.rooms) {
       for (const doorway of room.doorways) {
-        if (doorway.to === "spectre") doorway.closed = true;
+        if (doorway.to === "phototroph") doorway.closed = true;
       }
     }
-    expect(researchRooms(isolated).map((room) => room.id)).not.toContain("spectre");
+    expect(researchRooms(isolated).map((room) => room.id)).not.toContain("phototroph");
+    // The Orrery is reached through the garden's portal, not a door.
+    const noPortal = structuredClone(mansion);
+    for (const room of noPortal.rooms) room.portals = [];
+    expect(researchRooms(noPortal).map((room) => room.id)).not.toContain("orrery");
     expect(researchRooms({ ...mansion, rooms: [...mansion.rooms].reverse() }).map((room) => room.id))
       .toEqual(researchRooms(mansion).map((room) => room.id));
   });
 
   it("keeps mode flags on room links without carrying a previous camera location", () => {
-    const link = new URL(roomHref("?demo&nosw&room=hall&x=1&z=2&yaw=30&pitch=-5", "spectre"), "https://example.test");
+    const link = new URL(roomHref("?demo&nosw&room=hall&x=1&z=2&yaw=30&pitch=-5", "orrery"), "https://example.test");
     expect(link.pathname).toBe("/mind/");
     expect(link.searchParams.has("demo")).toBe(true);
     expect(link.searchParams.has("nosw")).toBe(true);
-    expect(link.searchParams.get("room")).toBe("spectre");
+    expect(link.searchParams.get("room")).toBe("orrery");
     for (const parameter of ["x", "z", "yaw", "pitch"]) expect(link.searchParams.has(parameter)).toBe(false);
   });
 

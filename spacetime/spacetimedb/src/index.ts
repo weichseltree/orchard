@@ -620,7 +620,6 @@ const SEED_ROOMS: ReadonlyArray<{
   { name: 'einstruct', title: 'The einstruct room', admin_only: false, capacity: 24 },
   { name: 'world-engine', title: 'The world-engine room', admin_only: false, capacity: 24 },
   { name: 'phototroph', title: 'The phototroph room', admin_only: false, capacity: 24 },
-  { name: 'spectre', title: 'The spectre room', admin_only: false, capacity: 24 },
   { name: 'orangery', title: 'The orangery', admin_only: false, capacity: 24 },
   { name: 'gallery', title: 'The gallery', admin_only: false, capacity: 24 },
   { name: 'orrery', title: 'The Orrery', admin_only: false, capacity: 24 },

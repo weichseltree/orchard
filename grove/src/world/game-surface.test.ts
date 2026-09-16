@@ -8,6 +8,7 @@ const surface: GameSurface = {
   title: "FTL Chess",
   description: "",
   url: "https://ftlchess.com/play?theme=night",
+  yawDeg: 0,
 };
 
 describe("gameSurfaceUrl", () => {

@@ -58,10 +58,11 @@ const LECTERN_STANDOFF_M = 1.2;
 const REPOSITORY_NAME: Readonly<Record<string, string>> = { spectre: "coarsen" };
 /**
  * A planet hanging pins a bundle id and names no tree in the scene document;
- * the two rooms that hang coarsen's cutaway worlds are its. Every other
- * hanging carries its tree in `bundle.exhibit`.
+ * the Orrery, which hangs coarsen's cutaway worlds, is its (the chamber that
+ * also did is gone, ruled 2026-09-16). Every other hanging carries its tree
+ * in `bundle.exhibit`.
  */
-const TREE_OF_ROOM: Readonly<Record<string, string>> = { spectre: "spectre", orrery: "spectre" };
+const TREE_OF_ROOM: Readonly<Record<string, string>> = { orrery: "spectre" };
 
 export type PlaqueKind = "entrance" | "label";
 export type PlaqueMount = "wall" | "lectern" | "stand";

@@ -58,7 +58,7 @@ if (args.live) {
   try {
     const out = execFileSync(
       "spacetime",
-      ["sql", args.db, "--format", "json", "SELECT name FROM room"],
+      ["sql", args.db, "--format", "json", "SELECT name, open FROM room"],
       { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
     );
     rows = JSON.parse(out.slice(out.indexOf("[{")))[0].rows;
@@ -66,7 +66,18 @@ if (args.live) {
     console.error(`rooms: could not read the live room table (${error instanceof Error ? error.message : String(error)})`);
     process.exit(2);
   }
-  compare(`live ${args.db}`, new Set(rows.map(([name]) => name)));
+  // A live room nothing joins any more cannot be deleted (the module has no
+  // reducer for that); it is shut with `set_room ... open=false` and stays a
+  // row. A shut row the mansion does not want is retired, not a gap; a shut
+  // row the mansion DOES join is a locked door for every visitor, so that is
+  // reported like a missing one. (coarsen's chamber, retired 2026-09-16.)
+  const open = new Set(rows.filter(([, isOpen]) => isOpen).map(([name]) => name));
+  const shut = new Set(rows.filter(([, isOpen]) => !isOpen).map(([name]) => name));
+  // Open rows, plus the shut rows the mansion still joins (reported below, not as missing).
+  compare(`live ${args.db}`, new Set([...open, ...[...shut].filter((name) => wanted.has(name))]));
+  for (const [name, rooms] of wanted) {
+    if (shut.has(name)) problems.push(`live ${args.db}: room "${name}" is shut, which ${rooms.join(", ")} joins`);
+  }
 }
 
 if (problems.length > 0) {
@@ -74,6 +85,7 @@ if (problems.length > 0) {
   // Each argument is its own JSON value; a single array is rejected as
   // "Invalid arguments provided for reducer".
   console.error(`  add a missing live room with:\n    spacetime call ${args.db} set_room '"<name>"' '"<title>"' 'false' 'true' '24'`);
+  console.error(`  retire a live room nothing joins with:\n    spacetime call ${args.db} set_room '"<name>"' '"<title>"' 'false' 'false' '24'`);
   process.exitCode = 1;
 } else {
   console.log(`rooms: ${wanted.size} presence rooms match the module${args.live ? ` and live ${args.db}` : ""}`);

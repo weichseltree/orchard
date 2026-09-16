@@ -10,7 +10,7 @@
     "hall": {
       "title": "hal",
       "kicker": "Welke vraag trekt u aan?",
-      "intro": "Welkom in het Mind Palace, een klein onderzoeksmuseum, gebouwd door één persoon. Vier zalen komen uit op deze hal, elk genoemd naar de open-source-repository waarvan ze het werk tonen: einstruct, coarsen, world-engine en phototroph. Niets hier is een illustratie. De bewegende beelden zijn opgenomen simulaties, beeld voor beeld afgespeeld; de stilstaande beelden zijn studies, gerenderd uit gemeten gegevens, en elk werk noemt het bestand waaruit het komt. De architectuur zet alleen het decor. Het onderzoek is het lopende werk van één persoon, niet het oordeel van een instituut, en elke zaal eindigt met een regel over wat haar bewijs nog niet kan laten zien.",
+      "intro": "Welkom in het Mind Palace, een klein onderzoeksmuseum, gebouwd door één persoon. Drie zalen komen uit op deze hal, elk genoemd naar de open-source-repository waarvan ze het werk tonen: einstruct, world-engine en phototroph. De vierde repository, coarsen, bewaart zijn werelden in het orrery, bereikt via het armillarium in de tuin. Niets hier is een illustratie. De bewegende beelden zijn opgenomen simulaties, beeld voor beeld afgespeeld; de stilstaande beelden zijn studies, gerenderd uit gemeten gegevens, en elk werk noemt het bestand waaruit het komt. De architectuur zet alleen het decor. Het onderzoek is het lopende werk van één persoon, niet het oordeel van een instituut, en elke zaal eindigt met een regel over wat haar bewijs nog niet kan laten zien.",
       "lookFor": "Lees het paneel bij de deur van elke zaal vóór het werk, en daarna het kleine bordje naast elk stuk.",
       "limit": "Het gebouw zet het decor; alleen de banden en de stilstaande beelden dragen bewijs, en \"About this view\" noemt precies wat u ziet."
     },
@@ -20,13 +20,6 @@
       "intro": "einstruct is het open onderzoek van één persoon naar wat een wolk deeltjes over zichzelf kan weten uit afstanden alleen, zonder coördinaten. Deze zaal toont het eenvoudigste experiment. Tweehonderdduizend deeltjes van twee soorten, A en B, dwalen over een vel; telkens als een A een B ontmoet, verdwijnen beide. Dat is de hele regel. Op de vloer ligt de opgenomen run, beeld voor beeld afgespeeld zonder enige interpolatie. Ernaast ligt de controle, dezelfde run waarin de soorten elke twintig stappen opnieuw worden geschud. In de ene groeien gebieden van één soort tot het vel een lappendeken is; in de andere ontstaan ze nooit.",
       "lookFor": "Pauzeer beide banden tegen het einde en vergelijk de grootte van de vlekken van één soort; spoel dan terug om ze te zien ontstaan.",
       "limit": "De browser tekent een steekproef van de deeltjes en kan dus niet elk leeg gebied van de volledige simulatie meten; de getallen op de bordjes komen uit de opgenomen bestanden."
-    },
-    "spectre": {
-      "title": "coarsen",
-      "kicker": "Hoe vindt een wereld haar midden?",
-      "intro": "coarsen is het open onderzoek van één persoon naar hoe groot en hoe lang een wereld die uit niets dan deeltjes bestaat kan draaien voordat ze ophoudt te meten als echte materie. De drie bollen hier zijn één experiment. Elke wereld begon als dezelfde bal van 508.744 deeltjes, een gelijkmatig mengsel van een zware en een lichte soort, bijeengehouden door haar eigen zwaartekracht onder een koude hemel. Het enige verschil is hoe sterk de twee soorten elkaar afstoten. Elke wereld is opengesneden: het oppervlak is de gemeten rand van de deeltjes, en het binnenste is daaruit gemeten, beeld voor beeld, over 96 dynamische tijden.",
-      "lookFor": "Laat de opname lopen en vergelijk de drie snijvlakken op hetzelfde moment; waar de twee soorten elkaar het sterkst afstoten, verzamelt de zware soort zich het eerst in het midden.",
-      "limit": "Eén opgenomen run per wereld, niets geïnterpoleerd. Deze runs scheiden ontmenging niet van gedeelde afkoeling als oorzaak van een zwaar midden, dus geen bordje hier zegt dat de ontmenging het veroorzaakte."
     },
     "world-engine": {
       "title": "world-engine",
@@ -45,7 +38,7 @@
     "orangery": {
       "title": "oranjerie",
       "kicker": "Laat uw ogen reizen.",
-      "intro": "De oranjerie verbindt de zaal van world-engine met het terras. Het is een plek tussen de werken: volg de open deuren, kijk terug naar de zalen, of stap naar buiten onder de hemel. Er is hier een partij schaak, geopend vanuit de Gids over de ruimte heen.",
+      "intro": "De oranjerie verbindt de zaal van world-engine met het terras. Het is een plek tussen de werken: volg de open deuren, kijk terug naar de zalen, of stap naar buiten onder de hemel. Aan het verre einde staat een schaaktafel: loop ernaartoe om te spelen, of open het spel vanuit de Gids.",
       "lookFor": "De drie deuren aan de tuinkant komen alle uit op het terras."
     },
     "gallery": {
@@ -99,7 +92,7 @@
     "orrery": {
       "title": "orrery",
       "kicker": "Hoe vindt een wereld haar midden?",
-      "intro": "Het orrery toont de drie werelden van coarsen op de schaal van de hemel, bereikt via het armillarium in de tuin. U bent vijftig keer gekrompen om hier te staan; elke bol is tachtig meter breed. Het zijn dezelfde opgenomen runs als in de zaal van coarsen: 508.744 deeltjes elk, hetzelfde gelijkmatige mengsel van een zware en een lichte soort, alleen verschillend in hoe sterk de twee elkaar afstoten. Elke wereld is opengesneden naar de plek waar u staat, met het oppervlak als gemeten rand van de deeltjes en het binnenste daaruit gemeten. De sterren zijn een ontworpen achtergrond, geen catalogus.",
+      "intro": "Het orrery toont de drie werelden van coarsen op de schaal van de hemel, bereikt via het armillarium in de tuin. U bent vijftig keer gekrompen om hier te staan; elke bol is tachtig meter breed. Het zijn de opgenomen runs van coarsen: 508.744 deeltjes elk, hetzelfde gelijkmatige mengsel van een zware en een lichte soort, alleen verschillend in hoe sterk de twee elkaar afstoten. Elke wereld is opengesneden naar de plek waar u staat, met het oppervlak als gemeten rand van de deeltjes en het binnenste daaruit gemeten. De sterren zijn een ontworpen achtergrond, geen catalogus.",
       "lookFor": "Loop naar een wereld toe en bekijk het snijvlak; de gloed markeert de heetste materie, een codering van temperatuur, geen licht.",
       "limit": "Eén opgenomen run per wereld, niets geïnterpoleerd. Een zwaar midden scheidt op zichzelf ontmenging niet van gedeelde afkoeling als oorzaak."
     },
@@ -217,10 +210,6 @@
     }
   },
   "exhibits": {
-    "hall-poster": {
-      "title": "A + B → niets: één beeld van het vel",
-      "caption": "Een stilstaande render van één laat beeld uit de opgenomen run van einstruct: 200.000 deeltjes van twee soorten op een vlak vel, waarbij elke A die een B ontmoet met hem verdwijnt. Kleur onderscheidt de twee soorten en niets anders; de gebieden zijn niet getekend, ze zijn ontstaan."
-    },
     "einstruct-tape": {
       "title": "A + B-annihilatie op een vel",
       "caption": "De opgenomen run zelf, plat op de vloer gelegd: 801 beelden over 400 eenheden simulatietijd, 200.000 deeltjes aan het begin en 2.634 aan het einde, vanuit één vaste beginopstelling (zaad 0). Kleur benoemt de soort, A of B; ze toont geen temperatuur of snelheid."
@@ -236,10 +225,6 @@
     "einstruct-wall-row": {
       "title": "Een rij weet niet welke kant boven is",
       "caption": "Een animatie van 16 seconden over het idee achter einstruct: de gesorteerde afstanden van één punt tot zijn acht naaste buren, getekend als staven. Draai de wolk, spiegel haar, nummer haar opnieuw, en de staven bewegen niet; zoom in, en elke staaf groeit. Een getekende figuur, zonder gemeten kleur."
-    },
-    "spectre-worlds": {
-      "title": "Drie opengesneden werelden",
-      "caption": "Het planetentrio van coarsen op loopschaal: drie ballen van 508.744 deeltjes uit één beginopstelling, elk 1.129 beelden over 96 dynamische tijden, met de twee soorten onverschillig, matig en sterk afkerig van dichtbij naar veraf. IJzerwarme gebieden bevatten meer zware deeltjes, bleke meer lichte; de gloed codeert temperatuur."
     },
     "spectre-wall": {
       "title": "Uit de eerste film: 42,8 seconden, stil",

@@ -25,6 +25,14 @@ export const GameSurfaceSchema = z.looseObject({
   title: z.string().min(1),
   description: z.string().default(""),
   url: z.string().url(),
+  /**
+   * Where its table stands in the room, when it has one (the orangery's
+   * chess table, observatory.ts): the visitor walks up to it to play, and
+   * the Guide still opens it from anywhere in the room. `yawDeg` turns the
+   * table; the players' stools sit along its x axis.
+   */
+  position: Vec3.optional(),
+  yawDeg: z.number().default(0),
 });
 
 /**
@@ -97,6 +105,13 @@ export const VideoHangingSchema = z.looseObject({
   ...HangingCommon,
   kind: z.literal("video"),
   widthMeters: z.number().positive().default(6),
+  /**
+   * Slower or faster than the clip's own clock; 1 is as recorded. The hall's
+   * film runs at a quarter speed as a moving picture rather than an excerpt.
+   * Browsers clamp: Firefox goes no slower than 0.25, so that is the floor
+   * a document should use. Every wall loops.
+   */
+  playbackRate: z.number().positive().max(16).default(1),
 });
 
 /**
@@ -345,6 +360,9 @@ export const MansionSchema = z
           ctx.addIssue({ code: "custom", message: `duplicate game surface id "${surface.id}"` });
         }
         gameSurfaceIds.add(surface.id);
+        if (surface.position && !withinFootprint(room, surface.position)) {
+          ctx.addIssue({ code: "custom", message: `game surface "${surface.id}" stands outside "${room.id}"` });
+        }
       }
       for (const door of room.doorways) {
         if (door.closed) continue;

@@ -35,6 +35,8 @@ export interface Commands {
   toggleProvenance(): void;
   togglePerf(): void;
   toggleUnmute(): void;
+  /** The game whose table the visitor stands at, when the room has one (G). */
+  openGame(): void;
 }
 
 /** A stick reading with its dead zone removed and its edge rescaled. */
