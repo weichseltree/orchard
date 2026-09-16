@@ -34,7 +34,7 @@ import {
 } from "../src/faye/events";
 import { EMPTY_STATE, replyTo, type FayeState } from "../src/faye/reply";
 import { Speaker, TURN_POSE_HZ, isNewLine, onDisconnectAction } from "../src/faye/listen";
-import { FAYE_ROOM } from "../src/faye/names";
+import { FAYE_NAME, FAYE_ROOM } from "../src/faye/names";
 
 const { values: args } = parseArgs({
   options: {
@@ -47,10 +47,6 @@ const { values: args } = parseArgs({
     "token-file": { type: "string", default: "" },
     /** Make that identity: connect with none, write its token, print it, exit. */
     "new-identity": { type: "boolean", default: false },
-    // NAME_MAX is 24 and `cleanName` clips silently, so a longer name is
-    // truncated rather than refused: "The Great Admin Spirit Faye" (27) would
-    // stand in the room as "The Great Admin Spirit F". This one is 23.
-    name: { type: "string", default: "Great Admin Spirit Faye" },
     /** Where she stands, metres: "x,y,z". Eye height, not the floor. */
     at: { type: "string", default: "0,1.6,6" },
     /** Seconds per full turn on the spot; 0 stands still. */
@@ -258,19 +254,18 @@ async function main(): Promise<void> {
     void speaker.say(answer, { droppable: true });
   });
 
-  // Always FAYE_ROOM, with no flag to change it: the client tells a visitor
-  // elsewhere to walk to that room (src/faye/names.ts), so a Faye standing
-  // anywhere else would send them to the wrong one.
+  // Her name and room are constants, not flags (src/faye/names.ts): the client
+  // recognises her by the one and sends visitors to the other.
   before = ownLastSeen();
   // The speaker is held from BEFORE the join until its acknowledgement and the
   // hold after it: the handler is live, and a reply to a line said while the
   // join is in flight must not go out inside the gap `join` just stamped.
-  const joining = conn.reducers.join({ name: args.name, room: FAYE_ROOM });
+  const joining = conn.reducers.join({ name: FAYE_NAME, room: FAYE_ROOM });
   speaker.holdUntil(joining.then(() => speaker.heldUntilGap(performance.now())));
   await joining;
-  console.log(`faye: standing in "${FAYE_ROOM}" as "${args.name}"`);
-  if (args.name.length > 24) {
-    console.warn(`faye: the module clips names at 24 characters, so this shows as "${args.name.slice(0, 24)}"`);
+  console.log(`faye: standing in "${FAYE_ROOM}" as "${FAYE_NAME}"`);
+  if (FAYE_NAME.length > 24) {
+    console.warn(`faye: the module clips names at 24 characters, so this shows as "${FAYE_NAME.slice(0, 24)}"`);
   }
 
   // Queued, not awaited: replies may already be waiting ahead of it, and the

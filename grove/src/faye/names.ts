@@ -21,6 +21,15 @@
 export const NAMES = /\b(faye|fay|fae|fey)\b/;
 
 /**
+ * The name she stands in the room under. Not a flag: the client recognises her
+ * by it (`isFaye`), so a Faye started under another name would be reported
+ * absent while she stood there. NAME_MAX in the module is 24 and `cleanName`
+ * clips silently -- "The Great Admin Spirit Faye" (27) would have stood as
+ * "The Great Admin Spirit F" -- so a test holds this to the limit.
+ */
+export const FAYE_NAME = "Great Admin Spirit Faye";
+
+/**
  * The presence room she stands in: the hall's. `scripts/faye.ts` always joins
  * it, with no flag to change that, because the client names this room as the
  * one a visitor should walk to.
@@ -51,16 +60,18 @@ export function isFaye(peer: { name: string; host: boolean }): boolean {
  * being broken, and gives nobody a way to tell the difference.
  *
  * `joinedRoom` null means the line never reached a room at all; that failure
- * is reported by the send itself, not here. `fayeRoomTitle` is the title of
+ * is reported by the send itself, not here. `peers` null means who is in the
+ * room is not known yet (just arrived), and a guess either way would be wrong
+ * as often as right, so nothing is said. `fayeRoomTitle` is the title of
  * the room whose presence is `FAYE_ROOM`, for a visitor to walk to.
  */
 export function whereIsFaye(
   text: string,
-  peers: Iterable<{ name: string; host: boolean }>,
+  peers: Iterable<{ name: string; host: boolean }> | null,
   joinedRoom: string | null,
   fayeRoomTitle: string,
 ): string | null {
-  if (joinedRoom === null || !namesFaye(text)) return null;
+  if (joinedRoom === null || peers === null || !namesFaye(text)) return null;
   for (const peer of peers) if (isFaye(peer)) return null;
   if (joinedRoom === FAYE_ROOM) return "Faye is not here right now, so nobody will answer.";
   return `Faye cannot hear you from here. She stands in the ${fayeRoomTitle}.`;

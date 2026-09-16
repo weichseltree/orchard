@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { FAYE_ROOM, isFaye, namesFaye, whereIsFaye } from "./names";
+import { FAYE_NAME, FAYE_ROOM, isFaye, namesFaye, whereIsFaye } from "./names";
 
-const faye = { name: "Great Admin Spirit Faye", host: true };
+const faye = { name: FAYE_NAME, host: true };
 const visitor = { name: "Tester", host: false };
 
 describe("namesFaye", () => {
@@ -19,6 +19,12 @@ describe("namesFaye", () => {
 describe("isFaye", () => {
   it("is a host with her name", () => {
     expect(isFaye(faye)).toBe(true);
+  });
+
+  it("recognises the name she stands under, as the module will store it", () => {
+    // NAME_MAX is 24 and the module clips silently.
+    expect(FAYE_NAME.length).toBeLessThanOrEqual(24);
+    expect(isFaye({ name: FAYE_NAME.slice(0, 24), host: true })).toBe(true);
   });
 
   it("is never a visitor who calls themselves Faye", () => {
@@ -39,6 +45,10 @@ describe("whereIsFaye", () => {
 
   it("says nothing to a line that was not for her", () => {
     expect(whereIsFaye("hello everyone", [visitor], "gallery", "hall")).toBeNull();
+  });
+
+  it("says nothing while who is in the room is not known yet", () => {
+    expect(whereIsFaye(ask, null, "gallery", "hall")).toBeNull();
   });
 
   it("says nothing when the line never reached a room", () => {

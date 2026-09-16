@@ -400,6 +400,26 @@ export class Presence {
   }
 
   /** Rebuilds the peer list when a table changed. Called once per frame. */
+  /**
+   * Who else is online in our room right now, read straight from the view
+   * rather than from `peers`, which only the frame loop's `sync` rebuilds and
+   * so can still describe the room we just left. Null while that cannot be
+   * known: not in a room, or the subscription's rows have not landed yet.
+   * Reading it has no side effects, so `sync` still reports the change.
+   */
+  peopleInRoom(): Array<{ name: string; host: boolean }> | null {
+    const connection = this.#connection;
+    const room = this.joinedRoom;
+    if (!connection || !room || !this.#hearing) return null;
+    const out: Array<{ name: string; host: boolean }> = [];
+    for (const visitor of connection.db.peopleHere.iter()) {
+      if (visitor.room !== room || !visitor.online) continue;
+      if (visitor.identity.toHexString() === this.#identityHex) continue;
+      out.push({ name: visitor.name, host: visitor.isAdmin });
+    }
+    return out;
+  }
+
   sync(): boolean {
     if (!this.#dirty || !this.#connection) return false;
     this.#dirty = false;
