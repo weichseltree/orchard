@@ -1,4 +1,5 @@
 import type { ExhibitRow } from "../world/exhibits";
+import type { ChatLine, ChatRow } from "./presence";
 import { describe, expect, it, vi } from "vitest";
 import {
   Presence,
@@ -39,6 +40,9 @@ function stubConnection(options: {
   closed?: string[];
   /** Rooms only a host may enter. */
   adminOnly?: string[];
+  refuseSay?: (text: string) => string | null;
+  /** Hold `onApplied` until `applyNow()`, so a test can sit in the backlog. */
+  applyLater?: boolean;
   people?: StubVisitor[];
   poses?: StubPose[];
 }): PresenceConnection & {
@@ -49,9 +53,15 @@ function stubConnection(options: {
   queries: string[][];
   reports: Array<[string, string]>;
   moderation: string[];
+  said: string[];
+  chatInserts: Array<(ctx: unknown, row: ChatRow) => void>;
+  applyNow: () => void;
 } {
   const joins: string[] = [];
   const names: string[] = [];
+  const said: string[] = [];
+  const pendingApplied: Array<() => void> = [];
+  const chatInserts: Array<(ctx: unknown, row: ChatRow) => void> = [];
   const moderation: string[] = [];
   const queries: string[][] = [];
   const reports: Array<[string, string]> = [];
@@ -67,6 +77,8 @@ function stubConnection(options: {
   const connection = {
     joins,
     names,
+    said,
+    chatInserts,
     moderation,
     queries,
     reports,
@@ -88,6 +100,11 @@ function stubConnection(options: {
         })),
       ),
       posesHere: table(() => (options.poses ?? []).map((p) => ({ ...p, identity: id(p.hex) }))),
+      chatHere: {
+        iter: () => [],
+        onInsert: (cb: (ctx: unknown, row: ChatRow) => void) => { chatInserts.push(cb); },
+        onDelete: () => {},
+      },
       room: {
         iter: () =>
           (options.rooms ?? ["grove", "einstruct"]).map((name) => ({
@@ -99,6 +116,11 @@ function stubConnection(options: {
       exhibit: { iter: () => options.exhibits ?? [] },
     },
     reducers: {
+      say: async ({ text }: { text: string }) => {
+        said.push(text);
+        const refusal = options.refuseSay?.(text);
+        if (refusal) throw new Error(refusal);
+      },
       join: async ({ room, name }: { room: string; name: string }) => {
         joins.push(room);
         names.push(name);
@@ -127,7 +149,8 @@ function stubConnection(options: {
     subscriptionBuilder: () => {
       const builder = {
         onApplied(cb: () => void) {
-          cb();
+          if (options.applyLater) pendingApplied.push(cb);
+          else cb();
           return builder;
         },
         onError() {
@@ -140,6 +163,9 @@ function stubConnection(options: {
       };
       return builder;
     },
+    applyNow: () => {
+      for (const cb of pendingApplied.splice(0)) cb();
+    },
     disconnect: () => undefined,
   };
   return connection as unknown as PresenceConnection & {
@@ -150,6 +176,9 @@ function stubConnection(options: {
     queries: string[][];
     reports: Array<[string, string]>;
     moderation: string[];
+    said: string[];
+    chatInserts: Array<(ctx: unknown, row: ChatRow) => void>;
+    applyNow: () => void;
   };
 }
 
@@ -383,6 +412,7 @@ describe("join refusal", () => {
     expect(connection.queries[1]).toEqual([
       "SELECT * FROM people_here",
       "SELECT * FROM poses_here",
+      "SELECT * FROM chat_here",
       "SELECT * FROM room",
     ]);
     presence.join("grove");
@@ -809,5 +839,107 @@ describe("who we are, and what a host can do", () => {
     await presence.moderate("p1", { kind: "ban", minutes: 0, network: true, reason: "spam" });
     expect(connection.moderation).toEqual(["mute p1 true", "kick p1", "ban p1 0 true spam"]);
     await expect(presence.moderate("gone", { kind: "kick" })).rejects.toThrow("not here");
+  });
+});
+
+describe("chat", () => {
+  const line = (over: Partial<ChatRow> = {}): ChatRow => ({
+    id: 1n,
+    room: "grove",
+    sender: { toHexString: () => "them" },
+    name: "ann",
+    text: "hello",
+    at: { microsSinceUnixEpoch: 1_700_000_000_000_000n },
+    ...over,
+  });
+
+  /** Connects, joins, and returns the pieces plus the chat lines heard. */
+  const talking = async () => {
+    const connection = stubConnection({});
+    const heard: ChatLine[] = [];
+    let handlers!: TransportHandlers;
+    const presence = new Presence(
+      { onChat: (l) => heard.push(l) },
+      { transport: (h) => (handlers = h), storage: memoryStorage() },
+    );
+    presence.connect("grove");
+    handlers.onConnect(connection, "me", "token");
+    await settle(20);
+    return { presence, connection, heard };
+  };
+
+  it("subscribes to the room's chat view", async () => {
+    const { presence, connection } = await talking();
+    expect(connection.queries.flat()).toContain("SELECT * FROM chat_here");
+    presence.dispose();
+  });
+
+  it("hears a line said after the backlog has landed", async () => {
+    const { presence, connection, heard } = await talking();
+    connection.chatInserts.forEach((cb) => cb(null, line({ text: "good evening" })));
+    expect(heard.map((l) => l.text)).toEqual(["good evening"]);
+    expect(heard[0]!.name).toBe("ann");
+    expect(heard[0]!.mine).toBe(false);
+    presence.dispose();
+  });
+
+  it("marks our own lines as ours", async () => {
+    const { presence, connection, heard } = await talking();
+    connection.chatInserts.forEach((cb) =>
+      cb(null, line({ sender: { toHexString: () => "me" }, text: "mine" })));
+    expect(heard[0]!.mine).toBe(true);
+    presence.dispose();
+  });
+
+  it("stays silent about the backlog: rows delivered before onApplied are history", async () => {
+    const connection = stubConnection({ applyLater: true });
+    const heard: ChatLine[] = [];
+    let handlers!: TransportHandlers;
+    const presence = new Presence(
+      { onChat: (l) => heard.push(l) },
+      { transport: (h) => (handlers = h), storage: memoryStorage() },
+    );
+    presence.connect("grove");
+    handlers.onConnect(connection, "me", "token");
+    await settle(20);
+    // The subscription has not been applied yet: these are the day's backlog.
+    connection.chatInserts.forEach((cb) => cb(null, line({ text: "said an hour ago" })));
+    expect(heard).toEqual([]);
+    // Now it applies, and what follows is news.
+    connection.applyNow();
+    connection.chatInserts.forEach((cb) => cb(null, line({ text: "said now" })));
+    expect(heard.map((l) => l.text)).toEqual(["said now"]);
+    presence.dispose();
+  });
+
+  it("says a line, trimmed", async () => {
+    const { presence, connection } = await talking();
+    await presence.say("  hello there  ");
+    expect(connection.said).toEqual(["hello there"]);
+    presence.dispose();
+  });
+
+  it("sends nothing for an empty line", async () => {
+    const { presence, connection } = await talking();
+    await presence.say("   ");
+    expect(connection.said).toEqual([]);
+    presence.dispose();
+  });
+
+  it("refuses to speak when not in a room", async () => {
+    const presence = new Presence({}, { transport: () => undefined, storage: memoryStorage() });
+    await expect(presence.say("anyone there")).rejects.toThrow(/not in a room/);
+    presence.dispose();
+  });
+
+  it("passes the module's refusal to the caller, rather than swallowing it", async () => {
+    const connection = stubConnection({ refuseSay: () => "slow down" });
+    let handlers!: TransportHandlers;
+    const presence = new Presence({}, { transport: (h) => (handlers = h), storage: memoryStorage() });
+    presence.connect("grove");
+    handlers.onConnect(connection, "me", "token");
+    await settle(20);
+    await expect(presence.say("too fast")).rejects.toThrow(/slow down/);
+    presence.dispose();
   });
 });

@@ -90,6 +90,26 @@ interface PoseRow {
   yaw: number;
 }
 
+export interface ChatRow {
+  id: bigint;
+  room: string;
+  sender: { toHexString(): string };
+  name: string;
+  text: string;
+  at: { microsSinceUnixEpoch: bigint };
+}
+
+/**
+ * Chat's own shape: unlike the other views, this one is read through the row
+ * its callback carries rather than by iterating, because a line matters when
+ * it arrives and not afterwards.
+ */
+interface ChatTableEvents {
+  iter(): Iterable<ChatRow>;
+  onInsert(cb: (ctx: unknown, row: ChatRow) => void): void;
+  onDelete(cb: () => void): void;
+}
+
 interface TableEvents<Row> {
   iter(): Iterable<Row>;
   onInsert(cb: () => void): void;
@@ -110,11 +130,14 @@ export interface PresenceConnection {
     peopleHere: TableEvents<VisitorRow>;
     /** Their poses: likewise. */
     posesHere: TableEvents<PoseRow>;
+    /** What was said in our room: likewise, scoped by the server. */
+    chatHere: ChatTableEvents;
     room: { iter(): Iterable<{ name: string; open: boolean; admin_only: boolean }> };
     exhibit: { iter(): Iterable<ExhibitRow> };
   };
   reducers: {
     join(params: { name: string; room: string }): Promise<void>;
+    say(params: { text: string }): Promise<void>;
     move(params: { x: number; y: number; z: number; yaw: number }): Promise<void>;
     leave(params: Record<string, never>): Promise<void>;
     reportVisitor(params: { who: Identityish; reason: string }): Promise<void>;
@@ -172,6 +195,19 @@ export interface PresenceCallbacks {
   onStatus?: (status: PresenceStatus, detail?: string) => void;
   onNotice?: (message: string) => void;
   onPeersChanged?: (peers: ReadonlyMap<string, Peer>) => void;
+  /** A line said in the room we are standing in, ours included. */
+  onChat?: (line: ChatLine) => void;
+}
+
+/** One line of room chat, in the shape the HUD wants. */
+export interface ChatLine {
+  id: string;
+  /** Who said it, as the server has their name. */
+  name: string;
+  text: string;
+  /** Whether we said it. */
+  mine: boolean;
+  at: number;
 }
 
 export const defaultTransport: PresenceTransport = (handlers, token) => {
@@ -231,6 +267,8 @@ export class Presence {
    * and it is cleared outright when the connection drops.
    */
   #refused = new Set<string>();
+  /** False until the subscription's backlog has landed; see `#subscribe`. */
+  #hearing = false;
   #transport: PresenceTransport;
   #random: () => number;
   #setTimer: (fn: () => void, ms: number) => ReturnType<typeof setTimeout>;
@@ -749,15 +787,69 @@ export class Presence {
    * doorway, so this is one subscription for the life of the connection.
    */
   #subscribe(connection: PresenceConnection): void {
+    // A reconnect gets a fresh subscription and therefore a fresh backlog;
+    // without this the day's chat replays as new lines every time the socket
+    // comes back.
+    this.#hearing = false;
     this.#subscription = connection
       .subscriptionBuilder()
       .onApplied(() => {
         this.#dirty = true;
+        // The subscription's existing rows are delivered BEFORE this fires, so
+        // this is exactly the line between the backlog and the news. No timer
+        // is needed and none should be used: the tests that count scheduled
+        // timers are asserting the reconnect backoff, and a stray 0 ms timer
+        // here is indistinguishable from one.
+        this.#hearing = true;
       })
       .onError(() => {
         this.#callbacks.onNotice?.("presence: the room subscription failed");
       })
-      .subscribe(["SELECT * FROM people_here", "SELECT * FROM poses_here", "SELECT * FROM room"]);
+      .subscribe([
+        "SELECT * FROM people_here",
+        "SELECT * FROM poses_here",
+        "SELECT * FROM chat_here",
+        "SELECT * FROM room",
+      ]);
+    // Only lines that arrive from here on. The subscription hands over every
+    // row it already had, and a visitor walking in to a wall of the last
+    // day's chat is worse than walking in to a quiet room -- the module keeps
+    // chat for 24 h (CHAT_KEEP), so "everything" can be a lot.
+    // A connection without the chat view must not cost the visitor the room:
+    // this runs inside the join's promise chain, so a throw here is caught by
+    // its .catch and reported as a REFUSAL, which is a wildly misleading way
+    // to say "chat is missing".
+    const chat = connection.db.chatHere as ChatTableEvents | undefined;
+    if (!chat) {
+      this.#callbacks.onNotice?.("presence: this room has no chat");
+      return;
+    }
+    chat.onInsert((_ctx, row) => {
+      if (!this.#hearing) return;
+      this.#callbacks.onChat?.({
+        id: String(row.id),
+        name: row.name,
+        text: row.text,
+        mine: row.sender.toHexString() === this.#identityHex,
+        at: Number(row.at.microsSinceUnixEpoch / 1000n),
+      });
+    });
+  }
+
+  /**
+   * Say something in the room we are standing in. Rejects when we are not in
+   * one, and when the module refuses -- it allows one line per 0.7 s per
+   * visitor, and `join` stamps that clock, so the first line after arriving
+   * can come back "slow down".
+   */
+  say(text: string): Promise<void> {
+    const connection = this.#connection;
+    const line = text.trim();
+    if (!connection || this.status !== "online" || !this.joinedRoom) {
+      return Promise.reject(new Error("not in a room"));
+    }
+    if (!line) return Promise.resolve();
+    return connection.reducers.say({ text: line });
   }
 
   #setStatus(status: PresenceStatus, detail?: string): void {
