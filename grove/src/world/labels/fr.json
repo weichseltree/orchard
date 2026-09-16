@@ -10,7 +10,7 @@
     "hall": {
       "title": "hall",
       "kicker": "Quelle question vous attire ?",
-      "intro": "Bienvenue dans le grove, un petit musée de recherche construit par une seule personne. Quatre salles ouvrent sur ce hall, chacune portant le nom du dépôt open source dont elle montre le travail : einstruct, coarsen, world-engine et phototroph. Rien ici n'est une illustration. Les images animées sont des simulations enregistrées, rejouées image par image, les images fixes sont des études rendues à partir de données mesurées, et chaque pièce nomme le fichier dont elle provient. L'architecture ne fait que planter le décor. La recherche est le travail en cours d'une personne, non le verdict d'une institution, et chaque salle se termine par une ligne sur ce que ses preuves ne peuvent pas encore montrer.",
+      "intro": "Bienvenue dans le Mind Palace, un petit musée de recherche construit par une seule personne. Quatre salles ouvrent sur ce hall, chacune portant le nom du dépôt open source dont elle montre le travail : einstruct, coarsen, world-engine et phototroph. Rien ici n'est une illustration. Les images animées sont des simulations enregistrées, rejouées image par image, les images fixes sont des études rendues à partir de données mesurées, et chaque pièce nomme le fichier dont elle provient. L'architecture ne fait que planter le décor. La recherche est le travail en cours d'une personne, non le verdict d'une institution, et chaque salle se termine par une ligne sur ce que ses preuves ne peuvent pas encore montrer.",
       "lookFor": "Lisez le panneau à la porte de chaque salle avant l'exposition, puis la petite étiquette à côté de chaque pièce.",
       "limit": "Le bâtiment plante le décor ; seuls les enregistrements et les images fixes portent des preuves, et « About this view » nomme exactement ce que vous regardez."
     },
@@ -50,7 +50,7 @@
     },
     "gallery": {
       "title": "galerie",
-      "kicker": "Une partie plus calme du grove.",
+      "kicker": "Une partie plus calme du Mind Palace.",
       "intro": "La galerie va de la salle de phototroph au belvédère. Les portes fermées le long de son mur intérieur appartiennent à des projets de recherche qui n'ont pas encore mérité une salle ; on en mérite une en ayant quelque chose d'honnête à accrocher. Marchez, faites une pause, et revenez quand vous serez prêt.",
       "lookFor": "La large ouverture au fond monte vers le belvédère ; les portes étroites côté jardin mènent à la terrasse."
     },

@@ -10,7 +10,7 @@
     "hall": {
       "title": "hall",
       "kicker": "Which question draws you in?",
-      "intro": "Welcome to the grove, a small research museum built by one person. Four chambers open off this hall, each named after the open-source repository whose work it shows: einstruct, coarsen, world-engine and phototroph. Nothing here is an illustration. The moving pictures are recorded simulations played back frame by frame, the stills are studies rendered from measured data, and every exhibit names the file it came from. The architecture only sets the scene. The research is one person's ongoing work, not an institution's verdict, and each chamber ends with a line about what its evidence cannot yet show.",
+      "intro": "Welcome to the Mind Palace, a small research museum built by one person. Four chambers open off this hall, each named after the open-source repository whose work it shows: einstruct, coarsen, world-engine and phototroph. Nothing here is an illustration. The moving pictures are recorded simulations played back frame by frame, the stills are studies rendered from measured data, and every exhibit names the file it came from. The architecture only sets the scene. The research is one person's ongoing work, not an institution's verdict, and each chamber ends with a line about what its evidence cannot yet show.",
       "lookFor": "Read the panel at each chamber's door before the exhibit, then the small label beside each piece.",
       "limit": "The building sets the scene; only the tapes and stills carry evidence, and \"About this view\" names exactly what you are looking at."
     },
@@ -50,7 +50,7 @@
     },
     "gallery": {
       "title": "gallery",
-      "kicker": "A quieter stretch of the grove.",
+      "kicker": "A quieter stretch of the Mind Palace.",
       "intro": "The gallery runs from the phototroph chamber to the belvedere. The closed doors along its inner wall belong to research trees that have not yet earned a room; a tree earns one by having something honest to hang. Walk, pause, and return when you are ready.",
       "lookFor": "The wide opening at the end leads up to the belvedere; the narrow doors on the garden side lead out to the terrace."
     },

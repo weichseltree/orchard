@@ -10,7 +10,7 @@
     "hall": {
       "title": "hall",
       "kicker": "Quale domanda la attira?",
-      "intro": "Benvenuti nel grove, un piccolo museo di ricerca costruito da una sola persona. Quattro sale si aprono da questo hall, ciascuna con il nome del repository open source di cui mostra il lavoro: einstruct, coarsen, world-engine e phototroph. Nulla qui è un'illustrazione. Le immagini in movimento sono simulazioni registrate, riprodotte fotogramma per fotogramma; le immagini fisse sono studi resi a partire da dati misurati, e ogni opera nomina il file da cui proviene. L'architettura fa solo da scena. La ricerca è il lavoro in corso di una persona, non il verdetto di un'istituzione, e ogni sala termina con una riga su ciò che le sue prove non possono ancora mostrare.",
+      "intro": "Benvenuti nel Mind Palace, un piccolo museo di ricerca costruito da una sola persona. Quattro sale si aprono da questo hall, ciascuna con il nome del repository open source di cui mostra il lavoro: einstruct, coarsen, world-engine e phototroph. Nulla qui è un'illustrazione. Le immagini in movimento sono simulazioni registrate, riprodotte fotogramma per fotogramma; le immagini fisse sono studi resi a partire da dati misurati, e ogni opera nomina il file da cui proviene. L'architettura fa solo da scena. La ricerca è il lavoro in corso di una persona, non il verdetto di un'istituzione, e ogni sala termina con una riga su ciò che le sue prove non possono ancora mostrare.",
       "lookFor": "Legga il pannello alla porta di ogni sala prima dell'opera, poi la piccola etichetta accanto a ciascun pezzo.",
       "limit": "L'edificio fa da scena; solo i nastri e le immagini fisse portano prove, e «About this view» nomina esattamente ciò che sta guardando."
     },
@@ -50,7 +50,7 @@
     },
     "gallery": {
       "title": "galleria",
-      "kicker": "Un tratto più quieto del grove.",
+      "kicker": "Un tratto più quieto del Mind Palace.",
       "intro": "La galleria va dalla sala di phototroph al belvedere. Le porte chiuse lungo la sua parete interna appartengono a progetti di ricerca che non si sono ancora guadagnati una sala; una sala si guadagna avendo qualcosa di onesto da appendere. Cammini, si fermi, e torni quando è pronto.",
       "lookFor": "L'ampia apertura in fondo sale al belvedere; le porte strette sul lato del giardino portano alla terrazza."
     },

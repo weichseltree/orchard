@@ -10,7 +10,7 @@
     "hall": {
       "title": "Halle",
       "kicker": "Welche Frage zieht Sie an?",
-      "intro": "Willkommen im Hain, einem kleinen Forschungsmuseum, das eine einzelne Person gebaut hat. Von dieser Halle gehen vier Kammern ab, jede nach dem quelloffenen Repositorium benannt, dessen Arbeit sie zeigt: einstruct, coarsen, world-engine und phototroph. Nichts hier ist eine Illustration. Die bewegten Bilder sind aufgezeichnete Simulationen, Bild für Bild abgespielt; die Standbilder sind Studien, aus gemessenen Daten gerendert; und jedes Exponat nennt die Datei, aus der es stammt. Die Architektur setzt nur den Rahmen. Die Forschung ist die laufende Arbeit einer Person, kein Urteil einer Institution, und jede Kammer endet mit einem Satz darüber, was ihre Belege noch nicht zeigen können.",
+      "intro": "Willkommen im Mind Palace, einem kleinen Forschungsmuseum, das eine einzelne Person gebaut hat. Von dieser Halle gehen vier Kammern ab, jede nach dem quelloffenen Repositorium benannt, dessen Arbeit sie zeigt: einstruct, coarsen, world-engine und phototroph. Nichts hier ist eine Illustration. Die bewegten Bilder sind aufgezeichnete Simulationen, Bild für Bild abgespielt; die Standbilder sind Studien, aus gemessenen Daten gerendert; und jedes Exponat nennt die Datei, aus der es stammt. Die Architektur setzt nur den Rahmen. Die Forschung ist die laufende Arbeit einer Person, kein Urteil einer Institution, und jede Kammer endet mit einem Satz darüber, was ihre Belege noch nicht zeigen können.",
       "lookFor": "Lesen Sie an jeder Kammertür zuerst die Tafel, dann das kleine Schild neben jedem Stück.",
       "limit": "Das Gebäude setzt den Rahmen; nur die Bänder und Standbilder tragen Belege, und „About this view“ nennt genau, was Sie gerade sehen."
     },
@@ -50,7 +50,7 @@
     },
     "gallery": {
       "title": "Galerie",
-      "kicker": "Ein ruhigerer Abschnitt des Hains.",
+      "kicker": "Ein ruhigerer Abschnitt des Mind Palace.",
       "intro": "Die Galerie führt von der Kammer von phototroph zum Belvedere. Die geschlossenen Türen an der Innenwand gehören Forschungsbäumen, die sich noch keinen Raum verdient haben; einen Raum verdient sich ein Baum, indem er etwas Ehrliches zu hängen hat. Gehen Sie, verweilen Sie, kehren Sie zurück, wenn Sie bereit sind.",
       "lookFor": "Die breite Öffnung am Ende führt hinauf zum Belvedere; die schmalen Türen zur Gartenseite hinaus auf die Terrasse."
     },

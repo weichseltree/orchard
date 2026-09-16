@@ -124,11 +124,11 @@ export function createUpdater({ hud, whenFree, reload }: UpdaterDeps): (plan: Up
     whenFree(() => {
       scheduled = false;
       if (forced) {
-        console.info("[grove] a required version of the grove is up; reloading");
+        console.info("[grove] a required version of the Mind Palace is up; reloading");
         reload();
         return;
       }
-      offered = hud.offer("A new version of the grove is up —", "reload", reload);
+      offered = hud.offer("A new version of the Mind Palace is up —", "reload", reload);
     });
   };
 }

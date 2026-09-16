@@ -10,7 +10,7 @@
     "hall": {
       "title": "hal",
       "kicker": "Welke vraag trekt u aan?",
-      "intro": "Welkom in de grove, een klein onderzoeksmuseum, gebouwd door één persoon. Vier zalen komen uit op deze hal, elk genoemd naar de open-source-repository waarvan ze het werk tonen: einstruct, coarsen, world-engine en phototroph. Niets hier is een illustratie. De bewegende beelden zijn opgenomen simulaties, beeld voor beeld afgespeeld; de stilstaande beelden zijn studies, gerenderd uit gemeten gegevens, en elk werk noemt het bestand waaruit het komt. De architectuur zet alleen het decor. Het onderzoek is het lopende werk van één persoon, niet het oordeel van een instituut, en elke zaal eindigt met een regel over wat haar bewijs nog niet kan laten zien.",
+      "intro": "Welkom in het Mind Palace, een klein onderzoeksmuseum, gebouwd door één persoon. Vier zalen komen uit op deze hal, elk genoemd naar de open-source-repository waarvan ze het werk tonen: einstruct, coarsen, world-engine en phototroph. Niets hier is een illustratie. De bewegende beelden zijn opgenomen simulaties, beeld voor beeld afgespeeld; de stilstaande beelden zijn studies, gerenderd uit gemeten gegevens, en elk werk noemt het bestand waaruit het komt. De architectuur zet alleen het decor. Het onderzoek is het lopende werk van één persoon, niet het oordeel van een instituut, en elke zaal eindigt met een regel over wat haar bewijs nog niet kan laten zien.",
       "lookFor": "Lees het paneel bij de deur van elke zaal vóór het werk, en daarna het kleine bordje naast elk stuk.",
       "limit": "Het gebouw zet het decor; alleen de banden en de stilstaande beelden dragen bewijs, en \"About this view\" noemt precies wat u ziet."
     },
@@ -50,7 +50,7 @@
     },
     "gallery": {
       "title": "galerij",
-      "kicker": "Een rustiger stuk van de grove.",
+      "kicker": "Een rustiger stuk van het Mind Palace.",
       "intro": "De galerij loopt van de zaal van phototroph naar het belvedère. De gesloten deuren langs de binnenmuur horen bij onderzoeksprojecten die nog geen zaal hebben verdiend; een zaal verdien je door iets eerlijks op te hangen. Loop, blijf staan, en kom terug wanneer u er klaar voor bent.",
       "lookFor": "De brede opening aan het einde leidt omhoog naar het belvedère; de smalle deuren aan de tuinkant leiden naar het terras."
     },

@@ -10,7 +10,7 @@
     "hall": {
       "title": "hall",
       "kicker": "¿Qué pregunta le atrae?",
-      "intro": "Bienvenido al grove, un pequeño museo de investigación construido por una sola persona. Cuatro salas se abren desde este hall, cada una con el nombre del repositorio de código abierto cuyo trabajo muestra: einstruct, coarsen, world-engine y phototroph. Nada aquí es una ilustración. Las imágenes en movimiento son simulaciones grabadas, reproducidas fotograma a fotograma; las imágenes fijas son estudios renderizados a partir de datos medidos, y cada pieza nombra el archivo del que procede. La arquitectura solo pone el escenario. La investigación es el trabajo en curso de una persona, no el veredicto de una institución, y cada sala termina con una línea sobre lo que sus pruebas aún no pueden mostrar.",
+      "intro": "Bienvenido al Mind Palace, un pequeño museo de investigación construido por una sola persona. Cuatro salas se abren desde este hall, cada una con el nombre del repositorio de código abierto cuyo trabajo muestra: einstruct, coarsen, world-engine y phototroph. Nada aquí es una ilustración. Las imágenes en movimiento son simulaciones grabadas, reproducidas fotograma a fotograma; las imágenes fijas son estudios renderizados a partir de datos medidos, y cada pieza nombra el archivo del que procede. La arquitectura solo pone el escenario. La investigación es el trabajo en curso de una persona, no el veredicto de una institución, y cada sala termina con una línea sobre lo que sus pruebas aún no pueden mostrar.",
       "lookFor": "Lea el panel en la puerta de cada sala antes de la pieza, y luego la pequeña etiqueta junto a cada obra.",
       "limit": "El edificio pone el escenario; solo las cintas y las imágenes fijas aportan pruebas, y «About this view» nombra exactamente lo que está mirando."
     },
@@ -50,7 +50,7 @@
     },
     "gallery": {
       "title": "galería",
-      "kicker": "Un tramo más tranquilo del grove.",
+      "kicker": "Un tramo más tranquilo del Mind Palace.",
       "intro": "La galería va de la sala de phototroph al belvedere. Las puertas cerradas a lo largo de su pared interior pertenecen a proyectos de investigación que aún no se han ganado una sala; una sala se gana teniendo algo honesto que colgar. Camine, deténgase y vuelva cuando esté listo.",
       "lookFor": "La amplia abertura del fondo sube al belvedere; las puertas estrechas del lado del jardín llevan a la terraza."
     },

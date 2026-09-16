@@ -25,7 +25,7 @@ const NOTES = "https://github.com/weichseltree/orchard/blob/main/docs/EXHIBIT-PL
 const content: Readonly<Record<string, ExhibitContent>> = {
   hall: {
     question: "Which question draws you in?",
-    introduction: "Welcome to the grove. Walk among particle tapes, compare a model with its control, or look closely at how a room is reconstructed. Each room is named after the repository whose research it holds, and begins with a question.",
+    introduction: "Welcome to the Mind Palace. Walk among particle tapes, compare a model with its control, or look closely at how a room is reconstructed. Each room is named after the repository whose research it holds, and begins with a question.",
     lookFor: [],
     limitation: "The architecture sets the scene. The tapes and stills carry the research; About this view identifies what you are looking at.",
   },
@@ -133,7 +133,7 @@ export function exhibitContent(room: Room, demo = false): ExhibitContent {
     demo: true,
     introduction: hasFixture
       ? "This room uses synthetic particles for trying the controls. Its research exhibit is not loaded in the local demo."
-      : "This local demo lets you explore the grove's rooms. Research stills are not loaded, and any particles you find in other chambers are synthetic test material.",
+      : "This local demo lets you explore the Mind Palace's rooms. Research stills are not loaded, and any particles you find in other chambers are synthetic test material.",
     lookFor: hasFixture
       ? ["Pause the test tape, walk around it, then scrub through time. The chambers share this same test example."]
       : ["Follow an open doorway to try the local test tapes in a research chamber."],

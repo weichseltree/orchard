@@ -4,11 +4,11 @@ Walk inside a particle simulation. Pause it, move through it, and see where
 the picture came from.
 
 The orchard turns research outputs into rooms you can visit in a browser.
-Its public world, **Weichselmind**, brings particle tapes, videos and figures
+Its public world, **the Mind Palace**, brings particle tapes, videos and figures
 into **the Observatory**, a nocturnal museum and its gardens. Its local tools collect those outputs, keep
 their provenance, and let the host choose what hangs.
 
-[Visit Weichselmind](https://weichseltree.com/mind/) ·
+[Visit the Mind Palace](https://weichseltree.com/mind/) ·
 [Run the local demo](#run-the-local-demo) ·
 [Bring your research](#bring-your-research) ·
 [Contribute](CONTRIBUTING.md)

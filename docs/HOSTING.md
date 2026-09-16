@@ -1,4 +1,4 @@
-# Hosting: weichseltree.com, Weichselmind, and what runs where
+# Hosting: weichseltree.com, the Mind Palace, and what runs where
 
 Decided 2026-09-11. Stack: **SpacetimeDB for world state, Cloudflare for
 delivery, no Supabase, no Google endpoints in the client.** GCP stays for

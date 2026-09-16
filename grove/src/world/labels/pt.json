@@ -10,7 +10,7 @@
     "hall": {
       "title": "hall",
       "kicker": "Que pergunta o atrai?",
-      "intro": "Bem-vindo ao grove, um pequeno museu de investigação construído por uma só pessoa. Quatro salas abrem-se a partir deste hall, cada uma com o nome do repositório de código aberto cujo trabalho mostra: einstruct, coarsen, world-engine e phototroph. Nada aqui é uma ilustração. As imagens em movimento são simulações gravadas, reproduzidas fotograma a fotograma; as imagens fixas são estudos renderizados a partir de dados medidos, e cada peça nomeia o ficheiro de onde veio. A arquitectura apenas monta o cenário. A investigação é o trabalho em curso de uma pessoa, não o veredicto de uma instituição, e cada sala termina com uma linha sobre o que as suas provas ainda não conseguem mostrar.",
+      "intro": "Bem-vindo ao Mind Palace, um pequeno museu de investigação construído por uma só pessoa. Quatro salas abrem-se a partir deste hall, cada uma com o nome do repositório de código aberto cujo trabalho mostra: einstruct, coarsen, world-engine e phototroph. Nada aqui é uma ilustração. As imagens em movimento são simulações gravadas, reproduzidas fotograma a fotograma; as imagens fixas são estudos renderizados a partir de dados medidos, e cada peça nomeia o ficheiro de onde veio. A arquitectura apenas monta o cenário. A investigação é o trabalho em curso de uma pessoa, não o veredicto de uma instituição, e cada sala termina com uma linha sobre o que as suas provas ainda não conseguem mostrar.",
       "lookFor": "Leia o painel à porta de cada sala antes da peça, e depois a pequena etiqueta ao lado de cada obra.",
       "limit": "O edifício monta o cenário; só as fitas e as imagens fixas trazem provas, e «About this view» nomeia exactamente o que está a ver."
     },
@@ -50,7 +50,7 @@
     },
     "gallery": {
       "title": "galeria",
-      "kicker": "Um troço mais sossegado do grove.",
+      "kicker": "Um troço mais sossegado do Mind Palace.",
       "intro": "A galeria vai da sala de phototroph ao belvedere. As portas fechadas ao longo da parede interior pertencem a projectos de investigação que ainda não ganharam uma sala; ganha-se uma tendo algo honesto para pendurar. Caminhe, pare, e volte quando estiver pronto.",
       "lookFor": "A abertura larga ao fundo sobe para o belvedere; as portas estreitas do lado do jardim levam ao terraço."
     },
