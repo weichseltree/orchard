@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isNewLine, onDisconnectAction } from "./listen";
+import { Speaker, isNewLine, onDisconnectAction } from "./listen";
 
 describe("isNewLine", () => {
   const joined = 1_000_000n;
@@ -33,5 +33,54 @@ describe("onDisconnectAction", () => {
 
   it("exits cleanly when she is leaving on purpose", () => {
     expect(onDisconnectAction({ connected: true, leaving: true })).toBe("exit-ok");
+  });
+});
+
+describe("Speaker", () => {
+  function harness() {
+    let clock = 0;
+    const sent: Array<[number, string]> = [];
+    const refused: string[] = [];
+    const speaker = new Speaker(
+      async (text) => {
+        if (text === "refuse me") throw new Error("slow down");
+        sent.push([clock, text]);
+      },
+      {
+        gapMs: 900,
+        now: () => clock,
+        sleep: async (ms) => {
+          clock += ms;
+        },
+        onRefused: (text) => refused.push(text),
+      },
+    );
+    return { speaker, sent, refused, advance: (ms: number) => (clock += ms) };
+  }
+
+  it("spaces lines queued together, in the order they were queued", async () => {
+    const { speaker, sent } = harness();
+    speaker.heldUntilGap(0);
+    // The greeting and a reply to a question asked 100 ms later.
+    const greeting = speaker.say("I am here.");
+    const reply = speaker.say("I cannot see a peer from here.");
+    await Promise.all([greeting, reply]);
+    expect(sent).toEqual([[900, "I am here."], [1800, "I cannot see a peer from here."]]);
+  });
+
+  it("does not wait when the gap has already passed", async () => {
+    const { speaker, sent, advance } = harness();
+    speaker.heldUntilGap(0);
+    advance(5000);
+    await speaker.say("now");
+    expect(sent).toEqual([[5000, "now"]]);
+  });
+
+  it("reports a refusal and goes on speaking", async () => {
+    const { speaker, sent, refused } = harness();
+    await speaker.say("refuse me");
+    await speaker.say("after");
+    expect(refused).toEqual(["refuse me"]);
+    expect(sent.map(([, text]) => text)).toEqual(["after"]);
   });
 });

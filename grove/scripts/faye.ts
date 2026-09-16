@@ -33,7 +33,7 @@ import {
   type Cursor, type TreeTitles,
 } from "../src/faye/events";
 import { EMPTY_STATE, replyTo, type FayeState } from "../src/faye/reply";
-import { TURN_POSE_HZ, isNewLine, onDisconnectAction } from "../src/faye/listen";
+import { Speaker, TURN_POSE_HZ, isNewLine, onDisconnectAction } from "../src/faye/listen";
 
 const { values: args } = parseArgs({
   options: {
@@ -211,14 +211,30 @@ async function main(): Promise<void> {
   // poll loop; read by the chat handler.
   let known: FayeState = EMPTY_STATE;
 
+  // Everything she says goes through one queue (src/faye/listen.ts).
+  const speaker = new Speaker((text) => conn.reducers.say({ text }), {
+    gapMs: CHAT_MIN_GAP_MS + 200,
+    now: () => Date.now(),
+    sleep,
+    onRefused: (text, error) => {
+      console.warn(`faye: "${text}" refused (${error instanceof Error ? error.message : String(error)})`);
+    },
+  });
+  // Set once THIS run's join has landed. Before that her row can still be the
+  // previous run's -- a restart after a crash reuses the identity, and the
+  // module may not have seen the old socket close -- whose `last_seen` would
+  // let through lines that run already answered.
+  let joined = false;
+
   // Every line already in the room when she arrives is history; she hears
   // only what is said after her own join, by the module's clock
   // (src/faye/listen.ts). Listening does not wait on the compute feed: with
   // no feed she still answers, and says she has not heard from it. Registered
   // BEFORE `join`: a line said between the join and a later registration --
   // the greeting's wait alone is 0.9 s -- would be inserted with no handler
-  // and never replayed. Until her own row is in the view, nothing is new.
+  // and never replayed. Until this run's join has landed, nothing is new.
   const joinedAt = (): bigint | null => {
+    if (!joined) return null;
     for (const person of conn.db.peopleHere.iter()) {
       if (person.identity.isEqual(identity)) return person.lastSeen.microsSinceUnixEpoch;
     }
@@ -231,31 +247,21 @@ async function main(): Promise<void> {
     const answer = replyTo(row.text, known, titles);
     if (!answer) return;
     console.log(`faye: ${row.name} said "${row.text}" -> "${answer}"`);
-    void (async () => {
-      // The gap is per speaker, and an announcement may have just used it.
-      await sleep(CHAT_MIN_GAP_MS + 200);
-      await conn.reducers.say({ text: answer }).catch((error: unknown) => {
-        console.warn(`faye: reply refused (${error instanceof Error ? error.message : String(error)})`);
-      });
-    })();
+    void speaker.say(answer);
   });
 
   await conn.reducers.join({ name: args.name, room: args.room });
+  joined = true;
   console.log(`faye: standing in "${args.room}" as "${args.name}"`);
   if (args.name.length > 24) {
     console.warn(`faye: the module clips names at 24 characters, so this shows as "${args.name.slice(0, 24)}"`);
   }
 
-  if (args.say) {
-    // `join` stamps last_said with the join time, so the first line is inside
-    // CHAT_MIN_GAP (0.7 s) and comes back "slow down". Wait it out -- and a
-    // refused greeting must never cost Faye her presence, which is the point
-    // of standing here at all.
-    await sleep(CHAT_MIN_GAP_MS + 200);
-    await conn.reducers.say({ text: args.say }).catch((error: unknown) => {
-      console.warn(`faye: greeting refused (${error instanceof Error ? error.message : String(error)})`);
-    });
-  }
+  // `join` stamps last_said with the join time, so the first line is inside
+  // CHAT_MIN_GAP (0.7 s) and would come back "slow down"; the queue waits it
+  // out. A refused greeting is logged and never costs Faye her presence.
+  speaker.heldUntilGap(Date.now());
+  if (args.say) await speaker.say(args.say);
 
   const startedAt = Date.now();
   // Standing on the spot, turning slowly: a presence, not a pacing NPC.
@@ -334,11 +340,7 @@ async function main(): Promise<void> {
 
     for (const text of lines) {
       if (life.leaving) return;
-      await conn.reducers.say({ text }).catch((error: unknown) => {
-        console.warn(`faye: line refused (${error instanceof Error ? error.message : String(error)})`);
-      });
-      // CHAT_MIN_GAP is 0.7 s per speaker; crowding it throws "slow down".
-      await sleep(CHAT_MIN_GAP_MS + 200);
+      await speaker.say(text);
     }
   };
 

@@ -58,3 +58,58 @@ export function onDisconnectAction(state: { connected: boolean; leaving: boolean
   if (!state.connected) return "reject";
   return state.leaving ? "exit-ok" : "exit-failed";
 }
+
+export interface SpeakerOptions {
+  /** The module's gap plus a margin for the two clocks and the round trip. */
+  gapMs: number;
+  now: () => number;
+  sleep: (ms: number) => Promise<unknown>;
+  onRefused: (text: string, error: unknown) => void;
+}
+
+/**
+ * Everything Faye says, one line at a time, spaced by the module's gap.
+ *
+ * The module allows one line per 0.7 s per speaker and refuses the next with
+ * "slow down" -- a refusal nobody in the room sees, so the visitor who asked
+ * simply gets no answer. Her greeting, her replies and her announcements all
+ * speak as the same identity, and a fixed wait before each does not space
+ * them from EACH OTHER: a question just after the greeting was scheduled
+ * behind the same 0.9 s and refused. One queue, waiting from the last line
+ * actually sent, is the only arrangement that cannot collide with itself.
+ */
+export class Speaker {
+  #chain: Promise<void> = Promise.resolve();
+  #lastAt = Number.NEGATIVE_INFINITY;
+  readonly #send: (text: string) => Promise<void>;
+  readonly #options: SpeakerOptions;
+
+  constructor(send: (text: string) => Promise<void>, options: SpeakerOptions) {
+    this.#send = send;
+    this.#options = options;
+  }
+
+  /**
+   * The module's clock for this speaker started now: `join` stamps
+   * `last_said`, so the first line after joining waits out the gap too.
+   */
+  heldUntilGap(at: number): void {
+    this.#lastAt = Math.max(this.#lastAt, at);
+  }
+
+  /** Queues a line. Resolves once it was sent or refused; never rejects. */
+  say(text: string): Promise<void> {
+    this.#chain = this.#chain.then(async () => {
+      const { gapMs, now, sleep, onRefused } = this.#options;
+      const wait = this.#lastAt + gapMs - now();
+      if (wait > 0) await sleep(wait);
+      this.#lastAt = now();
+      try {
+        await this.#send(text);
+      } catch (error) {
+        onRefused(text, error);
+      }
+    });
+    return this.#chain;
+  }
+}
