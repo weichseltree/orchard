@@ -95,6 +95,11 @@ class Budget(BaseModel):
 
 class Tree(BaseModel):
     name: str
+    #: What a human reads, when it differs from `name`. The name is identity:
+    #: it is inside the bytes every bundle id hashes, so it cannot be changed
+    #: without moving every id, pin and exhibit row (docs/specs/NAMING.md).
+    #: The title is free to change. Empty means "use the name".
+    title: str = ""
     path: str
     remote: str = ""
     question: str                  # the repo's one sentence
@@ -113,6 +118,11 @@ class Tree(BaseModel):
     @property
     def root(self) -> Path:
         return Path(self.path).expanduser()
+
+    @property
+    def label(self) -> str:
+        """The name to show a person; `name` is the identity to match on."""
+        return self.title or self.name
 
     def furthest_stage(self) -> Stage:
         stages = [t.stage for t in self.theses] or [self.stage]

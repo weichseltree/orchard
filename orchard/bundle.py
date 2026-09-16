@@ -141,6 +141,23 @@ def _git_describe(repo: Path) -> str:
 
 
 def _tree_root(tree: str) -> Path | None:
+    """The tree's checkout: what its manifest says, else the old guess by name.
+
+    `name` and `path` are independent fields (manifest.py), so a repository
+    directory can be renamed without moving the tree identity that every
+    bundle id is a hash over (docs/specs/NAMING.md). spectre's directory
+    became `coarsen` on 2026-09-16 while the tree stayed `spectre`; reading
+    the manifest first is what makes that real instead of propped up by the
+    compatibility symlink beside it.
+    """
+    try:
+        from .portfolio import load_all                          # noqa: PLC0415
+        for t in load_all():
+            if t.name == tree:
+                root = t.root
+                return root if (root / ".git").exists() else None
+    except Exception:                                            # noqa: BLE001
+        pass                      # a malformed manifest must not stop a bundle
     p = WEICHSELTREE / tree
     return p if (p / ".git").exists() else None
 

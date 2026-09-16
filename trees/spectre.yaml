@@ -1,6 +1,7 @@
-# generated from /home/manuel/weichseltree/spectre/orchard.yaml — edit that file, not this one
+# generated from /home/manuel/weichseltree/coarsen/orchard.yaml — edit that file, not this one
 name: spectre
-path: /home/manuel/weichseltree/spectre
+title: coarsen
+path: /home/manuel/weichseltree/coarsen
 remote: ''
 question: How big and how long can a world built from nothing but particles be made to run, first by brute
   force and then by distilling it into coarser rules, before it stops measuring like real matter?

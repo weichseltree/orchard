@@ -2,6 +2,13 @@ import type { Mansion, Room } from "../world/schema";
 
 /** Curatorial copy is separate from the tapes and their scientific provenance. */
 export interface ExhibitContent {
+  /**
+   * The tree as a visitor reads it, which is not the tree's identity. The
+   * repository spectre was renamed coarsen on 2026-09-16 and its tree keeps
+   * the old name, because that name is inside the bytes every bundle id
+   * hashes (docs/specs/NAMING.md). "About this view" still prints the real
+   * tree from the bundle, so provenance stays honest.
+   */
   source?: string;
   question: string;
   introduction: string;
@@ -35,7 +42,7 @@ const content: Readonly<Record<string, ExhibitContent>> = {
     evidenceAnchor: "einstruct",
   },
   spectre: {
-    source: "spectre",
+    source: "coarsen",
     question: "How does a world find its middle?",
     introduction: "Three self-gravitating worlds start with the same mixture of heavy and light particles; the strength with which the two kinds repel each other differs across the trio. Each is cut open, its surface the measured edge of the particles and its interior measured from them, frame by frame.",
     lookFor: [
@@ -76,7 +83,7 @@ const content: Readonly<Record<string, ExhibitContent>> = {
     lookFor: [],
   },
   orrery: {
-    source: "spectre",
+    source: "coarsen",
     question: "How does a world find its middle?",
     introduction: "Three worlds from spectre, cut open and grown to the scale of the sky. Each began as the same mixture of heavy and light particles; the strength with which the two kinds repel each other differs across the three. Their surface is the measured edge of the particles, and every frame of the interior is measured from them.",
     lookFor: [

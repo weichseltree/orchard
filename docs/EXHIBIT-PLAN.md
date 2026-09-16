@@ -464,7 +464,11 @@ housekeeping commits.
   follow-up to a failure reopen a second? Recommended: the one episode;
   E34b goes into that episode's own telling as the honest coda, and no
   second is funded on it.
-- **spectre, a private remote.** After a secrets scan; the harvest stamps
+- **coarsen (formerly spectre), a private remote.** Ruled 2026-09-16: the
+  repository is renamed coarsen, the tree identity stays `spectre`, and the
+  old private GitHub repository (the pre-purge lineage of 25 August, sharing
+  no commits with the checkout) is deleted rather than renamed. Manuel
+  creates `weichseltree/coarsen` and pushes. After a secrets scan; the harvest stamps
   commits that otherwise live on one disk, and in-kind jobs need a pinned
   commit. Recommended yes, before its harvest.
 - **spectre, the 42.8 s excerpt.** Rule its kind master to clip and hang it

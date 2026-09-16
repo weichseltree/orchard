@@ -60,7 +60,7 @@ belong to the stai-social organisation and are out of scope.
 No repo declares a dependency on another today; instead three put spectre's
 working tree on `sys.path` and import `core.video.tape` from whatever it has
 checked out (`orchard/bundle.py`, `einstruct/src/einstruct/tape_export.py`,
-`phototroph/experiments/video/ptvf_to_tape.py`). spectre has no remote, so that
+`phototroph/experiments/video/ptvf_to_tape.py`). the coarsen checkout has no remote configured, so that
 code cannot be pinned or reproduced anywhere else.
 
 The rule: **shared code is a versioned package, depended on by git tag.**
@@ -199,7 +199,7 @@ A bundle's id is the first 16 hex of the sha256 of its `bundle.json`
 ## 6. Rulings (2026-09-13, all as recommended)
 
 1. The tape package lives inside orchard (`packages/tape`), not in its own
-   repo or in spectre, since spectre has no remote.
+   repo or in coarsen, since that checkout has no remote configured.
 2. Video and still ids hash the output files; a re-encode is a new id.
 3. `trees/*.yaml` is a generated read-only mirror of `<repo>/orchard.yaml`.
 4. The grove gets a service worker with an offline hall.

@@ -148,3 +148,43 @@ def test_gc_keeps_a_pinned_planet_s_atlases_alive(delivery, tmp_path):
     # The mansion walk looks in results/bundles; with the bundle elsewhere the atlases stay unknown,
     # which is the honest answer, not a deletion.
     assert "1207b7952ce09923" in live or (gc.RESULTS / "bundles" / out.name).exists() is False
+
+
+# ---------------------------------------------------------------- the rename
+
+def test_a_renamed_directory_keeps_the_tree_identity(tmp_path, monkeypatch):
+    """spectre's directory became `coarsen` on 2026-09-16; the tree stayed `spectre`.
+
+    A tree's `name` is identity: it sits inside the bytes every bundle id is a
+    hash over, so moving it would move every id, pin and exhibit row. Its
+    `path` and its `title` are free. `_tree_root` must therefore follow the
+    manifest rather than guessing `~/weichseltree/<name>`, or provenance
+    silently loses the commit it was made at.
+    """
+    from orchard import bundle
+    from orchard.manifest import Tree
+
+    checkout = tmp_path / "coarsen"
+    (checkout / ".git").mkdir(parents=True)
+    tree = Tree(name="spectre", title="coarsen", path=str(checkout), question="?")
+    monkeypatch.setattr("orchard.portfolio.load_all", lambda: [tree], raising=False)
+
+    assert bundle._tree_root("spectre") == checkout
+    assert tree.label == "coarsen"            # what a person reads
+    assert tree.name == "spectre"             # what a bundle id hashes
+    # A tree with no title reads as its name, so nothing else in the fund moves.
+    assert Tree(name="einstruct", path=str(checkout), question="?").label == "einstruct"
+
+
+def test_the_tree_root_falls_back_when_no_manifest_answers(tmp_path, monkeypatch):
+    """A malformed or missing manifest must not stop a bundle being written."""
+    from orchard import bundle
+
+    def boom():
+        raise ValueError("manifest is not readable")
+
+    monkeypatch.setattr("orchard.portfolio.load_all", boom, raising=False)
+    monkeypatch.setattr(bundle, "WEICHSELTREE", tmp_path)
+    (tmp_path / "einstruct" / ".git").mkdir(parents=True)
+    assert bundle._tree_root("einstruct") == tmp_path / "einstruct"
+    assert bundle._tree_root("nothing-here") is None
