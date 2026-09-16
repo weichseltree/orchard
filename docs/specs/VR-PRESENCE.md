@@ -80,6 +80,11 @@ has not expired, and each row at most once. The table is public and a joining
 client receives every row in it; without this rule a visitor walking in
 replays the morning.
 
+**Order broadcasts by `at`, never by `id`.** SpacetimeDB's auto-increment ids
+are not sequential and gaps are normal (`spacetime/CLAUDE.md`), so an id is an
+identity to deduplicate against and not a position in time. Two cues fired a
+second apart can arrive with ids that do not order them.
+
 ## 5. Stage three — reading in a headset
 
 Once stage two exists, the immersive gap is narrower than it looks, because
