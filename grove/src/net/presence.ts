@@ -150,7 +150,9 @@ export interface PresenceConnection {
     chatHere: ChatTableEvents;
     /** World events for every room; the gate decides which are ours. */
     broadcast: BroadcastTableEvents;
-    room: { iter(): Iterable<{ name: string; open: boolean; admin_only: boolean }> };
+    room: { iter(): Iterable<{ name: string; open: boolean; adminOnly: boolean }> };
+    /** A linked repository's place in the world and its state (SANDBOX-TRUST.md §4.3): its room follows it. */
+    area: { iter(): Iterable<{ tree: string; state: string; hostPaused: boolean }> };
     exhibit: { iter(): Iterable<ExhibitRow> };
   };
   reducers: {
@@ -821,7 +823,13 @@ export class Presence {
     const row = rooms.find((r) => r.name === room);
     if (!row) return `no room "${room}" server-side`;
     if (!row.open) return "room closed";
-    if (row.admin_only && !this.me?.host) return "admin only";
+    if (row.adminOnly && !this.me?.host) return "admin only";
+    // An area's room carries the area's name, and a pause reaches visitors
+    // from the database, not from a deploy: the door locks the moment the
+    // row says so. A draft is left to the server, which admits the area's
+    // own admins and turns everyone else away; a refusal locks the door.
+    const area = [...connection.db.area.iter()].find((a) => a.tree === room);
+    if (area && (area.hostPaused || area.state === "paused") && !this.me?.host) return "this area is paused";
     return null;
   }
 
@@ -895,6 +903,7 @@ export class Presence {
         "SELECT * FROM chat_here",
         "SELECT * FROM broadcast",
         "SELECT * FROM room",
+        "SELECT * FROM area",
       ]);
     // Only lines that arrive from here on. The subscription hands over every
     // row it already had, and a visitor walking in to a wall of the last

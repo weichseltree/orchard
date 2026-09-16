@@ -363,3 +363,14 @@ Append-only. A decision names the day, the ruling, and the alternative it beat.
   changes, so the publish keeps every row. `orchard area ...` is the host's
   command line. Live revocation in the client, the licence gate and the
   fetcher follow, in that order.
+
+- **2026-09-16 · Live revocation: a paused area locks its doors from the
+  database.** SANDBOX-TRUST.md §4.3 and ruling 1: anything a stranger can
+  put in front of a visitor must be revocable from the database, not the
+  build. The client subscribes to `area` and locks an area's room while the
+  area is paused, by its own admins or by the host, the way it already locks
+  a closed or admin-only room; a draft is left to the server's refusal so an
+  area's own admins get in. Nobody inside is evicted; the plan still ships
+  in the build until the fetcher lands. Found on the way: `whyLocked` read
+  `admin_only` where the generated row says `adminOnly`, so an admin-only
+  room had only ever locked after a refusal; fixed with the row's spelling.
