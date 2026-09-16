@@ -606,8 +606,9 @@ meets one in SANDBOX-TRUST.md, that document's ruling is the one about trust.
      applies. Its blend reaches t = 1 at the **core boundary**, d = core · R
      (core 0.3, and up to 0.55 with full intent), not at the centre. So at the
      end of the blend the far eye is still 1.35–2.48 m from the station,
-     whatever the ratio, and `crossPortal` lands the body carrying that same
-     offset. A splat portal must therefore collapse both the far-eye offset
+     whatever the ratio. `crossPortal` separately preserves the body's
+     horizontal offset from the centre; that matches the eye on desktop but
+     can differ in room-scale XR. A splat portal must therefore collapse both the far-eye offset
      and the landing offset to the station as t → 1. The ceiling above is
      then recomputed with orchard's real distance, `R · (1 − t · (1 − core))`.
      someotherlife's bench (apps/spike-c `?portal=`, someotherlife b2eb00c)
