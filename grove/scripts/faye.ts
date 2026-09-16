@@ -18,11 +18,13 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
+import type { Identity } from "spacetimedb";
 import { DbConnection } from "../src/module_bindings";
 import {
   EMPTY_CURSOR, accumulate, announce, peerIsSilent, readFeed,
   type Cursor, type TreeTitles,
 } from "../src/faye/events";
+import { EMPTY_STATE, replyTo, type FayeState } from "../src/faye/reply";
 
 const { values: args } = parseArgs({
   options: {
@@ -93,7 +95,7 @@ function parseAt(raw: string): { x: number; y: number; z: number } {
   return { x, y, z };
 }
 
-function connect(token: string): Promise<{ conn: DbConnection; hex: string }> {
+function connect(token: string): Promise<{ conn: DbConnection; hex: string; identity: Identity }> {
   return new Promise((resolve, reject) => {
     // A connection the module refuses in clientConnected arrives as a
     // disconnect, not as a connect error (module-check.ts says so).
@@ -104,7 +106,7 @@ function connect(token: string): Promise<{ conn: DbConnection; hex: string }> {
       .withToken(token)
       .onConnect((conn, identity) => {
         clearTimeout(timer);
-        resolve({ conn, hex: identity.toHexString() });
+        resolve({ conn, hex: identity.toHexString(), identity });
       })
       .onConnectError((_ctx, error) => {
         clearTimeout(timer);
@@ -133,12 +135,12 @@ async function main(): Promise<void> {
   const turnSeconds = Number(args.turn);
   if (!Number.isFinite(turnSeconds) || turnSeconds < 0) throw new Error("--turn wants a number of seconds");
 
-  const { conn, hex } = await connect(publisherToken(args["cli-config"]));
+  const { conn, hex, identity } = await connect(publisherToken(args["cli-config"]));
   console.log(`faye: connected to ${DB} at ${URI} as ${hex.slice(0, 16)}…`);
 
   // The two views the grove itself watches, scoped by the server to the room
   // we are in. Faye sees exactly what any visitor sees -- no more.
-  await subscribe(conn, ["SELECT * FROM people_here", "SELECT * FROM poses_here"]);
+  await subscribe(conn, ["SELECT * FROM people_here", "SELECT * FROM poses_here", "SELECT * FROM chat_here"]);
 
   await conn.reducers.join({ name: args.name, room: args.room });
   console.log(`faye: standing in "${args.room}" as "${args.name}"`);
@@ -175,6 +177,31 @@ async function main(): Promise<void> {
     });
   }, 1000 / Math.min(TICK_HZ, MOVE_RATE));
 
+  // What she knows, for answering a visitor who speaks to her. Updated by the
+  // poll loop; read by the chat handler.
+  let known: FayeState = EMPTY_STATE;
+
+  // Every line already in the room when she arrives is history. Answering it
+  // would have her walk in replying to a conversation that finished hours ago,
+  // so the subscription's initial rows are skipped and only what is said from
+  // now on is heard.
+  let listening = false;
+  conn.db.chatHere.onInsert((_ctx, row) => {
+    if (!listening || leaving) return;
+    // Her own lines come back through the same view; answering them is a loop.
+    if (row.sender.isEqual(identity)) return;
+    const answer = replyTo(row.text, known, titles);
+    if (!answer) return;
+    console.log(`faye: ${row.name} said "${row.text}" -> "${answer}"`);
+    void (async () => {
+      // The gap is per speaker, and an announcement may have just used it.
+      await sleep(CHAT_MIN_GAP_MS + 200);
+      await conn.reducers.say({ text: answer }).catch((error: unknown) => {
+        console.warn(`faye: reply refused (${error instanceof Error ? error.message : String(error)})`);
+      });
+    })();
+  });
+
   // What she has taken in of the compute, and what she has already said about
   // the peer. Both live only as long as she stands here: a spirit that
   // remembers across restarts would announce a backlog on arrival.
@@ -205,10 +232,20 @@ async function main(): Promise<void> {
     // The first poll is a baseline, not news: everything in the feed happened
     // before she arrived, and a spirit who walks in reciting the last hour is
     // not informing anyone.
+    known = {
+      hosts: reading.hosts,
+      mirror: reading.mirror,
+      seenByType: countBy(taken.fresh.map((e) => e.type), known.seenByType),
+      runningByTree: runningByTree(doc),
+      hasFeed: true,
+    };
+
     if (firstPoll) {
       firstPoll = false;
       peerWasSilent = peerIsSilent(reading.mirror);
+      listening = true;
       console.log(`faye: baseline taken at ${reading.events.length} event(s); watching ${reading.hosts.join(", ")}`);
+      console.log("faye: listening — say her name in the room");
       return;
     }
 
@@ -292,6 +329,27 @@ function readTreeTitles(dir: string): TreeTitles {
 
 function unquote(raw: string): string {
   return raw.replace(/^['"]|['"]$/g, "");
+}
+
+/** Running counts per tree identity, straight off the feed's experiments. */
+function runningByTree(doc: unknown): Map<string, number> {
+  const out = new Map<string, number>();
+  const root = doc as { experiments?: unknown };
+  if (!Array.isArray(root?.experiments)) return out;
+  for (const raw of root.experiments) {
+    const e = raw as { status?: unknown; repo?: unknown };
+    if (e?.status !== "running") continue;
+    const repo = typeof e.repo === "string" && e.repo ? e.repo : "";
+    if (!repo) continue;
+    out.set(repo, (out.get(repo) ?? 0) + 1);
+  }
+  return out;
+}
+
+function countBy(values: readonly string[], into: ReadonlyMap<string, number>): Map<string, number> {
+  const out = new Map(into);
+  for (const v of values) out.set(v, (out.get(v) ?? 0) + 1);
+  return out;
 }
 
 function wrapAngle(angle: number): number {
