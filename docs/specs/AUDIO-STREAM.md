@@ -232,6 +232,12 @@ private data aloud. **No stream from an observed repo hangs in a public room
 before LogSwarm has a redaction and consent story.** A private greenhouse
 exhibit is the honest first venue.
 
+**Amended 2026-09-16 (Manuel).** A *synthetic* stream is not an observed repo.
+LogSwarm's first public stream is a seeded, invented system run through its
+real pipeline (logswarm `docs/specs/LIVE-EXHIBIT.md`), labelled synthetic
+wherever it shows. Nobody's data is in it, so this rule does not hold it back.
+The rule stands, unchanged, for every stream from a real repo.
+
 ## 8. What this asks for, concretely
 
 - `PACKAGES.md`: the exhibit definition in §1, and `audio` added to the kind
@@ -246,7 +252,9 @@ exhibit is the honest first venue.
 - **Nothing hangs yet.** `mansion.json` carries no `audio` hanging, and will
   not until §7's last paragraph is satisfied: no stream from an observed repo
   hangs in a public room before LogSwarm has a redaction and consent story.
-  The schema accepts one; the palace offers none.
+  The schema accepts one; the palace offers none. The first candidate is
+  LogSwarm's synthetic stream, which §7's amendment allows; it hangs once it
+  exists (LIVE-EXHIBIT.md milestone M5).
 - `DEVICE-TIERS.md`: an audio-source row per tier. **Landed.**
 - A ledger meter for stream-hours. **Landed** on the reporting side
   (`orchard/ledger.py`); the encode/TTS side that appends usage entries is
@@ -287,6 +295,7 @@ exhibit is the honest first venue.
   tag per `PACKAGES.md` §2. **The schema's home is decided**: `orchard/packages/score/`.
   Whether LogSwarm itself is scouted and planted as a tree is still open.
 
-**Licensing:** orchard is AGPL-3.0-or-later; LogSwarm's terms are in its
-`legal/`. Compatibility is unverified and is checked before any code moves in
-either direction.
+**Licensing: settled 2026-09-16.** LogSwarm is AGPL-3.0-or-later like orchard
+(Manuel), with its SDKs and `shared` MIT because they ship inside other
+people's apps ([logswarm#207](https://github.com/Weichseltree-OU/logswarm/pull/207)).
+`legal/` holds the hosted service's terms, not a code license.
