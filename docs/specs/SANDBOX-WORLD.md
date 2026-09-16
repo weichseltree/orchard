@@ -587,4 +587,41 @@ meets one in SANDBOX-TRUST.md, that document's ruling is the one about trust.
      a second ordering. It is not just a second draw.
   4. **A splat far view stays a still on every device** until
      someotherlife's bench measures host room plus portal view together.
-     It goes live only where that combined budget holds.
+     It goes live only where that combined budget holds, **and only once
+     far views render in XR at all**. Today `PortalFrame.live` is false
+     whenever an XR session presents (main.ts passes `live: !presenting`),
+     so in a headset, the device class where the lean radius matters most,
+     the grove draws no far view of any portal.
+  5. **A splat room needs a variant of the portal, and the area model's ratio
+     has a ceiling.** someotherlife-ad derived this and I verified it by brute
+     force. With the far eye at `exit + (eye − centre) · ratio^(1−t)` and a
+     visitor walking straight in, the far eye's distance from the station is
+     not monotonic. On a linear blend it peaks at `R / (e · ln(1/ratio))` and
+     leaves the lean radius L unless `ratio ≤ exp(−R / (e · L))`. For R = 4.5 m
+     that means ratio ≤ 0.19 at L = 1 m, and ≤ 0.036 at L = 0.5 m. (For ratios
+     above 1/e the edge value R · ratio binds instead, but no safe ratio is
+     that large.)
+
+     orchard's portal as built fails a splat room before that bound even
+     applies. Its blend reaches t = 1 at the **core boundary**, d = core · R
+     (core 0.3, and up to 0.55 with full intent), not at the centre. So at the
+     end of the blend the far eye is still 1.35–2.48 m from the station,
+     whatever the ratio. `crossPortal` separately preserves the body's
+     horizontal offset from the centre; that matches the eye on desktop but
+     can differ in room-scale XR. A splat portal must therefore collapse both the far-eye offset
+     and the landing offset to the station as t → 1. The ceiling above is
+     then recomputed with orchard's real distance, `R · (1 − t · (1 − core))`.
+     someotherlife's bench (apps/spike-c `?portal=`, someotherlife b2eb00c)
+     models orchard's real `shapedBlend` rather than the linear `blendAt`,
+     and reports the peak, the landing offset and the safe ratios for each
+     run. For the splat variant (the far offset scaled by (1 − t), landing at
+     the exit) in a 4.5 m sphere, it gives:
+
+     | lean radius | strict core | full intent |
+     |---|---|---|
+     | 1 m | ratio ≤ 0.222 | ratio ≤ 0.165 |
+     | 0.5 m | ratio ≤ 0.109 | ratio ≤ 0.053 |
+
+     Full intent binds, because a committed walk starts its blend at 1.35 R.
+     The grove's portal as it is today (no collapse, landing at the offset)
+     has a safe ratio of 0 at any lean radius.
