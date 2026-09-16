@@ -35,10 +35,31 @@ const BUTTON_TRIGGER = 0;
 const BUTTON_SQUEEZE = 1;
 const BUTTON_MENU = 4;
 
-export async function isXrSupported(): Promise<boolean> {
-  if (!navigator.xr) return false;
+/**
+ * The parts of `navigator.xr` and `window` the probe uses, injected so the
+ * watcher is testable without a DOM.
+ */
+export interface XrSystemLike {
+  isSessionSupported(mode: XRSessionMode): Promise<boolean>;
+  addEventListener?(type: string, listener: () => void): void;
+  removeEventListener?(type: string, listener: () => void): void;
+}
+export interface FocusTargetLike {
+  addEventListener(type: string, listener: () => void): void;
+  removeEventListener(type: string, listener: () => void): void;
+}
+export interface XrWatchTargets {
+  /** `null` when the browser has no WebXR at all. */
+  xr: XrSystemLike | null;
+  focus: FocusTargetLike;
+}
+
+export async function isXrSupported(
+  xr: XrSystemLike | null | undefined = navigator.xr,
+): Promise<boolean> {
+  if (!xr) return false;
   try {
-    return await navigator.xr.isSessionSupported("immersive-vr");
+    return await xr.isSessionSupported("immersive-vr");
   } catch {
     return false;
   }
@@ -47,24 +68,43 @@ export async function isXrSupported(): Promise<boolean> {
 /**
  * Watches for a headset appearing after the page loaded — the ordinary
  * sequence is "open the page, then put the headset on".
+ *
+ * Probes overlap: load, `devicechange` and focus can each start one, and
+ * `isSessionSupported` settles in no promised order. Each probe takes a token
+ * and only the newest may report, so a slow "unsupported" started before the
+ * headset appeared cannot land after the fresh "supported" and disable Enter.
+ * Copied from someotherlife's apps/client/src/xr/support.ts (2026-09-07,
+ * commit 26a9b1a), per orchard BACKLOG 23 and someotherlife ADR 0018 §1.2.
  */
-export function watchXrSupport(onChange: (supported: boolean) => void): () => void {
+export function watchXrSupport(
+  onChange: (supported: boolean) => void,
+  targets: XrWatchTargets = { xr: navigator.xr ?? null, focus: window },
+): () => void {
+  const { xr, focus } = targets;
   let reported: boolean | null = null;
+  let newest = 0;
   let stopped = false;
   const probe = async (): Promise<void> => {
-    const supported = await isXrSupported();
-    if (stopped || supported === reported) return;
+    const token = ++newest;
+    const supported = await isXrSupported(xr);
+    if (stopped || token !== newest || supported === reported) return;
     reported = supported;
     onChange(supported);
   };
   const reprobe = (): void => void probe();
   void probe();
-  navigator.xr?.addEventListener?.("devicechange", reprobe);
-  window.addEventListener("focus", reprobe);
+  // No WebXR in this browser means no headset can ever appear.
+  if (!xr) {
+    return () => {
+      stopped = true;
+    };
+  }
+  xr.addEventListener?.("devicechange", reprobe);
+  focus.addEventListener("focus", reprobe);
   return () => {
     stopped = true;
-    navigator.xr?.removeEventListener?.("devicechange", reprobe);
-    window.removeEventListener("focus", reprobe);
+    xr.removeEventListener?.("devicechange", reprobe);
+    focus.removeEventListener("focus", reprobe);
   };
 }
 

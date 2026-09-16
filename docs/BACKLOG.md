@@ -197,10 +197,15 @@ existing backlog entries; this pass did not implement them.
     coverage radius, an occluder mesh and a preview still; Spark as the
     decoder; no SharedArrayBuffer path (the grove sends COOP without COEP).
     Needs Spike C's numbers first.
-23. **Lift from someotherlife's client:** the XR-support probe token
-    (stale "unsupported" can land last in the grove's watchXrSupport), the
-    distance-clamped orbit for vantage-point rooms, dwell and raycast
-    pointing if exhibits get point-to-select.
+23. **Lift from someotherlife's client:** ~~the XR-support probe token
+    (stale "unsupported" can land last in the grove's watchXrSupport)~~ Done
+    2026-09-16: copied into `grove/src/control/xr.ts` with attribution;
+    `control/xr-support.test.ts` holds the out-of-order case, which fails
+    with the token removed. Still waiting on their condition, not lifted
+    ahead of a consumer (someotherlife ADR 0018 §1.2): the distance-clamped
+    orbit, when the first splat room exists (someotherlife's MG); dwell and
+    raycast pointing, if exhibits get point-to-select, and then against
+    specs/INTERACTION.md's 1.2 s dwell, not someotherlife's 300 ms.
 24. **A tree lowering its own stage.** spectre set its thesis back to
     styleframe on purpose. Checked 2026-09-12: the database holds no rulings
     yet (the timer logs 0 reviewed), so nothing can push it up today; but
