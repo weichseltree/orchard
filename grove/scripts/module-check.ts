@@ -121,7 +121,30 @@ async function refusal(p: Promise<unknown>): Promise<string> {
 
 const names = (v: Visitor) => [...v.conn.db.peopleHere.iter()].map((r) => r.name).sort();
 
+/**
+ * The WebSocket checks go to --uri, but every admin call and SQL read goes
+ * through the CLI's `-s local`, which the CLI config resolves on its own. If
+ * the two disagree, the kicks, bans and floods below land on whatever server
+ * `local` names -- and a fresh CLI config names 127.0.0.1:3000, which on a box
+ * shared by several sessions may be somebody else's scratch database. So
+ * refuse to start unless `local` is the server --uri points at.
+ */
+function requireCliMatchesUri(): void {
+  const host = new URL(URI.replace(/^ws/, "http")).host;
+  const listing = cli("server", "list").out;
+  const local = listing.split("\n").find((line) => /\slocal\s*$/.test(line));
+  if (!local || !local.includes(host)) {
+    console.error(
+      `module-check: the CLI's "local" server is not ${host}, so admin calls would go elsewhere.\n` +
+        `  ${local?.trim() ?? "no local server in the CLI config"}\n` +
+        `  fix: spacetime --config-path <cli.toml> server edit local --url http://${host}`,
+    );
+    process.exit(2);
+  }
+}
+
 async function main(): Promise<void> {
+  requireCliMatchesUri();
   // --- the admin allowlist is the publisher, from init ---
   const admins = cli("sql", "-s", "local", DB, "SELECT * FROM admin");
   const me = cli("login", "show");
@@ -238,6 +261,29 @@ async function main(): Promise<void> {
 
   // --- the scheduled sweep is not a public door ---
   check("a guest cannot run the sweep", (await refusal(ann.conn.reducers.sweepNow({}))).includes("admin only"));
+
+  // --- what admins write into public tables is checked, not trusted ---
+  // These reducers were safe while only the operator's home box called them.
+  // Area admins and linked repositories end that, so the module cleans and
+  // checks every visitor-facing string itself.
+  const url = '"https://media.weichseltree.com/abc/still.png"';
+  admin("upsert_tree", '"probe"', '"Does it hold?"', '"active"', '"thesis"', "5");
+  check("hang refuses an exhibit kind the grove cannot show", admin("hang", '"probe"', '"planet"', '"t"', url, '""', '""').out.includes("kind must be one of"));
+  check("hang refuses a media URL that is not https", admin("hang", '"probe"', '"still"', '"t"', '"javascript:alert(1)"', '""', '""').out.includes("url must be an https URL"));
+  check("hang refuses a title that is only invisible characters", admin("hang", '"probe"', '"still"', '"\\u202e\\u200b"', url, '""', '""').out.includes("title is empty"));
+  admin("hang", '"probe"', '"still"', '"evil\\u202etxt.exe"', url, '""', '""');
+  const titles = cli("sql", "-s", "local", DB, "SELECT title FROM exhibit WHERE tree = 'probe'").out;
+  check("...and strips a bidi override from one it keeps", titles.includes("eviltxt.exe") && !titles.includes("\u202e"));
+  check("set_room refuses a room name that is not an id", admin("set_room", '"Bad Name"', '"T"', "false", "true", "24").out.includes("room name must be"));
+  check("set_room refuses capacity 0, which would say 'room full' when it means shut", admin("set_room", '"shut"', '"T"', "false", "true", "0").out.includes("capacity must be"));
+  check("upsert_tree refuses a potential above the scale", admin("upsert_tree", '"probe"', '"q"', '"active"', '"thesis"', "11").out.includes("potential must be"));
+
+  // --- an admin can be removed, but never the last one ---
+  check("a guest cannot remove an admin", (await refusal(ann.conn.reducers.removeAdmin({ who: boss.identity }))).includes("admin only"));
+  check("remove_admin refuses someone who is not an admin", admin("remove_admin", JSON.stringify(`0x${ann.hex}`)).out.includes("not an admin"));
+  admin("add_admin", JSON.stringify(`0x${ann.hex}`));
+  check("remove_admin takes back a grant", admin("remove_admin", JSON.stringify(`0x${ann.hex}`)).ok && !cli("sql", "-s", "local", DB, "SELECT * FROM admin").out.includes(ann.hex));
+  check("the last admin cannot be removed", admin("remove_admin", JSON.stringify(`0x${myHex}`)).out.includes("the last admin cannot be removed"));
 
   // --- the token gate and the per-network cap ---
   if (!AUTH) {
