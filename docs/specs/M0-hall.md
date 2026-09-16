@@ -2,7 +2,7 @@
 
 The smallest mansion that proves the platform: one hall, one tree room, one
 video wall, one particle tape you can stand inside, on desktop, Quest browser
-and phone, at https://weichseltree.com/grove, connected to the live
+and phone, at https://weichseltree.com/mind, connected to the live
 SpacetimeDB database `orchard` for presence. Approved 2026-09-12 under the
 standing authorisation to decide and document.
 

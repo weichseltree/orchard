@@ -2,7 +2,7 @@
 // compared with the last accepted set, so a regression is seen before a
 // deploy rather than by a visitor.
 //
-//   node grove/tools/palace/stations.mjs [--base http://localhost:4173/grove/] [--out docs/img/stations] [--accept] [station ...]
+//   node grove/tools/palace/stations.mjs [--base http://localhost:4173/mind/] [--out docs/img/stations] [--accept] [station ...]
 //
 // Each station is shot at 640x400 (JPEG, small enough to commit). Without
 // --accept the new shot goes to <out>/<name>.new.jpg and is compared with
@@ -97,7 +97,7 @@ async function shoot(urls, port, waitMs) {
 async function main() {
   const args = process.argv.slice(2);
   const opt = (name, fallback) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : fallback; };
-  const base = opt("--base", "http://localhost:4173/grove/");
+  const base = opt("--base", "http://localhost:4173/mind/");
   const outDir = opt("--out", "docs/img/stations");
   const accept = args.includes("--accept");
   const waitMs = Number(opt("--wait", "20000"));
