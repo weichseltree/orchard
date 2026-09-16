@@ -274,9 +274,10 @@ artefacts:
   approved: false
   bundle: 88264695328bfe70
 producers:
-  tape: exprun uv run python film/scenes.py {scene} {flags}
-  render: exprun uv run python film/render.py results/film/tapes/{tape} --seconds {seconds} --fps 30 {flags}
-  figure: uv run python film/anim.py {name}
+  tape: exp run einstruct-tape-{scene} --prio 5 --lane cpu -- uv run python film/scenes.py {scene} {flags}
+  render: exp run einstruct-render-{tape} --prio 5 --lane cpu -- uv run python film/render.py results/film/tapes/{tape}
+    --seconds {seconds} --fps 30 {flags}
+  figure: exp run einstruct-figure-{name} --prio 5 --lane cpu -- uv run python film/anim.py {name}
   lane: cpu
   env: {}
 theses:

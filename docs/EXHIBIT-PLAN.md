@@ -496,7 +496,7 @@ housekeeping commits.
   pair re-run, the witness tolerance pinned. Owner time, a separate
   reviewing session, CPU hours. Nothing in phototroph moves before it.
 - **phototroph, one tape for the room.** Fund the ~60-line PTVF converter
-  and a motion-grade dimer-split window (minutes of CPU on exprun,
+  and a motion-grade dimer-split window (minutes of CPU on `exp run --lane cpu`,
   prio 5), so the tree has one honest thing to hang: the dim grey gas.
   Recommended yes; it is independent of the rate decision.
 - **world-engine, hang the three stills.** All verified. The classroom

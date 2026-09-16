@@ -612,7 +612,7 @@ unload.
 ## 7. Milestones
 
 Stills gate every bake (LAWS 14, 15): options as PNG, one contact sheet,
-a ruling, then the lane, which here is the CPU under `exprun` and never
+a ruling, then the lane, which here is the CPU under `exp run --lane cpu` and never
 the GPU. The hall bake proved the CPU fits: 13 minutes for a room at
 1024 samples. A whole palace is a few hours of CPU spread over evenings
 and, if wanted, half of it on Legion's cpu lane through `lanepush`, since
@@ -630,9 +630,9 @@ in about a tenth of the time, and the lane is worth more than that.
 
 About 5 CPU hours of bakes and renders in all, half of which could run on
 the peer's cpu lane, and no GPU lane at any stage. Each bake is launched
-with `EXP_NAME`, `EXP_PRIO` and `EXP_LOG` set and waited on with
-`exp wait --done-when 'BAKE OK'`, as the hall's record shows; a bake is
-under 30 min and is prio 5, a still sheet is prio 10. Records: every asset
+with `exp run --lane cpu` and waited on with `exp wait --done-when 'BAKE OK'`,
+as the hall's record shows; a bake is under 30 min and is prio 5, a still
+sheet is prio 10. Records: every asset
 carries `asset.extras.orchard` with the script sha256, the Blender version,
 the git commit, the bake settings and timings, and the same record as
 `<room>.json` beside it, so that a rebake is the same command again.

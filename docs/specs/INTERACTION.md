@@ -474,7 +474,7 @@ left after deletions, monthly.
 arcedit learns to act through a cursor on a canvas it sees only near the
 cursor. The grove is the same problem one dimension up: an actor that sees
 what it points at, a small set of verbs, and a cost per step. The harness
-is a Python environment in `grove/sim/` (new; CPU only, `exprun` for its
+is a Python environment in `grove/sim/` (new; CPU only, `exp run --lane cpu` for its
 tests) that replays recorded sessions and lets an agent search over the
 configuration of §3.4.
 
@@ -530,7 +530,7 @@ configuration of §3.4.
 > heuristic 2 by under 10% on synthetic data is not run on real data.
 > Start with the behaviour model and its validation, then the three
 > baselines, then PPO over the discrete action space with arcedit's
-> `i11_measure_rl.py` harness, `T_max` 20. CPU only, `exprun`. A number
+> `i11_measure_rl.py` harness, `T_max` 20. CPU only, `exp run --lane cpu`. A number
 > must name the session file and commit that produced it. Report back with
 > the config that won and the diff against the default, as the JSON of
 > §3.4, so it can be shipped as the new default without the LLM.
@@ -583,7 +583,7 @@ replaces §4.5 where they disagree.
   level is the object that transfers to arcedit's interactive-games goal
   and stays with that session.
 
-Plan, in arcedit's milestone style, all CPU under `exprun`:
+Plan, in arcedit's milestone style, all CPU under `exp run --lane cpu`:
 
 | stage | what | gate |
 |---|---|---|

@@ -4,7 +4,7 @@ bake_hall.py -- build the M0 hall procedurally and bake its lightmap (WP3).
 
 Run headless, never with a bare CUDA context:
 
-    exprun /home/manuel/tools/blender/blender --background \
+    exp run orchard-hall-bake --prio 10 --lane cpu -- /home/manuel/tools/blender/blender --background \
         --python grove/tools/bake_hall.py -- --samples 256 --out grove/public/assets/hall
 
 Outputs into --out:
@@ -500,7 +500,7 @@ def configure_cycles(scene, args):
                 "--device GPU refused: nothing here holds the GPU lane, and an unserialised "
                 "CUDA context freezes WSL2. The CPU bake fits the 30 min budget; if you really "
                 "need the card, take the lane and say so:\n"
-                "  exp run orchard-hall-bake-gpu --prio 10 -- env ORCHARD_GPU_LANE_HELD=1 "
+                "  exp run orchard-hall-bake-gpu --prio 10 --lane gpu -- env ORCHARD_GPU_LANE_HELD=1 "
                 "<blender> --background --python grove/tools/bake_hall.py -- --device GPU ...")
         cy.device = "GPU"
         if prefs is not None:

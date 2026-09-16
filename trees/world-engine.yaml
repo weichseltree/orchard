@@ -75,11 +75,11 @@ artefacts:
 producers:
   tape: ''
   render: ''
-  figure: cd experiments/sphere-space && uv run --with imageio python viz.py --bake results/classroom
-    --source {source} --out {out} --zoom 4
+  figure: exp run world-engine-figure-{source} --prio 5 --lane cpu -- bash -lc 'cd experiments/sphere-space
+    && uv run --with imageio python viz.py --bake results/classroom --source {source} --out
+    {out} --zoom 4'
   lane: cpu
-  env:
-    GPU_LOCK: $HOME/.cache/cpu0.lock
+  env: {}
 theses:
 - id: lens-doorway
   question: Can a doorway open onto a room larger than the wall it is set in, with the light bending honestly

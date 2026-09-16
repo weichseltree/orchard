@@ -1,6 +1,6 @@
 import json
 
-from orchard.ledger import stream_usage
+from orchard.ledger import load_jobs, stream_usage
 
 
 def test_stream_usage_groups_encode_hours_and_tts_cost_by_stream(tmp_path):
@@ -45,3 +45,53 @@ def test_stream_usage_ignores_malformed_or_invalid_records(tmp_path):
 
 def test_stream_usage_returns_empty_when_no_meter_exists(tmp_path):
     assert stream_usage(tmp_path) == {}
+
+
+def test_stream_usage_reads_expdash_metric_records(tmp_path):
+    (tmp_path / "stream.metrics.jsonl").write_text(
+        "\n".join([
+            json.dumps({
+                "schema": "expdash/metrics/1",
+                "labels": {"stream_id": "repo-a", "provider": "logswarm"},
+                "metrics": [
+                    {"name": "stream.encode.hours", "value": 0.5},
+                    {"name": "stream.encode.cost_usd", "value": 0.12},
+                    {"name": "stream.tts.cost_usd", "value": 0.08},
+                ],
+            }),
+            json.dumps({
+                "schema": "expdash/metrics/1",
+                "name": "stream.encode.hours",
+                "value": 1.0,
+                "labels": {"stream_id": "repo-a", "provider": "logswarm"},
+            }),
+            json.dumps({"schema": "other", "name": "stream.encode.hours", "value": 99}),
+        ]) + "\n"
+    )
+
+    assert stream_usage(tmp_path) == {
+        "repo-a": {
+            "provider": "logswarm",
+            "encode_hours": 1.5,
+            "encode_cost_usd": 0.12,
+            "tts_cost_usd": 0.08,
+        },
+    }
+
+
+def test_load_jobs_prefers_expdash_lane_over_legacy_lock(tmp_path):
+    (tmp_path / "job.json").write_text(json.dumps({
+        "id": "j1",
+        "name": "gpu job",
+        "repo": "repo-a",
+        "lane": "gpu",
+        "lock": "",
+        "queued_at": 10,
+        "started_at": 20,
+        "ended_at": 30,
+        "status": "done",
+    }))
+
+    [job] = load_jobs(tmp_path, now=40)
+    assert job.lane == "gpu"
+    assert job.duration_s == 10

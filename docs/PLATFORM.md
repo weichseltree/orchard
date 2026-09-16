@@ -69,7 +69,7 @@ portals without a new login; identity is portable because it is a key pair.
 bake, preprocess. A job names the tree's commit, the command, its inputs by
 hash and the resources it needs. A node operator chooses which trees they
 trust and runs their jobs on their own GPU through their own lane discipline
-(here, `gpurun`). Results are bundles, signed by the node, verifiable by hash
+(here, `exp run --lane gpu`). Results are bundles, signed by the node, verifiable by hash
 by anyone. The ledger records who spent what for whom; that record is the
 funding, and it is public.
 

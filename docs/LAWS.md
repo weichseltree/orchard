@@ -55,8 +55,8 @@ editing an old one (strike it and say why).
 
 ## Capital
 
-20. **Every GPU or render job goes through gpurun with an EXP_PRIO**, on the
-    lane the manifest names. Renders are costed from measured coefficients
+20. **Every GPU or render job goes through `exp run` with a priority and lane**,
+    on the lane the manifest names. Renders are costed from measured coefficients
     before greenlight; a 58-day render plan is a rejected thesis, not a queue.
 21. **API spend is metered per tree per round.** A loop that bills without a
     cap trips a breaker.

@@ -16,7 +16,10 @@ from pathlib import Path
 from typing import Literal
 
 import yaml
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
+
+
+LEGACY_LAUNCHERS = ("exprun", "gpurun", "$HOME/.local/bin/gpurun")
 
 
 class Status(StrEnum):
@@ -81,6 +84,22 @@ class Producers(BaseModel):
     figure: str = ""
     lane: Literal["gpu", "cpu", "none"] = "cpu"
     env: dict[str, str] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def local_launches_use_expdash_lanes(self) -> "Producers":
+        commands = {"tape": self.tape, "render": self.render, "figure": self.figure}
+        for key, cmd in commands.items():
+            if not cmd:
+                continue
+            if "GPU_LOCK" in cmd or "GPU_LOCK" in self.env:
+                raise ValueError(f"producers.{key} must not bypass lane locks with GPU_LOCK")
+            if self.lane == "none":
+                raise ValueError(f"producers.{key} needs an exp run lane, not lane=none")
+            if any(legacy in cmd for legacy in LEGACY_LAUNCHERS):
+                raise ValueError(f"producers.{key} must use exp run, not a legacy launcher")
+            if "exp run " not in cmd or f"--lane {self.lane}" not in cmd or " -- " not in cmd:
+                raise ValueError(f"producers.{key} must launch with: exp run <name> --lane {self.lane} -- <command>")
+        return self
 
 
 class Budget(BaseModel):
