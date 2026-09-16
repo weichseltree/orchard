@@ -610,8 +610,7 @@ meets one in SANDBOX-TRUST.md, that document's ruling is the one about trust.
      offset. A splat portal must therefore collapse both the far-eye offset
      and the landing offset to the station as t → 1. The ceiling above is
      then recomputed with orchard's real distance, `R · (1 − t · (1 − core))`.
-     someotherlife's bench (apps/spike-c `?portal=`, someotherlife b2eb00c; that commit was
-     local and unpushed when this was written)
+     someotherlife's bench (apps/spike-c `?portal=`, someotherlife b2eb00c)
      models orchard's real `shapedBlend` rather than the linear `blendAt`,
      and reports the peak, the landing offset and the safe ratios for each
      run. For the splat variant (the far offset scaled by (1 − t), landing at
