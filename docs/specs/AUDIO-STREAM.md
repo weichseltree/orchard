@@ -85,6 +85,15 @@ the editorial laws instead of being exempted from them.
 
 Sonification is deterministic and seeded: the same score renders byte-identical
 Opus, so the archived bundle's hash means what every other hash here means.
+
+**Amended 2026-09-16 (#14, ruled by Manuel).** That holds for the *bed*, the
+provider's Opus. It no longer holds for *positioned* sound: each positioned
+node's voice is synthesised in the visitor's browser from the live score
+(§5), so the bundle's hash does not cover it. What replaces the hash is
+determinism: a voice is a pure function of the score frame, the node id and
+`SYNTH_VERSION` (`grove/src/audio/voice.ts`, now `orchard/synth/1`), so what a
+visitor heard is reproducible from the archived score plus that version
+string. Changing the mapping changes the version.
 The versioned schema lives in `orchard/packages/score/` (`orchard-score`),
 pinned by tag the same way `orchard-tape` is (`PACKAGES.md` §2).
 
@@ -242,28 +251,37 @@ exhibit is the honest first venue.
 - A ledger meter for stream-hours. **Landed** on the reporting side
   (`orchard/ledger.py`); the encode/TTS side that appends usage entries is
   outside this repo.
-- **A ruling on where a positioned node's sound comes from.** This is the one
-  thing §5 cannot finish without, and it forks three ways:
+- **Where a positioned node's sound comes from: RULED 2026-09-16 (#14).**
+  Manuel chose option 1 of the three that were on the table: **the client
+  synthesises a voice per node from a live score feed.** The other two
+  (a track per node, one Ambisonic stream) are recorded in #14.
 
-  1. **The client synthesises a voice per node from a live score feed.** One
-     stream, one decoder, works on every tier today. It costs the claim in §4:
-     what a visitor hears positioned is not the provider's seeded sonification,
-     so the archived bundle's hash no longer means what was heard. It also
-     needs a live score transport, which no section of this spec defines.
-  2. **The provider publishes a track per node.** Honest — the sonification
-     stays the provider's — and dead on arrival: `DEVICE-TIERS.md` budgets one
-     decoder, and six to sixteen concurrent hls.js sessions on a Quest is not
-     a thing.
-  3. **One multi-channel or Ambisonic stream, demuxed or decoded client-side.**
-     One decoder, the sonification stays the provider's, head-tracking works.
-     Ambisonics gives up the per-node cap entirely (the field is fixed, so a
-     tier cannot drop nodes into the bed) and a visitor cannot walk up to a
-     node; multi-channel Opus over MSE is not reliably a browser feature.
+  *Transport.* The provider publishes **`score.live.json`** beside
+  `live.m3u8` and `topology.json`, under the exhibit's name, so it is never
+  cached. It is the same `orchard/score/1` document an `audio` bundle archives
+  as `score.json`, holding only a rolling window of recent frames: there is no
+  second schema. `orchard_score.LiveScoreWriter` writes it (window 30,
+  replaced atomically on every frame); the grove polls it once a second
+  (`grove/src/audio/score-live.ts`). The window must outlast the poll:
+  over 10 frames at 10 Hz.
 
-  Nothing is built for any of them beyond the seam: `grove/src/audio/field.ts`
-  positions whatever voices it is handed and ships none. **(1) is the only one
-  buildable today and the only one that breaks §4**, which is why it is a
-  ruling and not a choice made in code.
+  *Voice.* `grove/src/audio/voice.ts`: pitch is the node's identity (a
+  pentatonic degree chosen by hashing its id, so every set of nodes is
+  consonant and a node sounds like itself tomorrow); loudness is `rate`,
+  log-scaled, and **an idle node is silent** (LAWS 17); brightness is
+  `template_entropy`; tremolo is `burstiness`; ill health flattens and darkens;
+  `|anomaly_z| >= 3` agitates the tremolo. A voice exists only for a node the
+  tier's budget has positioned (`field.ts`), so a Quest runs at most sixteen.
+
+  *Failure.* A feed that has published nothing new for 3.5 s is dead, and a
+  dead feed is **silence**: holding the last state would sound like a system
+  still running. A document that is not a score builds no voices. A live
+  exhibit without `score.live.json` plays the bed alone, as before.
+
+  *Archived bundles* do not yet play positioned voices from their
+  `score.json`; that needs the voices driven by playback time rather than the
+  newest frame, and is not built.
+
 - A decision on whether LogSwarm is scouted and planted as a tree, and whether
   the score schema lives in `orchard/packages/` where both repos can pin it by
   tag per `PACKAGES.md` §2. **The schema's home is decided**: `orchard/packages/score/`.

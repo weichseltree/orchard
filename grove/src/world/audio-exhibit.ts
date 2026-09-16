@@ -1,6 +1,8 @@
 import { Box3, Vector3 } from "three";
 import { MEDIA_BASE } from "../config";
 import { AudioField, type VoiceFactory } from "../audio/field";
+import { LIVE_POLL_MS, LIVE_SCORE_FILE, ScoreFollower, parseScore } from "../audio/score-live";
+import { scoreVoices } from "../audio/voice";
 import { positionedCount } from "../audio/sources";
 import { ExhibitStream, type ExhibitStreamState } from "../audio/exhibit";
 import { placeTopology, parseTopology, type PlacedNode, type TopologyPlacement } from "../audio/topology";
@@ -72,6 +74,9 @@ export class AudioExhibit {
   readonly base: string;
 
   #disposed = false;
+  /** The per-node voices and their score poll, when the exhibit publishes a live score. */
+  #voices: ReturnType<typeof scoreVoices> | null = null;
+  #poll: ReturnType<typeof setInterval> | null = null;
 
   private constructor(
     hanging: AudioHanging, base: string, field: AudioField,
@@ -91,8 +96,25 @@ export class AudioExhibit {
     if (base === null) throw new Error(`${hanging.id}: no live exhibit and no bundle`);
 
     const placement = placementOf(hanging);
-    const nodes = await loadNodes(hanging, base, placement, options.fetch ?? globalThis.fetch, onNotice);
-    const field = new AudioField({ tier: options.tier, nodes, ...(options.voice ? { voice: options.voice } : {}), ...(onNotice ? { onNotice } : {}) });
+    const fetchImpl = options.fetch ?? globalThis.fetch;
+    const nodes = await loadNodes(hanging, base, placement, fetchImpl, onNotice);
+
+    // #14: a live exhibit that publishes `score.live.json` gets a voice per
+    // positioned node, synthesised here from the score (audio/voice.ts). One
+    // that does not keeps the bed alone, exactly as before. A caller-supplied
+    // factory still wins, for tests and for any provider-side voice later.
+    let follower: ScoreFollower | null = null;
+    let voices: ReturnType<typeof scoreVoices> | null = null;
+    if (!options.voice && hanging.live && nodes.length > 0) {
+      follower = new ScoreFollower();
+      if (await pollScore(`${base}${LIVE_SCORE_FILE}`, follower, fetchImpl)) {
+        voices = scoreVoices(follower);
+      } else {
+        follower = null;
+      }
+    }
+    const voice = options.voice ?? voices?.factory;
+    const field = new AudioField({ tier: options.tier, nodes, ...(voice ? { voice } : {}), ...(onNotice ? { onNotice } : {}) });
 
     // The stream is allowed to fail on its own: a room with a dead exhibit is
     // a quiet room, not a broken one.
@@ -107,7 +129,20 @@ export class AudioExhibit {
       onNotice?.(`${hanging.id}: the stream did not start (${message(error)})`);
     }
 
-    return new AudioExhibit(hanging, base, field, stream, nodes, boundsOf(placement));
+    const exhibit = new AudioExhibit(hanging, base, field, stream, nodes, boundsOf(placement));
+    if (follower && voices) {
+      exhibit.#voices = voices;
+      const url = `${base}${LIVE_SCORE_FILE}`;
+      // A failed poll changes nothing: the follower goes stale on its own and
+      // the voices fall silent, which is what a dead feed should sound like.
+      exhibit.#poll = setInterval(() => void pollScore(url, follower, fetchImpl), LIVE_POLL_MS);
+    }
+    return exhibit;
+  }
+
+  /** Keeps the voices on the score. Cheap when nothing changed; call it from the frame loop. */
+  tick(): void {
+    if (!this.#disposed) this.#voices?.tick();
   }
 
   /** "silent" when there is no stream at all, which is what a dead one sounds like. */
@@ -172,6 +207,8 @@ export class AudioExhibit {
   dispose(): void {
     if (this.#disposed) return;
     this.#disposed = true;
+    if (this.#poll !== null) clearInterval(this.#poll);
+    this.#poll = null;
     this.stream?.dispose();
     this.field.dispose();
   }
@@ -194,6 +231,23 @@ async function loadNodes(
   } catch (error) {
     onNotice?.(`${hanging.id}: no topology, playing the bed alone (${message(error)})`);
     return [];
+  }
+}
+
+/** Fetches the live score window into the follower; false when there is none to read. */
+async function pollScore(url: string, follower: ScoreFollower, fetchImpl: typeof globalThis.fetch): Promise<boolean> {
+  try {
+    // An exhibit name, so never cached (PACKAGES.md: a fixed name is revalidated).
+    const response = await fetchImpl(url, { cache: "no-store" });
+    if (!response.ok) return false;
+    const doc: unknown = await response.json();
+    // Only a document that IS a score counts: an exhibit that answers with
+    // anything else has no voices, rather than voices built over nothing.
+    if (parseScore(doc) === null) return false;
+    follower.ingest(doc, performance.now());
+    return true;
+  } catch {
+    return false;
   }
 }
 

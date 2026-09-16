@@ -838,6 +838,8 @@ view.start((dt, time, rawDt) => {
     if (reassign) nextAudioReassign = time + 250;
     for (const audio of world.audios) {
       audio.setListener([headWorld.x, headWorld.y, headWorld.z], [_forward.x, _forward.y, _forward.z]);
+      // Per-node voices follow the live score (#14); a no-op unless a newer frame arrived.
+      audio.tick();
       if (reassign) audio.reassign();
     }
   }
