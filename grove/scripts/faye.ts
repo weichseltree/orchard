@@ -34,6 +34,7 @@ import {
 } from "../src/faye/events";
 import { EMPTY_STATE, replyTo, type FayeState } from "../src/faye/reply";
 import { Speaker, TURN_POSE_HZ, isNewLine, onDisconnectAction } from "../src/faye/listen";
+import { FAYE_NAME, FAYE_ROOM } from "../src/faye/names";
 
 const { values: args } = parseArgs({
   options: {
@@ -46,11 +47,6 @@ const { values: args } = parseArgs({
     "token-file": { type: "string", default: "" },
     /** Make that identity: connect with none, write its token, print it, exit. */
     "new-identity": { type: "boolean", default: false },
-    room: { type: "string", default: "grove" },
-    // NAME_MAX is 24 and `cleanName` clips silently, so a longer name is
-    // truncated rather than refused: "The Great Admin Spirit Faye" (27) would
-    // stand in the room as "The Great Admin Spirit F". This one is 23.
-    name: { type: "string", default: "Great Admin Spirit Faye" },
     /** Where she stands, metres: "x,y,z". Eye height, not the floor. */
     at: { type: "string", default: "0,1.6,6" },
     /** Seconds per full turn on the spot; 0 stands still. */
@@ -258,17 +254,16 @@ async function main(): Promise<void> {
     void speaker.say(answer, { droppable: true });
   });
 
+  // Her name and room are constants, not flags (src/faye/names.ts): the client
+  // recognises her by the one and sends visitors to the other.
   before = ownLastSeen();
   // The speaker is held from BEFORE the join until its acknowledgement and the
   // hold after it: the handler is live, and a reply to a line said while the
   // join is in flight must not go out inside the gap `join` just stamped.
-  const joining = conn.reducers.join({ name: args.name, room: args.room });
+  const joining = conn.reducers.join({ name: FAYE_NAME, room: FAYE_ROOM });
   speaker.holdUntil(joining.then(() => speaker.heldUntilGap(performance.now())));
   await joining;
-  console.log(`faye: standing in "${args.room}" as "${args.name}"`);
-  if (args.name.length > 24) {
-    console.warn(`faye: the module clips names at 24 characters, so this shows as "${args.name.slice(0, 24)}"`);
-  }
+  console.log(`faye: standing in "${FAYE_ROOM}" as "${FAYE_NAME}"`);
 
   // Queued, not awaited: replies may already be waiting ahead of it, and the
   // pose, the poll and the signal handlers below must not wait on them. A
@@ -327,7 +322,7 @@ async function main(): Promise<void> {
       hosts: reading.hosts,
       mirror: reading.mirror,
       seenByType: countBy(taken.fresh.map((e) => e.type), known.seenByType),
-      runningByTree: runningByTree(doc),
+      running: reading.running,
       hasFeed: true,
     };
 
@@ -429,21 +424,6 @@ function readTreeTitles(dir: string): TreeTitles {
 
 function unquote(raw: string): string {
   return raw.replace(/^['"]|['"]$/g, "");
-}
-
-/** Running counts per tree identity, straight off the feed's experiments. */
-function runningByTree(doc: unknown): Map<string, number> {
-  const out = new Map<string, number>();
-  const root = doc as { experiments?: unknown };
-  if (!Array.isArray(root?.experiments)) return out;
-  for (const raw of root.experiments) {
-    const e = raw as { status?: unknown; repo?: unknown };
-    if (e?.status !== "running") continue;
-    const repo = typeof e.repo === "string" && e.repo ? e.repo : "";
-    if (!repo) continue;
-    out.set(repo, (out.get(repo) ?? 0) + 1);
-  }
-  return out;
 }
 
 function countBy(values: readonly string[], into: ReadonlyMap<string, number>): Map<string, number> {

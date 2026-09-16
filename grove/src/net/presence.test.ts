@@ -948,6 +948,41 @@ describe("who we are, and what a host can do", () => {
     expect(presence.peers.get("p1")?.muted).toBe(true);
   });
 
+  it("reads who is in the room from the view, without taking sync's change from the frame loop", async () => {
+    const { presence } = await connected([
+      { hex: "me", name: "Manuel", room: "grove" },
+      { hex: "f", name: "Great Admin Spirit Faye", room: "grove", isAdmin: true },
+      { hex: "g", name: "ann", room: "gallery" },
+    ]);
+    expect(presence.peopleInRoom()).toEqual([{ name: "Great Admin Spirit Faye", host: true }]);
+  });
+
+  it("does not know who is in a room the view has not moved to yet", async () => {
+    // Our own row still names the room we left: the view has not caught up
+    // with the join, so an empty list would falsely mean nobody else is here.
+    const { presence } = await connected([
+      { hex: "me", name: "Manuel", room: "gallery" },
+      { hex: "g", name: "ann", room: "gallery" },
+    ]);
+    expect(presence.joinedRoom).toBe("grove");
+    expect(presence.peopleInRoom()).toBeNull();
+  });
+
+  it("does not know who is in the room before the subscription's rows land", async () => {
+    const connection = stubConnection({
+      applyLater: true,
+      people: [{ hex: "me", name: "Manuel", room: "grove" }, { hex: "f", name: "Faye", room: "grove", isAdmin: true }],
+    });
+    let handlers!: TransportHandlers;
+    const presence = new Presence({}, { transport: (h) => (handlers = h), storage: memoryStorage() });
+    presence.connect("grove");
+    handlers.onConnect(connection, "me", "token");
+    await settle(20);
+    expect(presence.peopleInRoom()).toBeNull();
+    connection.applyNow();
+    expect(presence.peopleInRoom()).toEqual([{ name: "Faye", host: true }]);
+  });
+
   it("renames by joining the room we are in, and keeps the name for next time", async () => {
     const { presence, connection, storage } = await connected([{ hex: "me", name: "visitor-1", room: "grove" }]);
     await presence.rename("Manuel");

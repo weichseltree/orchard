@@ -4,15 +4,12 @@ Written 2026-09-16, from Manuel's ask: *"I want you to have a direct VR
 integration. Can you appear in the local version of the orchard as The Great
 Admin Spirit Faye?"* and *"plan the VR integration fully"*.
 
-**What is already true.** Faye stands in the local grove, watches the compute
-on both boxes, announces what changes, and answers a visitor who names her —
-verified as a real two-identity exchange against a live database. A public
-`broadcast` table now carries world events (cues and notices) to every client.
-
-**What is not true.** A visitor cannot reach any of it from inside the grove.
-This document is the path from a script-only conversation to one a person can
-have wearing a headset, and it says plainly which parts are blocked on
-something orchard does not have.
+**Where this started.** Faye stood in a local grove, watched the compute on
+both boxes, announced what changed and answered a visitor who named her —
+but only as a script-to-script exchange: no visitor could reach any of it from
+inside the grove. This document was the path from that to a conversation a
+person can have wearing a headset. §1 says where that path now stands; the
+sections after it are kept as the plan they were.
 
 Numbers marked **budget** are proposals, not measurements.
 
@@ -32,14 +29,22 @@ Numbers marked **budget** are proposals, not measurements.
 | A visitor SPEAKS with their voice | **works in flat mode** — hold-to-talk in the chat panel |
 | A visitor ASKS her something in a headset | **works** — a wrist menu of four asks: left B/Y, right stick, trigger (§6 option 2) |
 
-Updated 2026-09-16. Stage one and most of stage two are done; what is left is
-the scrolling log in a headset, and the wiring that would let a person speak.
+Updated 2026-09-16, evening. Every row is done, and all of it is live: the
+module with `broadcast`, the chat panel, the headset log, the wrist menu, and
+voice through Deepgram (key set as a Pages secret, socket allowed by the CSP).
+Faye herself goes live when `deploy/faye/install.sh` is first run.
 
-**Deepgram changes what §6 says.** Voice was written down as blocked on
+**Deepgram changed what §6 says.** Voice was written down as blocked on
 Cloudflare Realtime, and that is still true of visitor-to-visitor spatial
-voice, which needs an SFU. It is NOT true of talking to Faye: that is one
-client and a transcription service, and Manuel already has Deepgram keys. The
-row above is "half" rather than "blocked" for that reason.
+voice, which needs an SFU. It was never true of talking to Faye: that is one
+client and a transcription service.
+
+**She hears one room.** Chat reaches only the room it is said in, and she
+stands in the hall (presence `grove`). Every way of asking her works in every
+room, so a visitor elsewhere who names her is told where she stands, and one
+in the hall while she is away is told nobody will answer
+(`src/faye/names.ts`). Answering in every room would mean one admin speaking
+into all of them, which is a ruling, not a fix.
 
 ## 2. The rule that shapes all of it
 
@@ -112,7 +117,13 @@ and a panel is one more draw call and one more texture against a 150-call,
 only when the text changes, never per frame; 22 mm cap height at 1.5 m, which
 is roughly 40 px on the panel.
 
-## 6. Stage four — speaking in a headset, which orchard cannot finish
+## 6. Stage four — speaking in a headset
+
+*As built (2026-09-16): (2) shipped as the wrist menu, and voice shipped too —
+not through Cloudflare Realtime but as push-to-talk transcribed by Deepgram,
+which needs no SFU because talking to Faye is one client and one service
+(§1). Spatial voice between visitors is still (3) as written below. The rest
+of this section is the plan as it was made.*
 
 **There is no keyboard in an `immersive-vr` session.** The Quest browser
 raises a system keyboard for a focused DOM input in flat mode, and not in an
@@ -144,7 +155,7 @@ follow `AUDIO-STREAM.md` §6 rather than be invented separately.
 She is an admin, and an admin bypasses the ban check, the join throttle, the
 per-network cap and room capacity. That is the correct identity for a host
 standing in their own world, and it is why the script refuses any URI that is
-not local.
+not local unless it is run with `--live` and her own identity.
 
 - **She never claims a run succeeded.** `completed exit=0` is also what a
   kill, an OOM and a time-budget stop record. Enforced by a test.
@@ -182,6 +193,8 @@ not local.
    speech, and a visitor-locked panel only for the scrolling log.
 3. **Is the canned-ask menu worth building, or does VR input simply wait for
    voice?** Recommendation: build it; it is small, and item 7 has no date.
+   *Built, and voice to Faye then shipped anyway through Deepgram; item 7,
+   spatial voice between visitors, still has no date.*
 4. **May a `cue` name a bundle, or only a built-in effect?** Stage two ships
    built-ins only. Letting a cue name a content-hashed bundle is the general
    answer and needs a rule for what happens when a client does not have the
@@ -231,11 +244,14 @@ not local.
   use, capped at ten minutes on the client as well as in the module. The room
   says why when a visitor tries a door, and says once when the doors open.
 
-Not landed: the `DEEPGRAM_API_KEY` Pages secret, which only Manuel holds. Until that secret is
-set, `/voice/grant` answers 503 and the button stays hidden.
+All of the above is published and deployed. Manuel set the `DEEPGRAM_API_KEY`
+Pages secret on 2026-09-16; before that `/voice/grant` answered 503 and the
+button stayed hidden.
 
-Nothing here is published to maincloud, `DEEPGRAM_API_KEY` is not in secrets,
-and the CSP does not yet allow the Deepgram socket.
+- `grove/src/faye/names.ts` — her name and her room, shared by the script and
+  the client, which tells a visitor who names her where she cannot hear them
+  where she stands. Her "what is running" answer is per box and never says
+  "the card", since a cpu-lane run holds no GPU.
 
 **The startup budget.** The ceiling was 215,000 when this was written and
 voice alone would have broken it; it is now 230,000 (raised for the palace's

@@ -39,6 +39,25 @@ describe("readFeed", () => {
     expect(reading.hosts).toEqual(["Legion", "SirBase"]);
   });
 
+  it("places each running run on its box, and only running ones", () => {
+    const reading = readFeed({
+      ...feed,
+      experiments: [
+        ...feed.experiments,
+        { id: "2026_3", host: "SirBase", status: "running", repo: "spectre" },
+        { id: "2026_4", status: "running", repo: "arcedit" },
+        { id: "2026_5", host: "SirBase", status: "queued", repo: "spectre" },
+        { id: "2026_6", host: "SirBase", status: "running" },
+      ],
+    });
+    // 2026_2 has no repo, so it cannot be named; 2026_4 has no host and takes
+    // the feed's own hostname; 2026_5 is waiting, not running.
+    expect(reading.running).toEqual([
+      { host: "SirBase", tree: "spectre" },
+      { host: "SirBase", tree: "arcedit" },
+    ]);
+  });
+
   it("drops an event with no id rather than inventing one", () => {
     const reading = readFeed({ ...feed, events: [{ ts: 1, type: "crashed" }, { id: "ev_9" }] });
     expect(reading.events.map((e) => e.id)).toEqual(["ev_9"]);

@@ -35,11 +35,23 @@ export interface MirrorHealth {
   records: number;
 }
 
+/** One run on a lane right now: which box it is on, and which tree it belongs to. */
+export interface RunningRun {
+  host: string;
+  /** The tree IDENTITY (`spectre`), as the feed has it; `treeLabel` makes it readable. */
+  tree: string;
+}
+
 export interface FeedReading {
   events: ComputeEvent[];
   mirror: MirrorHealth | null;
   /** Every host the feed mentions: this box and, through the mirror, the peer. */
   hosts: string[];
+  /**
+   * What is running, on either lane of either box. Not "on the card": a
+   * cpu-lane run holds no GPU, and the feed cannot tell a visitor otherwise.
+   */
+  running: RunningRun[];
 }
 
 /**
@@ -76,14 +88,22 @@ export function readFeed(doc: unknown): FeedReading {
       }
     : null;
   const hosts = new Set<string>();
+  const running: RunningRun[] = [];
   const own = typeof root?.["hostname"] === "string" ? root["hostname"] : "";
   if (own) hosts.add(own);
   for (const raw of asArray(root?.["experiments"])) {
-    const host = asRecord(raw)?.["host"];
-    if (typeof host === "string" && host) hosts.add(host);
+    const e = asRecord(raw);
+    const host = typeof e?.["host"] === "string" ? e["host"] : "";
+    if (host) hosts.add(host);
+    if (e?.["status"] !== "running") continue;
+    const tree = typeof e["repo"] === "string" ? e["repo"] : "";
+    // A run with no tree cannot be named, and one with no box and no hostname
+    // to fall back on cannot be placed; both are left out, not guessed.
+    const on = host || own;
+    if (tree && on) running.push({ host: on, tree });
   }
   if (mirror?.peer) hosts.add(mirror.peer);
-  return { events, mirror, hosts: [...hosts].sort() };
+  return { events, mirror, hosts: [...hosts].sort(), running };
 }
 
 /**
