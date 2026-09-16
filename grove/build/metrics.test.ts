@@ -38,7 +38,7 @@ it("includes versioned transcoder JavaScript in the all-JS total", () => {
     mkdirSync(join(directory, ".vite"));
     mkdirSync(join(directory, "basis/1.0.0"), { recursive: true });
     writeFileSync(join(directory, ".vite/manifest.json"), JSON.stringify({
-      "grove/index.html": { file: "boot.js" }, "src/main.ts": { file: "main.js" },
+      "mind/index.html": { file: "boot.js" }, "src/main.ts": { file: "main.js" },
     }));
     writeFileSync(join(directory, "version.json"), '{"commit":"fixture","builtAt":"fixture","sw":true}');
     writeFileSync(join(directory, "boot.js"), "boot");
