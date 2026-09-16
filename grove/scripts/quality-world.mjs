@@ -81,7 +81,7 @@ try {
     if (/GLTFLoader|KTX2Loader|\/src\/(?:world\/rooms|render\/lightmap)\.ts(?:\?|$)/.test(url)) events.decoderCode.push(url);
   });
   await page.addInitScript(() => localStorage.setItem('orchard.grove.guide-seen', '1'));
-  await page.goto(`${origin.origin}/grove/?demo&room=hall`, { waitUntil: 'domcontentloaded' });
+  await page.goto(`${origin.origin}/mind/?demo&room=hall`, { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => window.grove?.world?.group?.getObjectByName('hall-shell'), null, { timeout: 60000 });
   await page.evaluate(async () => {
     const app = window.grove;

@@ -158,7 +158,7 @@ async function snapshot(page) {
 
 async function ready(page, path) {
   await page.goto(`${base}${path}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
-  if (path.startsWith('/grove/')) {
+  if (path.startsWith('/mind/')) {
     await page.waitForFunction(() => Number.isFinite(window.__quality?.firstRoomReadyMs), null, { timeout: 60000 });
     // A fixed observation window makes before/after request counts comparable.
     await page.waitForTimeout(1500);
@@ -170,7 +170,7 @@ async function ready(page, path) {
 
 async function transferAudit() {
   for (const profile of profiles.slice(0, 2)) {
-    for (const path of ['/', args.dist ? '/grove/?nosw' : '/grove/?demo']) {
+    for (const path of ['/', args.dist ? '/mind/?nosw' : '/mind/?demo']) {
       for (let sample = 1; sample <= samples; sample++) {
         const { context, page } = await newPage(profile);
         try {
@@ -178,7 +178,7 @@ async function transferAudit() {
             await ready(page, path);
             const measured = await snapshot(page);
             report.measurements.push({ kind: 'transfer', profile: profile.name, path, sample, cache, ...measured });
-            if (path.startsWith('/grove/')) {
+            if (path.startsWith('/mind/')) {
               const name = `${profile.name} ${cache} visit ${sample}`;
               check(`${name}: first room uses the designed geometry`, ['glb', 'observatory'].includes(measured.shellKind), measured.shellKind);
               if (!args['allow-missing-metrics']) {
@@ -247,7 +247,7 @@ async function appAudit(profile) {
   const { context, page, events } = await newPage(profile);
   const name = `demo ${profile.name}`;
   try {
-    await ready(page, '/grove/?demo');
+    await ready(page, '/mind/?demo');
     await page.locator('dialog[open]').waitFor();
     if (profile.name === 'phone') await screenshot(page, 'guide-phone');
     check(`${name}: guide starts at its heading`, await page.locator('#guide-title').evaluate((el) => document.activeElement === el));
@@ -352,7 +352,7 @@ async function metricsAudit(page, name, injectStall = false) {
 async function recoveryAudit() {
   const { context, page } = await newPage(profiles[0], { disableGraphics: true });
   try {
-    await page.goto(`${base}/grove/?demo`, { waitUntil: 'networkidle' });
+    await page.goto(`${base}/mind/?demo`, { waitUntil: 'networkidle' });
     const fallback = page.locator('#boot-status');
     check('startup: graphics failure leaves readable recovery controls', await fallback.isVisible() && await page.getByRole('button', { name: 'Reload', exact: true }).isVisible() && await page.getByRole('link', { name: 'Back to the website', exact: true }).isVisible());
     await axeAudit(page, 'graphics startup recovery');
@@ -362,7 +362,7 @@ async function recoveryAudit() {
 async function gameSurfaceAudit() {
   const { context, page, events } = await newPage(profiles[0], { gameFixture: true });
   try {
-    await ready(page, '/grove/?demo&room=gallery');
+    await ready(page, '/mind/?demo&room=orangery');
     await page.getByRole('button', { name: 'Open FTL Chess' }).click();
     const surface = page.locator('.game-surface[open]');
     await surface.waitFor();
