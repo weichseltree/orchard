@@ -20,6 +20,7 @@ import { join } from "node:path";
 import { parseArgs } from "node:util";
 import type { Identity } from "spacetimedb";
 import { DbConnection } from "../src/module_bindings";
+import { isLoopback } from "../src/faye/local";
 import {
   EMPTY_CURSOR, accumulate, announce, peerIsSilent, readFeed,
   type Cursor, type TreeTitles,
@@ -53,8 +54,8 @@ const { values: args } = parseArgs({
 
 const URI = args.uri;
 const DB = args.db;
-if (/maincloud|spacetimedb\.com/.test(URI)) {
-  console.error("faye joins as an admin and moves under her own power: local servers only");
+if (!isLoopback(URI)) {
+  console.error(`faye joins as an admin and moves under her own power: local servers only (got ${URI})`);
   process.exit(2);
 }
 if (!args["cli-config"]) {
