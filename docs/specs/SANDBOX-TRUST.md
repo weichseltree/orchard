@@ -687,3 +687,35 @@ where the cautious answer costs something real.
 11. **Takedown promise.** What address answers a complaint about an area, and
     within what time? *Recommended: the Impressum address, 72 hours, stated on
     the privacy page, and unlink first and argue afterwards* (section 5).
+
+### Ruled by Manuel, 2026-09-16
+
+The recommendation stands unless marked **overruled**. Three of the overrulings
+widen what strangers can do, and they are the ones to read twice.
+
+- **Build order: the trust layer first**, before any generation. It covers the
+  area and area_admin tables, live revocation, the licence gate and the
+  admin-only first venue.
+- 1 — **Revocation is live, from the database**, as recommended. This is what
+  permits SANDBOX-WORLD.md's full generation.
+- 2 — **Overruled: any public repository URL may be linked**, not only planted
+  trees. The licence gate (7), the admin-only first venue (10) and live
+  revocation (1) are therefore the whole defence. None of the three is
+  optional.
+- 3 — **Overruled: `area` and `area_admin` are built now.** The operator does
+  not wait for a second person to have a tree.
+- 4 — **Overruled: area admins have full moderation (mute, kick and ban)
+  inside their own area.** Section 1.2 worried about an identity hex in a
+  public file acting as a bearer name, and the grant in ruling 5 answers it:
+  admin status comes from a row the operator writes, not from a file anyone
+  can edit. Scope is still load-bearing. A ban issued by an area admin must
+  not reach beyond that area, and it must never reach an operator admin.
+- 5 — **An `area_admin` row, never `add_admin`**, as recommended.
+- 6 — **Sleeping hours, from stage 2**, as recommended.
+- 7 — **Licence gate**, as recommended.
+- 8 — **Partly overruled: committer names and commit messages may render;
+  e-mail addresses never do.**
+- 9 — **No source-file furniture by default**, as recommended.
+- 10 — **Every new area opens first in an admin-only room**, as recommended.
+- 11 — **Takedown**: the Impressum address, 72 hours, stated on the privacy
+  page, unlink first and argue afterwards, as recommended.
