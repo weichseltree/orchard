@@ -21,19 +21,20 @@ const { values: args } = parseArgs({ options: {
 const output = resolve(grove, args.out);
 const shotDir = output.replace(/\.json$/, '') + '-screenshots';
 const stations = [
-  ['hall', 0, 8, 0, 12],
-  ['einstruct', 0, -11, 0, -8],
-  ['spectre', 8.5, -17, -90, 5],
-  ['phototroph', 0, 11, 180, -8],
-  ['world-engine', 0, -28, -90, 5],
+  ['hall', 0, 9, 0, 12],
+  ['einstruct', 12, -5, -90, 5],
+  ['spectre', 12, -20, -50, 5],
+  ['phototroph', 0, 14, 180, -8],
+  ['world-engine', 0, -14, 0, 5],
   ['orangery', 0, -36, 0, 12],
-  ['gallery', 0, 23, 180, 12],
-  ['greenhouse', 11, 6, 180, 8],
-  ['terrace', -11, 20, -40, 8],
-  ['parterre', -35, 12, 0, 5],
-  ['orchard-west', -30, -50, 90, 5],
-  ['orchard-south', -60, 0, 90, 5],
-  ['orchard-east', -30, 50, 90, 5],
+  ['gallery', 0, 33, 180, 12],
+  ['belvedere', 0, 70, 0, -3],
+  ['greenhouse', 11.5, 8, -90, 8],
+  ['terrace', -15, 10, 90, 5],
+  ['parterre', -26, 0, 90, 4],
+  ['orchard-west', -45, -60, 0, 5],
+  ['orchard-south', -80, 0, 90, 5],
+  ['orchard-east', -45, 60, 180, 5],
   ['orrery', 0, -400, 0, 8],
 ];
 const report = {
@@ -101,10 +102,10 @@ try {
     return { rooms, batches, instances, tapes: app.world.tapes.filter(Boolean).length };
   });
   report.world = world;
-  check('All 14 rooms use runtime architecture (13 Observatory, the Orrery in space)', world.rooms.length === 14
-    && world.rooms.filter((room) => room.architecture === 'observatory').length === 13
+  check('All 15 rooms use runtime architecture (14 Observatory, the Orrery in space)', world.rooms.length === 15
+    && world.rooms.filter((room) => room.architecture === 'observatory').length === 14
     && world.rooms.filter((room) => room.architecture === 'space').length === 1, world.rooms);
-  check('Architecture stays below 150 draw batches across the whole world', world.batches < 150, world.batches);
+  check('Architecture stays below 260 draw batches across the whole world', world.batches < 260, world.batches);
   // Three tapes: einstruct's two sheets and phototroph's capture. spectre's worlds
   // are a planet hanging (no fixture in the demo), and the terrace's moon is gone.
   check('Synthetic playback fixtures loaded', world.tapes === 3, world.tapes);

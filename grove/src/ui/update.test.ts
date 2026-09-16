@@ -1,6 +1,14 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { workerWanted } from "../sw/register";
-import { isNewer, parseVersion, preloadReloadAllowed, PRELOAD_RELOAD_GUARD_MS } from "./update";
+import {
+  createUpdater,
+  isNewer,
+  parseVersion,
+  planUpdate,
+  preloadReloadAllowed,
+  PRELOAD_RELOAD_GUARD_MS,
+  safeMoment,
+} from "./update";
 
 describe("version stamps", () => {
   it("reads version.json and refuses anything without a commit", () => {
@@ -10,6 +18,8 @@ describe("version stamps", () => {
       sw: true,
     });
     expect(parseVersion({ commit: "abc1234" })).toEqual({ commit: "abc1234", builtAt: "" });
+    expect(parseVersion({ commit: "abc1234", forced: true })).toEqual({ commit: "abc1234", builtAt: "", forced: true });
+    expect(parseVersion({ commit: "abc1234", forced: "yes" })).toEqual({ commit: "abc1234", builtAt: "" });
     expect(parseVersion({ commit: "" })).toBeNull();
     expect(parseVersion("<!doctype html>")).toBeNull();
     expect(parseVersion(null)).toBeNull();
@@ -42,5 +52,81 @@ describe("the kill switch", () => {
     expect(workerWanted("?nosw", { sw: true })).toBe(false);
     expect(workerWanted("?room=hall&nosw=1", null)).toBe(false);
     expect(workerWanted("", { sw: false })).toBe(false);
+  });
+});
+
+describe("a forced update", () => {
+  const own = { commit: "abc1234", builtAt: "t1" };
+
+  it("is asked for only by a newer stamp that says so", () => {
+    expect(planUpdate(own, null)).toBe("none");
+    expect(planUpdate(own, { commit: "abc1234", builtAt: "t1", forced: true })).toBe("none");
+    expect(planUpdate(own, { commit: "def5678", builtAt: "t2" })).toBe("offer");
+    expect(planUpdate(own, { commit: "def5678", builtAt: "t2", forced: true })).toBe("forced");
+  });
+
+  function headset(isPresenting: boolean) {
+    const listeners: Array<() => void> = [];
+    const xr = {
+      isPresenting,
+      addEventListener: (_type: "sessionend", listener: () => void) => void listeners.push(listener),
+      endSession() {
+        xr.isPresenting = false;
+        for (const listener of listeners) listener();
+      },
+    };
+    const offered = { isConnected: true };
+    const hud = { offer: vi.fn(() => offered as unknown as HTMLElement) };
+    const reload = vi.fn();
+    const update = createUpdater({ hud, whenFree: safeMoment(xr), reload });
+    return { xr, hud, reload, update, offered };
+  }
+
+  it("does not reload under a visitor in a headset until the session ends", () => {
+    const { xr, hud, reload, update } = headset(true);
+    update("forced");
+    update("forced");
+    expect(reload).not.toHaveBeenCalled();
+    xr.endSession();
+    expect(reload).toHaveBeenCalledTimes(1);
+    expect(hud.offer).not.toHaveBeenCalled();
+  });
+
+  it("reloads at once outside a session, with nothing to dismiss", () => {
+    const { hud, reload, update } = headset(false);
+    update("forced");
+    expect(reload).toHaveBeenCalledTimes(1);
+    expect(hud.offer).not.toHaveBeenCalled();
+  });
+
+  it("takes over an offer that is up, and one that is waiting for a session to end", () => {
+    const up = headset(false);
+    up.update("offer");
+    expect(up.hud.offer).toHaveBeenCalledTimes(1);
+    up.update("offer");
+    expect(up.hud.offer).toHaveBeenCalledTimes(1);
+    expect(up.reload).not.toHaveBeenCalled();
+    up.update("forced");
+    expect(up.reload).toHaveBeenCalledTimes(1);
+
+    const waiting = headset(true);
+    waiting.update("offer");
+    waiting.update("forced");
+    expect(waiting.reload).not.toHaveBeenCalled();
+    waiting.xr.endSession();
+    expect(waiting.reload).toHaveBeenCalledTimes(1);
+    expect(waiting.hud.offer).not.toHaveBeenCalled();
+  });
+
+  it("still offers, once, when nothing forces it", () => {
+    const { xr, hud, reload, update, offered } = headset(true);
+    update("offer");
+    expect(hud.offer).not.toHaveBeenCalled();
+    xr.endSession();
+    expect(hud.offer).toHaveBeenCalledTimes(1);
+    expect(reload).not.toHaveBeenCalled();
+    offered.isConnected = false; // the visitor took it; a later build may offer again
+    update("offer");
+    expect(hud.offer).toHaveBeenCalledTimes(2);
   });
 });

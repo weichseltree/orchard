@@ -223,3 +223,38 @@ Append-only. A decision names the day, the ruling, and the alternative it beat.
   season, the moon shown, French doors yes, the orangery limewashed,
   closed doors for unearned rooms. Every texture is generated in the
   generator (value-noise marble), nothing lifted.
+- **2026-09-16 · The palace, second pass: bigger rooms, stairs, terrain, and
+  rooms named after their repositories.** Manuel's brief of the evening
+  ("portals a bigger feature, einstruct into its own room, rename them all
+  after the repo, museum text on the walls in the browser's language, a
+  proper palace with bigger rooms, fancy objects, stairs and terrain").
+  Ruled and built on branch `weichseltree-palace-portals`: (1) the tree
+  rooms are titled after their repositories (einstruct, coarsen,
+  world-engine, phototroph; ids and presence names unchanged, so links and
+  the live `room` table keep working); (2) einstruct is a 16 m cabinet off
+  the hall's east wall, no longer the corridor of the enfilade, with
+  coarsen's cabinet north of it and a door on to the north wing, so the
+  research rooms form a loop; (3) a room's floor is its `bounds.min[1]`,
+  the north wing (world-engine, the orangery) stands 1.5 m up, the Long
+  Gallery ends in a Belvedere 1.8 m up, the garden is sunk 1.6 m below the
+  terrace, and every doorway between two floors gets a flight of steps in
+  the lower room, generated from the doorway alone (terrain.ts,
+  observatory.ts): stairs are never authored, only floor heights are; (4)
+  the grounds are a height field of authored mounds (`terrain.mounds` in
+  mansion.json), one function under the ground mesh, the trees and the
+  feet, so nothing is climbed that is not seen; (5) the palace gains a
+  balustrade with urns, colonnades, chandeliers, statuary, box hedges, a
+  basin under the armillary, lanterns and obelisks, all instanced
+  primitives in the existing batches. Beat a per-room `platforms` list
+  (stairs to nowhere) and beat authoring stairs by hand (the doorway
+  already says where the height changes). The Belvedere shares the
+  gallery's presence room so no `set_room` is needed. Issue #16's ruling
+  is confirmed: a forced update is one the visitor cannot dismiss, and it
+  still waits for the immersive session to end. Issue #18 (chat) was built
+  in parallel by the Faye session on `weichseltree-spatial-audio-field`;
+  this branch's duplicate was dropped in favour of it, keeping only the
+  speech line above a peer's capsule for the merge. arcedit (planted the
+  same evening by its own session, with an 18-room area manifest, a scale
+  portal and eight harvested bundles, all unapproved) gets a closed door on
+  the gallery's east wall; the area is placed once Manuel rules on its
+  bundles, under the rule that a tree earns its room.

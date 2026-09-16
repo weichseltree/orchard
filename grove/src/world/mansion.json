@@ -16,6 +16,46 @@
     "source": "Designed twilight atmosphere for the Observatory; not an astronomical sky or simulation output.",
     "sunIntensity": 0
   },
+  "terrain": {
+    "mounds": [
+      {
+        "x": -82,
+        "z": -90,
+        "radius": 30,
+        "height": 2.2
+      },
+      {
+        "x": -118,
+        "z": -68,
+        "radius": 20,
+        "height": 3.4
+      },
+      {
+        "x": -108,
+        "z": 2,
+        "radius": 28,
+        "height": 2.8
+      },
+      {
+        "x": -126,
+        "z": -30,
+        "radius": 13,
+        "height": 1.4
+      },
+      {
+        "x": -82,
+        "z": 92,
+        "radius": 30,
+        "height": 2.0
+      },
+      {
+        "x": -118,
+        "z": 66,
+        "radius": 18,
+        "height": 3.0
+      }
+    ]
+  },
   "rooms": [
     {
       "id": "hall",
@@ -27,46 +67,54 @@
       },
       "bounds": {
         "min": [
-          -7,
+          -10,
           0,
-          -10
+          -12
         ],
         "max": [
-          7,
-          7,
-          10
+          10,
+          9,
+          12
         ]
       },
       "spawn": {
         "position": [
           0,
           0,
-          8
+          10
         ],
         "yawDeg": 0
       },
       "doorways": [
         {
-          "to": "einstruct",
+          "to": "world-engine",
           "axis": "z",
-          "at": -10,
+          "at": -12,
           "center": 0,
-          "width": 4.8,
+          "width": 6,
           "height": 4.6
         },
         {
           "to": "phototroph",
           "axis": "z",
-          "at": 10,
+          "at": 12,
           "center": 0,
           "width": 4.8,
           "height": 4.6
         },
         {
+          "to": "einstruct",
+          "axis": "x",
+          "at": 10,
+          "center": -5,
+          "width": 3,
+          "height": 4
+        },
+        {
           "to": "greenhouse",
           "axis": "x",
-          "at": 7,
-          "center": 6,
+          "at": 10,
+          "center": 7,
           "width": 1.6,
           "height": 3.0,
           "closed": true,
@@ -75,16 +123,16 @@
         {
           "to": "terrace",
           "axis": "x",
-          "at": -7,
-          "center": -1.667,
+          "at": -10,
+          "center": -2,
           "width": 1.6,
           "height": 5.6
         },
         {
           "to": "terrace",
           "axis": "x",
-          "at": -7,
-          "center": 1.667,
+          "at": -10,
+          "center": 2,
           "width": 1.6,
           "height": 5.6
         }
@@ -102,9 +150,9 @@
             "id": "c59c7baa6fd15489"
           },
           "position": [
-            6.74,
-            3.1,
-            0
+            9.74,
+            3.6,
+            1.2
           ],
           "rotationDeg": [
             0,
@@ -120,7 +168,7 @@
     },
     {
       "id": "einstruct",
-      "title": "The Mixing Chamber",
+      "title": "einstruct",
       "presence": "einstruct",
       "fallback": {
         "kind": "box",
@@ -128,46 +176,38 @@
       },
       "bounds": {
         "min": [
-          -7,
+          10,
           0,
-          -22
+          -18
         ],
         "max": [
+          26,
           7,
-          6,
-          -10
+          -2
         ]
       },
       "spawn": {
         "position": [
+          11.5,
           0,
-          0,
-          -11
+          -5
         ],
-        "yawDeg": 0
+        "yawDeg": -90
       },
       "doorways": [
         {
           "to": "hall",
-          "axis": "z",
-          "at": -10,
-          "center": 0,
-          "width": 4.8,
-          "height": 4.6
-        },
-        {
-          "to": "world-engine",
-          "axis": "z",
-          "at": -22,
-          "center": 0,
-          "width": 4.8,
-          "height": 4.6
+          "axis": "x",
+          "at": 10,
+          "center": -5,
+          "width": 3,
+          "height": 4
         },
         {
           "to": "spectre",
-          "axis": "x",
-          "at": 7,
-          "center": -20,
+          "axis": "z",
+          "at": -18,
+          "center": 13,
           "width": 2.4,
           "height": 3.2
         }
@@ -186,9 +226,9 @@
             "id": "2dd0038799b2db15"
           },
           "position": [
-            -3.6,
+            14.5,
             1.0,
-            -16
+            -12
           ],
           "rotationDeg": [
             -90,
@@ -198,9 +238,9 @@
           "longSideMeters": 6,
           "pedestal": {
             "position": [
-              -3.6,
+              14.5,
               0,
-              -13
+              -9
             ],
             "rotationDeg": [
               0,
@@ -222,9 +262,9 @@
             "id": "903d0c5a939b0ba1"
           },
           "position": [
-            3.6,
+            21.5,
             1.0,
-            -16
+            -12
           ],
           "rotationDeg": [
             -90,
@@ -234,9 +274,9 @@
           "longSideMeters": 6,
           "pedestal": {
             "position": [
-              3.6,
+              21.5,
               0,
-              -13
+              -9
             ],
             "rotationDeg": [
               0,
@@ -258,16 +298,16 @@
             "id": "216b720501856b14"
           },
           "position": [
-            6.74,
-            2.35,
-            -14
+            20,
+            2.7,
+            -17.74
           ],
           "rotationDeg": [
             0,
-            -90,
+            0,
             0
           ],
-          "widthMeters": 6
+          "widthMeters": 7
         },
         {
           "id": "einstruct-wall-row",
@@ -282,16 +322,147 @@
             "id": "f0b3eba5f655c2a9"
           },
           "position": [
-            -4.8,
-            2.35,
-            -10.26
+            18,
+            2.5,
+            -2.26
           ],
           "rotationDeg": [
             0,
             180,
             0
           ],
-          "widthMeters": 3.5
+          "widthMeters": 4.5
+        }
+      ],
+      "architecture": "observatory",
+      "exposure": 1
+    },
+    {
+      "id": "spectre",
+      "title": "coarsen",
+      "presence": "spectre",
+      "fallback": {
+        "kind": "box",
+        "color": "#101c2b"
+      },
+      "bounds": {
+        "min": [
+          10,
+          0,
+          -34
+        ],
+        "max": [
+          26,
+          7,
+          -18
+        ]
+      },
+      "spawn": {
+        "position": [
+          13,
+          0,
+          -20
+        ],
+        "yawDeg": 0
+      },
+      "doorways": [
+        {
+          "to": "einstruct",
+          "axis": "z",
+          "at": -18,
+          "center": 13,
+          "width": 2.4,
+          "height": 3.2
+        },
+        {
+          "to": "world-engine",
+          "axis": "x",
+          "at": 10,
+          "center": -26,
+          "width": 2.4,
+          "height": 3.2
+        }
+      ],
+      "hangings": [
+        {
+          "id": "spectre-worlds",
+          "kind": "planet",
+          "title": "Planet from scratch: three worlds cut open, with their measured surfaces",
+          "bundle": {
+            "id": "26f78b7516170d6d"
+          },
+          "position": [
+            19,
+            0,
+            -26
+          ],
+          "radiusMeters": 1.5,
+          "atlas": "beauty",
+          "worlds": [
+            {
+              "world": "adiabat-chi0",
+              "position": [
+                19,
+                1.75,
+                -22
+              ],
+              "cutToward": [
+                13,
+                1.6,
+                -20
+              ]
+            },
+            {
+              "world": "adiabat-chi6",
+              "position": [
+                19,
+                1.75,
+                -26
+              ],
+              "cutToward": [
+                13,
+                1.6,
+                -20
+              ]
+            },
+            {
+              "world": "adiabat-chi12",
+              "position": [
+                19,
+                1.75,
+                -30
+              ],
+              "cutToward": [
+                13,
+                1.6,
+                -20
+              ]
+            }
+          ]
+        },
+        {
+          "id": "spectre-wall",
+          "kind": "video",
+          "title": "EP02 S4 excerpt, 42.8 s, silent",
+          "bundle": {
+            "exhibit": {
+              "tree": "spectre",
+              "kind": "video",
+              "bundle": "0462efca96af7297"
+            },
+            "id": "0462efca96af7297"
+          },
+          "position": [
+            25.74,
+            2.7,
+            -26
+          ],
+          "rotationDeg": [
+            0,
+            -90,
+            0
+          ],
+          "widthMeters": 7
         }
       ],
       "architecture": "observatory",
@@ -299,7 +470,7 @@
     },
     {
       "id": "world-engine",
-      "title": "The Reconstruction Gallery",
+      "title": "world-engine",
       "presence": "world-engine",
       "fallback": {
         "kind": "box",
@@ -307,31 +478,31 @@
       },
       "bounds": {
         "min": [
-          -7,
-          0,
+          -10,
+          1.5,
           -34
         ],
         "max": [
-          7,
-          6,
-          -22
+          10,
+          8.5,
+          -12
         ]
       },
       "spawn": {
         "position": [
           0,
-          0,
-          -23
+          1.5,
+          -14
         ],
-        "yawDeg": -90
+        "yawDeg": 0
       },
       "doorways": [
         {
-          "to": "einstruct",
+          "to": "hall",
           "axis": "z",
-          "at": -22,
+          "at": -12,
           "center": 0,
-          "width": 4.8,
+          "width": 6,
           "height": 4.6
         },
         {
@@ -341,6 +512,14 @@
           "center": 0,
           "width": 4.8,
           "height": 4.6
+        },
+        {
+          "to": "spectre",
+          "axis": "x",
+          "at": 10,
+          "center": -26,
+          "width": 2.4,
+          "height": 3.2
         }
       ],
       "hangings": [
@@ -357,9 +536,9 @@
             "id": "8fd0f876cee6a54f"
           },
           "position": [
-            6.74,
-            2.4,
-            -25.2
+            9.74,
+            3.9,
+            -17
           ],
           "rotationDeg": [
             0,
@@ -382,13 +561,13 @@
             "id": "0a674d5fc6ec8899"
           },
           "position": [
-            6.74,
-            2.4,
-            -30.8
+            -9.74,
+            3.9,
+            -19.5
           ],
           "rotationDeg": [
             0,
-            -90,
+            90,
             0
           ],
           "widthMeters": 5,
@@ -407,16 +586,16 @@
             "id": "df31b52fbd0faada"
           },
           "position": [
-            4.8,
-            2.4,
-            -33.74
+            -9.74,
+            3.9,
+            -27.5
           ],
           "rotationDeg": [
             0,
-            0,
+            90,
             0
           ],
-          "widthMeters": 3.5,
+          "widthMeters": 5,
           "heightMeters": 3.4
         }
       ],
@@ -433,20 +612,20 @@
       },
       "bounds": {
         "min": [
-          -7,
-          0,
-          -70
+          -10,
+          1.5,
+          -76
         ],
         "max": [
-          7,
-          7,
+          10,
+          10.5,
           -34
         ]
       },
       "spawn": {
         "position": [
           0,
-          0,
+          1.5,
           -36
         ],
         "yawDeg": 0
@@ -463,31 +642,31 @@
         {
           "to": "terrace",
           "axis": "x",
-          "at": -7,
-          "center": -40,
+          "at": -10,
+          "center": -42,
           "width": 3.0,
           "height": 5.0
         },
         {
           "to": "terrace",
           "axis": "x",
-          "at": -7,
-          "center": -52,
+          "at": -10,
+          "center": -55,
           "width": 3.0,
           "height": 5.0
         },
         {
           "to": "terrace",
           "axis": "x",
-          "at": -7,
-          "center": -64,
+          "at": -10,
+          "center": -68,
           "width": 3.0,
           "height": 5.0
         }
       ],
       "hangings": [],
-      "exposure": 1,
       "architecture": "observatory",
+      "exposure": 1,
       "gameSurfaces": [
         {
           "id": "ftl-chess",
@@ -500,7 +679,7 @@
     },
     {
       "id": "phototroph",
-      "title": "The Binding Chamber",
+      "title": "phototroph",
       "presence": "phototroph",
       "fallback": {
         "kind": "box",
@@ -508,21 +687,21 @@
       },
       "bounds": {
         "min": [
-          -7,
+          -10,
           0,
-          10
+          12
         ],
         "max": [
+          10,
           7,
-          6,
-          22
+          30
         ]
       },
       "spawn": {
         "position": [
           0,
           0,
-          11
+          13.5
         ],
         "yawDeg": 180
       },
@@ -530,7 +709,7 @@
         {
           "to": "hall",
           "axis": "z",
-          "at": 10,
+          "at": 12,
           "center": 0,
           "width": 4.8,
           "height": 4.6
@@ -538,7 +717,7 @@
         {
           "to": "gallery",
           "axis": "z",
-          "at": 22,
+          "at": 30,
           "center": 0,
           "width": 4.8,
           "height": 4.6
@@ -560,7 +739,7 @@
           "position": [
             0,
             1.0,
-            16
+            21
           ],
           "rotationDeg": [
             -90,
@@ -572,7 +751,7 @@
             "position": [
               0,
               0,
-              13.5
+              19
             ],
             "rotationDeg": [
               0,
@@ -596,21 +775,21 @@
       },
       "bounds": {
         "min": [
-          -7,
+          -10,
           0,
-          22
+          30
         ],
         "max": [
-          7,
-          7,
-          58
+          10,
+          9,
+          64
         ]
       },
       "spawn": {
         "position": [
           0,
           0,
-          23
+          32
         ],
         "yawDeg": 180
       },
@@ -618,16 +797,49 @@
         {
           "to": "phototroph",
           "axis": "z",
-          "at": 22,
+          "at": 30,
           "center": 0,
           "width": 4.8,
           "height": 4.6
         },
         {
+          "to": "belvedere",
+          "axis": "z",
+          "at": 64,
+          "center": 0,
+          "width": 10,
+          "height": 5
+        },
+        {
+          "to": "terrace",
+          "axis": "x",
+          "at": -10,
+          "center": 40,
+          "width": 1.6,
+          "height": 5.6
+        },
+        {
+          "to": "terrace",
+          "axis": "x",
+          "at": -10,
+          "center": 54,
+          "width": 1.6,
+          "height": 5.6
+        },
+        {
+          "to": "arcedit",
+          "axis": "x",
+          "at": 10,
+          "center": 34,
+          "width": 2.4,
+          "height": 3.2,
+          "closed": true
+        },
+        {
           "to": "event-atoms",
           "axis": "x",
-          "at": 7,
-          "center": 28,
+          "at": 10,
+          "center": 42,
           "width": 2.4,
           "height": 3.2,
           "closed": true
@@ -635,8 +847,8 @@
         {
           "to": "mosaic",
           "axis": "x",
-          "at": 7,
-          "center": 40,
+          "at": 10,
+          "center": 50,
           "width": 2.4,
           "height": 3.2,
           "closed": true
@@ -644,17 +856,8 @@
         {
           "to": "HNL",
           "axis": "x",
-          "at": 7,
-          "center": 52,
-          "width": 2.4,
-          "height": 3.2,
-          "closed": true
-        },
-        {
-          "to": "someotherlife",
-          "axis": "z",
-          "at": 58,
-          "center": -3.5,
+          "at": 10,
+          "center": 58,
           "width": 2.4,
           "height": 3.2,
           "closed": true
@@ -665,125 +868,62 @@
       "exposure": 1
     },
     {
-      "id": "spectre",
-      "title": "The Gravity Chamber",
-      "presence": "spectre",
+      "id": "belvedere",
+      "title": "The Belvedere",
+      "presence": "gallery",
       "fallback": {
         "kind": "box",
         "color": "#101c2b"
       },
       "bounds": {
         "min": [
-          7,
-          0,
-          -24
+          -10,
+          1.8,
+          64
         ],
         "max": [
-          21,
-          6,
-          -10
+          10,
+          8.8,
+          72
         ]
       },
       "spawn": {
         "position": [
-          8.5,
           0,
-          -20
+          1.8,
+          70
         ],
-        "yawDeg": -90
+        "yawDeg": 0
       },
       "doorways": [
         {
-          "to": "einstruct",
-          "axis": "x",
-          "at": 7,
-          "center": -20,
-          "width": 2.4,
-          "height": 3.2
-        }
-      ],
-      "hangings": [
-        {
-          "id": "spectre-worlds",
-          "kind": "planet",
-          "title": "Planet from scratch: three worlds cut open, with their measured surfaces",
-          "bundle": {
-            "id": "26f78b7516170d6d"
-          },
-          "position": [
-            14,
-            0,
-            -17
-          ],
-          "radiusMeters": 1.5,
-          "atlas": "beauty",
-          "worlds": [
-            {
-              "world": "adiabat-chi0",
-              "position": [
-                14,
-                1.75,
-                -21
-              ],
-              "cutToward": [
-                9,
-                1.6,
-                -17
-              ]
-            },
-            {
-              "world": "adiabat-chi6",
-              "position": [
-                14,
-                1.75,
-                -17
-              ],
-              "cutToward": [
-                9,
-                1.6,
-                -17
-              ]
-            },
-            {
-              "world": "adiabat-chi12",
-              "position": [
-                14,
-                1.75,
-                -13
-              ],
-              "cutToward": [
-                9,
-                1.6,
-                -17
-              ]
-            }
-          ]
+          "to": "gallery",
+          "axis": "z",
+          "at": 64,
+          "center": 0,
+          "width": 10,
+          "height": 5
         },
         {
-          "id": "spectre-wall",
-          "kind": "video",
-          "title": "EP02 S4 excerpt, 42.8 s, silent",
-          "bundle": {
-            "exhibit": {
-              "tree": "spectre",
-              "kind": "video",
-              "bundle": "0462efca96af7297"
-            },
-            "id": "0462efca96af7297"
-          },
-          "position": [
-            20.74,
-            2.35,
-            -17
-          ],
-          "rotationDeg": [
-            0,
-            -90,
-            0
-          ],
-          "widthMeters": 6
+          "to": "neuralese",
+          "axis": "x",
+          "at": 10,
+          "center": 68,
+          "width": 2.4,
+          "height": 3.2,
+          "closed": true
+        },
+        {
+          "to": "someotherlife",
+          "axis": "z",
+          "at": 72,
+          "center": -3.5,
+          "width": 2.4,
+          "height": 3.2,
+          "closed": true
         }
       ],
+      "hangings": [],
       "architecture": "observatory",
       "exposure": 1
     },
@@ -797,30 +937,30 @@
       },
       "bounds": {
         "min": [
-          7,
+          10,
           0,
-          2
+          4
         ],
         "max": [
-          15,
+          20,
           5,
-          10
+          12
         ]
       },
       "spawn": {
         "position": [
-          11,
+          11.5,
           0,
-          6
+          8
         ],
-        "yawDeg": 180
+        "yawDeg": -90
       },
       "doorways": [
         {
           "to": "hall",
           "axis": "x",
-          "at": 7,
-          "center": 6,
+          "at": 10,
+          "center": 7,
           "width": 1.6,
           "height": 3.0,
           "closed": true,
@@ -837,23 +977,23 @@
       "presence": "terrace",
       "fallback": {
         "kind": "ground",
-        "color": "#0d1b23"
+        "color": "#101c2b"
       },
       "bounds": {
         "min": [
-          -15,
+          -20,
           0,
-          -70
+          -76
         ],
         "max": [
-          -7,
+          -10,
           8,
-          58
+          72
         ]
       },
       "spawn": {
         "position": [
-          -11,
+          -15,
           0,
           0
         ],
@@ -863,71 +1003,87 @@
         {
           "to": "hall",
           "axis": "x",
-          "at": -7,
-          "center": -1.667,
+          "at": -10,
+          "center": -2,
           "width": 1.6,
           "height": 5.6
         },
         {
           "to": "hall",
           "axis": "x",
-          "at": -7,
-          "center": 1.667,
+          "at": -10,
+          "center": 2,
           "width": 1.6,
           "height": 5.6
         },
         {
           "to": "orangery",
           "axis": "x",
-          "at": -7,
-          "center": -40,
+          "at": -10,
+          "center": -42,
           "width": 3.0,
           "height": 5.0
         },
         {
           "to": "orangery",
           "axis": "x",
-          "at": -7,
-          "center": -52,
+          "at": -10,
+          "center": -55,
           "width": 3.0,
           "height": 5.0
         },
         {
           "to": "orangery",
           "axis": "x",
-          "at": -7,
-          "center": -64,
+          "at": -10,
+          "center": -68,
           "width": 3.0,
           "height": 5.0
+        },
+        {
+          "to": "gallery",
+          "axis": "x",
+          "at": -10,
+          "center": 40,
+          "width": 1.6,
+          "height": 5.6
+        },
+        {
+          "to": "gallery",
+          "axis": "x",
+          "at": -10,
+          "center": 54,
+          "width": 1.6,
+          "height": 5.6
         },
         {
           "to": "parterre",
           "axis": "x",
-          "at": -15,
+          "at": -20,
           "center": 0,
-          "width": 12,
+          "width": 14,
           "height": 8
         },
         {
           "to": "parterre",
           "axis": "x",
-          "at": -15,
-          "center": -36,
-          "width": 4,
+          "at": -20,
+          "center": -38,
+          "width": 5,
           "height": 8
         },
         {
           "to": "parterre",
           "axis": "x",
-          "at": -15,
-          "center": 36,
-          "width": 4,
+          "at": -20,
+          "center": 38,
+          "width": 5,
           "height": 8
         }
       ],
       "hangings": [],
-      "exposure": 1,
-      "architecture": "observatory"
+      "architecture": "observatory",
+      "exposure": 1
     },
     {
       "id": "parterre",
@@ -935,24 +1091,24 @@
       "presence": "parterre",
       "fallback": {
         "kind": "ground",
-        "color": "#0d1b23"
+        "color": "#101c2b"
       },
       "bounds": {
         "min": [
-          -55,
-          0,
-          -40
+          -70,
+          -1.6,
+          -46
         ],
         "max": [
-          -15,
-          8,
-          40
+          -20,
+          6.4,
+          46
         ]
       },
       "spawn": {
         "position": [
-          -20,
-          0,
+          -24,
+          -1.6,
           0
         ],
         "yawDeg": 90
@@ -961,62 +1117,62 @@
         {
           "to": "terrace",
           "axis": "x",
-          "at": -15,
+          "at": -20,
           "center": 0,
-          "width": 12,
+          "width": 14,
           "height": 8
         },
         {
           "to": "terrace",
           "axis": "x",
-          "at": -15,
-          "center": -36,
-          "width": 4,
+          "at": -20,
+          "center": -38,
+          "width": 5,
           "height": 8
         },
         {
           "to": "terrace",
           "axis": "x",
-          "at": -15,
-          "center": 36,
-          "width": 4,
+          "at": -20,
+          "center": 38,
+          "width": 5,
           "height": 8
         },
         {
           "to": "orchard-south",
           "axis": "x",
-          "at": -55,
+          "at": -70,
           "center": 0,
-          "width": 80,
+          "width": 92,
           "height": 8
         },
         {
           "to": "orchard-west",
           "axis": "z",
-          "at": -40,
-          "center": -35,
-          "width": 40,
+          "at": -46,
+          "center": -45,
+          "width": 50,
           "height": 8
         },
         {
           "to": "orchard-east",
           "axis": "z",
-          "at": 40,
-          "center": -35,
-          "width": 40,
+          "at": 46,
+          "center": -45,
+          "width": 50,
           "height": 8
         }
       ],
       "hangings": [],
-      "exposure": 1,
       "architecture": "observatory",
+      "exposure": 1,
       "portals": [
         {
           "id": "armillary",
           "to": "orrery",
           "position": [
-            -35,
-            1.6,
+            -45,
+            0,
             0
           ],
           "radius": 4.5,
@@ -1037,49 +1193,49 @@
       "presence": "orchard-west",
       "fallback": {
         "kind": "ground",
-        "color": "#0d1b23"
+        "color": "#101c2b"
       },
       "bounds": {
         "min": [
-          -130,
-          0,
-          -110
+          -140,
+          -1.6,
+          -120
         ],
         "max": [
-          -15,
-          8,
-          -40
+          -20,
+          6.4,
+          -46
         ]
       },
       "spawn": {
         "position": [
-          -30,
-          0,
+          -45,
+          -1.6,
           -50
         ],
-        "yawDeg": 90
+        "yawDeg": 0
       },
       "doorways": [
         {
           "to": "parterre",
           "axis": "z",
-          "at": -40,
-          "center": -35,
-          "width": 40,
+          "at": -46,
+          "center": -45,
+          "width": 50,
           "height": 8
         },
         {
           "to": "orchard-south",
           "axis": "z",
-          "at": -40,
-          "center": -92.5,
-          "width": 75,
+          "at": -46,
+          "center": -105,
+          "width": 70,
           "height": 8
         }
       ],
       "hangings": [],
-      "exposure": 1,
-      "architecture": "observatory"
+      "architecture": "observatory",
+      "exposure": 1
     },
     {
       "id": "orchard-south",
@@ -1087,24 +1243,24 @@
       "presence": "orchard-south",
       "fallback": {
         "kind": "ground",
-        "color": "#0d1b23"
+        "color": "#101c2b"
       },
       "bounds": {
         "min": [
-          -130,
-          0,
-          -40
+          -140,
+          -1.6,
+          -46
         ],
         "max": [
-          -55,
-          8,
-          40
+          -70,
+          6.4,
+          46
         ]
       },
       "spawn": {
         "position": [
-          -60,
-          0,
+          -74,
+          -1.6,
           0
         ],
         "yawDeg": 90
@@ -1113,31 +1269,31 @@
         {
           "to": "parterre",
           "axis": "x",
-          "at": -55,
+          "at": -70,
           "center": 0,
-          "width": 80,
+          "width": 92,
           "height": 8
         },
         {
           "to": "orchard-west",
           "axis": "z",
-          "at": -40,
-          "center": -92.5,
-          "width": 75,
+          "at": -46,
+          "center": -105,
+          "width": 70,
           "height": 8
         },
         {
           "to": "orchard-east",
           "axis": "z",
-          "at": 40,
-          "center": -92.5,
-          "width": 75,
+          "at": 46,
+          "center": -105,
+          "width": 70,
           "height": 8
         }
       ],
       "hangings": [],
-      "exposure": 1,
-      "architecture": "observatory"
+      "architecture": "observatory",
+      "exposure": 1
     },
     {
       "id": "orchard-east",
@@ -1145,49 +1301,49 @@
       "presence": "orchard-east",
       "fallback": {
         "kind": "ground",
-        "color": "#0d1b23"
+        "color": "#101c2b"
       },
       "bounds": {
         "min": [
-          -130,
-          0,
-          40
+          -140,
+          -1.6,
+          46
         ],
         "max": [
-          -15,
-          8,
-          110
+          -20,
+          6.4,
+          120
         ]
       },
       "spawn": {
         "position": [
-          -30,
-          0,
+          -45,
+          -1.6,
           50
         ],
-        "yawDeg": 90
+        "yawDeg": 180
       },
       "doorways": [
         {
           "to": "parterre",
           "axis": "z",
-          "at": 40,
-          "center": -35,
-          "width": 40,
+          "at": 46,
+          "center": -45,
+          "width": 50,
           "height": 8
         },
         {
           "to": "orchard-south",
           "axis": "z",
-          "at": 40,
-          "center": -92.5,
-          "width": 75,
+          "at": 46,
+          "center": -105,
+          "width": 70,
           "height": 8
         }
       ],
       "hangings": [],
-      "exposure": 1,
-      "architecture": "observatory"
+      "architecture": "observatory",
+      "exposure": 1
     },
     {
       "id": "orrery",

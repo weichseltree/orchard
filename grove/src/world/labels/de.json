@@ -1,0 +1,157 @@
+{
+  "common": {
+    "entrance": "Einführung",
+    "exhibit": "Exponat",
+    "lookFor": "Sehen Sie genau hin",
+    "limit": "Was hier nicht gezeigt wird",
+    "source": "Quelle"
+  },
+  "rooms": {
+    "hall": {
+      "title": "Das Observatorium",
+      "kicker": "Welche Frage zieht Sie an?",
+      "intro": "Willkommen im Observatorium, einem kleinen Forschungsmuseum, das eine einzelne Person gebaut hat. Von dieser Halle gehen vier Kammern ab, jede nach dem quelloffenen Repositorium benannt, dessen Arbeit sie zeigt: einstruct, coarsen, world-engine und phototroph. Nichts hier ist eine Illustration. Die bewegten Bilder sind aufgezeichnete Simulationen, Bild für Bild abgespielt; die Standbilder sind Studien, aus gemessenen Daten gerendert; und jedes Exponat nennt die Datei, aus der es stammt. Die Architektur setzt nur den Rahmen. Die Forschung ist die laufende Arbeit einer Person, kein Urteil einer Institution, und jede Kammer endet mit einem Satz darüber, was ihre Belege noch nicht zeigen können.",
+      "lookFor": "Lesen Sie an jeder Kammertür zuerst die Tafel, dann das kleine Schild neben jedem Stück.",
+      "limit": "Das Observatorium setzt den Rahmen; nur die Bänder und Standbilder tragen Belege, und „About this view“ nennt genau, was Sie gerade sehen."
+    },
+    "einstruct": {
+      "title": "einstruct",
+      "kicker": "Wann hören zwei Sorten auf, sich zu mischen?",
+      "intro": "einstruct ist die offene Forschung einer einzelnen Person zu der Frage, was eine Punktwolke allein aus den Abständen ihrer Punkte über sich wissen kann, ganz ohne Koordinaten. Diese Kammer zeigt ihr einfachstes Experiment. Zweihunderttausend Teilchen zweier Sorten, A und B, wandern über eine Fläche; trifft ein A auf ein B, verschwinden beide. Das ist die ganze Regel. Am Boden liegt der aufgezeichnete Lauf, Bild für Bild abgespielt, nichts interpoliert. Daneben liegt seine Kontrolle: derselbe Lauf, nur werden die Sorten alle zwanzig Schritte neu gemischt. Im einen wachsen Gebiete einer einzigen Sorte, bis die Fläche ein Flickwerk ist; im anderen entstehen sie nie.",
+      "lookFor": "Halten Sie beide Bänder spät an und vergleichen Sie die Größe der einfarbigen Flecken; dann spulen Sie zurück und sehen zu, wie sie entstehen.",
+      "limit": "Der Browser zeichnet nur eine Stichprobe der Teilchen und kann daher nicht jede leere Region der vollen Simulation messen; die Zahlen auf den Schildern stammen aus den aufgezeichneten Dateien."
+    },
+    "spectre": {
+      "title": "coarsen",
+      "kicker": "Wie findet eine Welt ihre Mitte?",
+      "intro": "coarsen ist die offene Forschung einer einzelnen Person zu der Frage, wie groß und wie lange eine Welt aus nichts als Teilchen laufen kann, bevor sie aufhört, sich wie echte Materie zu messen. Die drei Kugeln hier sind ein Experiment. Jede Welt begann als derselbe Ball aus 508.744 Teilchen, eine gleichmäßige Mischung einer schweren und einer leichten Sorte, von der eigenen Schwerkraft unter einem kalten Himmel zusammengehalten. Der einzige Unterschied ist, wie stark sich die beiden Sorten abstoßen. Jede ist aufgeschnitten: Die Oberfläche ist der gemessene Rand der Teilchen, das Innere ist aus ihnen gemessen, Bild für Bild, über 96 dynamische Zeiten.",
+      "lookFor": "Lassen Sie die Aufzeichnung laufen und vergleichen Sie die drei Schnittflächen im selben Augenblick; wo sich die beiden Sorten am stärksten abstoßen, sammelt sich die schwere Sorte am frühesten in der Mitte.",
+      "limit": "Ein aufgezeichneter Lauf pro Welt, nichts interpoliert. Diese Läufe trennen nicht, ob die Entmischung oder eine gemeinsame Abkühlung die schwere Mitte verursacht; deshalb behauptet keine Tafel hier, die Entmischung habe sie verursacht."
+    },
+    "world-engine": {
+      "title": "world-engine",
+      "kicker": "Was zeigt ein neuer Blickwinkel?",
+      "intro": "world-engine ist die offene Forschung einer einzelnen Person zu der Frage, wie wenig gespeicherte Geometrie eine Welt braucht, bevor ein Betrachter es bemerkt. Das Repositorium ruht: Seine Gründungsfrage wurde mit Nein beantwortet, und diese drei Standbildstudien sind, was bleibt. Der gezeigte Raum ist das Klassenzimmer aus der freien Blender-Demoszene, aus einer knappen Beschreibung wieder aufgebaut und dann von Stellen aus betrachtet, von denen es nie fotografiert wurde. Beginnen Sie mit dem ganzen Klassenzimmer, sehen Sie dann hinter den Stuhl, wo ein neuer Blickwinkel das Bild aufreißt, und zuletzt auf den Saum um ein Stuhlbein, wo dieselbe Kante auf sechs Arten gezeichnet ist.",
+      "lookFor": "Vergleichen Sie die wahre Ansicht mit den gedehnten; die Löcher sind magenta markiert, und die Saumstudie zeigt, was eine überzeugende Gesamtansicht verbirgt.",
+      "limit": "Dies sind Standbildstudien aus gespeicherten Daten, keine Rekonstruktion in Echtzeit und keine funktionierende Linsentür; die verbliebene Frage des Repositoriums ist nicht gemessen."
+    },
+    "phototroph": {
+      "title": "phototroph",
+      "kicker": "Was lässt zwei Atome beisammenbleiben?",
+      "intro": "phototroph ist die offene Forschung einer einzelnen Person zu der Frage, ob sich Materie unter einem stetigen Strahl einfarbigen Lichts von selbst zu Strukturen ordnet, die diese Farbe absorbieren. Diese Frage ist noch offen. Hier hängt das eine, was das Repositorium ehrlich zeigen kann: eine aufgezeichnete Begegnung dreier Atome. Zwei Atome, die aufeinander zufallen, können einander nicht einfangen; sie fliegen genau so schnell auseinander, wie sie kamen. Sie bleiben nur, wenn ein drittes hinzukommt und die überschüssige Geschwindigkeit davonträgt. Das Band hält 801 Bilder von acht Atomen in einem kleinen periodischen Kasten, aus der eigenen Aufzeichnung der Simulation übertragen, ohne Zutat.",
+      "lookFor": "Halten Sie um den Einfang herum an, folgen Sie dem davonfliegenden Atom, spulen Sie zurück und spielen Sie dieselbe Begegnung langsam ab; es ist ein aufgezeichnetes Ereignis, kein neues bei jedem Druck auf Play.",
+      "limit": "Ein einzelner Einfang belegt weder ein Gleichgewicht noch Bindungsraten und prüft keine Auslese durch Licht; das Licht, um das es dieser Forschung geht, ist im Band gar nicht enthalten."
+    },
+    "orangery": {
+      "title": "Der Laternengang",
+      "kicker": "Lassen Sie den Blick wandern.",
+      "intro": "Der Laternengang verbindet die Kammer von world-engine mit der Terrasse. Er ist ein Ort zwischen den Exponaten: Folgen Sie den offenen Türen, blicken Sie zu den Kammern zurück oder treten Sie hinaus unter den Himmel. Hier gibt es ein Schachspiel; der Guide öffnet es über dem Raum.",
+      "lookFor": "Die drei Türen zur Gartenseite führen alle auf die Horizontterrasse."
+    },
+    "gallery": {
+      "title": "Die Lange Galerie",
+      "kicker": "Ein ruhigerer Abschnitt des Observatoriums.",
+      "intro": "Die Lange Galerie führt von der Kammer von phototroph zum Belvedere. Die geschlossenen Türen an der Innenwand gehören Forschungsbäumen, die sich noch keinen Raum verdient haben; einen Raum verdient sich ein Baum, indem er etwas Ehrliches zu hängen hat. Gehen Sie, verweilen Sie, kehren Sie zurück, wenn Sie bereit sind.",
+      "lookFor": "Die breite Öffnung am Ende führt hinauf zum Belvedere; die schmalen Türen zur Gartenseite hinaus auf die Terrasse."
+    },
+    "belvedere": {
+      "title": "Das Belvedere",
+      "kicker": "Das Ende der Galerie, eine Stufe darüber.",
+      "intro": "Das Belvedere ist eine erhöhte Plattform am Ende der Langen Galerie, ein Ort, um die ganze Länge des Observatoriums zurückzublicken. Seine beiden geschlossenen Türen sind Bäumen ohne Raum versprochen, neuralese und someotherlife; sie öffnen sich, sobald diese Repositorien etwas zu zeigen haben.",
+      "lookFor": "Drehen Sie sich um: Die ganze Galerie liegt unter Ihnen, zurück bis zu den Kammern."
+    },
+    "greenhouse": {
+      "title": "Die Werkstatt",
+      "kicker": "Wo das Museum gepflegt wird.",
+      "intro": "Die Werkstatt ist der Raum des Gastgebers, neben der Halle hinter einer Tür, die sich nur für ihn öffnet. Von hier aus werden Exponate gehängt, geprüft und abgenommen, und was Besucher in den Kammern sehen, wurde zuerst in diesem Raum freigegeben. Sie gehört nicht zum öffentlichen Rundgang.",
+      "lookFor": "Wenn Sie diese Tafel lesen können, sind Sie der Gastgeber."
+    },
+    "terrace": {
+      "title": "Die Horizontterrasse",
+      "kicker": "Treten Sie hinaus unter den Himmel.",
+      "intro": "Die Horizontterrasse zieht sich über die ganze Gartenseite des Observatoriums. Türen führen zurück in die Halle, in den Laternengang und in die Lange Galerie; voraus liegt der Meridiangarten, dahinter die Haine. Der Himmel ist ein gestaltetes Zwielicht, kein astronomischer.",
+      "lookFor": "Folgen Sie der Terrasse in eine der beiden Richtungen zu einer Tür nach innen, oder gehen Sie hinüber in den Garten."
+    },
+    "parterre": {
+      "title": "Der Meridiangarten",
+      "kicker": "Orientieren Sie sich unter dem Himmel.",
+      "intro": "Der Meridiangarten liegt zwischen der Terrasse und den Hainen. An seiner Kreuzung steht eine Armillarsphäre, und sie ist ein Portal: Durch sie erscheinen die drei Welten von coarsen als Globen, und wer hineingeht, gelangt in ihren Maßstab. Jenseits des Gartens liegen der Westliche, der Ferne und der Östliche Hain.",
+      "lookFor": "Sehen Sie durch die Armillarsphäre, bevor Sie hineintreten; was dort wie ein Globus wirkt, misst auf der anderen Seite achtzig Meter."
+    },
+    "orchard-west": {
+      "title": "Der Westliche Hain",
+      "kicker": "Das Gelände, westlich des Gartens.",
+      "intro": "Der Westliche Hain gehört zum Gelände, das dieser Welt ihren Namen gibt. Hier wird nichts ausgestellt; es ist ein Ort, um unter den Bäumen zu gehen und zum Observatorium zurückzublicken. Auf der einen Seite liegt der Garten, auf der anderen der Ferne Hain.",
+      "lookFor": "Der Boden steigt zum hinteren Teil des Hains sanft an; der Weg zurück ist die offene Seite zum Garten."
+    },
+    "orchard-south": {
+      "title": "Der Ferne Hain",
+      "kicker": "Das Gelände, am Ende des Gartens.",
+      "intro": "Der Ferne Hain schließt das Gelände gegenüber dem Observatorium ab. Von hier aus steht der ganze Palast jenseits des Gartens, mit der Armillarsphäre in seiner Mitte. An seinen Seiten grenzt er an den Westlichen und den Östlichen Hain; zu lesen gibt es hier nichts als die Aussicht.",
+      "lookFor": "Stellen Sie sich an den Rand des Hains und blicken Sie über den Garten zurück auf die Dachlinie des Observatoriums."
+    },
+    "orchard-east": {
+      "title": "Der Östliche Hain",
+      "kicker": "Das Gelände, östlich des Gartens.",
+      "intro": "Der Östliche Hain spiegelt den Westlichen jenseits des Gartens. Er ist Gelände, keine Kammer: Bäume, ein Hang und der Blick zurück zur Terrasse und zur Langen Galerie. Gehen Sie ihn der Ruhe wegen, und kehren Sie durch den Garten zurück, wenn Sie bereit für eine neue Frage sind.",
+      "lookFor": "Der Weg zurück ins Haus führt über den Garten und hinauf auf die Terrasse."
+    },
+    "orrery": {
+      "title": "Die Planetenmaschine",
+      "kicker": "Wie findet eine Welt ihre Mitte?",
+      "intro": "Die Planetenmaschine zeigt die drei Welten von coarsen im Maßstab des Himmels, erreichbar durch die Armillarsphäre des Gartens. Sie sind fünfzigfach geschrumpft, um hier zu stehen; jeder Globus misst achtzig Meter. Es sind dieselben aufgezeichneten Läufe wie in der Kammer von coarsen: je 508.744 Teilchen, dieselbe gleichmäßige Mischung einer schweren und einer leichten Sorte, verschieden nur darin, wie stark sich die beiden Sorten abstoßen. Jede ist zu Ihrem Standort hin aufgeschnitten, ihre Oberfläche der gemessene Rand der Teilchen, ihr Inneres aus ihnen gemessen. Die Sterne sind eine gestaltete Kulisse, kein Katalog.",
+      "lookFor": "Gehen Sie auf eine Welt zu und beobachten Sie ihre Schnittfläche; das Glühen markiert die heißeste Materie, eine Kodierung der Temperatur, kein Licht.",
+      "limit": "Ein aufgezeichneter Lauf pro Welt, nichts interpoliert. Eine schwere Mitte trennt für sich genommen nicht, ob Entmischung oder gemeinsame Abkühlung ihre Ursache ist."
+    }
+  },
+  "exhibits": {
+    "hall-poster": {
+      "title": "A + B → nichts: ein Bild der Fläche",
+      "caption": "Ein Standbild eines späten Bildes aus dem aufgezeichneten Lauf von einstruct: 200.000 Teilchen zweier Sorten auf einer ebenen Fläche, wobei jedes A, das ein B trifft, mit ihm verschwindet. Die Farbe unterscheidet die beiden Sorten und sonst nichts; die Gebiete wurden nicht gezeichnet, sie sind entstanden."
+    },
+    "einstruct-tape": {
+      "title": "A + B verschwinden auf einer Fläche",
+      "caption": "Der aufgezeichnete Lauf selbst, flach am Boden: 801 Bilder über 400 Zeiteinheiten der Simulation, 200.000 Teilchen am Anfang und 2.634 am Ende, aus einer festen Startanordnung (Saat 0). Die Farbe nennt die Sorte, A oder B; sie zeigt weder Temperatur noch Geschwindigkeit."
+    },
+    "einstruct-tape-stirred": {
+      "title": "Die Kontrolle: Sorten alle zwanzig Schritte neu gemischt",
+      "caption": "Dieselben Teilchen und dieselbe Regel, nur werden die beiden Sorten alle zwanzig Schritte über die Plätze gemischt. 801 Bilder über 400 Zeiteinheiten der Simulation; 200.000 Teilchen fallen auf 292, neunmal weniger als nebenan, und Gebiete entstehen nie. Die Farbe nennt die Sorte."
+    },
+    "einstruct-wall": {
+      "title": "Die Fläche als Film, 40 Sekunden",
+      "caption": "Eine flache Wiedergabe des Bodenbands als Film von 40 Sekunden, zehn Zeiteinheiten der Simulation pro Sekunde, jedes Bild das nächstgelegene aufgezeichnete und keines erfunden. Sehen Sie zu, wie sich die beiden Sorten in Gebiete ordnen, die niemand gezeichnet hat. Die Farbe nennt die Sorte."
+    },
+    "einstruct-wall-row": {
+      "title": "Eine Reihe weiß nicht, wo oben ist",
+      "caption": "16 Sekunden Animation zur Idee hinter einstruct: die sortierten Abstände eines Punktes zu seinen acht nächsten Nachbarn, als Balken gezeichnet. Drehen Sie die Wolke, spiegeln Sie sie, nummerieren Sie sie um, und die Balken rühren sich nicht; vergrößern Sie sie, und jeder Balken wächst. Eine gezeichnete Figur, ohne gemessene Farbe."
+    },
+    "spectre-worlds": {
+      "title": "Drei Welten, aufgeschnitten",
+      "caption": "Das Planetentrio von coarsen im Gehmaßstab: drei Bälle aus je 508.744 Teilchen aus einer Startanordnung, je 1.129 Bilder über 96 dynamische Zeiten, die beiden Sorten von nah nach fern gleichgültig, mäßig und stark abgeneigt. Eisenwarme Regionen halten mehr schwere Teilchen, blasse mehr leichte; das Glühen kodiert die Temperatur."
+    },
+    "spectre-wall": {
+      "title": "Aus dem ersten Film: 42,8 Sekunden, stumm",
+      "caption": "Ein Ausschnitt aus dem ersten Film von coarsen, 2.568 Bilder in 1080p60, auf dem Prozessor Bild für Bild aus einem aufgezeichneten Band von 12.288 Teilchen in einer periodischen Platte gerendert. Ein beleuchtetes Bild der Aufzeichnung, keine Messung: Die Schattierung ist das Licht des Renderers, und Ton gibt es keinen."
+    },
+    "world-engine-classroom": {
+      "title": "Das Klassenzimmer in 2,1 Megabyte",
+      "caption": "Das Blender-Demo-Klassenzimmer, aus 28.112 Kugeln in 2,1 MB gespeicherter Daten wieder aufgebaut, gesehen von einer Kopfposition, die die Rekonstruktion nie zu sehen bekam. Eine Standbildstudie: wie ein ganzer Raum aussieht, wenn fast seine gesamte Geometrie weggeworfen wurde. Die Farben sind die Texturen der Szene selbst."
+    },
+    "world-engine-behind-the-chair": {
+      "title": "Hinter dem Stuhl, auf vier Arten",
+      "caption": "Eine Ansicht des Klassenzimmers, viermal gerendert: die wahre Ansicht, dann das Bild aufgerissen, wo ein neuer Blickwinkel Verborgenes freilegt, gedehnt, um den Riss zu decken, und nur innerhalb jedes Objekts gedehnt. Magenta markiert Löcher, Stellen, die keine gespeicherten Daten erreichen; jede andere Farbe gehört der Szene."
+    },
+    "world-engine-fringe": {
+      "title": "Der Saum um ein Stuhlbein, auf sechs Arten",
+      "caption": "Ein Ausschnitt von 56 Pixeln um ein Stuhlbein, neunfach vergrößert und auf sechs Arten gezeichnet: die wahre Ansicht, aufgerissen, mit feinerer Farbe, mit einer zweilagigen Kante, gedehnt und innerhalb der Objekte gedehnt. Kleine Säume verraten, was eine überzeugende Gesamtansicht verbirgt. Die Helligkeit ist verdreifacht, damit sie sichtbar werden."
+    },
+    "phototroph-tape": {
+      "title": "Zwei Atome können einander nicht einfangen",
+      "caption": "801 Bilder von acht Atomen in einem kleinen periodischen Kasten, aus der Aufzeichnung der Simulation übertragen: Zwei fallen aufeinander zu und bleiben erst, als ein drittes hinzukommt und die überschüssige Geschwindigkeit davonträgt. Alle Atome sind von einer Sorte, in einer Farbe; das Band zeichnet nur Positionen, weder Bindungen noch Licht."
+    },
+    "orrery-worlds": {
+      "title": "Das Planetentrio im Maßstab des Himmels",
+      "caption": "Dieselben drei aufgezeichneten Welten wie in der Kammer von coarsen, hier je achtzig Meter im Durchmesser: 508.744 Teilchen, 1.129 Bilder über 96 dynamische Zeiten, eine Startanordnung, drei Stärken der Abstoßung zwischen schwerer und leichter Sorte. Eisenwarme Regionen halten mehr schwere Teilchen, blasse mehr leichte; das Glühen kodiert die Temperatur."
+    }
+  }
+}

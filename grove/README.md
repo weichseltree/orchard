@@ -20,7 +20,7 @@ pnpm demo
 
 Open [localhost:5173/grove/?demo](http://localhost:5173/grove/?demo).
 The command writes synthetic fixtures, prepares the texture decoder and
-starts Vite. You land in the Mixing Chamber beside a particle tape, with a
+starts Vite. You land in einstruct's room beside a particle tape, with a
 visible local-demo label. No API keys, cloud account, Python environment or
 SpacetimeDB server is needed. Dependency installation needs a network
 connection; the running demo reads its world and media locally.

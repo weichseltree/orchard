@@ -1,5 +1,6 @@
 import type { Mansion } from "../world/schema";
 import { resolveMove, BODY_RADIUS } from "../world/navigation";
+import { floorAt } from "../world/terrain";
 import type { InputState } from "./input";
 
 // The body: where the visitor is, which room they are in, and which way they
@@ -12,6 +13,8 @@ export const MAX_PITCH = Math.PI / 2 - 0.05;
 
 export interface Body {
   x: number;
+  /** The feet's height: the floor under (x, z), read from terrain.ts after every move. */
+  y: number;
   z: number;
   yaw: number;
   pitch: number;
@@ -28,8 +31,14 @@ export interface Body {
   lockedOut: string | null;
 }
 
-export function createBody(x: number, z: number, yaw: number, room: string, scale = 1): Body {
-  return { x, z, yaw, pitch: 0, room, scale, crossedInto: null, lockedOut: null };
+export function createBody(x: number, z: number, yaw: number, room: string, scale = 1, y = 0): Body {
+  return { x, y, z, yaw, pitch: 0, room, scale, crossedInto: null, lockedOut: null };
+}
+
+/** Puts the feet on the floor under the body; call after anything that moves it. */
+export function settle(body: Body, mansion: Mansion): void {
+  const room = mansion.rooms.find((r) => r.id === body.room);
+  if (room) body.y = floorAt(mansion, room, body.x, body.z);
 }
 
 /**
@@ -80,6 +89,7 @@ export function step(
     body.room = result.room;
     body.crossedInto = result.room;
   }
+  settle(body, mansion);
 }
 
 /**
@@ -106,6 +116,7 @@ export function clampHead(
     body.room = result.room;
     body.crossedInto = result.room;
   }
+  settle(body, mansion);
   return { dx: result.x - headX, dz: result.z - headZ };
 }
 
@@ -136,5 +147,6 @@ export function teleport(
     body.room = room.id;
     body.crossedInto = room.id;
   }
+  settle(body, mansion);
   return true;
 }

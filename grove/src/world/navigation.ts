@@ -1,4 +1,5 @@
 import type { Doorway, Mansion, Room } from "./schema";
+import { keepOnFlight } from "./terrain";
 
 // Where a step is allowed to land. M0 keeps its promise the cheap way: a per
 // room axis-aligned clamp, opened along the one axis a doorway pierces, and
@@ -116,8 +117,10 @@ export function resolveMove(
     }
   }
 
-  const x = clamp(span.x, to.x);
-  const z = clamp(span.z, to.z);
+  let x = clamp(span.x, to.x);
+  let z = clamp(span.z, to.z);
+  // A body that has climbed a flight stays between its cheek walls.
+  ({ x, z } = keepOnFlight(mansion, room, from, { x, z }, radius));
 
   // Past the doorway plane means the body is now in the other room.
   for (const { door, neighbour } of open) {

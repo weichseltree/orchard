@@ -4,7 +4,7 @@ import { detectDevice } from "./device";
 import { demoEnabled, demoMansion } from "./demo";
 import { attachDesktopControls, type DesktopControls } from "./control/desktop";
 import { consumeDeltas, createInput, type Commands } from "./control/input";
-import { clampHead, createBody, step, teleport } from "./control/locomotion";
+import { clampHead, createBody, settle, step, teleport } from "./control/locomotion";
 import { attachTouchControls } from "./control/touch";
 import { XrControls, requestXrSession, watchXrSupport } from "./control/xr";
 import { deploymentTokenSource } from "./net/auth";
@@ -30,6 +30,8 @@ import mansionDocument from "./world/mansion.json";
 import { parseMansion, roomById } from "./world/schema";
 import { buildWorld, exhibitRoom, neighbourhood, type BuiltWorld } from "./world/world";
 import { PortalSystem } from "./world/portal";
+import { pickLocale } from "./ui/locale";
+import { AVAILABLE_LOCALES, labelsFor, labelsLoaded, roomTitle } from "./world/labels/index";
 import { ATLAS_LABELS, type Screen } from "./media/screen";
 import type { TapeExhibit } from "./world/tape-exhibit";
 
@@ -77,6 +79,9 @@ view.scene.add(avatars.group, worldNotices.panel);
 // room while it is built, and for a link straight to a tree's room.
 const query = new URLSearchParams(location.search);
 const startRoom = visitRoom(mansion, query);
+// The wall plaques speak the visitor's language: the browser's list, `?lang=` first, English last.
+const locale = pickLocale(AVAILABLE_LOCALES, navigator.languages, query.get("lang"));
+void labelsFor(locale).catch(() => labelsFor("en"));
 const requestedYaw = finiteParameter(query, "yaw");
 const requestedPitch = finiteParameter(query, "pitch");
 const requestedX = finiteParameter(query, "x");
@@ -89,12 +94,14 @@ const body = createBody(
   MathUtils.degToRad(startYaw),
   startRoom.id,
   startRoom.scale,
+  startRoom.bounds.min[1],
 );
 // `&pitch=<deg>` looks up or down from the start, for a link to something high;
 // `&x=&z=` stand somewhere else in the room, and then the marker leaves them be.
 if (requestedPitch !== null) body.pitch = MathUtils.degToRad(requestedPitch);
 if (requestedX !== null) body.x = MathUtils.clamp(requestedX, startRoom.bounds.min[0], startRoom.bounds.max[0]);
 if (requestedZ !== null) body.z = MathUtils.clamp(requestedZ, startRoom.bounds.min[2], startRoom.bounds.max[2]);
+settle(body, mansion);
 // `&debug=overdraw` draws the room shells as faint additive white, so a
 // doubled or hidden face shows as a brighter patch (render/overdraw.ts).
 const debugView = query.get("debug");
@@ -313,6 +320,7 @@ function boot(): void {
   const built = buildWorld({
     mansion,
     startRoom: body.room,
+    locale,
     renderer: view.renderer,
     device,
     scheduler: chunks,
@@ -338,6 +346,7 @@ function boot(): void {
       // ...except the heading when the link asked for one: `?yaw=` is for
       // looking at a particular wall, and the marker must not turn it away.
       if (requestedYaw === null) body.yaw = MathUtils.degToRad(room.spawn.yawDeg);
+      settle(body, mansion);
     },
   });
   world = built;
@@ -525,7 +534,7 @@ view.start((dt, time, rawDt) => {
   if (movingBefore) bodyPlaced = true;
   consumeDeltas(input);
 
-  view.rig.position.set(body.x, 0, body.z);
+  view.rig.position.set(body.x, body.y, body.z);
   adaptExposure(dt);
   handOverVideo();
   if (presenting) {
@@ -535,7 +544,7 @@ view.start((dt, time, rawDt) => {
     if (push.dx !== 0 || push.dz !== 0) {
       body.x += push.dx;
       body.z += push.dz;
-      view.rig.position.set(body.x, 0, body.z);
+      view.rig.position.set(body.x, body.y, body.z);
     }
   } else {
     view.rig.rotation.y = body.yaw;
@@ -548,6 +557,7 @@ view.start((dt, time, rawDt) => {
   view.rig.updateMatrixWorld(true);
   const crossing = portals.update({
     body,
+    dt,
     camera: view.camera,
     scene: view.scene,
     worldRoot: view.world,
@@ -560,7 +570,8 @@ view.start((dt, time, rawDt) => {
     body.room = crossing.room;
     body.scale = crossing.scale;
     body.crossedInto = crossing.room;
-    view.rig.position.set(body.x, 0, body.z);
+    settle(body, mansion);
+    view.rig.position.set(body.x, body.y, body.z);
     world?.setScaleVisible(body.scale);
     portals.setScale(body.scale);
     handOverVideo(true);
@@ -618,11 +629,11 @@ view.start((dt, time, rawDt) => {
       chat.noteJoined();
     }
     guide.setRoom(body.crossedInto);
-    notice(roomById(mansion, body.crossedInto)?.title ?? body.crossedInto);
+    notice(roomTitle(labelsLoaded(locale), body.crossedInto) ?? roomById(mansion, body.crossedInto)?.title ?? body.crossedInto);
   }
 
   view.camera.getWorldPosition(headWorld);
-  if (!demo) presence.sendPose(headWorld.x, 0, headWorld.z, wrapAngle(headingFromCamera()));
+  if (!demo) presence.sendPose(headWorld.x, body.y, headWorld.z, wrapAngle(headingFromCamera()));
   if (presence.sync()) {
     hud.setPeople(presence.peers.values());
     hud.setMe(presence.me, presence.name);

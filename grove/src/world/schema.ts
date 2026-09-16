@@ -242,7 +242,14 @@ export const RoomSchema = z.looseObject({
   fallback: z
     .looseObject({ kind: z.enum(["box", "ground"]).default("box"), color: z.string().default("#8e968d") })
     .default({ kind: "box", color: "#8e968d" }),
+  /**
+   * The room's box. `min[1]` is the floor: rooms may stand at different
+   * heights, and a doorway between two floors gets a flight of steps in the
+   * lower room (terrain.ts, observatory.ts), so a raised wing is a change
+   * of one number here and nothing else.
+   */
   bounds: BoundsSchema,
+  /** The body's feet on the room's floor; `position[1]` should equal `bounds.min[1]`. */
   spawn: SpawnSchema,
   doorways: z.array(DoorwaySchema).default([]),
   hangings: z.array(HangingSchema).default([]),
@@ -276,12 +283,31 @@ export const SkySchema = z.looseObject({
   source: z.string().default(""),
 });
 
+/**
+ * A mound of the grounds: a smooth, compactly supported bump (terrain.ts).
+ * The height field is one function shared by the ground mesh, the trees and
+ * the body's feet, so a hill you see is a hill you climb. Mounds shape only
+ * the cells of the grounds; a room's floor is flat at its own base.
+ */
+export const MoundSchema = z.looseObject({
+  x: z.number(),
+  z: z.number(),
+  radius: z.number().positive(),
+  height: z.number(),
+});
+
+export const TerrainSchema = z.looseObject({
+  mounds: z.array(MoundSchema).default([]),
+});
+
 export const MansionSchema = z
   .looseObject({
     schema: z.literal("orchard/mansion/1"),
     title: z.string().default(""),
     start: z.string().min(1),
     sky: SkySchema.optional(),
+    /** The lie of the land outside; absent means flat grounds. */
+    terrain: TerrainSchema.default({ mounds: [] }),
     rooms: z.array(RoomSchema).min(1),
   })
   .superRefine((doc, ctx) => {
@@ -319,6 +345,16 @@ export const MansionSchema = z
           ctx.addIssue({ code: "custom", message: `duplicate game surface id "${surface.id}"` });
         }
         gameSurfaceIds.add(surface.id);
+      }
+      for (const door of room.doorways) {
+        if (door.closed) continue;
+        const other = doc.rooms.find((r) => r.id === door.to);
+        if (!other) continue;
+        // Both rooms must know the opening, or one side walks through a wall.
+        const twin = other.doorways.find((d) => d.to === room.id && d.axis === door.axis && Math.abs(d.at - door.at) < 1e-6 && Math.abs(d.center - door.center) < 1e-6);
+        if (!twin) {
+          ctx.addIssue({ code: "custom", message: `doorway ${room.id} -> ${door.to} at ${door.axis}=${door.at}, ${door.center} is not listed by "${door.to}"` });
+        }
       }
       for (const portal of room.portals) {
         const target = doc.rooms.find((r) => r.id === portal.to);
@@ -363,6 +399,8 @@ export type Portal = z.infer<typeof PortalSchema>;
 export type Hanging = z.infer<typeof HangingSchema>;
 export type Room = z.infer<typeof RoomSchema>;
 export type Sky = z.infer<typeof SkySchema>;
+export type Mound = z.infer<typeof MoundSchema>;
+export type Terrain = z.infer<typeof TerrainSchema>;
 export type Mansion = z.infer<typeof MansionSchema>;
 
 export function parseMansion(input: unknown): Mansion {

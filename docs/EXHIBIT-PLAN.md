@@ -20,10 +20,10 @@ picture establishes:
 
 | chamber | what to compare | boundary of the evidence |
 |---|---|---|
-| The Mixing Chamber · einstruct | the evolving sheet and the repeatedly mixed control | the browser's particle sample is not a measurement of every empty region |
-| The Gravity Chamber · spectre | the same starting mixture across three interaction strengths | a heavy centre does not isolate unmixing from shared cooling as its cause |
-| The Binding Chamber · phototroph | one three-atom capture, replayed through time | one encounter does not establish equilibrium or binding rates |
-| The Reconstruction Gallery · world-engine | the classroom, behind-chair and chair-edge still studies | the room does not demonstrate a live reconstruction or a working lens doorway |
+| einstruct (its own cabinet off the hall) | the evolving sheet and the repeatedly mixed control | the browser's particle sample is not a measurement of every empty region |
+| coarsen (the tree `spectre`; its cabinet) | the same starting mixture across three interaction strengths | a heavy centre does not isolate unmixing from shared cooling as its cause |
+| phototroph (its room south of the hall) | one three-atom capture, replayed through time | one encounter does not establish equilibrium or binding rates |
+| world-engine (the raised north wing) | the classroom, behind-chair and chair-edge still studies | the room does not demonstrate a live reconstruction or a working lens doorway |
 
 The hall offers a suggested order and direct room links. Open-door directions
 come from the scene's actual connections. The walks, gallery and groves are

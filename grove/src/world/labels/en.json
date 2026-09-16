@@ -1,0 +1,157 @@
+{
+  "common": {
+    "entrance": "Introduction",
+    "exhibit": "Exhibit",
+    "lookFor": "Look closely",
+    "limit": "What this does not show",
+    "source": "Source"
+  },
+  "rooms": {
+    "hall": {
+      "title": "The Observatory",
+      "kicker": "Which question draws you in?",
+      "intro": "Welcome to the Observatory, a small research museum built by one person. Four chambers open off this hall, each named after the open-source repository whose work it shows: einstruct, coarsen, world-engine and phototroph. Nothing here is an illustration. The moving pictures are recorded simulations played back frame by frame, the stills are studies rendered from measured data, and every exhibit names the file it came from. The architecture only sets the scene. The research is one person's ongoing work, not an institution's verdict, and each chamber ends with a line about what its evidence cannot yet show.",
+      "lookFor": "Read the panel at each chamber's door before the exhibit, then the small label beside each piece.",
+      "limit": "The Observatory sets the scene; only the tapes and stills carry evidence, and \"About this view\" names exactly what you are looking at."
+    },
+    "einstruct": {
+      "title": "einstruct",
+      "kicker": "When do two kinds stop mixing?",
+      "intro": "einstruct is one person's open research into what a cloud of particles can know about itself from distances alone, with no coordinates. This chamber shows its simplest experiment. Two hundred thousand particles of two kinds, A and B, wander across a sheet; whenever an A meets a B, both vanish. That is the whole rule. On the floor lies the recorded run, played back frame by frame with nothing interpolated. Beside it lies its control, the same run with the kinds reshuffled every twenty steps. In one, regions of a single kind grow until the sheet is patchwork; in the other they never form.",
+      "lookFor": "Pause late in both tapes and compare the size of the single-kind patches, then scrub back to watch them emerge.",
+      "limit": "The browser draws a sample of the particles, so it cannot measure every empty region of the full simulation; the counts on the labels come from the recorded files."
+    },
+    "spectre": {
+      "title": "coarsen",
+      "kicker": "How does a world find its middle?",
+      "intro": "coarsen is one person's open research into how large and how long a world made of nothing but particles can be run before it stops measuring like real matter. The three globes here are one experiment. Each world began as the same ball of 508,744 particles, an even mixture of a heavy kind and a light kind, held together by its own gravity under a cold sky. The only difference between them is how strongly the two kinds repel each other. Each is cut open: the surface is the measured edge of the particles, and the interior is measured from them, frame by frame, over 96 dynamical times.",
+      "lookFor": "Let the record run and compare the three cut faces at the same moment; where the two kinds repel most, the heavy kind gathers at the centre soonest.",
+      "limit": "One recorded run per world, nothing interpolated. These runs do not separate unmixing from shared cooling as the cause of a heavy centre, so no plaque here says the unmixing caused it."
+    },
+    "world-engine": {
+      "title": "world-engine",
+      "kicker": "What does a new viewpoint reveal?",
+      "intro": "world-engine is one person's open research into how little stored geometry a world needs before a viewer notices. It is dormant: its founding question was answered no, and these three still studies are what remains. The room they show is the classroom from the free Blender demo scene, rebuilt from a compact description and then looked at from places it was never photographed. Begin with the whole classroom, then look behind the chair, where a new viewpoint tears the picture open, and finally at the fringe around a chair leg, where the same edge is drawn six different ways.",
+      "lookFor": "Compare the true view with the stretched ones; the holes are marked in magenta, and the fringe study shows what a convincing whole-room view conceals.",
+      "limit": "These are still studies rendered from stored data, not a live reconstruction and not a working lens doorway; the repository's remaining question has not been measured."
+    },
+    "phototroph": {
+      "title": "phototroph",
+      "kicker": "What lets two atoms stay together?",
+      "intro": "phototroph is one person's open research into whether matter under a steady beam of one colour of light organises itself into structures that absorb that colour. That question is still open. What hangs here is the one honest thing the repository has to show: a recorded encounter between three atoms. Two atoms falling together cannot catch each other; they fly apart exactly as fast as they came. They stay only when a third arrives and carries the surplus speed away. The tape holds 801 frames of eight atoms in a small periodic box, converted from the simulation's own record with nothing added.",
+      "lookFor": "Pause around the capture, follow the departing atom, then scrub back and replay the same encounter slowly; it is one recorded event, not a new one each time you press play.",
+      "limit": "One capture establishes neither equilibrium nor binding rates, and it does not test light-driven selection; the light this research is about is not in the tape at all."
+    },
+    "orangery": {
+      "title": "The Lantern Walk",
+      "kicker": "Let your eyes travel.",
+      "intro": "The Lantern Walk joins the world-engine chamber to the terrace. It is a place between exhibits: follow the open doors, look back towards the chambers, or step out under the sky. There is a game of chess here, opened from the Guide over the room.",
+      "lookFor": "The three doors on the garden side all open onto the Horizon Terrace."
+    },
+    "gallery": {
+      "title": "The Long Gallery",
+      "kicker": "A quieter stretch of the Observatory.",
+      "intro": "The Long Gallery runs from the phototroph chamber to the Belvedere. The closed doors along its inner wall belong to research trees that have not yet earned a room; a tree earns one by having something honest to hang. Walk, pause, and return when you are ready.",
+      "lookFor": "The wide opening at the end leads up to the Belvedere; the narrow doors on the garden side lead out to the terrace."
+    },
+    "belvedere": {
+      "title": "The Belvedere",
+      "kicker": "The end of the gallery, a step above it.",
+      "intro": "The Belvedere is a raised platform at the far end of the Long Gallery, a place to look back down the whole length of the Observatory. Its two closed doors are promised to trees without rooms yet, neuralese and someotherlife; they will open when those repositories have something to show.",
+      "lookFor": "Turn round: the whole gallery lies below you, back to the chambers."
+    },
+    "greenhouse": {
+      "title": "The Workshop",
+      "kicker": "Where the museum is tended.",
+      "intro": "The Workshop is the host's room, off the hall behind a door that opens only for them. Exhibits are hung, checked and taken down from here, and what a visitor sees in the chambers was approved in this room first. It is not part of the public tour.",
+      "lookFor": "If you can read this panel, you are the host."
+    },
+    "terrace": {
+      "title": "The Horizon Terrace",
+      "kicker": "Step out under the sky.",
+      "intro": "The Horizon Terrace runs the whole garden side of the Observatory. Doors lead back into the hall, the Lantern Walk and the Long Gallery; ahead lies the Meridian Garden, and beyond it the groves. The sky is a designed twilight, not an astronomical one.",
+      "lookFor": "Follow the terrace either way for a door back inside, or cross into the garden."
+    },
+    "parterre": {
+      "title": "The Meridian Garden",
+      "kicker": "Find your bearings under the sky.",
+      "intro": "The Meridian Garden lies between the terrace and the groves. At its crossing stands an armillary, and the armillary is a portal: through it, coarsen's three worlds show as globes, and walking into it takes you to their scale. Beyond the garden lie the Western, Far and Eastern Groves.",
+      "lookFor": "Look through the armillary before you step in; what appears as a globe there is eighty metres across on the other side."
+    },
+    "orchard-west": {
+      "title": "The Western Grove",
+      "kicker": "The grounds, west of the garden.",
+      "intro": "The Western Grove is part of the grounds that give this world its name. Nothing is exhibited here; it is a place to walk under the trees and look back at the Observatory. The garden lies to one side, the Far Grove to the other.",
+      "lookFor": "The ground rises gently toward the back of the grove; the way back is the open edge toward the garden."
+    },
+    "orchard-south": {
+      "title": "The Far Grove",
+      "kicker": "The grounds, at the garden's end.",
+      "intro": "The Far Grove closes the grounds opposite the Observatory. From here the whole palace stands across the garden, with the armillary at its centre. It joins the Western and Eastern Groves along its sides; there is nothing to read here but the view.",
+      "lookFor": "Stand at the grove's edge and look back across the garden at the Observatory's roofline."
+    },
+    "orchard-east": {
+      "title": "The Eastern Grove",
+      "kicker": "The grounds, east of the garden.",
+      "intro": "The Eastern Grove mirrors the Western one across the garden. It is grounds, not a chamber: trees, a slope, and the view back to the terrace and the Long Gallery. Walk it for the quiet, and return by the garden when you are ready for another question.",
+      "lookFor": "The way back inside is across the garden and up onto the terrace."
+    },
+    "orrery": {
+      "title": "The Orrery",
+      "kicker": "How does a world find its middle?",
+      "intro": "The Orrery is coarsen's three worlds at the scale of the sky, reached through the garden's armillary. You have shrunk fifty times to stand here; each globe is eighty metres across. They are the same recorded runs as in the coarsen chamber: 508,744 particles each, the same even mixture of a heavy and a light kind, differing only in how strongly the two kinds repel. Each is cut open toward where you stand, its surface the measured edge of the particles and its interior measured from them. The stars are a designed backdrop, not a catalogue.",
+      "lookFor": "Walk toward a world and watch its cut face; the glow marks the hottest matter, an encoding of temperature, not light.",
+      "limit": "One recorded run per world, nothing interpolated. A heavy centre does not by itself separate unmixing from shared cooling as its cause."
+    }
+  },
+  "exhibits": {
+    "hall-poster": {
+      "title": "A + B → nothing: one frame of the sheet",
+      "caption": "A still render of one late frame from einstruct's recorded run: 200,000 particles of two kinds on a flat sheet, any A that meets a B vanishing with it. Colour tells the two kinds apart and nothing else; the regions were not drawn, they formed."
+    },
+    "einstruct-tape": {
+      "title": "A + B annihilation on a sheet",
+      "caption": "The recorded run itself, laid flat on the floor: 801 frames over 400 units of simulation time, 200,000 particles at the start and 2,634 at the end, from one fixed starting arrangement (seed 0). Colour names the kind, A or B; it does not show temperature or speed."
+    },
+    "einstruct-tape-stirred": {
+      "title": "The control: kinds reshuffled every twenty steps",
+      "caption": "The same particles and the same rule, except that every twenty steps the two kinds are shuffled over the places. 801 frames over 400 units of simulation time; 200,000 particles fall to 292, nine times fewer than next door, and regions never form. Colour names the kind."
+    },
+    "einstruct-wall": {
+      "title": "The sheet as a film, 40 seconds",
+      "caption": "A flat render of the floor tape as a 40-second film, ten units of simulation time per second, every frame the nearest recorded frame and none invented. Watch the two kinds sort themselves into regions that nobody drew. Colour names the kind."
+    },
+    "einstruct-wall-row": {
+      "title": "A row does not know which way is up",
+      "caption": "A 16-second animation of the idea behind einstruct: one point's sorted distances to its eight nearest neighbours, drawn as bars. Rotate the cloud, mirror it, renumber it, and the bars do not move; zoom it, and every bar grows. A drawn figure, with no measured colour."
+    },
+    "spectre-worlds": {
+      "title": "Three worlds cut open",
+      "caption": "coarsen's planet trio at walking scale: three balls of 508,744 particles from one starting arrangement, 1,129 frames over 96 dynamical times each, the two kinds indifferent, moderately averse and strongly averse from nearest to farthest. Iron-warm regions hold more heavy particles, pale ones more light; the glow encodes temperature."
+    },
+    "spectre-wall": {
+      "title": "From the first film: 42.8 seconds, silent",
+      "caption": "An excerpt from coarsen's first film, 2,568 frames at 1080p60, rendered on the CPU frame by frame from a recorded tape of 12,288 particles in a periodic slab. It is a lit picture of the record, not a measurement: the shading is the render's light, and there is no sound."
+    },
+    "world-engine-classroom": {
+      "title": "The classroom in 2.1 megabytes",
+      "caption": "The Blender demo classroom rebuilt from 28,112 spheres in 2.1 MB of stored data, seen from a head position the reconstruction was never shown. A still study: what a whole room looks like when almost all of its geometry has been thrown away. The colours are the scene's own textures."
+    },
+    "world-engine-behind-the-chair": {
+      "title": "Behind the chair, four ways",
+      "caption": "One view of the classroom rendered four ways: the true view, then the picture torn where a new viewpoint reveals what was hidden, stretched to cover the tear, and stretched only within each object. Magenta marks holes, places no stored data reaches; every other colour is the scene's."
+    },
+    "world-engine-fringe": {
+      "title": "The fringe round a chair leg, six ways",
+      "caption": "A 56-pixel crop around one chair leg, enlarged nine times and drawn six ways: the true view, torn, with finer colour, with a two-layer edge, stretched, and stretched within objects. Small fringes reveal what a convincing whole-room view conceals. The brightness is raised threefold to make them visible."
+    },
+    "phototroph-tape": {
+      "title": "Two atoms cannot catch each other",
+      "caption": "801 frames of eight atoms in a small periodic box, converted from the simulation's record: two fall together and stay only once a third arrives and carries the surplus speed away. All atoms are one kind and share one colour; the tape draws positions only, no bonds and no light."
+    },
+    "orrery-worlds": {
+      "title": "The planet trio at the scale of the sky",
+      "caption": "The same three recorded worlds as in the coarsen chamber, each eighty metres across: 508,744 particles, 1,129 frames over 96 dynamical times, one starting arrangement, three strengths of repulsion between the heavy and the light kind. Iron-warm regions hold more heavy particles, pale ones more light; the glow encodes temperature."
+    }
+  }
+}

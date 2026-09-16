@@ -6,12 +6,12 @@ import { buildObservatory } from "./observatory";
 import { buildRoom } from "./rooms";
 
 const mansion = parseMansion(mansionDocument);
-const shells = mansion.rooms.filter(room => room.architecture === "observatory").map(room => ({ room, shell: buildObservatory(room) }));
+const shells = mansion.rooms.filter(room => room.architecture === "observatory").map(room => ({ room, shell: buildObservatory(room, mansion) }));
 for (const { shell } of shells) shell.group.updateMatrixWorld(true);
 
 describe("the designed observatory", () => {
   it("builds every footprint with explicit architectural provenance, no textures or lights", () => {
-    expect(shells).toHaveLength(13);
+    expect(shells).toHaveLength(14);
     for (const { room, shell } of shells) {
       expect(shell.group.name).toBe(`${room.id}-shell`);
       expect(shell.group.userData.architecture).toBe("observatory");
@@ -33,7 +33,7 @@ describe("the designed observatory", () => {
     }
   });
 
-  it("keeps all thirteen rooms below 150 architecture draws and 75000 triangles", () => {
+  it("keeps all fourteen rooms below 260 architecture draws and 200000 triangles", () => {
     let draws = 0, triangles = 0;
     const geometries = new Set(), materials = new Set();
     for (const { shell } of shells) shell.group.traverse(node => {
@@ -47,11 +47,14 @@ describe("the designed observatory", () => {
       const bounds = node.geometry.boundingBox!;
       expect([...bounds.min, ...bounds.max].every(Number.isFinite)).toBe(true);
     });
-    expect(draws).toBeLessThan(150);
-    expect(triangles).toBeLessThan(75_000);
+    // Fifteen batches a room, and the grounds are height-field meshes now.
+    expect(draws).toBeLessThan(260);
+    expect(triangles).toBeLessThan(200_000);
     // Six shared primitives plus eight vaults; chamber colours reuse programs.
-    expect(geometries.size).toBeLessThanOrEqual(14);
-    expect(materials.size).toBeLessThanOrEqual(32);
+    // Six primitives, one vault per chamber, one height field per cell.
+    expect(geometries.size).toBeLessThanOrEqual(24);
+    // Fifteen finishes, a few of them per-room variants.
+    expect(materials.size).toBeLessThanOrEqual(48);
   });
 
   it("leaves every open doorway clear at walking height across its aperture", () => {
@@ -59,9 +62,12 @@ describe("the designed observatory", () => {
       const axis = door.axis === "x" ? 0 : 2;
       const along = door.axis === "x" ? 2 : 0;
       const inward = Math.abs(door.at - room.bounds.min[axis]) < 0.001 ? 1 : -1;
+      // A doorway opens at the higher of the two floors it joins; below that, in the lower room, stands its flight.
+      const neighbour = mansion.rooms.find(r => r.id === door.to)!;
+      const base = Math.max(room.bounds.min[1], neighbour.bounds.min[1]);
       for (const fraction of [-0.35, 0, 0.35]) for (const height of [1.2, Math.min(2.8, door.height - 0.2)]) {
         const origin = new Vector3(); origin.setComponent(axis, door.at + inward * 0.7);
-        origin.setComponent(along, door.center + door.width * fraction); origin.y = room.bounds.min[1] + height;
+        origin.setComponent(along, door.center + door.width * fraction); origin.y = base + height;
         const direction = new Vector3().setComponent(axis, -inward);
         const hit = new Raycaster(origin, direction, 0.001, 1.4).intersectObject(shell.group, true);
         expect(hit.map(h => h.object.name), `${room.id} → ${door.to} at ${fraction}, y=${height}`).toEqual([]);
@@ -89,7 +95,8 @@ describe("the designed observatory", () => {
     for (const { room, shell } of shells) {
       const x = (room.bounds.min[0] + room.bounds.max[0]) / 2;
       const z = room.bounds.min[2] + 1.1;
-      expect(new Raycaster(new Vector3(x, 0.2, z), new Vector3(0, 1, 0), 0.001, 10)
+      // From above any flight's parapet, so a stair at the north wall does not count as roof.
+      expect(new Raycaster(new Vector3(x, room.bounds.min[1] + 3.2, z), new Vector3(0, 1, 0), 0.001, 10)
         .intersectObject(shell.group, true), `${room.id} sky opening`).toEqual([]);
     }
   });

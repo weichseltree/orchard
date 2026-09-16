@@ -1,0 +1,165 @@
+# generated from /home/manuel/weichseltree/arcedit/orchard.yaml — edit that file, not this one
+name: arcedit
+title: arcedit
+path: /home/manuel/weichseltree/arcedit
+remote: https://github.com/weichseltree/arcedit.git
+question: Can a machine learn to solve ARC puzzles the way a person does at a screen, by looking around,
+  picking a colour and clicking, when it only ever sees clearly what is close to its cursor?
+status: active
+stage: planted
+gpu: torch
+phenomena:
+- id: editing_is_the_interface
+  title: The whole puzzle is cells, and the only verb is click
+  hook: 'The example grids, the empty answer frame, the ten colours and the submit button are all drawn
+    as cells on one endless canvas. The agent has one cursor and one thing it can do: click a cell. Choosing
+    a colour, painting, resizing, handing in: all of it is clicks.'
+  evidence: results/grove/oracle_side5/layout.png
+  hero: true
+- id: foveated_view
+  title: It never sees the board, only what is near its hand
+  hook: Around the cursor the agent sees eight cells sharply. Further out it sees only averages, each
+    ring twice as coarse as the last, until the far edge of the canvas is a blur of four numbers. To read
+    a colour it has to go there. Looking is moving.
+  evidence: results/grove/policy_side3/pyramid.png
+  hero: true
+- id: learned_copy
+  title: Trained by imitation, it copies a square it has never seen
+  hook: A network that watched a scripted teacher walks to the palette, picks the right colour, paints
+    three by three and hands in. On grids it never saw in training it gets 124 of 128 exactly right, in
+    about fifteen clicks.
+  evidence: results/i13_teacher_order/BUILD.md
+  hero: false
+- id: reward_barrier
+  title: Given only a score, it learns the small case and stalls at the next
+  hook: Take the teacher away and pay only for a correct answer. The same design learns the two-by-two
+    copy from nothing. At three by three it learns to read the colour and then does not press submit.
+    That is where the work is.
+  evidence: results/i15_perception_under_reward/BUILD.md
+  hero: false
+- id: memory_makes_it_possible
+  title: One remembered glimpse makes the coloured copy solvable
+  hook: 'Keep exactly one past view, unchanged, as it was seen. That is enough to copy a many-coloured
+    grid from a distance. Keep a new view at every glance and it stops working: each trip to the palette
+    overwrites the picture the agent went to fetch.'
+  evidence: results/snapshot/BUILD.md
+  hero: false
+- id: random_play_finds_nothing
+  title: Clicking at random never earns a point
+  hook: Two hundred and fifty-six games of random clicking in the raw click language earn nothing at all;
+    the same random play in a language of 'paint this cell this colour' scores in more than half of them.
+    What the agent can say decides what it can find.
+  evidence: results/aspace_measure/BUILD.md
+  hero: false
+artefacts:
+- kind: tape
+  path: results/grove/policy_side3/tape
+  title: A learned agent copies a yellow square, 16 clicks, seen from inside its view
+  produced_by: CUDA_VISIBLE_DEVICES="" exprun -n grove-exhibit .venv/bin/python scripts/grove_exhibit.py
+  commit: 2b8bbb4
+  sha256: 0c32a040440d9fcb1c8168922d0b637797fdb2bb038a6ca88c697534026d5228
+  approved: false
+  bundle: 52299c62b54fb773
+- kind: clip
+  path: results/grove/policy_side3/clip.mp4
+  title: The same episode as a film, the canvas above and the nine levels of the agent's view below
+  produced_by: CUDA_VISIBLE_DEVICES="" exprun -n grove-exhibit .venv/bin/python scripts/grove_exhibit.py
+  commit: 2b8bbb4
+  sha256: 88d50097c86e3c6d7444ff84d463a6713d747f2a6811b8df01fc2d9c71b3b15b
+  approved: false
+  bundle: e842d1420b50798a
+- kind: still
+  path: results/grove/policy_side3/hero.png
+  title: Mid-episode, the learned agent painting from the palette colour it chose
+  produced_by: CUDA_VISIBLE_DEVICES="" exprun -n grove-exhibit .venv/bin/python scripts/grove_exhibit.py
+  commit: 2b8bbb4
+  sha256: 127586bd2a68ba6e5458d442911d3dcaf1674b0dc4b3fd6ae8ee60b063ea7745
+  approved: false
+  bundle: c5b19626a8e2f6f1
+- kind: still
+  path: results/grove/policy_side3/pyramid.png
+  title: What the agent sees, one step, nine levels from sharp to blurred
+  produced_by: CUDA_VISIBLE_DEVICES="" exprun -n grove-exhibit .venv/bin/python scripts/grove_exhibit.py
+  commit: 2b8bbb4
+  sha256: bec688b1a324985cb0070678368881d9e5d712a2602df8ea35ab75c5e7d5f07c
+  approved: false
+  bundle: 0b0b812dc41608b2
+- kind: tape
+  path: results/grove/oracle_side5/tape
+  title: The reference teacher copies a five-by-five grid of many colours, 114 clicks
+  produced_by: CUDA_VISIBLE_DEVICES="" exprun -n grove-exhibit .venv/bin/python scripts/grove_exhibit.py
+  commit: 2b8bbb4
+  sha256: 8a7c0ff4d28b40f3b0cdc26c61e60794519e212edf1962b9eefc3597f9ec1606
+  approved: false
+  bundle: 080a665e625afc10
+- kind: clip
+  path: results/grove/oracle_side5/clip.mp4
+  title: The teacher's episode as a film, canvas above, the agent's view below
+  produced_by: CUDA_VISIBLE_DEVICES="" exprun -n grove-exhibit .venv/bin/python scripts/grove_exhibit.py
+  commit: 2b8bbb4
+  sha256: d8faf3d9aeee6a8ab570eeb1007495fe8898ad8e406032d5db734af98b725386
+  approved: false
+  bundle: c598636cd2ac1451
+- kind: still
+  path: results/grove/oracle_side5/layout.png
+  title: The task before the first click, source grid, empty answer frame, palette and tools
+  produced_by: CUDA_VISIBLE_DEVICES="" exprun -n grove-exhibit .venv/bin/python scripts/grove_exhibit.py
+  commit: 2b8bbb4
+  sha256: 2fcac45fea151f51a314223ee65832e4c81906756493857f4c5008e1924f59af
+  approved: false
+  bundle: 7e7cba7bf72e332f
+- kind: still
+  path: results/grove/env_render.png
+  title: The editor as a place, cells as tiles, the cursor a column of light, the view stacked in glass
+    above
+  produced_by: exprun -n grove-blender /home/manuel/tools/blender/blender --background --python scripts/grove_blender.py
+    -- --scene results/grove/oracle_side5/scene.json --out results/grove --samples 96
+  commit: 2b8bbb4
+  sha256: 40ad9da5de5b3b543b2791a609fe1f081729b4690a70de5d1528aac639cc8aa2
+  approved: false
+  bundle: 83d786cba7a501eb
+producers:
+  tape: CUDA_VISIBLE_DEVICES="" exprun -n grove-exhibit .venv/bin/python scripts/grove_exhibit.py --out
+    {out}
+  render: exprun -n grove-blender /home/manuel/tools/blender/blender --background --python scripts/grove_blender.py
+    -- --scene {scene} --out {out} --samples 96
+  figure: CUDA_VISIBLE_DEVICES="" exprun -n grove-exhibit .venv/bin/python scripts/grove_exhibit.py --out
+    {out}
+  lane: cpu
+  env:
+    CUDA_VISIBLE_DEVICES: ''
+theses:
+- id: look_then_paint
+  question: Can a machine that only sees what is under its hand copy a picture it has to remember?
+  number: the share of unseen many-coloured grids a policy copies exactly when it has to look, remember
+    and paint (today 0 of 128 without memory; with one remembered glimpse the ceiling is every one of
+    them)
+  picture: the cursor leaving the source grid, a single remembered glimpse held behind it, and the answer
+    frame filling in from memory cell by cell
+  phenomena:
+  - foveated_view
+  - memory_makes_it_possible
+  - learned_copy
+  stage: thesis
+  episode: Looking is moving
+  blocked_by: 'gate G2 in MILESTONES.md: no policy has yet used the remembered glimpse at the 0.9 bar
+    (0.797 at a budget twenty times short of convergence), and G1 (the copy learned from reward alone
+    at side 3) is still open under the budget ladder'
+budget:
+  gpu_h: 0.0
+  cpu_h: 4.0
+  tts_chars: 0
+  llm_usd: 0.0
+  disk_gb: 1.0
+  prio_cap: 10
+kill: 'G1 fails: if the three-by-three copy is not learned from reward alone (exact > 0.9 on held-out
+  grids) by the end of the registered budget ladder and the population-based sweep that follows it (MILESTONES.md
+  A-I15-9 and A-I15-10), the line has no path to real ARC tasks and is closed.'
+potential: 5
+notes: Exhibits are produced on the CPU lane by scripts/grove_exhibit.py (episodes, tapes, clips, stills)
+  and scripts/grove_blender.py (the 3D model env.glb and its render); results/grove/README.md explains
+  them and is the room they hang in. The tape writer is the orchard-tape package pinned to tape-v1.0.0.
+  The policy tape shows a learned agent (I13 behaviour cloning, greedy); the oracle tape shows the scripted
+  teacher, which is the task and not a result, and every caption says so. The area proposal for the grove
+  (rooms from this repository's directories, TREE-AREAS.md) is results/grove/area.json with plaques in
+  results/grove/plaques.json; placement is the orchard session's.

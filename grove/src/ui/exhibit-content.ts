@@ -25,7 +25,7 @@ const NOTES = "https://github.com/weichseltree/orchard/blob/main/docs/EXHIBIT-PL
 const content: Readonly<Record<string, ExhibitContent>> = {
   hall: {
     question: "Which question draws you in?",
-    introduction: "Welcome to the Observatory. Walk among particle tapes, compare a model with its control, or look closely at how a room is reconstructed. Each chamber begins with a question.",
+    introduction: "Welcome to the Observatory. Walk among particle tapes, compare a model with its control, or look closely at how a room is reconstructed. Each room is named after the repository whose research it holds, and begins with a question.",
     lookFor: [],
     limitation: "The architecture sets the scene. The tapes and stills carry the research; About this view identifies what you are looking at.",
   },
@@ -79,7 +79,7 @@ const content: Readonly<Record<string, ExhibitContent>> = {
   },
   terrace: {
     question: "Step out under the sky.",
-    introduction: "The Horizon Terrace runs along the Observatory's garden side. Follow it to the Lantern Walk, or cross into the Meridian Garden, where the armillary holds the way to the Orrery.",
+    introduction: "The Horizon Terrace runs along the Observatory's garden side. Follow it to the Lantern Walk, or take the garden stairs down into the Meridian Garden, where the armillary over the basin holds the way to the Orrery.",
     lookFor: [],
   },
   orrery: {
@@ -102,7 +102,12 @@ const content: Readonly<Record<string, ExhibitContent>> = {
   },
   gallery: {
     question: "A quieter stretch of the Observatory.",
-    introduction: "The Long Gallery is a place to walk and pause. When you are ready for another exhibit, follow the open doorway back to the Binding Chamber.",
+    introduction: "The Long Gallery is a place to walk and pause. When you are ready for another exhibit, follow the open doorway back to phototroph's room, or climb the stair at the far end to the Belvedere.",
+    lookFor: [],
+  },
+  belvedere: {
+    question: "Look back along the gallery.",
+    introduction: "The Belvedere is a raised platform at the end of the Long Gallery. Its closed doors are trees that have not yet earned a room. Turn round for the long view down the gallery.",
     lookFor: [],
   },
   parterre: {
