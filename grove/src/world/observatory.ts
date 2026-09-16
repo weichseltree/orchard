@@ -7,6 +7,8 @@ import {
 import type { Room, Doorway, Mansion } from "./schema";
 import type { RoomShell } from "./rooms";
 import { STAIR_MARGIN, STAIR_TREAD, flightsOf, moundHeight, stairSteps, type Flight } from "./terrain";
+import { LIGHT_FIELD_GLSL, applyLightField, bakeLightField, lightFieldUniforms, litRooms, type Emitter, type LightField } from "./lightfield";
+import { PORTAL_TINT } from "./portal-shader";
 
 // The palace's architecture, generated at runtime from mansion.json: a
 // nocturne of mineral walls, brass and luminous inlays. Rooms may stand at
@@ -57,9 +59,13 @@ function material(finish: Finish, roomId: string): MeshBasicMaterial {
 /** Quiet architectural surface shading, independent of all exhibit materials. */
 function stoneSurface(material: MeshBasicMaterial, finish: Finish, quiet: boolean): void {
   const floor = finish === "floor" || finish === "path";
-  // Colour variants are uniforms; they share these four surface programs.
-  material.customProgramCacheKey = () => `observatory-surface-${floor ? "floor" : "wall"}-${quiet}`;
+  // The grounds lie under the sky: no wash up a wall, and a moonlit floor of ambient.
+  const outdoors = finish === "earth" || finish === "hedge" || finish === "gravel" || finish === "water" || finish === "grove";
+  // Colour variants are uniforms; they share these few surface programs.
+  material.customProgramCacheKey = () => `observatory-surface-${floor ? "floor" : outdoors ? "ground" : "wall"}-${quiet}`;
   material.onBeforeCompile = shader => {
+    // The baked light field, shared by every architectural material (lightfield.ts).
+    Object.assign(shader.uniforms, lightFieldUniforms);
     shader.vertexShader = `varying vec3 observatoryWorld; varying vec3 observatoryCenter;\n${shader.vertexShader}`;
     shader.vertexShader = shader.vertexShader.replace("#include <begin_vertex>", `
       #include <begin_vertex>
@@ -73,11 +79,15 @@ function stoneSurface(material: MeshBasicMaterial, finish: Finish, quiet: boolea
       observatoryCenter = (modelMatrix * architectureCenter).xyz;
     `);
     shader.fragmentShader = `varying vec3 observatoryWorld; varying vec3 observatoryCenter;
+      uniform sampler3D uLightField; uniform vec3 uFieldMin; uniform vec3 uFieldInvSize; uniform float uFieldGain;
       float stoneHash(vec2 p) {
         vec3 q = fract(vec3(p.xyx) * .1031);
         q += dot(q, q.yzx + 33.33);
         return fract((q.x + q.y) * q.z);
       }\n${shader.fragmentShader}`;
+    // The light: a floor of ambient so nothing goes black, and over it the
+    // baked field, which is where the lamps, the chandeliers, the lanterns
+    // and the portals actually are. The quiet room keeps its lamps low.
     shader.fragmentShader = shader.fragmentShader.replace("#include <color_fragment>", `
       #include <color_fragment>
       float grain = stoneHash(floor(observatoryWorld.xz * 31.0 + observatoryWorld.y * 13.0));
@@ -85,22 +95,70 @@ function stoneSurface(material: MeshBasicMaterial, finish: Finish, quiet: boolea
       ${floor ? `
         vec2 tile = floor(observatoryWorld.xz / 2.0);
         diffuseColor.rgb *= .78 + .36 * stoneHash(tile);
-        float along = mod(observatoryWorld.z + 1.85, 3.7) - 1.85;
-        float across = observatoryWorld.x - observatoryCenter.x;
-        float pool = exp(-across * across * .19 - along * along * .8);
-        diffuseColor.rgb += vec3(.058, .036, .014) * pool * ${quiet ? "0.15" : "1.0"};
-        float edge = exp(-abs(abs(across) - 5.8) * 1.8);
-        diffuseColor.rgb += vec3(.012, .027, .038) * edge * ${quiet ? "0.2" : "1.0"};
-      ` : `
-        float wash = .58 + .42 * smoothstep(.1, 5.5, observatoryWorld.y - observatoryCenter.y + 2.5);
+      ` : outdoors ? "" : `
+        float wash = .72 + .28 * smoothstep(.1, 5.5, observatoryWorld.y - observatoryCenter.y + 2.5);
         diffuseColor.rgb *= wash;
-        float rhythm = pow(.5 + .5 * cos(observatoryWorld.z * 1.7), 10.0);
-        diffuseColor.rgb += vec3(.012, .017, .019) * rhythm * exp(-abs(observatoryWorld.y - observatoryCenter.y - 0.2) * .8) * ${quiet ? "0.15" : "1.0"};
       `}
+      ${LIGHT_FIELD_GLSL}
+      diffuseColor.rgb *= ${(outdoors ? AMBIENT_OUTDOORS : AMBIENT).toFixed(2)} + fieldLight * ${quiet ? "0.55" : "1.0"};
       float architectureHaze = 1.0 - exp(-max(0.0, length(cameraPosition - observatoryWorld) - 18.0) * .006);
       diffuseColor.rgb = mix(diffuseColor.rgb, vec3(.012, .026, .046), architectureHaze);
     `);
   };
+}
+/** The light where no lamp reaches, as a factor on the surface colour. */
+const AMBIENT = 0.7;
+/** The grounds under the night sky: moonlight, a little more than a chamber's dark corner. */
+const AMBIENT_OUTDOORS = 0.86;
+/** Every lamp at once; the bake's own powers are per element. */
+const FIELD_GAIN = 1.6;
+
+let lightField: { mansion: Mansion; field: LightField } | null = null;
+/** Bakes the field for this mansion once, from every room's emitters and the portals, and points the materials at it. */
+export function ensureLightField(mansion: Mansion): LightField {
+  if (lightField?.mansion === mansion) return lightField.field;
+  lightField?.field.dispose();
+  const field = bakeLightField(mansion, emittersOf(mansion));
+  applyLightField(field, FIELD_GAIN);
+  lightField = { mansion, field };
+  return field;
+}
+
+/** Every emitter of the palace: the luminous architecture of each room, the portals, the sealed doors' lenses. */
+export function emittersOf(mansion: Mansion): Emitter[] {
+  const out: Emitter[] = [];
+  const tint = new Color(PORTAL_TINT), sealed = new Color(SEALED_TINT);
+  for (const room of litRooms(mansion)) {
+    out.push(...plan(room, mansion).emitters);
+    for (const portal of room.portals) {
+      out.push({ x: portal.position[0], y: portal.position[1], z: portal.position[2], r: tint.r, g: tint.g, b: tint.b, power: 1.8, reach: portal.radius * 4, room: room.id });
+    }
+    for (const door of room.doorways) {
+      const lens = sealedLens(room, door);
+      if (lens) out.push({ x: lens.center.x, y: lens.center.y, z: lens.center.z, r: sealed.r, g: sealed.g, b: sealed.b, power: 0.35, reach: 2 + lens.radius * 3, room: room.id });
+    }
+  }
+  return out;
+}
+
+/** The sealed doors' lens and glow: the portal's glass, dimmed, for a room not yet open. */
+export const SEALED_TINT = "#4b5f72";
+/** A closed doorway's lens fills this much of its narrower dimension. */
+export const SEALED_LENS_FRACTION = 0.42;
+/** How far a sealed lens stands into the wall from its room's face, metres. */
+export const SEALED_LENS_INSET_M = 0.12;
+
+/** The lens of a closed doorway: where it stands, how big, which way it faces. */
+export function sealedLens(room: Room, door: Doorway): { center: Vector3; radius: number; normal: Vector3 } | null {
+  if (!door.closed || door.width > 8) return null;
+  const wall = walls(room).find((w) => w.axis === door.axis && Math.abs(w.at - door.at) < 0.001);
+  if (!wall) return null;
+  const radius = Math.min(door.width, door.height) * SEALED_LENS_FRACTION;
+  const y = room.bounds.min[1] + door.height / 2;
+  const across = wall.at + wall.inward * SEALED_LENS_INSET_M;
+  const center = wall.axis === "x" ? new Vector3(across, y, door.center) : new Vector3(door.center, y, across);
+  const normal = wall.axis === "x" ? new Vector3(wall.inward, 0, 0) : new Vector3(0, 0, wall.inward);
+  return { center, radius, normal };
 }
 
 /** Fixed face shading makes the design legible without lights, textures or shadows. */
@@ -134,6 +192,8 @@ function geometry(kind: Primitive): BufferGeometry {
 class Builder {
   readonly group = new Group();
   readonly batches = new Map<string, { kind: Primitive; finish: Finish; transforms: Matrix4[] }>();
+  /** Every luminous element placed, as the light it gives (lightfield.ts). */
+  readonly emitters: Emitter[] = [];
   constructor(readonly room: Room, readonly mansion: Mansion | null) { this.group.name = `${room.id}-shell`; }
   add(kind: Primitive, finish: Finish, x: number, y: number, z: number, sx: number, sy: number, sz: number, rotation = new Quaternion()): void {
     if (Math.min(sx, sy, sz) <= 0) return;
@@ -141,6 +201,45 @@ class Builder {
     let batch = this.batches.get(key);
     if (!batch) { batch = { kind, finish, transforms: [] }; this.batches.set(key, batch); }
     batch.transforms.push(new Matrix4().compose(new Vector3(x, y, z), rotation, new Vector3(sx, sy, sz)));
+    if (finish === "light" || finish === "blue") this.emit(kind, finish, x, y, z, sx, sy, sz, rotation);
+  }
+  /**
+   * A luminous element as an emitter: its power from its size, its reach a
+   * few metres beyond, its colour the room's. A long strip is a row of
+   * points, so a cornice lights the whole wall it runs along.
+   */
+  private emit(kind: Primitive, finish: Finish, x: number, y: number, z: number, sx: number, sy: number, sz: number, rotation: Quaternion): void {
+    const colour = new Color(ROOM_FINISH[this.room.id]?.[finish] ?? OBSERVATORY_PALETTE[finish]);
+    const dim = finish === "blue" ? 0.45 : 1;
+    let power: number, reach: number;
+    if (kind === "box") {
+      const v = sx * sy * sz;
+      power = Math.min(1.6, Math.max(0.6, 3.5 * Math.sqrt(v)));
+      reach = 4.5 + 14 * Math.sqrt(Math.sqrt(v));
+    } else if (kind === "halo" || kind === "ring") {
+      power = Math.min(2.0, Math.max(0.6, 0.7 * sx));
+      reach = 5 + 5 * sx;
+    } else if (kind === "arch") {
+      power = 0.6;
+      reach = 9;
+    } else {
+      power = 0.9;
+      reach = 11;
+    }
+    power *= dim;
+    const base = { r: colour.r, g: colour.g, b: colour.b, reach, room: this.room.id };
+    const long = kind === "box" ? Math.max(sx, sz) : 0;
+    if (long > 3) {
+      const along = sx >= sz ? new Vector3(1, 0, 0) : new Vector3(0, 0, 1);
+      along.applyQuaternion(rotation);
+      const count = Math.ceil(long / 2.5);
+      for (let i = 0; i < count; i++) {
+        const t = (i + 0.5) / count - 0.5;
+        this.emitters.push({ ...base, x: x + along.x * long * t, y: y + along.y * long * t, z: z + along.z * long * t, power: power * 0.6 });
+      }
+      return;
+    }
+    this.emitters.push({ ...base, x, y, z, power });
   }
   box(finish: Finish, x: number, y: number, z: number, sx: number, sy: number, sz: number): void {
     this.add("box", finish, x, y, z, sx, sy, sz);
@@ -197,9 +296,14 @@ function walls(room: Room): Wall[] {
     { axis: "z", at: z1, inward: -1, min: x0, max: x1 },
   ];
 }
+/** The doorways in this wall, open and closed: a closed one is an aperture too, sealed by its lens. */
 function doorsOn(room: Room, wall: Wall): Doorway[] {
-  return room.doorways.filter(d => !d.closed && d.axis === wall.axis && Math.abs(d.at - wall.at) < 0.001)
+  return room.doorways.filter(d => d.axis === wall.axis && Math.abs(d.at - wall.at) < 0.001)
     .sort((a, b) => a.center - b.center);
+}
+/** A torus lying in the wall's plane. */
+function inWall(wall: Wall): Quaternion {
+  return wall.axis === "x" ? new Quaternion().setFromAxisAngle(UNIT, Math.PI / 2) : new Quaternion();
 }
 function wallBox(b: Builder, wall: Wall, finish: Finish, center: number, y: number, length: number, height: number, thickness: number, inset = 0): void {
   const at = wall.at + wall.inward * (thickness / 2 + inset);
@@ -245,6 +349,7 @@ function chamberWalls(b: Builder): void {
       // A doorway onto a higher floor opens at that floor; the wall below it is the flight's back.
       if (bottom > y0 + 0.001) wallBox(b, wall, "wall", (left + right) / 2, (y0 + bottom) / 2, right - left, bottom - y0, 0.16);
       if (top < y1) wallBox(b, wall, "wall", (left + right) / 2, (top + y1) / 2, right - left, y1 - top, 0.16);
+      if (door.closed) sealedDoor(b, wall, door, bottom, right - left);
       cursor = Math.max(cursor, right);
     }
     pier(cursor, wall.max);
@@ -253,6 +358,32 @@ function chamberWalls(b: Builder): void {
     if (corniceY < y1 - 0.03) wallBox(b, wall, "blue", (wall.min + wall.max) / 2, corniceY, wall.max - wall.min - 0.35, 0.027, 0.025, 0.18);
   }
   surrounds(b);
+}
+
+/**
+ * A closed doorway is a portal not yet lit: the aperture is real, so no pier
+ * or sconce runs across it, and at the back of it stands a dark recess with a
+ * brass halo round the lens the portal system hangs there (portal.ts). The
+ * room behind it does not exist yet; nothing of the wall shows through.
+ */
+function sealedDoor(b: Builder, wall: Wall, door: Doorway, bottom: number, width: number): void {
+  const lens = sealedLens(b.room, door);
+  if (!lens) return;
+  const cy = bottom + door.height / 2;
+  // The recess: the full aperture, dark, deep in the wall.
+  wallBox(b, wall, "inset", door.center, cy, width, door.height, 0.03, 0.135);
+  // Its reveal, so the aperture reads as a depth and not as paint.
+  for (const side of [-1, 1]) {
+    const x = door.center + side * (width / 2 - 0.02);
+    if (wall.axis === "x") b.box("joint", wall.at + wall.inward * 0.075, cy, x, 0.15, door.height, 0.04);
+    else b.box("joint", x, cy, wall.at + wall.inward * 0.075, 0.04, door.height, 0.15);
+  }
+  if (wall.axis === "x") b.box("joint", wall.at + wall.inward * 0.075, bottom + door.height - 0.02, door.center, 0.15, 0.04, width);
+  else b.box("joint", door.center, bottom + door.height - 0.02, wall.at + wall.inward * 0.075, width, 0.04, 0.15);
+  // The halo round the lens, brass, with a thin luminous ring inside it.
+  const q = inWall(wall);
+  b.add("halo", "brass", lens.center.x, lens.center.y, lens.center.z, lens.radius + 0.12, lens.radius + 0.12, 0.9, q);
+  b.add("ring", "blue", lens.center.x, lens.center.y, lens.center.z, lens.radius + 0.02, lens.radius + 0.02, 0.6, q);
 }
 
 /** Stone and brass surrounds on every doorway, closed ones dark. */
@@ -564,11 +695,25 @@ function grounds(b: Builder): void {
     const edge = walls(room)[0]!;
     balustrade(b, edge, room.doorways.filter(d => d.axis === "x" && Math.abs(d.at - edge.at) < 0.001).map(d => ({ center: d.center, width: d.width + 2 * STAIR_MARGIN })));
   } else if (room.id === "parterre") {
-    path(b, cx, 0, width, 6); path(b, cx, cz, 6, depth);
-    // Four quarters edged in box hedge, each holding its grove of sculptures.
+    // The portal court lies on the axis west of the crossing, on the far
+    // side from the palace: a round of gravel ringed by water, the axis
+    // walk crossing the water on two bridges, the armillary at its centre.
+    const [px, , pz] = room.portals[0]?.position ?? [cx - 12, 0, 0];
+    const court = 7;
+    // The axis walk, from the terrace steps to the court and from the court on to the far grove; the cross walk.
+    path(b, (px + court + x1) / 2, pz, x1 - (px + court), 6);
+    path(b, (x0 + px - court) / 2, pz, px - court - x0, 6);
+    path(b, cx, cz, 6, depth);
+    // Walks from the terrace's two side stairs in to the cross walk.
+    const sideWalks = room.doorways.filter(d => d.axis === "x" && Math.abs(d.at - x1) < 0.001 && Math.abs(d.center) > 8).map(d => d.center);
+    for (const z of sideWalks) path(b, (cx + x1) / 2, z, x1 - cx, 4);
+    // Four quarters edged in box hedge, each holding its grove of sculptures, ending short of the side walks.
+    const quarterEnd = sideWalks.length ? Math.min(...sideWalks.map(Math.abs)) - 4.5 : Math.min(z1, -z0) - 3.5;
     for (const qx of [-1, 1]) for (const qz of [-1, 1]) {
       const hx0 = cx + qx * 4.5, hx1 = qx > 0 ? x1 - 3.5 : x0 + 3.5;
-      const hz0 = qz * 4.5, hz1 = qz > 0 ? z1 - 3.5 : z0 + 3.5;
+      // The quarters beyond the crossing stand back from the court; those before it edge the axis walk.
+      const courtSide = Math.sign(px - cx) === qx;
+      const hz0 = qz * (courtSide ? court + 2.5 : 4.5), hz1 = qz * quarterEnd;
       const hcx = (hx0 + hx1) / 2, hcz = (hz0 + hz1) / 2;
       const hw = Math.abs(hx1 - hx0), hd = Math.abs(hz1 - hz0);
       b.box("hedge", hcx, y0 + 0.32, hz0, hw, 0.64, 0.5);
@@ -578,15 +723,28 @@ function grounds(b: Builder): void {
       b.box("gravel", hcx, y0 + 0.004, hcz, hw - 0.6, 0.008, hd - 0.6);
       for (const tx of [hcx - hw * 0.25, hcx + hw * 0.25]) for (const tz of [hcz - hd * 0.25, hcz + hd * 0.25]) tree(b, tx, tz, 4.7);
     }
-    // The basin at the crossing, under the armillary that holds the portal.
-    b.add("halo", "stone", cx, y0 + 0.18, 0, 6.2, 6.2, 2.6, FLAT);
-    b.add("column", "water", cx, y0 + 0.03, 0, 5.9, 0.06, 5.9);
+    // The crossing: a gravel round with a brass rose set flat in it, nothing to walk into.
+    b.add("column", "gravel", cx, y0 + 0.004, cz, 6.5, 0.008, 6.5);
+    b.add("ring", "brass", cx, y0 + 0.014, cz, 2.4, 2.4, 0.8, FLAT);
+    b.add("ring", "brass", cx, y0 + 0.014, cz, 1.0, 1.0, 0.8, FLAT);
+    // The court: water, a stone dais with a brass rim, and the bridges the axis walk crosses on.
+    b.add("column", "gravel", px, y0 + 0.004, pz, court + 1.5, 0.008, court + 1.5);
+    b.add("column", "water", px, y0 + 0.008, pz, court - 0.1, 0.012, court - 0.1);
+    b.add("column", "stone", px, y0 + 0.06, pz, 5.4, 0.12, 5.4);
+    b.add("ring", "brass", px, y0 + 0.125, pz, 5.32, 5.32, 1.0, FLAT);
+    for (const side of [-1, 1]) {
+      b.box("stone", px + side * (court - 0.9), y0 + 0.06, pz, 2.2, 0.12, 3.4);
+      for (const edge of [-1, 1]) b.box("brass", px + side * (court - 0.9), y0 + 0.125, pz + edge * 1.68, 2.2, 0.012, 0.03);
+    }
+    // The armillary that holds the portal: three brass rings and a luminous one.
     for (const angle of [0, Math.PI / 3, -Math.PI / 3]) {
-      b.add("ring", "brass", cx, y0 + 5.2, 0, 2.3, 2.3, 1.6,
+      b.add("ring", "brass", px, y0 + 5.2, pz, 2.3, 2.3, 1.6,
         new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), angle));
     }
-    b.add("ring", "blue", cx, y0 + 5.2, 0, 2.16, 2.16, 0.45, FLAT);
-    for (let z = z0 + 6; z < z1 - 5; z += 12) for (const x of [cx - 3.6, cx + 3.6]) if (Math.abs(z) > 8) lantern(b, x, z);
+    b.add("ring", "blue", px, y0 + 5.2, pz, 2.16, 2.16, 0.45, FLAT);
+    // Lanterns round the court, and along the cross walk clear of the crossing.
+    for (const ax of [-1, 1]) for (const az of [-1, 1]) lantern(b, px + ax * (court + 0.9) * 0.71, pz + az * (court + 0.9) * 0.71);
+    for (let z = z0 + 6; z < z1 - 5; z += 12) for (const x of [cx - 3.6, cx + 3.6]) if (Math.abs(z) > 8 && !sideWalks.some(s => Math.abs(z - s) < 3)) lantern(b, x, z);
     for (const x of [x0 + 1.6, x1 - 1.6]) for (const z of [z0 + 1.6, z1 - 1.6]) obelisk(b, x, z);
   } else {
     // Rows of grove sculptures over the rolling ground, the rows running toward the palace.
@@ -606,11 +764,18 @@ function obelisk(b: Builder, x: number, z: number): void {
   b.add("crown", "light", x, y + 7.15, z, 0.3, 0.42, 0.3);
 }
 
-export function buildObservatory(room: Room, mansion: Mansion | null = null): RoomShell {
+/** Everything of a room, placed but not yet meshed: the batches and the emitters. */
+function plan(room: Room, mansion: Mansion | null): Builder {
   const b = new Builder(room, mansion);
   if (room.fallback.kind === "ground") grounds(b);
   else { chamberFloor(b); chamberWalls(b); vault(b); statuary(b); }
   flights(b);
+  return b;
+}
+
+export function buildObservatory(room: Room, mansion: Mansion | null = null): RoomShell {
+  if (mansion) ensureLightField(mansion);
+  const b = plan(room, mansion);
   const group = b.finish();
   return {
     group,
@@ -619,11 +784,13 @@ export function buildObservatory(room: Room, mansion: Mansion | null = null): Ro
       generator: "grove/src/world/observatory.ts",
       design: "Nocturne research palace",
       materials: "Vertex-shaded mineral, brass, luminous architectural inlays",
+      lighting: "A light field baked at build time from the architecture's own lamps and the portals (lightfield.ts); no lightmap, no scene lights",
       scientific_content: false,
       note: "The building, the grounds and the grove sculptures are architecture. Research exhibits retain their independent source records.",
       units: "metres",
       floor_m: room.bounds.min[1],
       architecture_batches: group.children.length,
+      emitters: b.emitters.length,
     },
     lightmap: null,
     markers: { doors: new Map(), posters: new Map() },

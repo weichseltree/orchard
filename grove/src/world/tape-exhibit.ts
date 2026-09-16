@@ -1,17 +1,18 @@
 import {
   Box3,
+  BoxGeometry,
   Color,
-  CylinderGeometry,
   Group,
   MathUtils,
   Mesh,
   MeshBasicMaterial,
-  MeshStandardMaterial,
   Object3D,
   PlaneGeometry,
+  Quaternion,
   Vector3,
 } from "three";
 import { PALETTE } from "../config";
+import { STAND, standFrame, standHeight, type StandFrame } from "./stand";
 import type { DeviceTier } from "../tape/bundle";
 import { TapeBundleSchema, pickVariant, tapeTimeUnit, variantSlots, type TapeBundle } from "../tape/bundle";
 import { TapeStream } from "../tape/stream";
@@ -34,8 +35,9 @@ import { TapeVolume } from "../tape/volume";
 import type { TapeHanging } from "./schema";
 
 // The signature feature: the tape as points you walk into, on a clock you can
-// scrub. The volume, its stream and the pedestal that shows where in the tape
-// you are, as one object the room can add and the controls can talk to.
+// scrub. The volume, its stream and the reading stand whose lit bar shows
+// where in the tape you are, as one object the room can add and the controls
+// can talk to. The stand's face carries the wall text (labels.ts).
 
 export interface TapeExhibitOptions {
   hanging: TapeHanging;
@@ -144,17 +146,16 @@ export class TapeExhibit {
       ),
     );
 
-    const pedestal = buildPedestal();
-    const at = options.hanging.pedestal?.position ?? this.#edgeOfSheet();
-    pedestal.group.position.set(at[0], at[1], at[2]);
-    const yaw = options.hanging.pedestal?.rotationDeg?.[1] ?? 0;
-    pedestal.group.rotation.y = (yaw * Math.PI) / 180;
-    this.group.add(pedestal.group);
-    this.#progress = pedestal.progress;
-    this.#light = pedestal.light;
-    this.#progressWidth = pedestal.progressWidth;
+    const frame = standFrame(options.hanging.pedestal?.position ?? this.#edgeOfSheet(), options.hanging.pedestal?.rotationDeg ?? [0, 0, 0]);
+    const stand = buildStand(frame);
+    this.group.add(stand.group);
+    this.#stand = stand;
+    this.#progress = stand.progress;
+    this.#light = stand.light;
+    this.#progressWidth = stand.progressWidth;
     this.#applyProgress();
   }
+  #stand: Stand;
 
   static async load(options: TapeExhibitOptions): Promise<TapeExhibit> {
     const base = options.baseUrl.endsWith("/") ? options.baseUrl : `${options.baseUrl}/`;
@@ -311,6 +312,7 @@ export class TapeExhibit {
     (this.#progress.material as MeshBasicMaterial).dispose();
     this.#light.geometry.dispose();
     (this.#light.material as MeshBasicMaterial).dispose();
+    this.#stand.dispose();
   }
 
   /** Called every frame, so it allocates nothing and writes nothing unchanged. */
@@ -325,51 +327,97 @@ export class TapeExhibit {
   }
 }
 
-interface Pedestal {
+interface Stand {
   group: Group;
   progress: Mesh;
   light: Mesh;
   progressWidth: number;
+  dispose(): void;
 }
 
-/** A waist-high plinth with a lit bar: where you are in the tape, readable in VR. */
-function buildPedestal(): Pedestal {
+/** Turns a plate's back toward the reader's far side. */
+const ABOUT_FACE = new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), Math.PI);
+
+/**
+ * The reading stand's body: a brass plate over a stem, dark on its back, a
+ * dark strip along its foot carrying the lit bar for where the record stands
+ * and the lamp for whether it runs. The plate's face above the strip is left
+ * to the wall text (labels.ts), which paints it from the same frame.
+ */
+function buildStand(frame: StandFrame): Stand {
   const group = new Group();
-  group.name = "pedestal";
-  const height = 1.05;
-  const body = new Mesh(
-    new CylinderGeometry(0.26, 0.32, height, 24),
-    new MeshStandardMaterial({ color: 0x2a332c, roughness: 0.85, metalness: 0.05 }),
-  );
-  body.position.y = height / 2;
-  group.add(body);
+  group.name = "stand";
+  // The architecture's brass and inset (observatory.ts's palette), so the stand belongs to the room.
+  const brass = new MeshBasicMaterial({ color: 0xa98551 });
+  const dark = new MeshBasicMaterial({ color: 0x101b27 });
+  const track = new MeshBasicMaterial({ color: 0x1a221c });
+  const height = standHeight();
+  const disposables: Array<{ dispose(): void }> = [brass, dark, track];
 
-  const width = 0.42;
-  const top = new Group();
-  top.position.set(0, height + 0.005, 0);
-  top.rotation.x = -Math.PI / 2 + 0.5; // tilted towards the visitor
-  group.add(top);
+  const plate = new Mesh(new BoxGeometry(STAND.width + 2 * STAND.border, height + 2 * STAND.border, STAND.thickness), brass);
+  plate.name = "stand-plate";
+  plate.position.copy(frame.centre);
+  plate.quaternion.copy(frame.quaternion);
+  group.add(plate);
+  disposables.push(plate.geometry);
 
-  const track = new Mesh(
-    new PlaneGeometry(width, 0.035),
-    new MeshBasicMaterial({ color: 0x1a221c }),
-  );
-  top.add(track);
+  const back = new Mesh(new PlaneGeometry(STAND.width, height), dark);
+  back.name = "stand-back";
+  back.position.copy(frame.centre).addScaledVector(frame.normal, -(STAND.thickness / 2 + 0.002));
+  back.quaternion.copy(frame.quaternion).multiply(ABOUT_FACE);
+  group.add(back);
+  disposables.push(back.geometry);
 
-  const progress = new Mesh(
-    new PlaneGeometry(width, 0.035),
-    new MeshBasicMaterial({ color: PALETTE.accent }),
-  );
-  progress.position.z = 0.002;
+  // The strip and its controls, in the plate's own frame: x to the reader's right, y up the plate, z off it.
+  const controls = new Group();
+  controls.name = "stand-controls";
+  controls.position.copy(frame.stripCentre).addScaledVector(frame.normal, STAND.thickness / 2 + 0.002);
+  controls.quaternion.copy(frame.quaternion);
+  group.add(controls);
+  const strip = new Mesh(new PlaneGeometry(STAND.width, STAND.stripHeight), dark);
+  strip.name = "stand-strip";
+  controls.add(strip);
+  disposables.push(strip.geometry);
+
+  const width = STAND.width - 0.3;
+  const bar = new Group();
+  bar.position.set(-0.08, 0, 0.002);
+  controls.add(bar);
+  const rail = new Mesh(new PlaneGeometry(width, 0.04), track);
+  rail.name = "stand-track";
+  bar.add(rail);
+  disposables.push(rail.geometry);
+  const progress = new Mesh(new PlaneGeometry(width, 0.04), new MeshBasicMaterial({ color: PALETTE.accent }));
+  progress.name = "stand-progress";
+  progress.position.z = 0.001;
   progress.scale.x = 0.001;
-  top.add(progress);
+  bar.add(progress);
+  const light = new Mesh(new PlaneGeometry(0.06, 0.06), new MeshBasicMaterial({ color: PALETTE.accent }));
+  light.name = "stand-lamp";
+  light.position.set(width / 2 + 0.09, 0, 0.001);
+  bar.add(light);
 
-  const light = new Mesh(
-    new PlaneGeometry(0.05, 0.05),
-    new MeshBasicMaterial({ color: PALETTE.accent }),
-  );
-  light.position.set(width / 2 + 0.06, 0, 0.002);
-  top.add(light);
+  // The stem up under the plate, and its foot on the floor.
+  const stemHeight = Math.max(0.1, frame.centre.y - frame.foot.y - 0.06);
+  const stem = new Mesh(new BoxGeometry(0.08, stemHeight, 0.08), brass);
+  stem.name = "stand-stem";
+  stem.position.set(frame.foot.x, frame.foot.y + stemHeight / 2, frame.foot.z);
+  group.add(stem);
+  disposables.push(stem.geometry);
+  const base = new Mesh(new BoxGeometry(0.56, 0.03, 0.42), dark);
+  base.name = "stand-base";
+  base.position.set(frame.foot.x, frame.foot.y + 0.015, frame.foot.z);
+  base.rotation.y = Math.atan2(frame.front.x, frame.front.z);
+  group.add(base);
+  disposables.push(base.geometry);
 
-  return { group, progress, light, progressWidth: width };
+  return {
+    group,
+    progress,
+    light,
+    progressWidth: width,
+    dispose: () => {
+      for (const d of disposables) d.dispose();
+    },
+  };
 }

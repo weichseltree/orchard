@@ -193,3 +193,60 @@ the eye glides rather than hops; there is no second floor over a first
 (height is a property of a point); the balustrade and hedges are solid to
 the eye but not to the body (the AABB clamp is the fence, as before); no
 phone or headset frame measurement exists for the larger rooms yet.
+
+## The palace, third pass (2026-09-16 night): doors, names, stands, light
+
+**Sealed doors.** A closed doorway (`closed: true` in mansion.json) is an
+aperture like any other: the wall's piers, panels and sconces stop at it.
+Behind it stands a dark recess with a reveal, and over the recess a brass
+halo round a shallow lens (`sealedLens` in observatory.ts) that the portal
+system draws with the portal shader, no far view, blend zero, a dimmer
+tint (`SEALED_TINT`): a portal not yet lit. One shared material, one
+shared cap geometry; the lens is visual only, navigation treats the door
+as closed as before.
+
+**Door names.** Every doorway with surrounds carries the title of the room
+beyond in brass letters on its lintel (door-signs.ts): the visitor's
+language from the wall text, the repository name where a room has no wall
+text yet (the sealed doors), the identifier when the typeface cannot set
+the title (Japanese). The letters are extruded from Cinzel
+(`fonts/cinzel.json`, SIL Open Font License, made by
+`grove/tools/typeface.py`, ~52 KB gzipped, loaded on the first room's
+signs), two segments per curve, back caps dropped, merged into one mesh
+per room, under 60k triangles for the palace.
+
+**Reading stands.** The plinth beside a tape is gone. The tape builds a
+reading stand at its near edge (tape-exhibit.ts): a brass plate over a
+stem, dark on its back, a strip along its foot carrying the progress bar
+and the lamp. The wall text paints the plate's face from the same frame
+(stand.ts), so the two modules never see each other's meshes. Every other
+plaque grew (entrance panel 1.8 × 1.35 m, labels 0.7 × 0.525 m, lecterns
+0.85 and 1.1 m) and is now a brass body with a dark back a hair off it.
+
+**Light.** The Blender bake under `grove/tools/palace` lit glb rooms the
+runtime architecture replaced; it is not run for this palace. In its
+place every luminous element the builder places (sconce, chandelier
+halo, lantern, door inlay, cornice, obelisk crown), every portal and every
+sealed lens is an emitter, and lightfield.ts bakes them at build time into
+one RGB 3D texture over the palace (2 m across the floor, 1 m up, a few
+hundred kilobytes): light stays in the room that holds its source and
+spills through open doorways, fading. Every architectural material samples
+it once per fragment over an ambient floor (0.7 indoors, 0.86 for the
+grounds under the sky). The analytic floor pools and wall rhythm of the
+first pass are gone; the hemisphere and key lights stay for the avatars.
+The portal's cool tint on the gravel round the armillary is the effect
+Manuel asked for. Cost: one trilinear fetch per fragment, no per-object
+light loop, no new material.
+
+**The portal court.** The armillary stands 12 m west of the crossing, on
+the axis walk's far side from the palace: a gravel round, a water ring, a
+stone dais with a brass rim, the walk crossing the water on two bridges,
+four lanterns round it. The crossing itself is a gravel round with a brass
+rose; the terrace's two side stairs get walks in to the cross walk; the
+quarters stand back from the court and the side walks. Nothing in the
+garden stands in a walk.
+
+Stated limits: the field has no shadows and no bounce, and a lamp's power
+is a design number from its size, not photometry; a doorway's spill is a
+point at the doorway; Japanese door names are the identifiers; the lens
+over a sealed door does not open, since no room stands behind it.

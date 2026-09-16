@@ -114,12 +114,13 @@ describe("planRoomLabels over mansion.json", () => {
           } else {
             const hanging = room.hangings.find((h) => h.id === plan.hangingId);
             expect(hanging?.kind).toBe("tape");
-            if (hanging?.kind !== "tape" || !hanging.pedestal) throw new Error("pedestal lectern without a pedestal");
+            if (hanging?.kind !== "tape" || !hanging.pedestal) throw new Error("stand text without a stand");
             const yaw = (hanging.pedestal.rotationDeg[1] * Math.PI) / 180;
             const front = new Vector3(Math.sin(yaw), 0, Math.cos(yaw));
             expect(n.clone().setY(0).normalize().dot(front)).toBeGreaterThan(0.99);
-            // Beside the pedestal, not on it, and not in the tape's sheet.
-            expect(plan.foot!.distanceTo(new Vector3(...hanging.pedestal.position))).toBeGreaterThan(0.6);
+            // On the stand the tape builds at its near edge: the same foot.
+            expect(plan.mount).toBe("stand");
+            expect(plan.foot!.distanceTo(new Vector3(...hanging.pedestal.position).setY(floor))).toBeLessThan(1e-6);
           }
         });
 
@@ -243,8 +244,14 @@ describe("buildRoomLabels", () => {
     for (const plaque of group.children) {
       expect(plaque.userData.locale).toBe("de");
       const names = plaque.children.map((c) => c.name);
-      expect(names).toContain("plaque-slab");
       expect(names).toContain("plaque-face");
+      if (plaque.userData.mount === "stand") {
+        // The stand's body is the tape's; the text brings only its face.
+        expect(names).toEqual(["plaque-face"]);
+      } else {
+        expect(names).toContain("plaque-slab");
+        expect(names).toContain("plaque-rim");
+      }
       if (plaque.userData.mount === "lectern") expect(names).toContain("plaque-stem");
     }
     disposeRoomLabels(group);

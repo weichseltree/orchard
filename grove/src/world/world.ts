@@ -252,6 +252,13 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
         const group = buildRoomLabels(room, labels, locale, { mansion });
         labelGroups.set(room.id, group);
         groupFor(room).add(group);
+        // The names over the doors, in brass letters; the typeface loads once, with the first room.
+        return import("./door-signs").then(async ({ planDoorSigns, fontOnce, buildDoorSigns }) => {
+          const signs = planDoorSigns(room, labels, mansion);
+          if (signs.length === 0) return;
+          const font = await fontOnce();
+          if (labelGroups.get(room.id) === group) group.add(buildDoorSigns(room, signs, font));
+        });
       });
     }).catch((error: unknown) => onNotice(`labels ${room.id}: ${message(error)}`));
   }
