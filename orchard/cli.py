@@ -172,6 +172,16 @@ def cmd_bundle_still(a):
     print(out)
 
 
+def cmd_bundle_model(a):
+    from .bundle import ModelRefused, bundle_model
+    try:
+        out = bundle_model(a.glb, tree=a.tree, title=a.title, out_root=a.out, poster=a.poster)
+    except ModelRefused as exc:
+        print(f"bundle model refused: {exc}", file=sys.stderr)
+        sys.exit(2)
+    print(out)
+
+
 def cmd_bundle_audio(a):
     from .bundle import bundle_audio
     out = bundle_audio(a.tracks, score=a.score, tree=a.tree, title=a.title, out_root=a.out)
@@ -224,6 +234,10 @@ def cmd_harvest(a):
     if refused:
         print("\n" + dirty_message(get(a.tree), refused["dirty"]), file=sys.stderr)
         sys.exit(1)
+    # A refused artefact (a glb the grove will not show, a tape still being
+    # written) did not stop the rest, but a script must still see it.
+    if any(r["status"].startswith("refused") for r in rows):
+        sys.exit(2)
 
 
 def cmd_exhibit_hang(a):
@@ -366,6 +380,12 @@ def main(argv=None):
     b.add_argument("--title", required=True)
     b.add_argument("--out", default=str(RESULTS / "bundles"))
     b.set_defaults(fn=cmd_bundle_still)
+    b = bsub.add_parser("model", help="a glTF .glb on a plinth: checked, costed and measured")
+    b.add_argument("glb"); b.add_argument("--tree", required=True)
+    b.add_argument("--title", required=True)
+    b.add_argument("--poster", help="a .jpg, .png or .webp the exhibit row shows as its thumb")
+    b.add_argument("--out", default=str(RESULTS / "bundles"))
+    b.set_defaults(fn=cmd_bundle_model)
     b = bsub.add_parser("audio", help="one or more .opus tracks plus the score that produced them")
     b.add_argument("tracks", nargs="+", help="one or more .opus files")
     b.add_argument("--score", required=True, help="the score.json recorded alongside the tracks")
@@ -387,7 +407,7 @@ def main(argv=None):
 
     s = sub.add_parser("harvest", help="bundle a tree's artefacts and record the ids")
     s.add_argument("tree")
-    s.add_argument("--only", action="append", choices=["tape", "clip", "master", "still", "figure"])
+    s.add_argument("--only", action="append", choices=["tape", "clip", "master", "still", "figure", "model"])
     s.add_argument("--out", default=str(RESULTS / "bundles"))
     s.add_argument("--dry-run", action="store_true")
     s.add_argument("--force", action="store_true", help="re-bundle even when current")

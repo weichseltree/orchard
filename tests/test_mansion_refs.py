@@ -19,7 +19,7 @@ MANSION = ROOT / "grove" / "src" / "world" / "mansion.json"
 TREES = ROOT / "trees"
 
 #: Which artefact kinds a hanging of each kind may show (grove/src/world/exhibits.ts).
-KINDS_FOR = {"tape": {"tape"}, "video": {"clip", "master"}, "still": {"still"}, "planet": {"planet"}}
+KINDS_FOR = {"tape": {"tape"}, "video": {"clip", "master"}, "still": {"still"}, "planet": {"planet"}, "model": {"model"}}
 
 
 def hangings():

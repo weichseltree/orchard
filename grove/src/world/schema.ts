@@ -111,7 +111,7 @@ export const DoorwaySchema = z.looseObject({
  */
 export const ExhibitRefSchema = z.looseObject({
   tree: z.string().min(1),
-  kind: z.enum(["tape", "video", "still", "planet"]),
+  kind: z.enum(["tape", "video", "still", "planet", "model"]),
   bundle: z.string().default(""),
 });
 
@@ -209,6 +209,23 @@ export const PlanetHangingSchema = z.looseObject({
 });
 
 /**
+ * A glTF model (a `model` bundle, `orchard bundle model`) standing in a room.
+ * `position` is the point on the floor it stands over; the model is scaled
+ * uniformly so the longest side of its bundle's bbox measures `sizeMeters`,
+ * centred over `position` with its lowest point on the plinth's top (or on
+ * the floor, with no plinth). `rotationDeg[1]` turns it, and
+ * `yawSpinDegPerSec` keeps turning it, a slow turntable (0 stands still;
+ * phones always stand still).
+ */
+export const ModelHangingSchema = z.looseObject({
+  ...HangingCommon,
+  kind: z.literal("model"),
+  sizeMeters: z.number().positive().default(1),
+  plinth: z.looseObject({ heightMeters: z.number().nonnegative().default(0.9) }).optional(),
+  yawSpinDegPerSec: z.number().default(0),
+});
+
+/**
  * A live audio exhibit's name: `audio/live/<provider>/<stream-id>`
  * (AUDIO-STREAM.md §1). It is a name with no bytes behind it -- never cached,
  * never immutable, never hashed -- which is why it is NOT a `BundleRef`. The
@@ -259,6 +276,7 @@ export const HangingSchema = z.discriminatedUnion("kind", [
   VideoHangingSchema,
   StillHangingSchema,
   PlanetHangingSchema,
+  ModelHangingSchema,
   AudioHangingSchema,
 ]);
 
@@ -506,6 +524,7 @@ export type VideoHanging = z.infer<typeof VideoHangingSchema>;
 export type StillHanging = z.infer<typeof StillHangingSchema>;
 export type PlanetHanging = z.infer<typeof PlanetHangingSchema>;
 export type PlanetWorld = z.infer<typeof PlanetWorldSchema>;
+export type ModelHanging = z.infer<typeof ModelHangingSchema>;
 export type LiveAudioRef = z.infer<typeof LiveAudioRefSchema>;
 export type AudioHanging = z.infer<typeof AudioHangingSchema>;
 export type Portal = z.infer<typeof PortalSchema>;

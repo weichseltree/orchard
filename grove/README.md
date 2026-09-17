@@ -107,8 +107,8 @@ service tokens in the server-side configuration described in
 positions and hangings. A room's box has a floor (`bounds.min[1]`): rooms
 stand at different heights, a doorway between two floors gets a flight of
 steps in the lower room, and a room may stand over another (the club under
-the wing). A hanging names a tape, video, still, planet or live audio
-stream; its `exhibit` reference follows the live table and its pinned bundle
+the wing). A hanging names a tape, video, still, planet, glTF model (on a
+plinth, loaded only where one hangs) or live audio stream; its `exhibit` reference follows the live table and its pinned bundle
 identity is the fallback when the database cannot answer. A room may carry
 `portals` to a room of another `scale` (the garden's armillary leads to the
 orrery), `gameSurfaces` for a table, `repoModels` for a repository's folders on a

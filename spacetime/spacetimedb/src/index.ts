@@ -47,7 +47,7 @@ const LABEL_MAX = 32;
 const URL_MAX = 2048;
 const ROOM_CAPACITY_MAX = 200;
 const POTENTIAL_MAX = 10;
-const EXHIBIT_KINDS = ['clip', 'still', 'master', 'tape', 'planet'] as const;
+const EXHIBIT_KINDS = ['clip', 'still', 'master', 'tape', 'planet', 'model'] as const;
 const AREA_STATES = ['draft', 'live', 'paused'] as const;
 const COMMIT_MAX = 64;
 /**
@@ -224,7 +224,7 @@ const exhibit = table(
   {
     id: t.u64().primaryKey().autoInc(),
     tree: t.string().index('btree'),
-    kind: t.string(),          // clip | still | master | tape | planet
+    kind: t.string(),          // clip | still | master | tape | planet | model
     title: t.string(),
     url: t.string(),           // R2, media.weichseltree.com
     thumb_url: t.string(),

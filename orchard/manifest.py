@@ -47,7 +47,8 @@ STAGE_ORDER = list(Stage)
 #: artefact (path: the bake delivery; sha256: the bake manifest's; bundle: the id `orchard bundle
 #: planet` printed), but harvest does not bundle it: the tree runs `orchard bundle planet` itself
 #: and writes the id back, since the bundle names the atlas videos the tree bundled first.
-ArtefactKind = Literal["tape", "clip", "still", "figure", "summary", "master", "audio", "planet"]
+ArtefactKind = Literal["tape", "clip", "still", "figure", "summary", "master", "audio", "planet",
+                       "model"]
 
 
 class Artefact(BaseModel):
@@ -86,12 +87,14 @@ class Producers(BaseModel):
     tape: str = ""
     render: str = ""
     figure: str = ""
+    model: str = ""                # makes a glb for `orchard bundle model` (arcedit's environment)
     lane: Literal["gpu", "cpu", "none"] = "cpu"
     env: dict[str, str] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def local_launches_use_expdash_lanes(self) -> "Producers":
-        commands = {"tape": self.tape, "render": self.render, "figure": self.figure}
+        commands = {"tape": self.tape, "render": self.render, "figure": self.figure,
+                    "model": self.model}
         for key, cmd in commands.items():
             if not cmd:
                 continue

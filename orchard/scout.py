@@ -15,7 +15,8 @@ from pathlib import Path
 from .manifest import Artefact, Status, Stage, Tree
 from .ledger import load_jobs, spend
 
-MEDIA = {"clip": ("*.mp4", "*.webm", "*.gif"), "still": ("*.png", "*.jpg"), "tape": ("header.json",)}
+MEDIA = {"clip": ("*.mp4", "*.webm", "*.gif"), "still": ("*.png", "*.jpg"), "tape": ("header.json",),
+         "model": ("*.glb",)}
 SKIP = ("/.git/", "/.venv/", "/node_modules/", "/__pycache__/", "/.claude/", "/docs/references/")
 
 

@@ -374,3 +374,13 @@ Append-only. A decision names the day, the ruling, and the alternative it beat.
   in the build until the fetcher lands. Found on the way: `whyLocked` read
   `admin_only` where the generated row says `adminOnly`, so an admin-only
   room had only ever locked after a refusal; fixed with the row's spelling.
+
+- **2026-09-17 · A glTF model is an exhibit kind.** Manuel approved the
+  module change. `model` joins `EXHIBIT_KINDS` in the module (additive: no
+  table changes, a publish keeps every row), the pipeline (`orchard bundle
+  model`, harvest, scout's `*.glb`, `entry_urls` pointing at `bundle.json`)
+  and the client (`ModelHangingSchema`, a lazily imported `ModelExhibit`).
+  The bundler measures from the glb's JSON, never its vertices, and refuses
+  past 8 MB, 150k triangles or 256 draws; the grove places and scales from
+  the bundle's bbox before the glb lands. No hanging is placed yet;
+  arcedit's environment model is the first candidate.

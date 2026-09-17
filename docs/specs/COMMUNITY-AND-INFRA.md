@@ -264,7 +264,7 @@ There are four things, from cheapest to dearest:
 | **Visit.** Walk the rooms, stand in a tape, scrub it, hear and talk to whoever is there, report someone. | anyone, no login | a link | yes (voice: M1) |
 | **Vote in the greenhouse.** Once a month the review queue's open styleframes and theses are put to members; the vote is one input to the ruling, the ruling stays Manuel's (LAWS 14, 22). | members: Stripe or Patreon, or a node operator | a membership bound to a grove identity (section 3.7) | not yet; needs the greenhouse in the browser |
 | **Fund a tree in kind.** Run a node: host a mirror of bundles, and from M4 run a tree's declared jobs on your own GPU. The ledger records it publicly. | anyone with a box and a public IP or a Cloudflare account | `node.json`, the module, a bucket | M3, M4 |
-| **Contribute a tree.** Register a research repo with a manifest; get a room when the first harvest is approved. | a researcher with results in a format the grove can show (tape, clip, still, planet; splats later) | `orchard scout`, `orchard plant`, a ruling | yes, by hand, for Manuel's own repos; a stranger's tree needs the "tree owner" role (SECURITY.md: not built) |
+| **Contribute a tree.** Register a research repo with a manifest; get a room when the first harvest is approved. | a researcher with results in a format the grove can show (tape, clip, still, planet, glTF model; splats later) | `orchard scout`, `orchard plant`, a ruling | yes, by hand, for Manuel's own repos; a stranger's tree needs the "tree owner" role (SECURITY.md: not built) |
 
 The word "member" is reserved for the second, third and fourth rows. A
 visitor is a visitor.
