@@ -236,6 +236,42 @@
       "intro": "Hier hebt u de grootte van een cel. De episode van de leraar speelt zich om u heen af: het bronraster staat aan één kant, het antwoordkader vult zich onder uw voeten cel voor cel, het palet is een rij verlichte stenen, en de cursor is een lichtzuil die komt en gaat. Boven u hangen de lagen van het zicht van de agent als glazen vloeren, de laagste scherp en klein, elke laag erboven twee keer zo breed en twee keer zo vaag, tot de bovenste alles bedekt en bijna niets zegt. Spoel de tijd om de kleur van het palet naar de cel te zien reizen.",
       "lookFor": "Sta op het antwoordkader en kijk omhoog door de lagen terwijl de cursor passeert; het scherpe venster volgt hem.",
       "limit": "Dit is de episode van de leraar, niet die van een getrainde agent, en de schaal is een middel om te kijken; de agent ziet het canvas nooit als een plaats."
+    },
+    "quantumflow": {
+      "title": "quantumflow",
+      "kicker": "Waarom neemt een elektron alleen bepaalde energieën aan?",
+      "intro": "Dit is de schietbaan. Draai aan de knop en een golf vertrekt van de nabije wand, tastend door de zaal. Bij bijna elke stand vliegt hij uiteen voordat hij de verre wand bereikt. Bij een paar standen gaat hij vlak liggen. Dat handjevol standen heeft niemand gekozen.",
+      "lookFor": "De paar standen waarbij de golf vlak blijft liggen in plaats van uiteen te vliegen."
+    },
+    "quantumflow/cloud": {
+      "title": "De wolk",
+      "kicker": "Zes golven erin, één wolk eruit: wat gaat er verloren?",
+      "intro": "De orbitalen komen elk binnen met een eigen kleur en een eigen vorm. Ze worden bij elkaar opgeteld, en de kleuren vervagen tot één bleke wolk. Alles wat die zes wisten zit hier nog in, en de wand erachter zal dat bewijzen.",
+      "lookFor": "Het moment waarop de kleuren verdwijnen, en de potentiaalput die daarna op de wand ontstaat."
+    },
+    "quantumflow/bowl": {
+      "title": "De kom",
+      "kicker": "Hoe vindt u het laagste punt van een landschap dat u niet kunt zien?",
+      "intro": "Twee oppervlakken staan naast elkaar. Het ene is een kom: waar u ook begint, leidt de weg omlaag naar het enige laagste punt. Het andere is hobbelig, en de weg naar beneden kan u laten stranden in een kuil die niet de bodem is. Slechts één is te vertrouwen.",
+      "lookFor": "De kuilen in het tweede oppervlak die niet het laagste punt zijn."
+    },
+    "quantumflow/inversion": {
+      "title": "De omkering",
+      "kicker": "Verraadt de wolk op zichzelf de krachten die haar hebben gevormd?",
+      "intro": "Hier wordt de bewering beproefd. Op de ene wand de potentiaalput waarin een elektron werkelijk zat. Op de andere de put, alleen uit de wolk herbouwd, zonder de golven ooit te zien. Daartussen hangt het verschil, op ware grootte, hoe groot het ook uitvalt.",
+      "lookFor": "De kloof tussen beide putten, die de hele maat van de bewering is."
+    },
+    "quantumflow/flow": {
+      "title": "De stroom",
+      "kicker": "Wat gebeurde er toen het project een regel toevoegde die zeker zou helpen?",
+      "intro": "Een wolk van deeltjes wordt gedragen van waar zij begint naar waar zij eindigen moet. Het project voegde een voorwaarde toe waarin het met goede redenen geloofde, en mat hoe die de reis bij elke sterkte verslechterde. De kromme ernaast is dat resultaat.",
+      "lookFor": "De kromme op de wand, die stijgt waar zij zou moeten dalen."
+    },
+    "quantumflow/inside": {
+      "title": "In de wolk",
+      "kicker": "Hoe ziet één elektronenorbitaal er van binnenuit uit?",
+      "intro": "U bent geslonken tot de schaal van de wolk. De nevel om u heen is één orbitaal, getekend waar zijn golf het sterkst is. Ergens bij het midden ligt een vlak waar u niet door kunt, want daar is de golf precies nul.",
+      "lookFor": "Het vlak waar u niet doorheen kunt, waar de golf tot nul daalt."
     }
   },
   "exhibits": {

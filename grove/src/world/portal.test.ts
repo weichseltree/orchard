@@ -60,8 +60,9 @@ function at(end: PortalEnd, fraction: number, dir = new Vector3(1, 0, 0)): Vecto
 
 describe("portalEnds", () => {
   it("makes two ends of the armillary, twins of each other, with inverse ratios", () => {
-    // Four ends in the document: the armillary's two, and arcedit's portal into its canvas.
-    expect(ends).toHaveLength(4);
+    // Six ends in the document: the armillary's two, arcedit's portal into its
+    // canvas, and quantumflow's from the Cloud into it.
+    expect(ends).toHaveLength(6);
     expect(ends.filter((end) => end.portal.id === "armillary")).toHaveLength(2);
     expect(garden.twin).toBe(orrery);
     expect(orrery.twin).toBe(garden);
@@ -686,6 +687,21 @@ describe("PortalSystem", () => {
     expect(far.position.distanceTo(starDomeCentre(orreryRoom)) + STAR_DOME_RADIUS).toBeLessThan(far.far);
   });
 
+  it("offers the far view's target only once one has been rendered, and never on a backend without them", () => {
+    const rig = new Rig();
+    expect(rig.portals.farTarget).toBeNull();
+    rig.place(at(garden, 6), new Vector3(-1, 0, 0));
+    rig.frame();
+    expect(rig.renderer.renders).toBe(1);
+    expect(rig.portals.farTarget).toBe([...rig.renderer.targets][0]);
+    expect(rig.portals.viewScale).toBe(0.5);
+    // A renderer without render targets renders no far view and offers none.
+    const fading = new Rig(false);
+    fading.place(at(garden, 6), new Vector3(-1, 0, 0));
+    fading.frame();
+    expect(fading.portals.farTarget).toBeNull();
+  });
+
   it("blends by the eased, intent-shaped depth once armed", () => {
     const rig = new Rig();
     rig.place(at(garden, 1.3), new Vector3(-1, 0, 0));
@@ -812,8 +828,9 @@ describe("the Orrery in the document", () => {
     expect(room.doorways).toEqual([]);
     // Not a cell of the grounds: the hall's neighbourhood must not pull it in with the gardens.
     expect(room.fallback.kind).toBe("box");
-    // The only other room at another scale is arcedit's canvas, a tenth of the palace's metre.
-    expect(mansion.rooms.filter((r) => r.scale !== 1).map((r) => [r.id, r.scale])).toEqual([["orrery", 0.02], ["arcedit/inside", 0.1]]);
+    // The other rooms at another scale are arcedit's canvas and the inside of
+    // quantumflow's cloud, each a tenth of the palace's metre.
+    expect(mansion.rooms.filter((r) => r.scale !== 1).map((r) => [r.id, r.scale])).toEqual([["orrery", 0.02], ["arcedit/inside", 0.1], ["quantumflow/inside", 0.1]]);
     const planet = room.hangings[0]!;
     expect(planet.kind).toBe("planet");
     if (planet.kind !== "planet") return;

@@ -2,7 +2,7 @@
 .room-map {
   /* Inside #hud, which lets clicks through to the view: the plan's rooms must take them. */
   pointer-events: auto;
-  width: min(26rem, calc(100vw - 28px));
+  width: min(30rem, calc(100vw - 28px));
   max-height: min(90dvh, 48rem);
   padding: 18px;
   color: var(--text);
@@ -11,14 +11,74 @@
 }
 .room-map::backdrop { background: #03081199; }
 .room-map h2 { margin: 0 0 10px; font-size: 15px; font-weight: 600; }
-.room-map svg { display: block; width: 100%; height: auto; max-height: 52dvh; }
-.room-map rect { fill: #141e2b; stroke: #796b50; stroke-width: 1; }
-.room-map rect.open { cursor: pointer; }
+
+/* The plan, with the floor picker and the zoom buttons over its corners. */
+.room-map-frame { position: relative; }
+.room-map svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 52dvh;
+  touch-action: none; /* the drag pans the plan; the browser must not scroll it */
+  cursor: grab;
+}
+.room-map svg:active { cursor: grabbing; }
+
+/* Strokes and labels keep their weight on screen while the plan grows under them. */
+.room-map rect { fill: #141e2b; stroke: #796b50; stroke-width: 1; vector-effect: non-scaling-stroke; }
 .room-map rect.open:hover { fill: #22303f; stroke: var(--accent); }
 .room-map rect.here { fill: #3a3225; stroke: var(--accent); stroke-width: 2; }
 .room-map rect.shut { opacity: .4; }
-.room-map text { fill: var(--dim); font-size: 9px; text-anchor: middle; pointer-events: none; }
-.room-map circle.you { fill: var(--accent); stroke: var(--bg); stroke-width: 1.5; }
+/* Another storey, showing through: there, but not this floor's business. */
+.room-map rect.ghost { fill: #0d141d; stroke: #4a4436; opacity: .28; pointer-events: none; }
+.room-map text {
+  fill: var(--dim);
+  font-size: calc(9px / var(--plan-zoom, 1));
+  text-anchor: middle;
+  pointer-events: none;
+}
+.room-map text.stair { fill: var(--accent); font-size: calc(11px / var(--plan-zoom, 1)); }
+.room-map circle.you { fill: var(--accent); stroke: var(--bg); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+
+/* Highest at the top, the way the building stands. */
+/* Both bars sit over the plan, so they carry the panel's own ground rather
+   than letting the room lines run through their labels, and they are laid out
+   as rows: stacked columns met in the middle of a 800x360 window. */
+.room-map-floors,
+.room-map-zoom {
+  position: absolute;
+  right: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-width: calc(100% - 12px);
+}
+.room-map-floors { top: 6px; justify-content: flex-end; }
+.room-map-zoom { bottom: 6px; }
+.room-map-floors .btn,
+.room-map-zoom .btn {
+  /* .btn's 44px tap target is taller than these corners can hold. */
+  min-height: 1.75rem;
+  padding-block: 2px;
+  background: var(--bg);
+}
+.touch .room-map-floors .btn,
+.touch .room-map-zoom .btn { min-height: 2.25rem; }
+.room-map-floors .btn.on { background: #3a3225; border-color: var(--accent); color: var(--text); }
+.room-map-zoom .btn { width: 1.9rem; text-align: center; padding-inline: 0; }
+
 .room-map-note { margin: 10px 0; color: var(--dim); font-size: 12px; }
-.room-map ul { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* The menu, grouped: the palace first, then the area the visitor is in. */
+.room-map-areas { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+.room-map-areas section { display: flex; flex-direction: column; gap: 6px; }
+.room-map-areas h3 {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+.room-map-areas ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
 .room-map .btn:disabled { opacity: .45; cursor: default; }

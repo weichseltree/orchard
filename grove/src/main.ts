@@ -48,7 +48,7 @@ import mansionDocument from "./world/mansion.json";
 import { parseMansion, roomById, type GameSurface as GameSurfaceConfig, type Room } from "./world/schema";
 import { buildWorld, exhibitRoom, neighbourhood, type BuiltWorld } from "./world/world";
 import { followClocks } from "./world/tape-clock";
-import { PortalSystem } from "./world/portal";
+import { PortalSystem, type Crossing } from "./world/portal";
 import { pickLocale } from "./ui/locale";
 import { AVAILABLE_LOCALES, labelsFor, labelsLoaded, roomTitle } from "./world/labels/index";
 import { ATLAS_LABELS, type Screen } from "./media/screen";
@@ -603,6 +603,7 @@ async function toggleMap(): Promise<void> {
     mansion,
     room: body.room,
     x: body.x,
+    y: body.y,
     z: body.z,
     reachable: reachableRooms(mansion, body.room, lockedRoom),
     title: roomTitleOf,
@@ -1104,16 +1105,7 @@ view.start((dt, time, rawDt) => {
   // The portals see this frame's eye: a far view for the one in reach, and
   // the step through when the eye is at a portal's core.
   view.rig.updateMatrixWorld(true);
-  const crossing = portals.update({
-    body,
-    dt,
-    camera: view.camera,
-    scene: view.scene,
-    worldRoot: view.world,
-    live: !presenting,
-    setScaleVisible: (scale) => world?.setScaleVisible(scale),
-    locked: lockedRoom,
-  });
+  const crossing = portalFrame(dt, !presenting);
   if (crossing) {
     body.x = crossing.x;
     body.z = crossing.z;
@@ -1284,6 +1276,27 @@ function message(error: unknown): string {
 
 const _forward = new Vector3();
 
+/**
+ * One portal frame for this eye: the far view for the end in reach, and the
+ * crossing when the eye is at a core. The frame loop calls it every frame,
+ * and the world check calls it to photograph a portal — `live` off is the
+ * same lens with no far view behind it, which is what the check compares
+ * against (scripts/quality-world.mjs). A check that drove a copy of this
+ * wiring would photograph the copy.
+ */
+function portalFrame(dt: number, live: boolean): Crossing | null {
+  return portals.update({
+    body,
+    dt,
+    camera: view.camera,
+    scene: view.scene,
+    worldRoot: view.world,
+    live,
+    setScaleVisible: (scale) => world?.setScaleVisible(scale),
+    locked: lockedRoom,
+  });
+}
+
 // A handle for the dev overlay, the smoke script and anyone with the console
 // open. Read-only in spirit: nothing in the app reads it back.
 Object.defineProperty(window, "grove", {
@@ -1343,6 +1356,32 @@ Object.defineProperty(window, "grove", {
     },
     get world() {
       return world;
+    },
+    /**
+     * One portal frame at the eye's present pose, for the world check's
+     * photograph of a portal: with `live` the far view is rendered behind
+     * the lens, without it the same lens has nothing behind it. The frame
+     * loop is stopped by then, so nothing else moves between the two.
+     */
+    portalFrame: (live: boolean, dt = 1 / 60): Crossing | null => {
+      view.rig.updateMatrixWorld(true);
+      // Handed back rather than dropped: at a portal's core this frame
+      // crosses, and a caller that discards the crossing leaves the portals
+      // believing the visitor is through while the body stands where it was.
+      // `dt` is the check's: at zero the lens's own time does not advance, so
+      // two shots of one pose are the same pixels rather than nearly.
+      return portalFrame(dt, live);
+    },
+    /** The target the last far view was rendered into: the far room without its lens (portal.ts). */
+    get farTarget() {
+      return portals.farTarget;
+    },
+    get farViewScale() {
+      return portals.viewScale;
+    },
+    /** How many far views have been rendered: a photograph can tell a fresh one from a kept one. */
+    get farRenders() {
+      return portals.farRenders;
     },
   },
 });

@@ -236,6 +236,42 @@
       "intro": "Qui avete la grandezza di una cella. L'episodio del maestro si svolge intorno a voi: la griglia sorgente sta da un lato, il riquadro della risposta si riempie sotto i vostri piedi cella per cella, la tavolozza è una fila di pietre accese, e il cursore è una colonna di luce che va e viene. In alto, gli strati della vista dell'agente pendono come pavimenti di vetro, il più basso nitido e piccolo, ciascuno sopra due volte più largo e due volte più vago, finché il più alto copre tutto e non dice quasi nulla. Scorrete il tempo per vedere il colore viaggiare dalla tavolozza alla cella.",
       "lookFor": "State sul riquadro della risposta e guardate in alto attraverso gli strati mentre il cursore passa; la finestra nitida lo segue.",
       "limit": "Questo è l'episodio del maestro, non di un agente addestrato, e la scala è un espediente per guardare; l'agente non vede mai la tela come un luogo."
+    },
+    "quantumflow": {
+      "title": "quantumflow",
+      "kicker": "Perché un elettrone assume soltanto certe energie?",
+      "intro": "Questo è il poligono. Girate la manopola e un'onda parte dalla parete vicina, tastando la sala. A quasi ogni impostazione si disperde prima di raggiungere la parete lontana. In poche si distende piatta. Quelle poche non le ha scelte nessuno.",
+      "lookFor": "Le poche impostazioni in cui l'onda resta piatta invece di disperdersi."
+    },
+    "quantumflow/cloud": {
+      "title": "La nube",
+      "kicker": "Sei onde entrano e una nube esce: che cosa si perde?",
+      "intro": "Gli orbitali arrivano ciascuno con un proprio colore e una propria forma. Vengono sommati, e i colori sbiadiscono in un'unica nube pallida. Tutto ciò che quei sei sapevano è ancora qui dentro, e la parete dietro lo dimostrerà.",
+      "lookFor": "L'istante in cui i colori svaniscono, e la buca di potenziale che poi si riforma sulla parete."
+    },
+    "quantumflow/bowl": {
+      "title": "La ciotola",
+      "kicker": "Come si trova il punto più basso di un paesaggio che non si vede?",
+      "intro": "Due superfici stanno una accanto all'altra. Una è una ciotola: ovunque cominciate, scendere porta all'unico punto più basso. L'altra è bitorzoluta, e scendere può lasciarvi in una conca che non è il fondo. Di una sola ci si può fidare.",
+      "lookFor": "Le conche della seconda superficie che non sono il suo punto più basso."
+    },
+    "quantumflow/inversion": {
+      "title": "L'inversione",
+      "kicker": "La nube da sola rivela le forze che l'hanno formata?",
+      "intro": "Qui la tesi viene messa alla prova. Su una parete la buca di potenziale in cui l'elettrone stava davvero. Sull'altra la buca ricostruita dalla sola nube, senza mai vedere le onde. In mezzo pende la differenza, a grandezza naturale, per quanto grande risulti essere.",
+      "lookFor": "Lo scarto fra le due buche, che è l'intera misura della tesi."
+    },
+    "quantumflow/flow": {
+      "title": "Il flusso",
+      "kicker": "Che cosa è accaduto quando il progetto ha aggiunto una regola di cui era certo che avrebbe aiutato?",
+      "intro": "Una nube di particelle viene portata da dove parte a dove deve finire. Il progetto ha aggiunto un vincolo in cui credeva per buone ragioni, e ha misurato che peggiorava il viaggio a ogni intensità provata. La curva accanto al flusso è quel risultato.",
+      "lookFor": "La curva sulla parete, che sale dove dovrebbe scendere."
+    },
+    "quantumflow/inside": {
+      "title": "Dentro la nube",
+      "kicker": "Che aspetto ha un singolo orbitale elettronico visto da dentro?",
+      "intro": "Ora siete grandi come la nube. La foschia intorno a voi è un orbitale, disegnato dove la sua onda è più intensa. Vicino al centro c'è una superficie che non potete attraversare, perché lì l'onda è esattamente nulla.",
+      "lookFor": "La superficie che non potete attraversare, dove l'onda scende a zero."
     }
   },
   "exhibits": {

@@ -236,6 +236,42 @@
       "intro": "Ici vous avez la taille d'une cellule. L'épisode du professeur se joue autour de vous : la grille source se tient d'un côté, le cadre de réponse se remplit sous vos pieds cellule par cellule, la palette est une rangée de pierres allumées, et le curseur est une colonne de lumière qui va et vient. Au-dessus, les couches de la vue de l'agent sont suspendues comme des planchers de verre, la plus basse nette et petite, chacune au-dessus deux fois plus large et deux fois plus vague, jusqu'à ce que la plus haute couvre tout et ne dise presque rien. Faites défiler le temps pour voir la couleur voyager de la palette à la cellule.",
       "lookFor": "Tenez-vous sur le cadre de réponse et regardez vers le haut à travers les couches quand le curseur passe ; la fenêtre nette le suit.",
       "limit": "C'est l'épisode du professeur, non celui d'un agent entraîné, et l'échelle est un dispositif pour regarder ; l'agent ne voit jamais la toile comme un lieu."
+    },
+    "quantumflow": {
+      "title": "quantumflow",
+      "kicker": "Pourquoi un électron ne prend-il que certaines énergies ?",
+      "intro": "Voici le stand de tir. Tournez la molette et une onde part du mur le plus proche, tâtonnant à travers la salle. À presque chaque réglage elle se disperse avant d'atteindre le mur du fond. À quelques-uns, elle se couche à plat. Ceux-là, personne ne les a choisis.",
+      "lookFor": "Les rares réglages où l'onde reste couchée au lieu de se disperser."
+    },
+    "quantumflow/cloud": {
+      "title": "Le nuage",
+      "kicker": "Six ondes entrent et un nuage sort : qu'est-ce qui se perd ?",
+      "intro": "Les orbitales arrivent chacune avec sa propre couleur et sa propre forme. On les additionne les unes aux autres, et les couleurs se fondent pour ne plus faire qu'un seul nuage pâle. Tout ce que ces six-là savaient se trouve encore à l'intérieur, et le mur derrière va le prouver.",
+      "lookFor": "L'instant où les couleurs disparaissent, et le puits de potentiel qui se reforme ensuite sur le mur."
+    },
+    "quantumflow/bowl": {
+      "title": "Le bol",
+      "kicker": "Comment trouver le point le plus bas d'un paysage qu'on ne voit pas ?",
+      "intro": "Deux surfaces se tiennent côte à côte. L'une est un bol : d'où que vous partiez, descendre mène à l'unique point le plus bas. L'autre est bosselée, et descendre peut vous laisser bloqué dans un creux qui n'est pas le fond. Une seule est digne de confiance.",
+      "lookFor": "Les creux de la seconde surface qui ne sont pas son point le plus bas."
+    },
+    "quantumflow/inversion": {
+      "title": "L'inversion",
+      "kicker": "Le nuage à lui seul révèle-t-il les forces qui l'ont façonné ?",
+      "intro": "Ici la thèse est mise à l'épreuve. Sur un mur, le puits de potentiel où l'électron se trouvait vraiment. Sur l'autre, le puits reconstruit à partir du seul nuage, sans jamais voir les ondes. Entre les deux pend la différence, en vraie grandeur, si grande soit-elle.",
+      "lookFor": "L'écart entre les deux puits, qui est toute la mesure de la thèse."
+    },
+    "quantumflow/flow": {
+      "title": "L'écoulement",
+      "kicker": "Qu'est-il arrivé quand le projet a ajouté une règle dont il était sûr qu'elle aiderait ?",
+      "intro": "Un nuage de particules est porté de son départ vers son arrivée. Le projet a ajouté une contrainte à laquelle il croyait pour de bonnes raisons, et il a mesuré qu'elle dégradait le trajet à toutes les intensités essayées. La courbe à côté de l'écoulement est ce résultat.",
+      "lookFor": "La courbe sur le mur, qui monte là où elle devrait descendre."
+    },
+    "quantumflow/inside": {
+      "title": "Dans le nuage",
+      "kicker": "À quoi ressemble une seule orbitale électronique vue de l'intérieur ?",
+      "intro": "Vous avez rétréci jusqu'à l'échelle du nuage. La brume qui vous entoure de toutes parts est une seule orbitale, dessinée là où son onde est la plus forte. Près du centre se trouve une surface que vous ne pouvez pas franchir, car l'onde y est exactement nulle.",
+      "lookFor": "La surface que vous ne pouvez pas traverser, où l'onde tombe à zéro."
     }
   },
   "exhibits": {

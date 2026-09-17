@@ -120,7 +120,9 @@ describe("letterGeometry", () => {
     }
   });
 
-  it("centres the letters and keeps them narrower than the lintel", () => {
+  // Sets real glyph outlines for every room title: slow enough that a loaded
+  // runner can push it past vitest's 5 s default, as the light-field bake did.
+  it("centres the letters and keeps them narrower than the lintel", { timeout: 20_000 }, () => {
     for (const r of mansion.rooms) {
       for (const sign of planDoorSigns(r, labelsDe, mansion)) {
         const geometry = letterGeometry(sign, font);
@@ -136,7 +138,7 @@ describe("letterGeometry", () => {
 });
 
 describe("buildDoorSigns", () => {
-  it("merges a room's signs into one mesh and keeps the whole palace under a triangle budget", () => {
+  it("merges a room's signs into one mesh and keeps the whole palace under a triangle budget", { timeout: 20_000 }, () => {
     let triangles = 0, meshes = 0;
     for (const r of mansion.rooms) {
       const signs = planDoorSigns(r, labels, mansion);
