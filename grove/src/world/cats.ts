@@ -1,7 +1,7 @@
 import type { Group } from "three";
 import type { Room } from "./schema";
 import { roomArena } from "./room-arena";
-import { CATS, CatWorld, type Visitor } from "../vendor/cat-proxy/src/index";
+import { CATS, CatWorld } from "../vendor/cat-proxy/src/index";
 
 // Manuel's two Ragdolls, living in the hall. The bodies and the behaviour are
 // @someother/cat-proxy, vendored under src/vendor (PACKAGES.md section 2); everything the
@@ -50,12 +50,4 @@ export function buildCats(room: Room): CatWorld | null {
 /** Add the cats' scene content to the room's group. */
 export function attachCats(cats: CatWorld, roomGroup: Group): void {
   roomGroup.add(cats.group);
-}
-
-/**
- * Who the cats can see. The visitor is only a visitor while they are in the cats' room:
- * a cat should not cross the hall to greet somebody standing in the phototroph.
- */
-export function visitorsIn(room: string, at: { x: number; z: number }): Visitor[] {
-  return room === CAT_ROOM ? [{ id: "you", at: { x: at.x, z: at.z } }] : [];
 }

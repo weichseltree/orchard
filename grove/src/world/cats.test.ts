@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import mansionDoc from "./mansion.json";
 import { MansionSchema } from "./schema";
-import { CAT_ROOM, visitorsIn } from "./cats";
+import { CAT_ROOM } from "./cats";
 import { roomArena } from "./room-arena";
 import { COLUMN_FOOT_M, columnFootprints } from "./observatory";
 import { CATS, runHeadless } from "../vendor/cat-proxy/src/index";
@@ -58,8 +58,4 @@ describe("the hall's cats", () => {
     expect(report.minCatDistanceM, "the cats walked through each other").toBeGreaterThan(0);
   });
 
-  it("only counts a visitor who is in the cats' room", () => {
-    expect(visitorsIn(CAT_ROOM, { x: 1, z: 2 })).toEqual([{ id: "you", at: { x: 1, z: 2 } }]);
-    expect(visitorsIn("phototroph", { x: 1, z: 2 })).toEqual([]);
-  });
 });

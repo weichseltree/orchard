@@ -18,7 +18,7 @@ import type { VideoWall } from "../media/videowall";
 import type { PlanetExhibit } from "./planet-exhibit";
 import type { ModelExhibit } from "./model-exhibit";
 import type { AudioExhibit } from "./audio-exhibit";
-import type { CatWorld } from "../vendor/cat-proxy/src/index";
+import type { CatWorld } from "../vendor/cat-proxy/src/world";
 import { StillBundleSchema, VideoBundleSchema } from "../tape/bundle";
 import type { Provenance } from "../ui/provenance";
 import { bundleBaseOf, pickExhibit, type ExhibitRow } from "./exhibits";
@@ -98,6 +98,8 @@ export interface BuiltWorld {
    * The frame loop ticks them with the visitor's position; see cats.ts.
    */
   cats: CatWorld | null;
+  /** The room the cats were built for, or null while there are none. */
+  catsRoom: string | null;
   /** Streams the start room's neighbourhood in. Resolves when everything that can load has. */
   load(): Promise<void>;
   /** Loads more rooms (a doorway crossing widens the neighbourhood); rooms already loaded are skipped. */
@@ -291,6 +293,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
         // The world went while the module was loading, or another room got there first.
         if (!cats || disposed || world.cats) return cats?.dispose();
         world.cats = cats;
+        world.catsRoom = room.id;
         attachCats(cats, groupFor(room));
       }).catch((error: unknown) => onNotice(`cats: ${message(error)}`)));
     }
@@ -571,6 +574,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
     models: [],
     audios: [],
     cats: null,
+    catsRoom: null,
     load: () => ensureRooms(neighbourhood(mansion, options.startRoom ?? mansion.start)),
     ensureRooms: (ids) => ensureRooms(ids),
     settled,
@@ -590,6 +594,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
       for (const audio of world.audios) audio.dispose();
       world.cats?.dispose();
       world.cats = null;
+      world.catsRoom = null;
       for (const stand of stands.values()) void stand.then((s) => s.dispose());
       stands.clear();
       if (labelGroups.size) {
