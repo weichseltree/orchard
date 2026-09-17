@@ -119,6 +119,6 @@ describe("neighbourhood", () => {
     // The orangery is two doors from the hall and the gallery, and its terrace doors bring every cell of the grounds.
     const fromOrangery = neighbourhood(mansion, "orangery");
     // ...and the rooms stacked under them: the club and its stage under the wing, the undercroft under the terrace.
-    expect(fromOrangery.sort()).toEqual(["club", "foyer", "gallery", "hall", "orangery", "orchard-east", "orchard-south", "orchard-west", "parterre", "stage", "terrace", "world-engine"]);
+    expect(fromOrangery.sort()).toEqual(["club", "court-north", "court-south", "foyer", "gallery", "hall", "orangery", "orchard-east", "orchard-south", "orchard-west", "parterre", "stage", "terrace", "world-engine"]);
   });
 });

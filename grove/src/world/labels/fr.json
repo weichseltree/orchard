@@ -28,18 +28,61 @@
       "lookFor": "Comparez la vue vraie aux vues étirées ; les trous sont marqués en magenta, et l'étude de la frange montre ce qu'une vue d'ensemble convaincante dissimule.",
       "limit": "Ce sont des études fixes rendues à partir de données stockées, ni une reconstruction en direct ni une porte-lentille fonctionnelle ; la question restante du dépôt n'a pas été mesurée."
     },
+    "orangery": {
+      "title": "orangerie",
+      "kicker": "Laissez vos yeux voyager.",
+      "intro": "L'orangerie relie la salle de world-engine à la terrasse. C'est un lieu entre les expositions : suivez les portes ouvertes, regardez vers les salles, ou sortez sous le ciel. Au fond se trouve une table d'échecs : approchez-vous pour jouer, ou ouvrez la partie depuis le Guide.",
+      "lookFor": "Les trois portes côté jardin donnent toutes sur la terrasse."
+    },
+    "court-north": {
+      "title": "cour nord",
+      "kicker": "Où commence la cave ?",
+      "intro": "Une cour close au bord du bosquet ouest, à l'extrémité nord de la terrasse. C'est la porte d'entrée du club : dans le pavillon, une seule volée large descend tout droit sous la pelouse jusqu'au souterrain, d'où s'ouvre le club.",
+      "lookFor": "Au-dessus de la porte du pavillon se lit la salle au bout du chemin, non l'escalier ; les lampes de la volée brillent sous l'arc."
+    },
+    "stair-north": {
+      "title": "escalier",
+      "kicker": "Qu'y a-t-il sous la terrasse ?",
+      "intro": "Un pavillon au bout de la terrasse, où l'on entre depuis sa cour. Une seule volée, large de six mètres et plus douce que les marches de la terrasse, descend tout droit sous la pelouse ; la porte du pied est dans l'axe de celle du haut, sans détour.",
+      "lookFor": "La rampe de la volée et la lampe à son pied ; depuis la première marche, la porte du souterrain est déjà droit devant."
+    },
+    "stair-south": {
+      "title": "escalier",
+      "kicker": "Qu'y a-t-il sous la terrasse ?",
+      "intro": "Un pavillon au bout de la terrasse, où l'on entre depuis sa cour. Une seule volée, large de six mètres et plus douce que les marches de la terrasse, descend tout droit sous la pelouse ; la porte du pied est dans l'axe de celle du haut, sans détour.",
+      "lookFor": "La rampe de la volée et la lampe à son pied ; depuis la première marche, la porte du souterrain est déjà droit devant."
+    },
+    "court-south": {
+      "title": "cour sud",
+      "kicker": "Où commence la cave ?",
+      "intro": "Une cour close au bord du bosquet est, à l'extrémité sud de la terrasse. C'est la porte d'entrée du club : dans le pavillon, une seule volée large descend tout droit sous la pelouse jusqu'au souterrain, d'où s'ouvre le club.",
+      "lookFor": "Au-dessus de la porte du pavillon se lit la salle au bout du chemin, non l'escalier ; les lampes de la volée brillent sous l'arc."
+    },
+    "foyer": {
+      "title": "foyer",
+      "kicker": "Par où descendre ?",
+      "intro": "Le sous-sol court sur toute la longueur de la terrasse, une voûte basse sous ses dalles. Deux escaliers y descendent depuis le domaine, un à chaque extrémité de la terrasse, et deux portes mènent plus loin dans le club, qui ne s'ouvre qu'au visiteur dont le micro et le son sont allumés.",
+      "lookFor": "Les lanternes aux deux portes du club, et la lumière qui en vient : le sous-sol est chaud, le club est froid."
+    },
+    "club": {
+      "title": "club",
+      "kicker": "Quel bruit fait une cave voûtée ?",
+      "intro": "Un club sous l'aile nord : une voûte basse, une piste de danse en dalles lumineuses, un bar le long du mur est, des alcôves le long du mur ouest, une scène au fond. Ce qui joue est le flux propre de la piste, un set calculé sur la machine du palais et transmis en direct, de sorte que tous les visiteurs entendent le même battement à quelques secondes près les uns des autres. Les lumières suivent ses graves ; quand la piste est silencieuse, elles respirent d'elles-mêmes. La porte demande un microphone et le son, pour que parler et chanter puissent fonctionner ici dès que la liaison vocale existera.",
+      "lookFor": "La boule à facettes au-dessus de la piste et les deux lignes de couleur le long de la voûte ; elles battent avec la musique quand il y a de la musique.",
+      "limit": "Le set est composé par un programme à graine fixe, non par une personne ; rien ici n'est une affirmation sur la musique, et l'encodeur s'arrête quand le club est vide."
+    },
+    "stage": {
+      "title": "scène",
+      "kicker": "Qui chante ?",
+      "intro": "Une marche au-dessus de la piste, encadrée par le proscenium et éclairée de face. La scène est faite pour les chanteurs en casque : elle ne s'ouvre qu'à une session immersive, et la quitter vous ramène sur la piste. Le karaoké partira d'ici dès que la liaison vocale existera.",
+      "lookFor": "Le pied de micro au centre et les feux de la rampe le long du bord : le chanteur se tient là où les deux lignes du sol se rejoignent."
+    },
     "phototroph": {
       "title": "phototroph",
       "kicker": "Que fait un faisceau de lumière constant à une soupe d'atomes ?",
       "intro": "phototroph se demande si la matière, sous un faisceau constant d'une seule couleur, s'organise en structures qui absorbent cette couleur. Les deux plateaux au centre de la salle sont partis du même monde de 432 atomes de six espèces. L'un a été éclairé pendant 500 unités de temps ; l'autre est resté dans l'obscurité. Ils sont joués en parfaite synchronie. Les atomes auxquels le faisceau est accordé portent sa couleur sur les deux plateaux. Le graphique au mur mesure à quel point un amas capte rarement la moindre lumière, et la petite bande près de l'entrée montre comment deux atomes finissent par rester ensemble.",
       "lookFor": "Comparez les plateaux : le plateau sombre s'est figé en îlots cristallins, tandis que sous le faisceau les atomes restent un gaz agité.",
       "limit": "Le plateau éclairé diffère parce que le faisceau le chauffe, non parce que ses amas auraient appris à utiliser la lumière : selon notre mesure, ils sont moins accordés à la couleur du faisceau que les amas du plateau sombre, et le faisceau lui-même n'est pas représenté."
-    },
-    "orangery": {
-      "title": "orangerie",
-      "kicker": "Laissez vos yeux voyager.",
-      "intro": "L'orangerie relie la salle de world-engine à la terrasse. C'est un lieu entre les expositions : suivez les portes ouvertes, regardez vers les salles, ou sortez sous le ciel. Au fond se trouve une table d'échecs : approchez-vous pour jouer, ou ouvrez la partie depuis le Guide.",
-      "lookFor": "Les trois portes côté jardin donnent toutes sur la terrasse."
     },
     "gallery": {
       "title": "galerie",
@@ -95,37 +138,6 @@
       "intro": "L'orrery présente les trois mondes de coarsen à l'échelle du ciel, atteints par la sphère armillaire du jardin. Vous avez rétréci cinquante fois pour vous tenir ici ; chaque globe mesure quatre-vingts mètres. Ce sont les simulations enregistrées de coarsen : 508 744 particules chacune, le même mélange uniforme d'une espèce lourde et d'une espèce légère, ne différant que par la force avec laquelle les deux se repoussent. Chacune est ouverte vers l'endroit où vous vous tenez, sa surface étant le bord mesuré des particules et son intérieur mesuré à partir d'elles. Les étoiles sont un décor dessiné, non un catalogue.",
       "lookFor": "Avancez vers un monde et observez sa face coupée ; la lueur marque la matière la plus chaude, un codage de la température, non de la lumière.",
       "limit": "Une seule simulation enregistrée par monde, rien d'interpolé. Un centre lourd ne permet pas à lui seul de distinguer le démélange du refroidissement commun comme cause."
-    },
-    "stair-north": {
-      "title": "escalier",
-      "kicker": "Qu'y a-t-il sous la terrasse ?",
-      "intro": "Un pavillon de jardin à l'extrémité nord de la terrasse, où l'on entre depuis le bosquet ouest. À l'intérieur, une volée de marches descend sous terre jusqu'au sous-sol, d'où s'ouvre le club. Un second escalier du même genre se dresse à l'extrémité sud de la terrasse, du côté du bosquet est.",
-      "lookFor": "La rampe de l'escalier et la lampe à son pied ; la lumière du jour s'arrête où commence la voûte."
-    },
-    "stair-south": {
-      "title": "escalier",
-      "kicker": "Qu'y a-t-il sous la terrasse ?",
-      "intro": "Un pavillon de jardin à l'extrémité sud de la terrasse, où l'on entre depuis le bosquet est. À l'intérieur, une volée de marches descend sous terre jusqu'au sous-sol, d'où s'ouvre le club. Un second escalier du même genre se dresse à l'extrémité nord de la terrasse, du côté du bosquet ouest.",
-      "lookFor": "La rampe de l'escalier et la lampe à son pied ; la lumière du jour s'arrête où commence la voûte."
-    },
-    "foyer": {
-      "title": "foyer",
-      "kicker": "Par où descendre ?",
-      "intro": "Le sous-sol court sur toute la longueur de la terrasse, une voûte basse sous ses dalles. Deux escaliers y descendent depuis le domaine, un à chaque extrémité de la terrasse, et deux portes mènent plus loin dans le club, qui ne s'ouvre qu'au visiteur dont le micro et le son sont allumés.",
-      "lookFor": "Les lanternes aux deux portes du club, et la lumière qui en vient : le sous-sol est chaud, le club est froid."
-    },
-    "club": {
-      "title": "club",
-      "kicker": "Quel bruit fait une cave voûtée ?",
-      "intro": "Un club sous l'aile nord : une voûte basse, une piste de danse en dalles lumineuses, un bar le long du mur est, des alcôves le long du mur ouest, une scène au fond. Ce qui joue est le flux propre de la piste, un set calculé sur la machine du palais et transmis en direct, de sorte que tous les visiteurs entendent le même battement à quelques secondes près les uns des autres. Les lumières suivent ses graves ; quand la piste est silencieuse, elles respirent d'elles-mêmes. La porte demande un microphone et le son, pour que parler et chanter puissent fonctionner ici dès que la liaison vocale existera.",
-      "lookFor": "La boule à facettes au-dessus de la piste et les deux lignes de couleur le long de la voûte ; elles battent avec la musique quand il y a de la musique.",
-      "limit": "Le set est composé par un programme à graine fixe, non par une personne ; rien ici n'est une affirmation sur la musique, et l'encodeur s'arrête quand le club est vide."
-    },
-    "stage": {
-      "title": "scène",
-      "kicker": "Qui chante ?",
-      "intro": "Une marche au-dessus de la piste, encadrée par le proscenium et éclairée de face. La scène est faite pour les chanteurs en casque : elle ne s'ouvre qu'à une session immersive, et la quitter vous ramène sur la piste. Le karaoké partira d'ici dès que la liaison vocale existera.",
-      "lookFor": "Le pied de micro au centre et les feux de la rampe le long du bord : le chanteur se tient là où les deux lignes du sol se rejoignent."
     },
     "arcedit": {
       "title": "arcedit",

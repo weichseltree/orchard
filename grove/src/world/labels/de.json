@@ -28,18 +28,61 @@
       "lookFor": "Vergleichen Sie die wahre Ansicht mit den gedehnten; die Löcher sind magenta markiert, und die Saumstudie zeigt, was eine überzeugende Gesamtansicht verbirgt.",
       "limit": "Dies sind Standbildstudien aus gespeicherten Daten, keine Rekonstruktion in Echtzeit und keine funktionierende Linsentür; die verbliebene Frage des Repositoriums ist nicht gemessen."
     },
+    "orangery": {
+      "title": "Orangerie",
+      "kicker": "Lassen Sie den Blick wandern.",
+      "intro": "Die Orangerie verbindet die Kammer von world-engine mit der Terrasse. Sie ist ein Ort zwischen den Exponaten: Folgen Sie den offenen Türen, blicken Sie zu den Kammern zurück oder treten Sie hinaus unter den Himmel. Hinten steht ein Schachtisch: Treten Sie heran, oder öffnen Sie es über den Guide.",
+      "lookFor": "Die drei Türen zur Gartenseite führen alle auf die Terrasse."
+    },
+    "court-north": {
+      "title": "Nordhof",
+      "kicker": "Wo beginnt der Keller?",
+      "intro": "Ein ummauerter Hof am Rand des Westhains, am Nordende der Terrasse. Er ist die Haustür des Clubs: Im Pavillon davor führt ein einziger breiter Lauf geradewegs unter den Rasen hinab zum Untergeschoss, von dem der Club abgeht.",
+      "lookFor": "Über der Tür des Pavillons steht der Raum am Ende des Weges, nicht die Treppe; die Lampen des Laufs schimmern unter dem Bogen."
+    },
+    "stair-north": {
+      "title": "Treppe",
+      "kicker": "Was liegt unter der Terrasse?",
+      "intro": "Ein Pavillon am Ende der Terrasse, vom Hof aus betreten. Ein einziger Lauf, sechs Meter breit und flacher als die Stufen der Terrasse, führt geradewegs unter den Rasen; die Tür am Fuß steht in einer Achse mit der am Kopf, ein Weg ohne Wendung.",
+      "lookFor": "Das Geländer des Laufs und die Lampe an seinem Fuß; von der obersten Stufe liegt die Tür des Untergeschosses schon geradeaus."
+    },
+    "stair-south": {
+      "title": "Treppe",
+      "kicker": "Was liegt unter der Terrasse?",
+      "intro": "Ein Pavillon am Ende der Terrasse, vom Hof aus betreten. Ein einziger Lauf, sechs Meter breit und flacher als die Stufen der Terrasse, führt geradewegs unter den Rasen; die Tür am Fuß steht in einer Achse mit der am Kopf, ein Weg ohne Wendung.",
+      "lookFor": "Das Geländer des Laufs und die Lampe an seinem Fuß; von der obersten Stufe liegt die Tür des Untergeschosses schon geradeaus."
+    },
+    "court-south": {
+      "title": "Südhof",
+      "kicker": "Wo beginnt der Keller?",
+      "intro": "Ein ummauerter Hof am Rand des Osthains, am Südende der Terrasse. Er ist die Haustür des Clubs: Im Pavillon davor führt ein einziger breiter Lauf geradewegs unter den Rasen hinab zum Untergeschoss, von dem der Club abgeht.",
+      "lookFor": "Über der Tür des Pavillons steht der Raum am Ende des Weges, nicht die Treppe; die Lampen des Laufs schimmern unter dem Bogen."
+    },
+    "foyer": {
+      "title": "Foyer",
+      "kicker": "Welcher Weg hinunter?",
+      "intro": "Das Untergeschoss läuft die ganze Länge der Terrasse entlang, ein niedriges Gewölbe unter ihren Platten. Zwei Treppen führen aus den Gärten hinunter, eine an jedem Ende, und zwei Türen gehen weiter in den Club, der sich nur öffnet, wenn Mikrofon und Ton eingeschaltet sind.",
+      "lookFor": "Die Laternen an den beiden Clubtüren und das Licht dahinter: Das Untergeschoss ist warm, der Club ist kalt."
+    },
+    "club": {
+      "title": "Club",
+      "kicker": "Wie laut ist ein Gewölbekeller?",
+      "intro": "Ein Club unter dem Nordflügel: ein niedriges Gewölbe, eine Tanzfläche aus leuchtenden Platten, eine Bar an der Ostwand, Nischen im Westen, am Ende eine Bühne. Es spielt der Stream der Tanzfläche, ein Set, das die Maschine des Palastes berechnet und live überträgt, sodass alle Besucher denselben Schlag bis auf wenige Sekunden gleichzeitig hören. Die Lichter folgen seinem Bass; ist es still, atmen sie von selbst. Die Tür verlangt Mikrofon und Ton, damit Reden und Singen hier funktionieren, sobald die Sprachverbindung besteht.",
+      "lookFor": "Die Spiegelkugel über der Tanzfläche und die beiden Farblinien entlang des Gewölbes; sie pulsieren mit der Musik, wenn es Musik gibt.",
+      "limit": "Das Set komponiert ein Programm mit festem Startwert, kein Mensch; nichts hier ist eine Aussage über Musik, und der Encoder hält an, wenn der Club leer ist."
+    },
+    "stage": {
+      "title": "Bühne",
+      "kicker": "Wer singt?",
+      "intro": "Eine Stufe über der Tanzfläche, gerahmt vom Proszenium und von vorn beleuchtet. Die Bühne ist für Sänger im Headset: Sie öffnet sich nur einer immersiven Sitzung, und wer sie verlässt, steht wieder unten. Karaoke läuft von hier, sobald die Sprachverbindung besteht.",
+      "lookFor": "Der Mikrofonständer in der Mitte und die Rampenlichter an der Kante: Der Sänger steht, wo sich die beiden Bodenlinien treffen."
+    },
     "phototroph": {
       "title": "phototroph",
       "kicker": "Was macht ein stetiger Lichtstrahl mit einer Suppe aus Atomen?",
       "intro": "phototroph fragt, ob sich Materie unter einem stetigen Strahl einer einzigen Farbe von selbst zu Strukturen ordnet, die genau diese Farbe absorbieren. Die beiden Flächen in der Mitte des Raumes gingen aus derselben Welt hervor: 432 Atome von sechs Sorten. Die eine stand 500 Zeiteinheiten lang im Licht, die andere blieb dunkel; beide laufen im Gleichschritt. Die Atome, auf die der Strahl abgestimmt ist, tragen auf beiden Flächen seine Farbe. Das Diagramm an der Wand misst, wie selten ein Klumpen überhaupt Licht einfängt, und das kleine Band am Eingang zeigt, wie es dazu kommt, dass zwei Atome beisammenbleiben.",
       "lookFor": "Vergleichen Sie die beiden Flächen: Die dunkle ist zu kristallinen Inseln erstarrt, unter dem Strahl dagegen bleiben die Atome ein unruhiges Gas.",
       "limit": "Die belichtete Fläche unterscheidet sich, weil der Strahl sie erwärmt, nicht weil ihre Klumpen gelernt hätten, Licht zu nutzen: Nach unserem Maß sind sie weniger auf die Farbe des Strahls abgestimmt als die Klumpen der dunklen Fläche, und der Strahl selbst ist nicht dargestellt."
-    },
-    "orangery": {
-      "title": "Orangerie",
-      "kicker": "Lassen Sie den Blick wandern.",
-      "intro": "Die Orangerie verbindet die Kammer von world-engine mit der Terrasse. Sie ist ein Ort zwischen den Exponaten: Folgen Sie den offenen Türen, blicken Sie zu den Kammern zurück oder treten Sie hinaus unter den Himmel. Hinten steht ein Schachtisch: Treten Sie heran, oder öffnen Sie es über den Guide.",
-      "lookFor": "Die drei Türen zur Gartenseite führen alle auf die Terrasse."
     },
     "gallery": {
       "title": "Galerie",
@@ -95,37 +138,6 @@
       "intro": "Das Orrery zeigt die drei Welten von coarsen im Maßstab des Himmels, erreichbar durch die Armillarsphäre des Gartens. Sie sind fünfzigfach geschrumpft, um hier zu stehen; jeder Globus misst achtzig Meter. Es sind die aufgezeichneten Läufe von coarsen: je 508.744 Teilchen, dieselbe gleichmäßige Mischung einer schweren und einer leichten Sorte, verschieden nur darin, wie stark sich die beiden Sorten abstoßen. Jede ist zu Ihrem Standort hin aufgeschnitten, ihre Oberfläche der gemessene Rand der Teilchen, ihr Inneres aus ihnen gemessen. Die Sterne sind eine gestaltete Kulisse, kein Katalog.",
       "lookFor": "Gehen Sie auf eine Welt zu und beobachten Sie ihre Schnittfläche; das Glühen markiert die heißeste Materie, eine Kodierung der Temperatur, kein Licht.",
       "limit": "Ein aufgezeichneter Lauf pro Welt, nichts interpoliert. Eine schwere Mitte trennt für sich genommen nicht, ob Entmischung oder gemeinsame Abkühlung ihre Ursache ist."
-    },
-    "stair-north": {
-      "title": "Treppe",
-      "kicker": "Was liegt unter der Terrasse?",
-      "intro": "Ein Gartenpavillon am Nordende der Terrasse, betreten vom westlichen Hain. Innen führt eine Treppe unter die Erde hinab ins Untergeschoss, von dem aus sich der Club öffnet. Eine zweite Treppe gleicher Art steht am Südende der Terrasse, am östlichen Hain.",
-      "lookFor": "Das Geländer der Treppe und die Lampe an ihrem Fuß; das Tageslicht endet, wo das Gewölbe beginnt."
-    },
-    "stair-south": {
-      "title": "Treppe",
-      "kicker": "Was liegt unter der Terrasse?",
-      "intro": "Ein Gartenpavillon am Südende der Terrasse, betreten vom östlichen Hain. Innen führt eine Treppe unter die Erde hinab ins Untergeschoss, von dem aus sich der Club öffnet. Eine zweite Treppe gleicher Art steht am Nordende der Terrasse, am westlichen Hain.",
-      "lookFor": "Das Geländer der Treppe und die Lampe an ihrem Fuß; das Tageslicht endet, wo das Gewölbe beginnt."
-    },
-    "foyer": {
-      "title": "Foyer",
-      "kicker": "Welcher Weg hinunter?",
-      "intro": "Das Untergeschoss läuft die ganze Länge der Terrasse entlang, ein niedriges Gewölbe unter ihren Platten. Zwei Treppen führen aus den Gärten hinunter, eine an jedem Ende, und zwei Türen gehen weiter in den Club, der sich nur öffnet, wenn Mikrofon und Ton eingeschaltet sind.",
-      "lookFor": "Die Laternen an den beiden Clubtüren und das Licht dahinter: Das Untergeschoss ist warm, der Club ist kalt."
-    },
-    "club": {
-      "title": "Club",
-      "kicker": "Wie laut ist ein Gewölbekeller?",
-      "intro": "Ein Club unter dem Nordflügel: ein niedriges Gewölbe, eine Tanzfläche aus leuchtenden Platten, eine Bar an der Ostwand, Nischen im Westen, am Ende eine Bühne. Es spielt der Stream der Tanzfläche, ein Set, das die Maschine des Palastes berechnet und live überträgt, sodass alle Besucher denselben Schlag bis auf wenige Sekunden gleichzeitig hören. Die Lichter folgen seinem Bass; ist es still, atmen sie von selbst. Die Tür verlangt Mikrofon und Ton, damit Reden und Singen hier funktionieren, sobald die Sprachverbindung besteht.",
-      "lookFor": "Die Spiegelkugel über der Tanzfläche und die beiden Farblinien entlang des Gewölbes; sie pulsieren mit der Musik, wenn es Musik gibt.",
-      "limit": "Das Set komponiert ein Programm mit festem Startwert, kein Mensch; nichts hier ist eine Aussage über Musik, und der Encoder hält an, wenn der Club leer ist."
-    },
-    "stage": {
-      "title": "Bühne",
-      "kicker": "Wer singt?",
-      "intro": "Eine Stufe über der Tanzfläche, gerahmt vom Proszenium und von vorn beleuchtet. Die Bühne ist für Sänger im Headset: Sie öffnet sich nur einer immersiven Sitzung, und wer sie verlässt, steht wieder unten. Karaoke läuft von hier, sobald die Sprachverbindung besteht.",
-      "lookFor": "Der Mikrofonständer in der Mitte und die Rampenlichter an der Kante: Der Sänger steht, wo sich die beiden Bodenlinien treffen."
     },
     "arcedit": {
       "title": "arcedit",

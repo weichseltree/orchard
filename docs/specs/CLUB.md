@@ -16,15 +16,17 @@ proposals, not measurements.
 
 ## 1. The map
 
-Five rooms, one presence room (`club`), all `observatory` architecture at
+Seven rooms, one presence room (`club`), all `observatory` architecture at
 the palace's scale. "Below" is taken literally: the club is a cellar under the
 north wing, and the wing's floor is its lid.
 
 | room | bounds (m) | floor | doors |
 |---|---|---|---|
-| `stair-north` | x −20..−11, z −84..−76, 7.6 m tall | −5.0 | west grove (x = −20, z −80, 2.4 × 3.2, opens at −1.6); foyer (z = −76) |
-| `stair-south` | x −20..−11, z 72..80 | −5.0 | east grove (x = −20, z 76); foyer (z = 72) |
-| `foyer` | x −20..−10, z −76..72, 3.6 m tall | −5.0 | the two stairs; club (x = −10, z −55 and z −27, 4 × 3.2) |
+| `court-north` | x −20..−10, z −104..−90, open to the sky | −1.6 | west grove (x = −20, z −97, 10 m gate); stair-north (z = −90, 6 × 3.6) |
+| `stair-north` | x −20..−10, z −90..−76, 7.6 m tall | −5.0 | court-north (z = −90, opens at −1.6); foyer (z = −76, 6 × 3.2) |
+| `stair-south` | x −20..−10, z 72..86 | −5.0 | court-south (z = 86); foyer (z = 72) |
+| `court-south` | x −20..−10, z 86..100 | −1.6 | east grove (x = −20, z 93); stair-south (z = 86) |
+| `foyer` | x −20..−10, z −76..72, 3.6 m tall | −5.0 | the two stairs (z = −76 and 72, centred x = −15); club (x = −10, z −55 and z −27, 4 × 3.2) |
 | `club` | x −10..10, z −70..−12, 6.1 m tall | −5.0 | foyer ×2; stage (z = −70, 10 m proscenium, 4 m high) |
 | `stage` | x −6..6, z −76..−70 | −4.0 | club |
 
@@ -34,9 +36,23 @@ from multiple sides").** A room cannot overlap another at the same height,
 so a stair pit cut into the garden's ground is not a room this engine can
 hold. The descents are two stair pavilions at the terrace's ends, one
 entered from the west grove, one from the east grove: each is a walled
-garden building whose flight (22 steps, 6.4 m) goes down inside it to an
-undercroft, the `foyer`, that runs the length of the terrace under its
-flagstones and opens into the club through two doors. World-engine's east
+garden building whose flight goes down inside it to an undercroft, the
+`foyer`, that runs the length of the terrace under its flagstones and opens
+into the club through two doors.
+
+**Ruled 2026-09-17, third pass (Manuel: "the stairs lead downstairs and then
+the player has to awkwardly turn around... less steep and wider and easier to
+navigate").** A flight runs from its doorway into the room below it, so a
+straight descent needs the door at the head and the door at the foot in
+opposite walls. The pavilions were entered from the side, which left the
+undercroft's door at right angles to the foot of the steps. Each pavilion is
+now entered from a garden court of its own on the grove's edge (`court-north`,
+`court-south`, ground rooms at −1.6) through its far wall, and the descent
+runs the length of the pavilion to the foyer's door on the same axis: one
+walk, no turn. The flights are 6 m wide (was 2.4) and gentler: a doorway may
+set its own going with `treadMeters` (0.42 here against the default 0.29), so
+these 22 steps run 9.24 m at 21° rather than 6.38 m at 29°. The terrace's own
+steps keep the default. World-engine's east
 door and the stair tower of the first pass are gone. The flights are the
 generated ones (`terrain.ts`); the stage's apron is a 7-step flight the
 width of the proscenium.

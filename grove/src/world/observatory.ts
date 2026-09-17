@@ -6,7 +6,7 @@ import {
 } from "three";
 import type { Room, Doorway, Mansion } from "./schema";
 import type { RoomShell } from "./rooms";
-import { STAIR_MARGIN, STAIR_TREAD, flightsOf, moundHeight, stairSteps, type Flight } from "./terrain";
+import { STAIR_MARGIN, flightsOf, moundHeight, stairSteps, type Flight } from "./terrain";
 import { LIGHT_FIELD_GLSL, LIGHT_FIELD_UNIFORMS_GLSL, applyLightField, bakeLightField, lightFieldUniforms, litRooms, type Emitter, type LightField } from "./lightfield";
 import { onPulse } from "./pulse";
 import { VENUE_TINT } from "./venue";
@@ -575,6 +575,8 @@ function flights(b: Builder): void {
 function stepsOf(b: Builder, flight: Flight, y0: number): void {
   const { door, rise, run, direction } = flight;
   const steps = stairSteps(rise);
+  // The drawn going is the one the body walks: a door may ask for a longer one.
+  const tread = run / steps;
   const cheek = 0.22;
   const width = door.width + 2 * STAIR_MARGIN;
   const inner = width - 2 * cheek;
@@ -584,10 +586,10 @@ function stepsOf(b: Builder, flight: Flight, y0: number): void {
   };
   for (let i = 0; i < steps; i++) {
     const top = y0 + rise * (i + 1) / steps;
-    const near = (steps - 1 - i) * STAIR_TREAD;
-    const along = door.at + direction * (near + STAIR_TREAD / 2);
-    place("stone", along, (y0 + top) / 2, STAIR_TREAD, top - y0, inner);
-    place("brass", door.at + direction * (near + STAIR_TREAD - 0.03), top + 0.004, 0.06, 0.012, inner);
+    const near = (steps - 1 - i) * tread;
+    const along = door.at + direction * (near + tread / 2);
+    place("stone", along, (y0 + top) / 2, tread, top - y0, inner);
+    place("brass", door.at + direction * (near + tread - 0.03), top + 0.004, 0.06, 0.012, inner);
   }
   const parapet = rise + 0.95;
   for (const side of [-1, 1]) {
