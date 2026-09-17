@@ -283,11 +283,25 @@ describe("announce", () => {
     // exactly that and left the bracket open.
     const [only] = announce([event({
       id: "ev_1", type: "slowdown", priority: 2, detail: "",
-      title: "s=0.94: the box is slowing this run: 127 s per model year against 60 s median for this run so far (load 25.1 on 16 cores; top: chrome 310%, node 180%). Box load, not the code",
+      // The adapter's own alert, 226 characters -- longer than the synthetic
+      // fold's 174, and the one that actually reaches the cut.
+      title: "m06-fold-s0.96: the box is slowing this run: 261 s per model year against 60 s median for this run so far (load 25.1 on 16 cores; top: chrome 310%, node 180%). Box load, not the code: only a same-load control can say otherwise",
     })]);
-    expect(only!.text).toBe("s=0.94: the box is slowing this run: 127 s per model year against 60 s median for this run so far. Box load, not the code.");
+    expect(only!.text).toContain("Box load, not the code");
     expect(only!.text).not.toContain("(");
     expect(only!.text).not.toMatch(/regress/i);
+    expect([...only!.text].length).toBeLessThanOrEqual(SPOKEN_MAX);
+  });
+
+  it("keeps a producer's own ellipsis instead of calling it a full stop", () => {
+    // `...` is how a producer marks that it truncated a log line; turned into
+    // a stop, a cut-off line would read as a complete one.
+    const [only] = announce([event({
+      id: "ev_1", detail: "",
+      title: `m06-fold-s0.96: ${"tail ".repeat(26)}and then it said something... and more`,
+    })]);
+    expect(only!.text).not.toMatch(/\.\./);
+    expect(only!.text).toContain("…");
   });
 
   it("never says only punctuation, however much of the line was evidence", () => {

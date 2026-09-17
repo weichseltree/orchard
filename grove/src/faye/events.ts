@@ -234,11 +234,12 @@ export const SPOKEN_MAX = 140;
 export function fitToRoom(text: string): string {
   if (Array.from(text).length <= SPOKEN_MAX) return text;
   const withoutEvidence = text
+    .replace(/\.{3,}/g, "…")
     .replace(/\s*\([^()]*\)/g, "")
     // What the evidence leaves behind: a space before punctuation, a separator
     // that now introduces nothing, and two terminators where the sentence
     // ended before the bracket did.
-    .replace(/\s+([.,;:!?…])/g, "$1")
+    .replace(/\s+([.,;:!?])/g, "$1")
     .replace(/\s*([:;,])\s*([.!?…])/g, "$2")
     .replace(/([.!?…])\s*[.,;:!?…]+/g, "$1")
     .trim();
@@ -251,7 +252,12 @@ export function fitToRoom(text: string): string {
   // A clause boundary if there is one past the halfway mark -- her own answers
   // are lists of clauses, and ending on one reads as shortened rather than as
   // interrupted -- and a word boundary otherwise.
-  const clause = Math.max(cut.lastIndexOf("; "), cut.lastIndexOf(". "));
+  //
+  // "; " only, never ". ": a producer's sentence boundary is not a list
+  // boundary, and preferring it dropped the whole second sentence of the
+  // slowdown alert -- the "Box load, not the code" clause ANNOUNCE-FEED.md §3
+  // requires -- leaving the numbers that invite the reading it forbids.
+  const clause = cut.lastIndexOf("; ");
   const space = cut.lastIndexOf(" ");
   if (clause > SPOKEN_MAX / 2) cut = cut.slice(0, clause);
   else if (space > SPOKEN_MAX / 2) cut = cut.slice(0, space);

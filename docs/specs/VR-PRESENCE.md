@@ -355,7 +355,12 @@ mirror, so an announcement feed would run beside it rather than replacing it:
   not only the ones `announce` built — which is also why her own answers put
   no subject in brackets: "9 on SirBase: 4 coarsen, 3 arcedit" survives the
   trim where "9 on SirBase (4 coarsen, 3 arcedit)" would lose every tree name,
-  and a fourth box is counted ("and 2 more boxes") rather than cut mid-name.
+  and boxes are dropped until the sentence fits, counted as "and 2 more boxes"
+  rather than cut mid-name. **A producer must not put the payload in brackets
+  either** — a reader drops them, and it cannot tell an alert's arithmetic from
+  a fact. A clause boundary is taken only at "; ", never at ". ": a producer's
+  sentence boundary is not a list boundary, and preferring it dropped the
+  slowdown's required clause all over again.
 - **A condition ending and a condition going unwatched are different facts.**
   The metric engine names both from whatever a person called the condition:
   `<name>-cleared` is the condition genuinely over, `<name>-expired` is the

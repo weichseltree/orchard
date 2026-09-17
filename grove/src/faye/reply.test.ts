@@ -203,6 +203,20 @@ describe("what survives the room's length", () => {
     expect(fitToRoom(answer)).toBe(answer);
   });
 
+  it("drops boxes until the sentence fits, however long their names are", () => {
+    // `host` is whatever a box reports to expdash, and an FQDN makes three
+    // boxes too long for one line -- counting boxes is not enough on its own.
+    const fqdn = state({
+      lanesFresh: false, lanesAgeSeconds: 1200,
+      running: ["sirbase.example.internal", "legion-three.example.internal", "legion-two.example.internal"]
+        .flatMap((host) => ["arcedit", "spectre", "quantumflow"].map((tree) => run(host, tree))),
+    });
+    const answer = replyTo("faye what is running", fqdn, titles)!;
+    expect([...answer].length).toBeLessThanOrEqual(140);
+    expect(answer).toMatch(/and \d more box/);
+    expect(fitToRoom(answer)).toBe(answer);
+  });
+
   it("counts the boxes it cannot name rather than being cut mid-name", () => {
     const everywhere = state({
       running: ["SirBase", "Legion", "legion-two", "legion-three", "legion-four"]

@@ -9,7 +9,7 @@
 // The same honesty rule as `announce`: "completed exit=0" is also what a kill,
 // an OOM and a time-budget stop record, so nothing here reports a success.
 
-import { peerIsSilent, treeLabel, type MirrorHealth, type RunningRun, type TreeTitles } from "./events";
+import { SPOKEN_MAX, peerIsSilent, treeLabel, type MirrorHealth, type RunningRun, type TreeTitles } from "./events";
 import { NAMES } from "./names";
 
 /** What Faye knows right now, as the poll loop last left it. */
@@ -147,13 +147,22 @@ export function replyTo(text: string, state: FayeState, titles?: TreeTitles): st
     const only = boxes[0]!.key;
     return `${when}${runs} on ${only}: ${named(only)}.`;
   }
-  const parts = boxes.slice(0, BOXES_NAMED).map(({ key: host, n }) => `${n} on ${host}: ${named(host)}`);
-  const restBoxes = boxes.length - parts.length;
-  // A box she cannot fit is counted, not cut: the trim at the speaker would
+  // A box she cannot fit is COUNTED, not cut: the trim at the speaker would
   // otherwise end the sentence mid-name, and "and 2 more boxes" is the honest
-  // form of the same shortening.
-  if (restBoxes > 0) parts.push(`and ${restBoxes} more box${restBoxes === 1 ? "" : "es"}`);
-  return `${when}${runs} — ${parts.join("; ")}.`;
+  // form of the same shortening. Counting boxes is not enough on its own --
+  // a box reporting itself as an FQDN makes three of them too long for one
+  // line -- so boxes are dropped from the tail until the sentence fits.
+  const named_ = boxes.map(({ key: host, n }) => `${n} on ${host}: ${named(host)}`);
+  let shown = named_.slice(0, BOXES_NAMED);
+  const sentence = (): string => {
+    const hidden = boxes.length - shown.length;
+    const parts = hidden > 0
+      ? [...shown, `and ${hidden} more box${hidden === 1 ? "" : "es"}`]
+      : shown;
+    return `${when}${runs} — ${parts.join("; ")}.`;
+  };
+  while (shown.length > 1 && [...sentence()].length > SPOKEN_MAX) shown = shown.slice(0, -1);
+  return sentence();
 }
 
 /** How many trees one box's answer names before it says "and N more". One line, not a list. */
