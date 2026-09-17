@@ -27,6 +27,23 @@ describe("stairs", () => {
     expect(STAIR_RISE * stairSteps(1.5)).toBeGreaterThanOrEqual(1.5);
   });
 
+  it("takes a door's own going where it asks for one, and every flight stays inside its room", () => {
+    // The cellar's descents are gentler than the terrace's steps (CLUB.md).
+    expect(stairRun(1.5, 0.42)).toBeCloseTo(10 * 0.42);
+    const stair = mansion.rooms.find((r) => r.id === "stair-north")!;
+    const flight = flightsOf(mansion, stair)[0]!;
+    expect(flight.door.treadMeters).toBe(0.42);
+    expect(flight.run).toBeCloseTo(stairSteps(flight.rise) * 0.42);
+    for (const room of mansion.rooms) {
+      for (const f of flightsOf(mansion, room)) {
+        const axis = f.door.axis === "x" ? 0 : 2;
+        const foot = f.door.at + f.direction * f.run;
+        expect(foot, `${room.id} -> ${f.door.to}`).toBeGreaterThanOrEqual(room.bounds.min[axis] - 1e-6);
+        expect(foot, `${room.id} -> ${f.door.to}`).toBeLessThanOrEqual(room.bounds.max[axis] + 1e-6);
+      }
+    }
+  });
+
   it("gives the lower room the flight, never the higher one", () => {
     const hallFlights = flightsOf(mansion, hall);
     expect(hallFlights.map((f) => f.door.to)).toEqual(["world-engine"]);

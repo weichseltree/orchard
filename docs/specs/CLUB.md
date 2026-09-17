@@ -51,7 +51,7 @@ now entered from a garden court of its own on the grove's edge (`court-north`,
 runs the length of the pavilion to the foyer's door on the same axis: one
 walk, no turn. The flights are 6 m wide (was 2.4) and gentler: a doorway may
 set its own going with `treadMeters` (0.42 here against the default 0.29), so
-these 22 steps run 9.24 m at 21° rather than 6.38 m at 29°. The terrace's own
+these 22 steps run 9.24 m at 20.2° rather than 6.38 m at 28.9°. The terrace's own
 steps keep the default. World-engine's east
 door and the stair tower of the first pass are gone. The flights are the
 generated ones (`terrain.ts`); the stage's apron is a 7-step flight the

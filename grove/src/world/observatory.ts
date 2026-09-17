@@ -58,6 +58,10 @@ const FINISH_ALIAS: Record<string, string> = { stage: "club" };
 function finishOf(roomId: string): Partial<Record<Finish, string>> | undefined {
   return ROOM_FINISH[finishKey(roomId)];
 }
+/** One of a room's own finishes, for what is drawn beside the architecture (door-signs.ts's letters). */
+export function finishColour(roomId: string, finish: Finish): string {
+  return finishOf(roomId)?.[finish] ?? OBSERVATORY_PALETTE[finish];
+}
 function finishKey(roomId: string): string {
   const id = FINISH_ALIAS[roomId] ?? roomId;
   return ROOM_FINISH[id] ? id : id.split("/")[0]!;
@@ -896,6 +900,19 @@ function grounds(b: Builder): void {
     // The balustrade along the garden edge, open where the garden stairs descend.
     const edge = walls(room)[0]!;
     balustrade(b, edge, room.doorways.filter(d => d.axis === "x" && Math.abs(d.at - edge.at) < 0.001).map(d => ({ center: d.center, width: d.width + 2 * STAIR_MARGIN })));
+  } else if (room.id.startsWith("court-")) {
+    // A club's forecourt: a walled garden room on the grove's edge, paved
+    // from its gate to the pavilion's door, with the balustrade closed
+    // wherever there is no opening. The lanterns stand off the walk, not on
+    // it, so the door is what a visitor sees from the gate (2026-09-17).
+    path(b, cx, cz, 5.2, depth);
+    for (const wall of walls(room)) {
+      const gaps = room.doorways
+        .filter(d => d.axis === wall.axis && Math.abs(d.at - wall.at) < 0.001)
+        .map(d => ({ center: d.center, width: d.width + 1.2 }));
+      balustrade(b, wall, gaps);
+    }
+    for (const x of [x0 + 2.2, x1 - 2.2]) for (const z of [cz - depth * 0.28, cz + depth * 0.28]) lantern(b, x, z);
   } else if (room.id === "parterre") {
     // The portal court lies on the axis west of the crossing, on the far
     // side from the palace: a round of gravel ringed by water, the axis

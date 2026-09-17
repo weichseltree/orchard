@@ -2,9 +2,9 @@ import { BufferGeometry, Float32BufferAttribute, Group, Mesh, MeshBasicMaterial,
 import earcut from "earcut";
 import type { Doorway, Mansion, Room } from "./schema";
 import type { Labels } from "./labels/index";
-import { OBSERVATORY_PALETTE } from "./observatory";
+import { OBSERVATORY_PALETTE, finishColour } from "./observatory";
 
-// The name over every door, in brass letters standing off the lintel: the
+// The name over every door, standing off the lintel's stone band: the
 // room the door leads to, as the visitor reads it in their language, or its
 // repository's name when it has no wall text yet (the sealed doors). The
 // letters are extruded here from Cinzel's outlines (fonts/cinzel.json, SIL
@@ -117,19 +117,19 @@ export function canSet(font: Typeface, text: string): boolean {
   return [...text].every((c) => c === " " || c in font.glyphs);
 }
 
-const inks: Partial<Record<"ink" | "brass", MeshBasicMaterial>> = {};
+const inks = new Map<string, MeshBasicMaterial>();
 /**
- * Letters cut dark into the lit stone of a lintel indoors; brass letters in
- * the open air, where a door has no band behind it and the night is the only
- * ground. Brass indoors (2026-09-16) was pale on a pale band (ruled
- * 2026-09-17).
+ * Dark letters on the lit stone of a lintel indoors, in the room's OWN deep
+ * inset colour, since its stone is its own too (spectre's is nearly black);
+ * brass letters in the open air, where a door has no band behind it and the
+ * night is the only ground. Brass indoors (2026-09-16) was pale on a pale
+ * band (ruled 2026-09-17).
  */
-function signMaterial(outdoors: boolean): MeshBasicMaterial {
-  const key = outdoors ? "brass" : "ink";
-  return (inks[key] ??= new MeshBasicMaterial({
-    color: outdoors ? OBSERVATORY_PALETTE.light : OBSERVATORY_PALETTE.inset,
-    vertexColors: true,
-  }));
+function signMaterial(roomId: string, outdoors: boolean): MeshBasicMaterial {
+  const colour = outdoors ? OBSERVATORY_PALETTE.light : finishColour(roomId, "inset");
+  let material = inks.get(colour);
+  if (!material) inks.set(colour, (material = new MeshBasicMaterial({ color: colour, vertexColors: true })));
+  return material;
 }
 
 /** A closed outline of a glyph, flattened: x, y pairs in the sign's metres. */
@@ -316,7 +316,7 @@ export function buildDoorSigns(room: Room, signs: readonly DoorSign[], font: Typ
     merged.setAttribute("position", new Float32BufferAttribute(position, 3));
     merged.setAttribute("normal", new Float32BufferAttribute(normal, 3));
     merged.setAttribute("color", new Float32BufferAttribute(color, 3));
-    const mesh = new Mesh(merged, signMaterial(outdoors));
+    const mesh = new Mesh(merged, signMaterial(room.id, outdoors));
     mesh.name = "door-signs";
     mesh.userData = { signs: signs.map((s) => s.to) };
     group.add(mesh);

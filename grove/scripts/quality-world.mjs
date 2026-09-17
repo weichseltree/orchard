@@ -26,6 +26,7 @@ const stations = [
   ['phototroph', 0, 14, 180, -8],
   ['world-engine', 0, -14, 0, 5],
   ['orangery', 0, -36, 0, 12],
+  ['court-north', -15, -97, 180, 2],
   ['stair-north', -15, -78, 0, 6],
   ['foyer', -15, -41, -90, 3],
   ['club', 0, -20, 0, 4],
@@ -37,6 +38,7 @@ const stations = [
   ['parterre', -26, 0, 90, 4],
   ['orchard-west', -45, -60, 0, 5],
   ['orchard-south', -80, 0, 90, 5],
+  ['court-south', -15, 93, 0, 2],
   ['orchard-east', -45, 60, 180, 5],
   ['orrery', 0, -400, 0, 8],
 ];
