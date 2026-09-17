@@ -1069,6 +1069,7 @@ view.start((dt, time, rawDt) => {
     handOverVideo(true);
   }
   for (const planet of world?.planets ?? []) planet.update();
+  for (const model of world?.models ?? []) model.update(dt);
 
   const tape = nearestTape();
   hud.setScrubberVisible(tape !== null);

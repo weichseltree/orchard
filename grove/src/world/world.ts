@@ -16,6 +16,7 @@ import type { DeviceTier } from "../tape/bundle";
 import type { StillPanel } from "../media/still";
 import type { VideoWall } from "../media/videowall";
 import type { PlanetExhibit } from "./planet-exhibit";
+import type { ModelExhibit } from "./model-exhibit";
 import type { AudioExhibit } from "./audio-exhibit";
 import { StillBundleSchema, VideoBundleSchema } from "../tape/bundle";
 import type { Provenance } from "../ui/provenance";
@@ -79,6 +80,8 @@ export interface BuiltWorld {
   stills: StillPanel[];
   /** spectre's cutaway worlds, wherever they stand. */
   planets: PlanetExhibit[];
+  /** glTF models on their plinths; the frame loop turns their turntables. */
+  models: ModelExhibit[];
   /**
    * Live audio exhibits. The frame loop hands each one the visitor's head
    * (`setListener`) and re-ranks its sources a few times a second
@@ -459,6 +462,25 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
             })
             .catch((error: unknown) => onNotice(`planet ${hanging.id}: ${message(error)}`)),
         );
+      } else if (hanging.kind === "model") {
+        pending.push(
+          import("./model-exhibit").then(({ ModelExhibit }) => ModelExhibit.load({
+            hanging, baseUrl: base, renderer, tier: device.tier, onNotice,
+          }))
+            .then((model) => {
+              world.models.push(model);
+              roomOf.set(model, room.id);
+              groupFor(room).add(model.group);
+              provenance.register({
+                id: `model:${hanging.id}`,
+                hanging: hanging.id,
+                title: hanging.title || model.bundle.title,
+                bounds: model.bounds,
+                read: () => model.provenance(),
+              });
+            })
+            .catch((error: unknown) => onNotice(`model ${hanging.id}: ${message(error)}`)),
+        );
       } else {
         pending.push(
           buildVideo(hanging.id, hanging.title, base, hanging, provenance, onNotice)
@@ -514,6 +536,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
     },
     stills: [],
     planets: [],
+    models: [],
     audios: [],
     load: () => ensureRooms(neighbourhood(mansion, options.startRoom ?? mansion.start)),
     ensureRooms: (ids) => ensureRooms(ids),
@@ -529,6 +552,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
       for (const video of world.videos) video.dispose();
       for (const still of world.stills) still.dispose();
       for (const planet of world.planets) planet.dispose();
+      for (const model of world.models) model.dispose();
       for (const audio of world.audios) audio.dispose();
       for (const stand of stands.values()) void stand.then((s) => s.dispose());
       stands.clear();
