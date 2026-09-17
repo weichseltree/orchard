@@ -213,7 +213,10 @@ describe("mergeFresh", () => {
     const wrongUnit = mergeFresh([
       { feed: "expdash", primary: true, fresh: [event({ id: "ev_2", ts: 1789650000000, exp: "other" })] },
     ], first.heard);
-    expect(wrongUnit.heard.byKey.size).toBe(2);
+    // The stamp itself is not kept -- it can never match anything in seconds
+    // and would sit at the head of the eviction order for ever -- and the real
+    // key it would have evicted is still there.
+    expect(wrongUnit.heard.byKey.size).toBe(1);
     const echo = mergeFresh([
       { feed: "planet", primary: false, fresh: [event({ id: "ev_43", ts: 1789650030 })] },
     ], wrongUnit.heard);
@@ -362,15 +365,66 @@ describe("takeReadings", () => {
     expect(withoutLanes.lines).toHaveLength(1);
   });
 
-  it("changes nothing at all when no feed answers", () => {
-    const first = takeReadings(NEW_WATCH, [lanes(), planet()]);
+  it("says nothing when no feed answers, but lets the lane facts age", () => {
+    // With expdash as her only feed -- how the live service runs -- EVERY
+    // failed poll is a poll where nothing answered, so this is the only place
+    // she can learn the dashboard has stopped answering.
+    const first = takeReadings(NEW_WATCH, [lanes({ events: [event({ id: "ev_1" })] })], undefined, 1_000_000);
     const nothing = takeReadings(first.state, [
       { feed: "expdash", lanes: true, reading: null },
-      { feed: "planet", lanes: false, reading: null },
-    ]);
-    expect(nothing.state).toBe(first.state);
+    ], undefined, 1_600_000);
     expect(nothing.lines).toEqual([]);
     expect(nothing.notes).toEqual([]);
+    expect(nothing.state.known.lanesFresh).toBe(false);
+    expect(nothing.state.known.lanesAgeSeconds).toBe(600);
+    // The facts themselves are kept; it is their tense that changed.
+    expect(nothing.state.known.running).toEqual(first.state.known.running);
+    expect(nothing.state.known.mirror).toEqual(first.state.known.mirror);
+    expect(nothing.state.known.hosts).toEqual(first.state.known.hosts);
+  });
+
+  it("has nothing to age before any feed has ever answered", () => {
+    const dead = takeReadings(NEW_WATCH, [{ feed: "expdash", lanes: true, reading: null }]);
+    expect(dead.state).toBe(NEW_WATCH);
+    expect(dead.state.known.hasFeed).toBe(false);
+  });
+
+  it("promotes nobody when the first of two declaration feeds is the one down", () => {
+    // The same trap as H1 one configuration over: with no expdash at all,
+    // immunity belongs to the first FEED, not to whoever happens to be up.
+    const alpha = (over: Partial<FeedReading> = {}) => ({ feed: "alpha", lanes: false, reading: reading(over) });
+    const beta = (over: Partial<FeedReading> = {}) => ({ feed: "beta", lanes: false, reading: reading(over) });
+    const first = takeReadings(NEW_WATCH, [
+      alpha({ events: [event({ id: "ev_1", exp: "earlier" })] }),
+      beta({ events: [event({ id: "ev_90", exp: "earlier" })] }),
+    ]);
+    const crash = takeReadings(first.state, [alpha({ events: [event({ id: "ev_2", ts: 1789650000 })] }), beta()]);
+    expect(crash.lines).toHaveLength(1);
+    const echo = takeReadings(crash.state, [
+      { feed: "alpha", lanes: false, reading: null },
+      beta({ events: [event({ id: "ev_91", ts: 1789650020 })] }),
+    ]);
+    expect(echo.lines).toEqual([]);
+  });
+
+  it("says one set of starts once, however the two feeds spell it", () => {
+    // expdash calls a start `started`; the planet watcher declares `running`.
+    // One fact, two spellings, one sentence.
+    const first = takeReadings(NEW_WATCH, [
+      lanes({ events: [event({ id: "ev_1", exp: "earlier" })] }),
+      planet({ events: [event({ id: "ev_42", exp: "earlier" })] }),
+    ]);
+    const starts = takeReadings(first.state, [
+      lanes({ events: [
+        event({ id: "ev_2", type: "started", priority: 3, ts: 1789650000, exp: "m06-fold-s0.95" }),
+        event({ id: "ev_3", type: "started", priority: 3, ts: 1789650000, exp: "m06-fold-s0.96" }),
+      ] }),
+      planet({ events: [
+        event({ id: "ev_43", type: "running", priority: 3, ts: 1789650004, exp: "m06-fold-s0.95" }),
+        event({ id: "ev_44", type: "running", priority: 3, ts: 1789650004, exp: "m06-fold-s0.96" }),
+      ] }),
+    ], new Map([["spectre", "coarsen"]]));
+    expect(starts.lines).toEqual(["2 runs started in coarsen."]);
   });
 
   it("cannot see the lanes with a declaration feed alone", () => {

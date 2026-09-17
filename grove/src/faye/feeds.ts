@@ -24,7 +24,7 @@
 // runs beside it rather than replacing it.
 
 import {
-  EMPTY_CURSOR, accumulate, announce, peerIsSilent,
+  EMPTY_CURSOR, accumulate, announce, peerIsSilent, saidAs,
   type ComputeEvent, type Cursor, type FeedReading, type TreeTitles,
 } from "./events";
 import { EMPTY_STATE, type FayeState } from "./reply";
@@ -171,14 +171,20 @@ function remember(times: readonly number[] | undefined, ts: number): number[] {
   const had = times ?? [];
   const unknown = !ts || had.some((seen) => !seen);
   const known = [...had.filter((seen) => seen), ...(ts ? [ts] : [])]
-    .slice(-(ECHO_MEMORY_TIMES - 1));
+    .slice(-Math.max(0, ECHO_MEMORY_TIMES - 1));
   return unknown ? [0, ...known] : known;
 }
 
 /**
  * What makes two events the same event: the run, the tree and what happened.
  *
- * That this matches on the ingest path is worth stating, because it is not
+ * What happened is the PHRASE, not the producer's spelling of it (`saidAs`).
+ * Two watchers of one `~/.exp_status` record disagree about the word --
+ * expdash calls a start `started`, the planet watcher declares `running` --
+ * and keying on the raw type would let one set of starts be announced twice,
+ * in the same sentence both times.
+ *
+ * That the run matches on the ingest path is worth stating, because it is not
  * promised by a contract. expdash sets `exp` to the status record's id
  * (`20260913_021243_1515015`), and when LogSwarm ingests expdash's feed it
  * carries that string through as `data.exp`, which is the last rung of
@@ -187,7 +193,7 @@ function remember(times: readonly number[] | undefined, ts: number): number[] {
  * the title, which the two feeds also share on that path.
  */
 function sameness(event: ComputeEvent): string {
-  return JSON.stringify([event.type, event.repo, event.exp || event.title]);
+  return JSON.stringify([saidAs(event.type), event.repo, event.exp || event.title]);
 }
 
 function isEcho(times: readonly number[] | undefined, ts: number): boolean {
@@ -216,7 +222,7 @@ function prune(seen: ReadonlyMap<string, readonly number[]>): Map<string, readon
   for (const [key, times] of seen) {
     // A timestamp of 0 is "unknown", and survives the window: it is the case
     // the echo check leans on hardest. The count cap is what bounds it.
-    const kept = times.filter((ts) => !ts || ts >= newest - ECHO_MEMORY_S);
+    const kept = times.filter((ts) => !ts || (ts >= newest - ECHO_MEMORY_S && ts <= PLAUSIBLE_SECONDS));
     if (kept.length > 0) rows.push({ key, times: kept, newest: Math.max(...kept) });
   }
   rows.sort((a, b) => (b.newest !== a.newest ? b.newest - a.newest : a.key < b.key ? -1 : 1));
@@ -274,8 +280,11 @@ export interface FeedSource {
  */
 export function planFeeds(statusUrl: string, feedUrls: readonly string[]): FeedSource[] {
   const sources: FeedSource[] = [];
-  if (statusUrl) sources.push({ name: "expdash", url: statusUrl, lanes: true });
-  feedUrls.forEach((url, index) => {
+  // Trimmed: a whitespace-only flag is a feed turned off, not a URL that fails
+  // to parse once per poll for as long as she stands there.
+  const lanes = statusUrl.trim();
+  if (lanes) sources.push({ name: "expdash", url: lanes, lanes: true });
+  feedUrls.map((url) => url.trim()).forEach((url, index) => {
     if (!url || sources.some((source) => source.url === url)) return;
     const wanted = feedNameFor(url, index);
     let name = wanted;
@@ -304,6 +313,8 @@ export interface Watch {
   known: FayeState;
   /** Whether the peer was silent at the last poll; null before the first. */
   peerSilent: boolean | null;
+  /** When the lane feed last answered, in ms; null while it never has. */
+  lanesSeenAt: number | null;
 }
 
 export const NEW_WATCH: Watch = {
@@ -311,6 +322,7 @@ export const NEW_WATCH: Watch = {
   heard: NOTHING_HEARD,
   known: EMPTY_STATE,
   peerSilent: null,
+  lanesSeenAt: null,
 };
 
 /** One feed's answer to one poll. `null` means it did not answer. */
@@ -343,20 +355,39 @@ export interface Polled {
  *   the last answer it gave rather than reporting an idle box.
  * - **Announce a backlog.** Each feed's first reading is its baseline.
  * - **Report a stale fact as a fresh one.** The lane facts survive an outage,
- *   but `lanesFresh` goes false and `reply.ts` says they are the last she saw.
+ *   but `lanesFresh` goes false and her answer becomes the past tense with an
+ *   age on it (`reply.ts`). That has to be decided on a poll where NOTHING
+ *   answered too -- with expdash as her only feed, which is how the live
+ *   service runs, every failed poll is such a poll.
  */
-export function takeReadings(state: Watch, answers: readonly FeedAnswer[], titles?: TreeTitles): Polled {
-  if (answers.every((answer) => answer.reading === null)) return { state, lines: [], notes: [] };
-
+export function takeReadings(
+  state: Watch,
+  answers: readonly FeedAnswer[],
+  titles?: TreeTitles,
+  now: number = Date.now(),
+): Polled {
   // Which feed's news is never held back this poll: expdash when it answered,
-  // and otherwise -- only when there is no expdash at all -- the first feed
-  // that did. A poll where expdash is merely down promotes nobody; that is the
-  // poll the echo check exists for.
+  // and otherwise -- only when there is no expdash among her feeds at all --
+  // the FIRST feed, when that one answered. A poll where the primary is merely
+  // down promotes nobody, whoever else is up; that is the poll the echo check
+  // exists for.
   const lanesAnswer = answers.find((answer) => answer.lanes) ?? null;
   const lanes = lanesAnswer?.reading ?? null;
   const primaryFeed = lanesAnswer
     ? (lanes ? lanesAnswer.feed : null)
-    : answers.find((answer) => answer.reading)?.feed ?? null;
+    : (answers[0]?.reading ? answers[0].feed : null);
+
+  if (answers.every((answer) => answer.reading === null)) {
+    // Nothing to take in, and nothing to say -- but a failed poll IS how she
+    // learns the dashboard has stopped answering, so the lane facts age.
+    if (!state.known.hasFeed) return { state, lines: [], notes: [] };
+    const known: FayeState = {
+      ...state.known,
+      lanesFresh: false,
+      lanesAgeSeconds: agedSince(state.lanesSeenAt, now),
+    };
+    return { state: { ...state, known }, lines: [], notes: [] };
+  }
 
   const feeds = new Map(state.feeds);
   const notes: string[] = [];
@@ -366,6 +397,9 @@ export function takeReadings(state: Watch, answers: readonly FeedAnswer[], title
     const take = takeFeed(feeds.get(feed) ?? NEW_FEED, reading.events);
     feeds.set(feed, take.state);
     if (take.baseline) notes.push(`baseline from ${feed} at ${reading.events.length} event(s)`);
+    // A feed answering with nothing she can number is not an outage -- the
+    // fetch worked -- and would otherwise be silent in the journal forever.
+    else if (!take.state.baselined) notes.push(`${feed} answered with no usable event; still waiting for its baseline`);
     if (take.rebaselined) notes.push(`${feed} restarted its numbering; re-baselined`);
     takes.push({ feed, primary: feed === primaryFeed, fresh: take.fresh });
   }
@@ -387,6 +421,9 @@ export function takeReadings(state: Watch, answers: readonly FeedAnswer[], title
     // down does not unlearn that, it just has nothing newer to say.
     knowsRunning: state.known.knowsRunning || lanes !== null,
     lanesFresh: lanes !== null,
+    // Recomputed every poll, so the age a visitor is told is at most one poll
+    // behind: no clock is read at the moment she answers.
+    lanesAgeSeconds: lanes ? 0 : agedSince(state.lanesSeenAt, now),
   };
 
   const lines = announce(merged.fresh, titles).map((a) => a.text);
@@ -407,7 +444,16 @@ export function takeReadings(state: Watch, answers: readonly FeedAnswer[], title
     peerSilent = silentNow;
   }
 
-  return { state: { feeds, heard: merged.heard, known, peerSilent }, lines, notes };
+  return {
+    state: { feeds, heard: merged.heard, known, peerSilent, lanesSeenAt: lanes ? now : state.lanesSeenAt },
+    lines,
+    notes,
+  };
+}
+
+/** How long ago the lane feed last answered, in seconds; 0 when it never has. */
+function agedSince(seenAt: number | null, now: number): number {
+  return seenAt === null ? 0 : Math.max(0, (now - seenAt) / 1000);
 }
 
 function countBy(values: readonly string[], into: ReadonlyMap<string, number>): Map<string, number> {

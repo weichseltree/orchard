@@ -301,6 +301,12 @@ export function peerIsSilent(mirror: MirrorHealth | null, staleAfterSeconds = 36
  * `slowdown` stays the box slowing a run and is never called a regression
  * (COMPUTE-WATCH.md §3 and §5 in logswarm; box load has fooled us before).
  * A type with no phrase here is said as the producer wrote it.
+ *
+ * Two producers watching the same thing can spell one event differently --
+ * expdash's `started` and a run's own `running` are the same fact -- so what
+ * matters downstream is the PHRASE, not the spelling: `saidAs` is what
+ * `feeds.ts` compares two feeds' events by, and a synonym pair added here
+ * stops being announced twice by the same act.
  */
 const COLLAPSED_PHRASES: Readonly<Record<string, string>> = {
   // `running` is a run declaring that it HAS started, and "2 runs running"
@@ -317,8 +323,13 @@ const COLLAPSED_PHRASES: Readonly<Record<string, string>> = {
   slowdown: "flagged the box slowing them",
 };
 
+/** What a type is said as, whoever spelled it: the phrase above, or the type. */
+export function saidAs(type: string): string {
+  return COLLAPSED_PHRASES[type] ?? (type || "events");
+}
+
 function plural(type: string, n: number): string {
-  const said = COLLAPSED_PHRASES[type] ?? (type || "events");
+  const said = saidAs(type);
   return n === 1 ? `run ${said}` : `runs ${said}`;
 }
 

@@ -303,9 +303,19 @@ beside it rather than replacing it, and:
 - **The primary is never silenced.** Only a later feed's events can be
   dropped, so adding a feed can make her say more and never less than expdash
   alone would have.
-- **A feed that does not answer changes nothing.** The mirror and what is
-  running come from expdash alone; a poll where it was down keeps the last
-  answer it gave rather than reporting an idle box.
+- **A feed that does not answer changes nothing, except the tense.** The
+  mirror and what is running come from expdash alone; a poll where it was down
+  keeps the last answer it gave rather than reporting an idle box — and says
+  so, with an age: "When I last looked, 20 minutes ago, 1 run: 1 on SirBase
+  (coarsen)." An hour-old count in the present tense is a fabricated
+  freshness, and a failed poll is the only place she can learn the dashboard
+  has stopped answering, so that is decided even on a poll where nothing
+  answered at all.
+- **One fact is one sentence, whoever spelled it.** Two watchers of the same
+  `~/.exp_status` record disagree about the word — expdash calls a start
+  `started`, the planet watcher declares `running` — so the echo check
+  compares what she would SAY, not the producer's spelling; otherwise one set
+  of starts is announced twice, in the same sentence both times.
 - **No declared state becomes a conclusion.** A collapsed burst needs English
   ("2 runs hit the cap unbalanced"), and that translation is the whole of it:
   `balanced` is not "stable", `plateau` is not "stuck", `finished` is not

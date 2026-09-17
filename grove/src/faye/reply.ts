@@ -37,6 +37,13 @@ export interface FayeState {
    * she saw.
    */
   lanesFresh: boolean;
+  /**
+   * How long ago the lane feed last answered, in seconds. Only meaningful
+   * while `lanesFresh` is false, and computed by the poll rather than by a
+   * clock here: an hour-old count and a half-minute-old one must not read the
+   * same way.
+   */
+  lanesAgeSeconds: number;
 }
 
 export const EMPTY_STATE: FayeState = {
@@ -47,6 +54,7 @@ export const EMPTY_STATE: FayeState = {
   hasFeed: false,
   knowsRunning: false,
   lanesFresh: false,
+  lanesAgeSeconds: 0,
 };
 
 /** The things a visitor can ask for. `none` means they were not talking to her. */
@@ -93,7 +101,7 @@ export function replyTo(text: string, state: FayeState, titles?: TreeTitles): st
     // The mirror's age is the age of a reading she may no longer be getting;
     // once the dashboard stops answering it is history, and said as history.
     if (!state.lanesFresh) {
-      return `The dashboard is not answering me; when it last did, ${peer} ${peerIsSilent(state.mirror) ? "had stopped reporting" : "was reporting"}.`;
+      return `The dashboard has not answered for ${describeAge(state.lanesAgeSeconds)}; when it last did, ${peer} ${peerIsSilent(state.mirror) ? "had stopped reporting" : "was reporting"}.`;
     }
     if (peerIsSilent(state.mirror)) {
       return `${peer} has stopped reporting; the last word from it was ${describeAge(ageSeconds)} ago.`;
@@ -110,7 +118,7 @@ export function replyTo(text: string, state: FayeState, titles?: TreeTitles): st
   }
   // What she last saw is not what is happening, and the difference is a whole
   // outage long. "when I last looked" is the only honest tense for it.
-  const when = state.lanesFresh ? "" : "When I last looked, ";
+  const when = state.lanesFresh ? "" : `When I last looked, ${describeAge(state.lanesAgeSeconds)} ago, `;
   if (state.running.length === 0) {
     // Nothing running is a real answer, and a common one at night.
     return when ? `${when}nothing was running.` : "Nothing is running that I can see.";
@@ -129,8 +137,7 @@ export function replyTo(text: string, state: FayeState, titles?: TreeTitles): st
     if (rest > 0) named.push(`${rest} more`);
     return `${n} on ${host} (${named.join(", ")})`;
   });
-  const was = state.lanesFresh ? "" : " (the dashboard is not answering now)";
-  return `${when}${total} run${total === 1 ? "" : "s"}: ${parts.join(", ")}${was}.`;
+  return `${when}${total} run${total === 1 ? "" : "s"}: ${parts.join(", ")}.`;
 }
 
 /** How many trees one box's answer names before it says "and N more". One line, not a list. */
