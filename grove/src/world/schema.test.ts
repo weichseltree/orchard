@@ -16,7 +16,11 @@ describe("mansion.json", () => {
     const palace = ["hall", "einstruct", "world-engine", "orangery", "court-north", "stair-north", "stair-south", "court-south", "foyer", "club", "stage", "phototroph", "gallery", "belvedere", "greenhouse", "terrace", "parterre", "orchard-west", "orchard-south", "orchard-east", "orrery"];
     // arcedit's area (results/grove/area.json in that tree): five rooms walked as a loop, and the canvas at a tenth of the scale.
     const arcedit = ["arcedit", "arcedit/agent", "arcedit/reward", "arcedit/record", "arcedit/workshop", "arcedit/inside"];
-    expect(mansion.rooms.map((room) => room.id)).toEqual([...palace, ...arcedit]);
+    // quantumflow's east wing (2026-09-17): the Shooting Gallery is the hall the
+    // big door off the orangery opens into, and a hub; the derivation is walked
+    // as a circuit around it and the Flow returns to the orangery.
+    const quantumflow = ["quantumflow", "quantumflow/cloud", "quantumflow/bowl", "quantumflow/inversion", "quantumflow/flow", "quantumflow/inside"];
+    expect(mansion.rooms.map((room) => room.id)).toEqual([...palace, ...arcedit, ...quantumflow]);
     expect(mansion.start).toBe("hall");
   });
 
@@ -41,8 +45,8 @@ describe("mansion.json", () => {
 
   it("titles the tree rooms after their repositories and stands the grounds below the terrace", () => {
     const mansion = parseMansion(mansionDocument);
-    expect(mansion.rooms.filter((r) => ["einstruct", "world-engine", "phototroph"].includes(r.id)).map((r) => r.title))
-      .toEqual(["einstruct", "world-engine", "phototroph"]);
+    expect(mansion.rooms.filter((r) => ["einstruct", "world-engine", "phototroph", "quantumflow"].includes(r.id)).map((r) => r.title))
+      .toEqual(["einstruct", "world-engine", "phototroph", "quantumflow"]);
     expect(roomById(mansion, "terrace")!.bounds.min[1]).toBe(0);
     expect(roomById(mansion, "parterre")!.bounds.min[1]).toBeCloseTo(-1.6);
     expect(roomById(mansion, "belvedere")!.bounds.min[1]).toBeCloseTo(1.8);

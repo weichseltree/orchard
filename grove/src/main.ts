@@ -603,6 +603,7 @@ async function toggleMap(): Promise<void> {
     mansion,
     room: body.room,
     x: body.x,
+    y: body.y,
     z: body.z,
     reachable: reachableRooms(mansion, body.room, lockedRoom),
     title: roomTitleOf,

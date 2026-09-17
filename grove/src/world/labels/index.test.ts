@@ -34,6 +34,7 @@ const REPOSITORY_TITLES: Record<string, string> = {
   einstruct: "einstruct",
   "world-engine": "world-engine",
   phototroph: "phototroph",
+  quantumflow: "quantumflow",
 };
 
 describe.each(files)("labels/%s.json", (locale, raw) => {
@@ -60,6 +61,22 @@ describe.each(files)("labels/%s.json", (locale, raw) => {
   for (const room of mansion.rooms) {
     const copy = labels.rooms[room.id];
     if (!copy) continue;
+    // Both documents are read by visitors and neither is derived from the
+    // other: the relief over a door and the wall text come from here, while
+    // the Guide's heading, the door list and the notices come from
+    // mansion.json's own `title`. They drifted apart on 2026-09-17 when the
+    // wing's rooms were renamed here alone, and nothing failed.
+    // Guarded on `room.title`: the schema lets a room leave it empty and the
+    // code means it to — guide.ts and world.ts fall back to `room.id` — and a
+    // room that does so should not fail a test in the labels suite. Requiring
+    // it in the schema instead would be the cleaner statement, but every
+    // synthetic room in venue, portal and world-loading's fixtures omits it,
+    // and that is a wider change than a wing is owed.
+    if (locale === "en" && room.title) {
+      it(`${room.id}: is titled the same here as in mansion.json`, () => {
+        expect(copy.title).toBe(room.title);
+      });
+    }
     const exhibits = room.hangings.length > 0;
     it(`${room.id}: an introduction of ${exhibits ? "60 to 110" : "25 to 50"} words, a look-for line${exhibits ? ", a limit" : ""}`, () => {
       const n = measure(locale, copy.intro);

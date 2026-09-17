@@ -516,6 +516,22 @@
           "center": -68,
           "width": 3,
           "height": 5
+        },
+        {
+          "to": "quantumflow",
+          "axis": "x",
+          "at": 10,
+          "center": -55,
+          "width": 7,
+          "height": 5.5
+        },
+        {
+          "to": "quantumflow/flow",
+          "axis": "x",
+          "at": 10,
+          "center": -37,
+          "width": 3,
+          "height": 4.6
         }
       ],
       "hangings": [],
@@ -2829,6 +2845,331 @@
           }
         }
       ]
+    },
+    {
+      "id": "quantumflow",
+      "title": "quantumflow",
+      "architecture": "observatory",
+      "presence": "quantumflow",
+      "fallback": {
+        "kind": "box",
+        "color": "#0d1420"
+      },
+      "bounds": {
+        "min": [
+          10,
+          1.5,
+          -70
+        ],
+        "max": [
+          52,
+          12,
+          -40
+        ]
+      },
+      "spawn": {
+        "position": [
+          13,
+          1.5,
+          -55
+        ],
+        "yawDeg": -90
+      },
+      "doorways": [
+        {
+          "to": "orangery",
+          "axis": "x",
+          "at": 10,
+          "center": -55,
+          "width": 7,
+          "height": 5.5
+        },
+        {
+          "to": "quantumflow/cloud",
+          "axis": "x",
+          "at": 52,
+          "center": -55,
+          "width": 4,
+          "height": 4.6
+        },
+        {
+          "to": "quantumflow/inversion",
+          "axis": "z",
+          "at": -70,
+          "center": 31,
+          "width": 4,
+          "height": 4.6
+        },
+        {
+          "to": "quantumflow/flow",
+          "axis": "z",
+          "at": -40,
+          "center": 31,
+          "width": 4,
+          "height": 4.6
+        }
+      ],
+      "hangings": [],
+      "portals": [],
+      "exposure": 1
+    },
+    {
+      "id": "quantumflow/cloud",
+      "title": "The cloud",
+      "architecture": "observatory",
+      "presence": "quantumflow",
+      "fallback": {
+        "kind": "box",
+        "color": "#0d1420"
+      },
+      "bounds": {
+        "min": [
+          52,
+          1.5,
+          -70
+        ],
+        "max": [
+          90,
+          12,
+          -40
+        ]
+      },
+      "spawn": {
+        "position": [
+          55,
+          1.5,
+          -55
+        ],
+        "yawDeg": -90
+      },
+      "doorways": [
+        {
+          "to": "quantumflow",
+          "axis": "x",
+          "at": 52,
+          "center": -55,
+          "width": 4,
+          "height": 4.6
+        },
+        {
+          "to": "quantumflow/bowl",
+          "axis": "z",
+          "at": -70,
+          "center": 71,
+          "width": 4,
+          "height": 4.6
+        }
+      ],
+      "hangings": [],
+      "portals": [
+        {
+          "id": "quantumflow.portal.inside",
+          "to": "quantumflow/inside",
+          "position": [
+            80,
+            3.1,
+            -46
+          ],
+          "radius": 2,
+          "exit": {
+            "position": [
+              440,
+              1.6,
+              -120
+            ],
+            "radius": 6
+          }
+        }
+      ],
+      "exposure": 1
+    },
+    {
+      "id": "quantumflow/bowl",
+      "title": "The bowl",
+      "architecture": "observatory",
+      "presence": "quantumflow",
+      "fallback": {
+        "kind": "box",
+        "color": "#0d1420"
+      },
+      "bounds": {
+        "min": [
+          52,
+          1.5,
+          -104
+        ],
+        "max": [
+          90,
+          10.5,
+          -70
+        ]
+      },
+      "spawn": {
+        "position": [
+          71,
+          1.5,
+          -73
+        ],
+        "yawDeg": 0
+      },
+      "doorways": [
+        {
+          "to": "quantumflow/cloud",
+          "axis": "z",
+          "at": -70,
+          "center": 71,
+          "width": 4,
+          "height": 4.6
+        },
+        {
+          "to": "quantumflow/inversion",
+          "axis": "x",
+          "at": 52,
+          "center": -87,
+          "width": 4,
+          "height": 4.6
+        }
+      ],
+      "hangings": [],
+      "portals": [],
+      "exposure": 1
+    },
+    {
+      "id": "quantumflow/inversion",
+      "title": "The inversion",
+      "architecture": "observatory",
+      "presence": "quantumflow",
+      "fallback": {
+        "kind": "box",
+        "color": "#0d1420"
+      },
+      "bounds": {
+        "min": [
+          10,
+          1.5,
+          -104
+        ],
+        "max": [
+          52,
+          10.5,
+          -70
+        ]
+      },
+      "spawn": {
+        "position": [
+          49,
+          1.5,
+          -87
+        ],
+        "yawDeg": 90
+      },
+      "doorways": [
+        {
+          "to": "quantumflow/bowl",
+          "axis": "x",
+          "at": 52,
+          "center": -87,
+          "width": 4,
+          "height": 4.6
+        },
+        {
+          "to": "quantumflow",
+          "axis": "z",
+          "at": -70,
+          "center": 31,
+          "width": 4,
+          "height": 4.6
+        }
+      ],
+      "hangings": [],
+      "portals": [],
+      "exposure": 1
+    },
+    {
+      "id": "quantumflow/flow",
+      "title": "The flow",
+      "architecture": "observatory",
+      "presence": "quantumflow",
+      "fallback": {
+        "kind": "box",
+        "color": "#0d1420"
+      },
+      "bounds": {
+        "min": [
+          10,
+          1.5,
+          -40
+        ],
+        "max": [
+          52,
+          10,
+          -20
+        ]
+      },
+      "spawn": {
+        "position": [
+          31,
+          1.5,
+          -38
+        ],
+        "yawDeg": 180
+      },
+      "doorways": [
+        {
+          "to": "quantumflow",
+          "axis": "z",
+          "at": -40,
+          "center": 31,
+          "width": 4,
+          "height": 4.6
+        },
+        {
+          "to": "orangery",
+          "axis": "x",
+          "at": 10,
+          "center": -37,
+          "width": 3,
+          "height": 4.6
+        }
+      ],
+      "hangings": [],
+      "portals": [],
+      "exposure": 1
+    },
+    {
+      "id": "quantumflow/inside",
+      "title": "Inside the cloud",
+      "architecture": "observatory",
+      "presence": "quantumflow",
+      "scale": 0.1,
+      "fallback": {
+        "kind": "box",
+        "color": "#06090f"
+      },
+      "bounds": {
+        "min": [
+          400,
+          0,
+          -160
+        ],
+        "max": [
+          480,
+          12,
+          -80
+        ]
+      },
+      "spawn": {
+        "position": [
+          440,
+          0,
+          -120
+        ],
+        "yawDeg": 0
+      },
+      "doorways": [],
+      "hangings": [],
+      "portals": [],
+      "exposure": 1
     }
   ]
 }

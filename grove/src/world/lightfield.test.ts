@@ -67,7 +67,11 @@ describe("bakeLightField over mansion.json", () => {
     expect(b).toBeGreaterThan(r);
   });
 
-  it("keeps the hall's light out of the workshop, whose only door is closed", () => {
+  // The bake is the slowest thing in the suite: quantumflow's wing took the grid
+  // to 117 x 21 x 122 over 28 lit rooms, and the region pass is cells x rooms.
+  // It lands near vitest's 5 s default, so it fails on a loaded runner unless
+  // this says otherwise.
+  it("keeps the hall's light out of the workshop, whose only door is closed", { timeout: 20_000 }, () => {
     // Bake without the workshop's own lamps: whatever remains inside would be the hall's.
     const withoutOwn = bakeLightField(mansion, emitters.filter((e) => e.room !== "greenhouse"));
     const [x0, y0, z0] = room("greenhouse").bounds.min, [x1, , z1] = room("greenhouse").bounds.max;

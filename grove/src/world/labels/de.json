@@ -218,6 +218,42 @@
       "intro": "Hier haben Sie die Größe einer Zelle. Die Episode des Lehrers läuft um Sie herum: Das Vorlagegitter steht zur Seite, der Antwortrahmen füllt sich unter Ihren Füßen Zelle für Zelle, die Palette ist eine Reihe leuchtender Steine, und der Cursor ist eine Lichtsäule, die kommt und geht. Über Ihnen hängen die Schichten der Sicht des Agenten wie Glasböden, die unterste scharf und klein, jede darüber doppelt so breit und doppelt so vage, bis die oberste alles bedeckt und fast nichts sagt. Spulen Sie die Zeit, um zu sehen, wie die Farbe von der Palette zur Zelle wandert.",
       "lookFor": "Stellen Sie sich auf den Antwortrahmen und blicken Sie durch die Schichten nach oben, während der Cursor vorbeizieht; das scharfe Fenster folgt ihm.",
       "limit": "Dies ist die Episode des Lehrers, nicht die eines gelernten Agenten, und der Maßstab ist ein Mittel zum Sehen; der Agent sieht die Leinwand nie als Ort."
+    },
+    "quantumflow": {
+      "title": "quantumflow",
+      "kicker": "Warum nimmt ein Elektron nur bestimmte Energien an?",
+      "intro": "Dies ist der Schießstand. Drehen Sie am Regler, und eine Welle läuft von der nahen Wand aus tastend durch den Raum. Bei fast jeder Einstellung fliegt sie auseinander, bevor sie die ferne Wand erreicht. Bei wenigen legt sie sich flach. Diese wenigen hat niemand ausgewählt.",
+      "lookFor": "Die wenigen Einstellungen, bei denen die Welle flach liegt, statt auseinanderzufliegen."
+    },
+    "quantumflow/cloud": {
+      "title": "Die Wolke",
+      "kicker": "Sechs Wellen hinein, eine Wolke heraus: Was geht verloren?",
+      "intro": "Die Orbitale kommen, jedes mit eigener Farbe und eigener Gestalt. Man addiert sie, und die Farben verblassen zu einer einzigen fahlen Wolke. Alles, was die sechs wussten, steckt noch hier drin, und die Wand dahinter wird es beweisen.",
+      "lookFor": "Der Augenblick, in dem die Farben verschwinden, und der Potentialtopf, der danach an der Wand entsteht."
+    },
+    "quantumflow/bowl": {
+      "title": "Die Schüssel",
+      "kicker": "Wie findet man den tiefsten Punkt einer Landschaft, die man nicht sieht?",
+      "intro": "Zwei Flächen stehen nebeneinander. Die eine ist eine Schüssel: Wo immer Sie beginnen, führt der Weg bergab zum einzigen tiefsten Punkt. Die andere ist bucklig, und bergab stranden Sie vielleicht in einer Mulde, die nicht der tiefste Punkt ist. Nur der einen ist zu trauen.",
+      "lookFor": "Die Mulden der zweiten Fläche, die nicht ihr tiefster Punkt sind."
+    },
+    "quantumflow/inversion": {
+      "title": "Die Umkehrung",
+      "kicker": "Verrät die Wolke für sich allein die Kräfte, die sie geformt haben?",
+      "intro": "Hier wird die Behauptung geprüft. An der einen Wand der Potentialtopf, in dem ein Elektron wirklich saß. An der anderen der Topf, allein aus der Wolke rekonstruiert, ohne je die Wellen zu sehen. Dazwischen hängt die Differenz, in voller Größe, so groß sie auch ausfällt.",
+      "lookFor": "Der Abstand zwischen beiden Töpfen, das ganze Maß der Behauptung."
+    },
+    "quantumflow/flow": {
+      "title": "Der Fluss",
+      "kicker": "Was geschah, als das Projekt eine Regel hinzufügte, die sicher helfen sollte?",
+      "intro": "Eine Wolke aus Teilchen wird von ihrem Ausgangspunkt zu ihrem Ziel getragen. Das Projekt fügte eine Nebenbedingung hinzu, an die es aus guten Gründen glaubte, und maß, wie sie den Weg bei jeder Stärke verschlechterte. Die Kurve daneben ist dieses Ergebnis.",
+      "lookFor": "Die Kurve an der Wand: Sie steigt, wo sie fallen sollte."
+    },
+    "quantumflow/inside": {
+      "title": "In der Wolke",
+      "kicker": "Wie sieht ein einzelnes Elektronenorbital von innen aus?",
+      "intro": "Sie sind auf die Größe der Wolke geschrumpft. Der Dunst um Sie herum ist ein Orbital, dort gezeichnet, wo seine Welle am stärksten ist. Nahe der Mitte liegt eine Fläche, die Sie nicht durchqueren können, denn dort ist die Welle genau null.",
+      "lookFor": "Die Fläche, durch die Sie nicht gehen können, wo die Welle auf null fällt."
     }
   },
   "exhibits": {
