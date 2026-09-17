@@ -9,7 +9,7 @@
 // The same honesty rule as `announce`: "completed exit=0" is also what a kill,
 // an OOM and a time-budget stop record, so nothing here reports a success.
 
-import { peerIsSilent, treeLabel, type MirrorHealth, type RunningRun, type TreeTitles } from "./events";
+import { SPOKEN_MAX, peerIsSilent, treeLabel, type MirrorHealth, type RunningRun, type TreeTitles } from "./events";
 import { NAMES } from "./names";
 
 /** What Faye knows right now, as the poll loop last left it. */
@@ -128,20 +128,48 @@ export function replyTo(text: string, state: FayeState, titles?: TreeTitles): st
   // first and ties by name at both levels, so the same state always reads the
   // same way.
   const boxes = busiestFirst(groupCount(state.running.map((r) => r.host)));
-  const parts = boxes.map(({ key: host, n }) => {
+  const named = (host: string): string => {
     const trees = busiestFirst(groupCount(
       state.running.filter((r) => r.host === host).map((r) => treeLabel(r.tree, titles)),
     ));
-    const named = trees.slice(0, TREES_PER_BOX).map(({ key, n: k }) => (k > 1 ? `${k} ${key}` : key));
-    const rest = trees.length - named.length;
-    if (rest > 0) named.push(`${rest} more`);
-    return `${n} on ${host} (${named.join(", ")})`;
-  });
-  return `${when}${total} run${total === 1 ? "" : "s"}: ${parts.join(", ")}.`;
+    const shown = trees.slice(0, TREES_PER_BOX).map(({ key, n: k }) => (k > 1 ? `${k} ${key}` : key));
+    const rest = trees.length - shown.length;
+    if (rest > 0) shown.push(`${rest} more`);
+    return shown.join(", ");
+  };
+  // Not "9 on SirBase (4 spectre, …)": the trees are the answer, and a bracket
+  // is where `fitToRoom` looks for an alert's arithmetic when a line runs long
+  // (src/faye/events.ts). Putting the subject in brackets would have a third
+  // box silently cost a visitor every tree name.
+  const runs = `${total} run${total === 1 ? "" : "s"}`;
+  if (boxes.length === 1) {
+    // One box needs no tally of boxes: "2 runs on SirBase: 2 coarsen."
+    const only = boxes[0]!.key;
+    return `${when}${runs} on ${only}: ${named(only)}.`;
+  }
+  // A box she cannot fit is COUNTED, not cut: the trim at the speaker would
+  // otherwise end the sentence mid-name, and "and 2 more boxes" is the honest
+  // form of the same shortening. Counting boxes is not enough on its own --
+  // a box reporting itself as an FQDN makes three of them too long for one
+  // line -- so boxes are dropped from the tail until the sentence fits.
+  const named_ = boxes.map(({ key: host, n }) => `${n} on ${host}: ${named(host)}`);
+  let shown = named_.slice(0, BOXES_NAMED);
+  const sentence = (): string => {
+    const hidden = boxes.length - shown.length;
+    const parts = hidden > 0
+      ? [...shown, `and ${hidden} more box${hidden === 1 ? "" : "es"}`]
+      : shown;
+    return `${when}${runs} — ${parts.join("; ")}.`;
+  };
+  while (shown.length > 1 && [...sentence()].length > SPOKEN_MAX) shown = shown.slice(0, -1);
+  return sentence();
 }
 
 /** How many trees one box's answer names before it says "and N more". One line, not a list. */
 const TREES_PER_BOX = 3;
+
+/** And how many boxes, for the same reason: a lane can be added to a room's answer. */
+const BOXES_NAMED = 3;
 
 function groupCount(keys: readonly string[]): Map<string, number> {
   const out = new Map<string, number>();
