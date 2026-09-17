@@ -28,18 +28,61 @@
       "lookFor": "Compare la vista verdadera con las estiradas; los huecos están marcados en magenta, y el estudio del fleco muestra lo que una vista convincente de toda la habitación oculta.",
       "limit": "Son estudios fijos renderizados a partir de datos almacenados, no una reconstrucción en vivo ni una puerta-lente que funcione; la pregunta restante del repositorio no se ha medido."
     },
+    "orangery": {
+      "title": "orangerie",
+      "kicker": "Deje que sus ojos viajen.",
+      "intro": "La orangerie une la sala de world-engine con la terraza. Es un lugar entre piezas: siga las puertas abiertas, mire hacia las salas, o salga bajo el cielo. Al fondo hay una mesa de ajedrez: acérquese para jugar, o abra la partida desde la Guía.",
+      "lookFor": "Las tres puertas del lado del jardín dan todas a la terraza."
+    },
+    "court-north": {
+      "title": "patio norte",
+      "kicker": "¿Dónde empieza el sótano?",
+      "intro": "Un patio cercado por una balaustrada de piedra, al borde de la arboleda oeste, en el extremo norte de la terraza. Es la puerta de entrada del club: en el pabellón, un solo tramo ancho baja recto bajo el césped hasta el subterráneo, del que se abre el club.",
+      "lookFor": "Sobre la puerta del pabellón se lee la sala al final del camino, no la escalera; las lámparas del tramo brillan bajo el arco."
+    },
+    "stair-north": {
+      "title": "escalera",
+      "kicker": "¿Qué hay bajo la terraza?",
+      "intro": "Un pabellón al final de la terraza, al que se entra desde su patio. Un solo tramo, de seis metros de ancho y más suave que los peldaños de la terraza, baja recto bajo el césped; la puerta del pie está en el eje de la de arriba, sin ningún giro.",
+      "lookFor": "El pasamanos del tramo y la lámpara a su pie; desde el primer peldaño la puerta del subterráneo ya queda de frente."
+    },
+    "stair-south": {
+      "title": "escalera",
+      "kicker": "¿Qué hay bajo la terraza?",
+      "intro": "Un pabellón al final de la terraza, al que se entra desde su patio. Un solo tramo, de seis metros de ancho y más suave que los peldaños de la terraza, baja recto bajo el césped; la puerta del pie está en el eje de la de arriba, sin ningún giro.",
+      "lookFor": "El pasamanos del tramo y la lámpara a su pie; desde el primer peldaño la puerta del subterráneo ya queda de frente."
+    },
+    "court-south": {
+      "title": "patio sur",
+      "kicker": "¿Dónde empieza el sótano?",
+      "intro": "Un patio cercado por una balaustrada de piedra, al borde de la arboleda este, en el extremo sur de la terraza. Es la puerta de entrada del club: en el pabellón, un solo tramo ancho baja recto bajo el césped hasta el subterráneo, del que se abre el club.",
+      "lookFor": "Sobre la puerta del pabellón se lee la sala al final del camino, no la escalera; las lámparas del tramo brillan bajo el arco."
+    },
+    "foyer": {
+      "title": "foyer",
+      "kicker": "¿Por dónde se baja?",
+      "intro": "El sótano recorre toda la longitud de la terraza, una bóveda baja bajo sus losas. Dos escaleras bajan hasta él desde los jardines, una en cada extremo de la terraza, y dos puertas siguen adelante hacia el club, que solo se abre al visitante que tiene el micrófono y el sonido encendidos.",
+      "lookFor": "Los faroles en las dos puertas del club, y la luz que entra por ellas: el sótano es cálido, el club es frío."
+    },
+    "club": {
+      "title": "club",
+      "kicker": "¿Cuánto suena un sótano abovedado?",
+      "intro": "Un club bajo el ala norte: una bóveda baja, una pista de baile de baldosas iluminadas, una barra a lo largo del muro este, reservados a lo largo del oeste, un escenario al fondo. Lo que suena es la emisión propia de la pista, un set calculado en la máquina del palacio y transmitido en directo, de modo que todos los visitantes oyen el mismo golpe con pocos segundos de diferencia entre sí. Las luces siguen sus graves; cuando la pista calla, respiran por su cuenta. La puerta pide micrófono y sonido, para que hablar y cantar puedan funcionar aquí en cuanto exista el enlace de voz.",
+      "lookFor": "La bola de espejos sobre la pista y las dos líneas de color a lo largo de la bóveda; laten con la música cuando hay música.",
+      "limit": "El set lo compone un programa con semilla fija, no una persona; nada aquí es una afirmación sobre la música, y el codificador se detiene cuando el club está vacío."
+    },
+    "stage": {
+      "title": "escenario",
+      "kicker": "¿Quién canta?",
+      "intro": "Un peldaño por encima de la pista, enmarcado por el proscenio e iluminado de frente. El escenario es para cantantes con visor: solo se abre a una sesión inmersiva, y salir de ella le devuelve a la pista. El karaoke funcionará desde aquí en cuanto exista el enlace de voz.",
+      "lookFor": "El pie de micrófono en el centro y las candilejas a lo largo del borde: el cantante se sitúa donde se encuentran las dos líneas del suelo."
+    },
     "phototroph": {
       "title": "phototroph",
       "kicker": "¿Qué le hace un haz de luz constante a una sopa de átomos?",
       "intro": "phototroph se pregunta si la materia, bajo un haz constante de un solo color, se organiza en estructuras que absorben ese color. Las dos plataformas del centro de la sala partieron del mismo mundo de 432 átomos de seis clases. Una ha estado iluminada durante 500 unidades de tiempo; la otra permaneció a oscuras. Se reproducen en perfecta sincronía. Los átomos a los que está sintonizado el haz llevan su color en ambas plataformas. El gráfico de la pared mide qué rara vez un cúmulo capta algo de luz, y la pequeña cinta junto a la entrada muestra cómo dos átomos llegan a quedarse juntos.",
       "lookFor": "Compare las plataformas: la oscura se ha congelado en parches cristalinos, mientras que bajo el haz los átomos siguen siendo un gas inquieto.",
       "limit": "La plataforma iluminada es distinta porque el haz la calienta, no porque sus cúmulos hayan aprendido a usar la luz: según nuestra medida, están menos sintonizados con el color del haz que los cúmulos de la plataforma oscura, y el haz en sí no está dibujado."
-    },
-    "orangery": {
-      "title": "orangerie",
-      "kicker": "Deje que sus ojos viajen.",
-      "intro": "La orangerie une la sala de world-engine con la terraza. Es un lugar entre piezas: siga las puertas abiertas, mire hacia las salas, o salga bajo el cielo. Al fondo hay una mesa de ajedrez: acérquese para jugar, o abra la partida desde la Guía.",
-      "lookFor": "Las tres puertas del lado del jardín dan todas a la terraza."
     },
     "gallery": {
       "title": "galería",
@@ -95,37 +138,6 @@
       "intro": "El orrery muestra los tres mundos de coarsen a la escala del cielo, a los que se llega por la esfera armilar del jardín. Se ha encogido cincuenta veces para estar aquí; cada globo mide ochenta metros. Son las simulaciones grabadas de coarsen: 508.744 partículas cada una, la misma mezcla uniforme de una clase pesada y una ligera, que solo difieren en la fuerza con que las dos se repelen. Cada una está abierta hacia donde usted está, con la superficie como borde medido de las partículas y el interior medido a partir de ellas. Las estrellas son un fondo diseñado, no un catálogo.",
       "lookFor": "Camine hacia un mundo y observe su cara cortada; el brillo marca la materia más caliente, una codificación de la temperatura, no luz.",
       "limit": "Una sola simulación grabada por mundo, nada interpolado. Un centro pesado no basta por sí solo para separar la desmezcla del enfriamiento común como causa."
-    },
-    "stair-north": {
-      "title": "escalera",
-      "kicker": "¿Qué hay bajo la terraza?",
-      "intro": "Un pabellón de jardín en el extremo norte de la terraza, al que se entra desde la arboleda oeste. Dentro, un tramo de escalones baja bajo tierra hasta el sótano, desde el que se abre el club. Una segunda escalera del mismo tipo se alza en el extremo sur de la terraza, junto a la arboleda este.",
-      "lookFor": "La barandilla de la escalera y la lámpara a su pie; la luz del día termina donde empieza la bóveda."
-    },
-    "stair-south": {
-      "title": "escalera",
-      "kicker": "¿Qué hay bajo la terraza?",
-      "intro": "Un pabellón de jardín en el extremo sur de la terraza, al que se entra desde la arboleda este. Dentro, un tramo de escalones baja bajo tierra hasta el sótano, desde el que se abre el club. Una segunda escalera del mismo tipo se alza en el extremo norte de la terraza, junto a la arboleda oeste.",
-      "lookFor": "La barandilla de la escalera y la lámpara a su pie; la luz del día termina donde empieza la bóveda."
-    },
-    "foyer": {
-      "title": "foyer",
-      "kicker": "¿Por dónde se baja?",
-      "intro": "El sótano recorre toda la longitud de la terraza, una bóveda baja bajo sus losas. Dos escaleras bajan hasta él desde los jardines, una en cada extremo de la terraza, y dos puertas siguen adelante hacia el club, que solo se abre al visitante que tiene el micrófono y el sonido encendidos.",
-      "lookFor": "Los faroles en las dos puertas del club, y la luz que entra por ellas: el sótano es cálido, el club es frío."
-    },
-    "club": {
-      "title": "club",
-      "kicker": "¿Cuánto suena un sótano abovedado?",
-      "intro": "Un club bajo el ala norte: una bóveda baja, una pista de baile de baldosas iluminadas, una barra a lo largo del muro este, reservados a lo largo del oeste, un escenario al fondo. Lo que suena es la emisión propia de la pista, un set calculado en la máquina del palacio y transmitido en directo, de modo que todos los visitantes oyen el mismo golpe con pocos segundos de diferencia entre sí. Las luces siguen sus graves; cuando la pista calla, respiran por su cuenta. La puerta pide micrófono y sonido, para que hablar y cantar puedan funcionar aquí en cuanto exista el enlace de voz.",
-      "lookFor": "La bola de espejos sobre la pista y las dos líneas de color a lo largo de la bóveda; laten con la música cuando hay música.",
-      "limit": "El set lo compone un programa con semilla fija, no una persona; nada aquí es una afirmación sobre la música, y el codificador se detiene cuando el club está vacío."
-    },
-    "stage": {
-      "title": "escenario",
-      "kicker": "¿Quién canta?",
-      "intro": "Un peldaño por encima de la pista, enmarcado por el proscenio e iluminado de frente. El escenario es para cantantes con visor: solo se abre a una sesión inmersiva, y salir de ella le devuelve a la pista. El karaoke funcionará desde aquí en cuanto exista el enlace de voz.",
-      "lookFor": "El pie de micrófono en el centro y las candilejas a lo largo del borde: el cantante se sitúa donde se encuentran las dos líneas del suelo."
     },
     "arcedit": {
       "title": "arcedit",

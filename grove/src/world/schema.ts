@@ -97,6 +97,18 @@ export const DoorwaySchema = z.looseObject({
   height: z.number().positive(),
   /** A door leaf, not an opening: drawn solid, never crossed. A tree earns its room. */
   closed: z.boolean().default(false),
+  /**
+   * The room this door's sign names, when that is not the room it opens on:
+   * the stairs down to the cellar are signed "club", because the room beyond
+   * them is what a visitor is walking towards (ruled 2026-09-17).
+   */
+  signRoom: z.string().default(""),
+  /**
+   * The going of the flight this door builds in the lower room, metres per
+   * step, where the default (terrain.ts's STAIR_TREAD) is too steep for the
+   * descent: a longer tread makes a gentler stair of the same rise.
+   */
+  treadMeters: z.number().positive().optional(),
 });
 
 /**

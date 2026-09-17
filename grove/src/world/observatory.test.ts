@@ -11,8 +11,8 @@ for (const { shell } of shells) shell.group.updateMatrixWorld(true);
 
 describe("the designed observatory", () => {
   it("builds every footprint with explicit architectural provenance, no textures or lights", () => {
-    // The palace's thirteen chambers and cells (coarsen's chamber went on 2026-09-16), the cellar venue's five, and arcedit's area of six (redesigned 2026-09-17).
-    expect(shells).toHaveLength(24);
+    // The palace's thirteen chambers and cells (coarsen's chamber went on 2026-09-16), the cellar venue's seven with its two garden courts (2026-09-17), and arcedit's area of six.
+    expect(shells).toHaveLength(26);
     for (const { room, shell } of shells) {
       expect(shell.group.name).toBe(`${room.id}-shell`);
       expect(shell.group.userData.architecture).toBe("observatory");
@@ -81,6 +81,19 @@ describe("the designed observatory", () => {
       const [x, y, z] = room.spawn.position;
       const above = new Raycaster(new Vector3(x, y + 0.2, z), new Vector3(0, 1, 0), 0.001, 2);
       expect(above.intersectObject(shell.group, true), `${room.id} arrival`).toEqual([]);
+      // A post the visitor lands inside is parallel to that ray and misses
+      // it: a lamp on a court's centre line stood in the eye and the test
+      // passed (2026-09-17). Sweep the body's own space instead. The
+      // narrowest arrival in the palace is the stage's, 0.45 m from a
+      // proscenium column, so this reach is 0.4 m.
+      for (const height of [0.9, 1.6]) {
+        for (let turn = 0; turn < 12; turn++) {
+          const angle = (turn / 12) * Math.PI * 2;
+          const beside = new Raycaster(new Vector3(x, y + height, z), new Vector3(Math.cos(angle), 0, Math.sin(angle)), 0.001, 0.4);
+          expect(beside.intersectObject(shell.group, true).map(h => h.object.name),
+            `${room.id} arrival at ${height} m, ${Math.round((angle * 180) / Math.PI)}°`).toEqual([]);
+        }
+      }
       for (const door of room.doorways.filter(d => d.closed)) {
         const axis = door.axis === "x" ? 0 : 2, along = door.axis === "x" ? 2 : 0;
         const inward = Math.abs(door.at - room.bounds.min[axis]) < 0.001 ? 1 : -1;

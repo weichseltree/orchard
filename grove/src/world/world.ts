@@ -315,7 +315,8 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
               : shells.get(room.id)?.provenance) ?? {},
           });
         });
-        // The names over the doors, in brass letters; the typeface loads once, with the first room.
+        // The names over the doors, dark on the lintel indoors and brass in
+        // the open air; the typeface loads once, with the first room.
         return import("./door-signs").then(async ({ planDoorSigns, fontOnce, buildDoorSigns }) => {
           const signs = planDoorSigns(room, labels, mansion);
           if (signs.length === 0) return;

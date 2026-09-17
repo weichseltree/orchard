@@ -6,7 +6,7 @@ import {
 } from "three";
 import type { Room, Doorway, Mansion } from "./schema";
 import type { RoomShell } from "./rooms";
-import { STAIR_MARGIN, STAIR_TREAD, flightsOf, moundHeight, stairSteps, type Flight } from "./terrain";
+import { STAIR_MARGIN, flightsOf, moundHeight, stairSteps, type Flight } from "./terrain";
 import { LIGHT_FIELD_GLSL, LIGHT_FIELD_UNIFORMS_GLSL, applyLightField, bakeLightField, lightFieldUniforms, litRooms, type Emitter, type LightField } from "./lightfield";
 import { onPulse } from "./pulse";
 import { VENUE_TINT } from "./venue";
@@ -57,6 +57,10 @@ const FINISH_ALIAS: Record<string, string> = { stage: "club" };
  */
 function finishOf(roomId: string): Partial<Record<Finish, string>> | undefined {
   return ROOM_FINISH[finishKey(roomId)];
+}
+/** One of a room's own finishes, for what is drawn beside the architecture (door-signs.ts's letters). */
+export function finishColour(roomId: string, finish: Finish): string {
+  return finishOf(roomId)?.[finish] ?? OBSERVATORY_PALETTE[finish];
 }
 function finishKey(roomId: string): string {
   const id = FINISH_ALIAS[roomId] ?? roomId;
@@ -575,6 +579,8 @@ function flights(b: Builder): void {
 function stepsOf(b: Builder, flight: Flight, y0: number): void {
   const { door, rise, run, direction } = flight;
   const steps = stairSteps(rise);
+  // The drawn going is the one the body walks: a door may ask for a longer one.
+  const tread = run / steps;
   const cheek = 0.22;
   const width = door.width + 2 * STAIR_MARGIN;
   const inner = width - 2 * cheek;
@@ -584,10 +590,10 @@ function stepsOf(b: Builder, flight: Flight, y0: number): void {
   };
   for (let i = 0; i < steps; i++) {
     const top = y0 + rise * (i + 1) / steps;
-    const near = (steps - 1 - i) * STAIR_TREAD;
-    const along = door.at + direction * (near + STAIR_TREAD / 2);
-    place("stone", along, (y0 + top) / 2, STAIR_TREAD, top - y0, inner);
-    place("brass", door.at + direction * (near + STAIR_TREAD - 0.03), top + 0.004, 0.06, 0.012, inner);
+    const near = (steps - 1 - i) * tread;
+    const along = door.at + direction * (near + tread / 2);
+    place("stone", along, (y0 + top) / 2, tread, top - y0, inner);
+    place("brass", door.at + direction * (near + tread - 0.03), top + 0.004, 0.06, 0.012, inner);
   }
   const parapet = rise + 0.95;
   for (const side of [-1, 1]) {
@@ -894,6 +900,26 @@ function grounds(b: Builder): void {
     // The balustrade along the garden edge, open where the garden stairs descend.
     const edge = walls(room)[0]!;
     balustrade(b, edge, room.doorways.filter(d => d.axis === "x" && Math.abs(d.at - edge.at) < 0.001).map(d => ({ center: d.center, width: d.width + 2 * STAIR_MARGIN })));
+  } else if (room.id.startsWith("court-")) {
+    // A club's forecourt: a walled garden room on the grove's edge, paved
+    // from its gate to the pavilion's door, with the balustrade closed
+    // wherever there is no opening. The lanterns stand off the walk, not on
+    // it, so the door is what a visitor sees from the gate (2026-09-17).
+    path(b, cx, cz, 5.2, depth);
+    // ...and a cross walk out to the gate in the side wall, so the paving
+    // starts at the grove's edge rather than 2.4 m inside the lawn.
+    // Narrower than it is long, or path() would read it as the walk it
+    // crosses and lay its brass kerbs across the axis instead of along it.
+    for (const gate of room.doorways.filter(d => d.axis === "x")) {
+      path(b, (gate.at + cx) / 2, gate.center, Math.abs(cx - gate.at), 4.8);
+    }
+    for (const wall of walls(room)) {
+      const gaps = room.doorways
+        .filter(d => d.axis === wall.axis && Math.abs(d.at - wall.at) < 0.001)
+        .map(d => ({ center: d.center, width: d.width + 1.2 }));
+      balustrade(b, wall, gaps);
+    }
+    for (const x of [x0 + 2.2, x1 - 2.2]) for (const z of [cz - depth * 0.28, cz + depth * 0.28]) lantern(b, x, z);
   } else if (room.id === "parterre") {
     // The portal court lies on the axis west of the crossing, on the far
     // side from the palace: a round of gravel ringed by water, the axis

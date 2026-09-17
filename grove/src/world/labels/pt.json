@@ -28,18 +28,61 @@
       "lookFor": "Compare a vista verdadeira com as esticadas; os buracos estão marcados a magenta, e o estudo da franja mostra o que uma vista convincente da sala inteira esconde.",
       "limit": "São estudos fixos renderizados a partir de dados guardados, não uma reconstrução ao vivo nem uma porta-lente a funcionar; a pergunta restante do repositório não foi medida."
     },
+    "orangery": {
+      "title": "laranjal",
+      "kicker": "Deixe os olhos viajar.",
+      "intro": "O laranjal liga a sala de world-engine ao terraço. É um lugar entre peças: siga as portas abertas, olhe para trás na direcção das salas, ou saia para debaixo do céu. Ao fundo há uma mesa de xadrez: aproxime-se para jogar, ou abra a partida a partir do Guia.",
+      "lookFor": "As três portas do lado do jardim dão todas para o terraço."
+    },
+    "court-north": {
+      "title": "pátio norte",
+      "kicker": "Onde começa a cave?",
+      "intro": "Um pátio fechado por uma balaustrada de pedra, à beira do bosque oeste, no extremo norte do terraço. É a porta de entrada do clube: no pavilhão, um único lanço largo desce a direito sob o relvado até a cave, de onde o clube se abre.",
+      "lookFor": "Sobre a porta do pavilhão lê-se a sala no fim do caminho, não a escada; as lâmpadas do lanço brilham sob o arco."
+    },
+    "stair-north": {
+      "title": "escada",
+      "kicker": "O que há sob o terraço?",
+      "intro": "Um pavilhão no extremo do terraço, em que se entra a partir do seu pátio. Um único lanço, com seis metros de largura e mais suave do que os degraus do terraço, desce a direito sob o relvado; a porta do pé fica no eixo da do cimo, sem qualquer volta.",
+      "lookFor": "O corrimão do lanço e a lâmpada ao seu pé; do primeiro degrau a porta da cave já fica mesmo em frente."
+    },
+    "stair-south": {
+      "title": "escada",
+      "kicker": "O que há sob o terraço?",
+      "intro": "Um pavilhão no extremo do terraço, em que se entra a partir do seu pátio. Um único lanço, com seis metros de largura e mais suave do que os degraus do terraço, desce a direito sob o relvado; a porta do pé fica no eixo da do cimo, sem qualquer volta.",
+      "lookFor": "O corrimão do lanço e a lâmpada ao seu pé; do primeiro degrau a porta da cave já fica mesmo em frente."
+    },
+    "court-south": {
+      "title": "pátio sul",
+      "kicker": "Onde começa a cave?",
+      "intro": "Um pátio fechado por uma balaustrada de pedra, à beira do bosque este, no extremo sul do terraço. É a porta de entrada do clube: no pavilhão, um único lanço largo desce a direito sob o relvado até a cave, de onde o clube se abre.",
+      "lookFor": "Sobre a porta do pavilhão lê-se a sala no fim do caminho, não a escada; as lâmpadas do lanço brilham sob o arco."
+    },
+    "foyer": {
+      "title": "foyer",
+      "kicker": "Por onde se desce?",
+      "intro": "A cave corre por todo o comprimento do terraço, uma abóbada baixa sob as suas lajes. Duas escadas descem até ela a partir dos jardins, uma em cada extremo do terraço, e duas portas seguem em frente para o clube, que só se abre ao visitante com o microfone e o som ligados.",
+      "lookFor": "As lanternas nas duas portas do clube, e a luz que entra por elas: a cave é quente, o clube é frio."
+    },
+    "club": {
+      "title": "clube",
+      "kicker": "Quanto soa uma cave abobadada?",
+      "intro": "Um clube sob a ala norte: uma abóbada baixa, uma pista de dança de lajes iluminadas, um bar ao longo da parede leste, reservados ao longo da oeste, um palco ao fundo. O que toca é a emissão própria da pista, um set calculado na máquina do palácio e transmitido em directo, de modo que todos os visitantes ouvem a mesma batida com poucos segundos de diferença entre si. As luzes seguem os seus graves; quando a pista se cala, respiram por si. A porta pede microfone e som, para que falar e cantar possam funcionar aqui assim que a ligação de voz existir.",
+      "lookFor": "A bola de espelhos sobre a pista e as duas linhas de cor ao longo da abóbada; pulsam com a música quando há música.",
+      "limit": "O set é composto por um programa de semente fixa, não por uma pessoa; nada aqui é uma afirmação sobre música, e o codificador pára quando o clube está vazio."
+    },
+    "stage": {
+      "title": "palco",
+      "kicker": "Quem canta?",
+      "intro": "Um degrau acima da pista, emoldurado pelo proscénio e iluminado de frente. O palco é para quem canta de visor: só se abre a uma sessão imersiva, e sair dela devolve-o à pista. O karaoke correrá daqui assim que a ligação de voz existir.",
+      "lookFor": "O pé de microfone ao centro e as luzes da ribalta ao longo da borda: quem canta fica onde as duas linhas do chão se encontram."
+    },
     "phototroph": {
       "title": "phototroph",
       "kicker": "O que faz um feixe de luz constante a uma sopa de átomos?",
       "intro": "phototroph pergunta se a matéria, sob um feixe constante de uma só cor, se organiza em estruturas que absorvem essa cor. As duas plataformas no centro da sala partiram do mesmo mundo de 432 átomos de seis espécies. Uma esteve iluminada durante 500 unidades de tempo; a outra ficou às escuras. Reproduzem-se em perfeita sincronia. Os átomos para os quais o feixe está sintonizado usam a sua cor em ambas as plataformas. O gráfico na parede mede quão raramente um aglomerado apanha alguma luz, e a pequena fita junto à entrada mostra como dois átomos acabam por ficar juntos.",
       "lookFor": "Compare as plataformas: a escura congelou-se em manchas cristalinas, enquanto sob o feixe os átomos continuam a ser um gás inquieto.",
       "limit": "A plataforma iluminada é diferente porque o feixe a aquece, não porque os seus aglomerados tenham aprendido a usar a luz: pela nossa medida, estão menos sintonizados com a cor do feixe do que os aglomerados da plataforma escura, e o próprio feixe não está desenhado."
-    },
-    "orangery": {
-      "title": "laranjal",
-      "kicker": "Deixe os olhos viajar.",
-      "intro": "O laranjal liga a sala de world-engine ao terraço. É um lugar entre peças: siga as portas abertas, olhe para trás na direcção das salas, ou saia para debaixo do céu. Ao fundo há uma mesa de xadrez: aproxime-se para jogar, ou abra a partida a partir do Guia.",
-      "lookFor": "As três portas do lado do jardim dão todas para o terraço."
     },
     "gallery": {
       "title": "galeria",
@@ -95,37 +138,6 @@
       "intro": "O orrery mostra os três mundos de coarsen à escala do céu, alcançados pela esfera armilar do jardim. Encolheu cinquenta vezes para estar aqui; cada globo tem oitenta metros. São as simulações gravadas de coarsen: 508 744 partículas cada, a mesma mistura uniforme de uma espécie pesada e de uma leve, que diferem apenas na força com que as duas se repelem. Cada um está aberto na direcção de onde está, com a superfície como bordo medido das partículas e o interior medido a partir delas. As estrelas são um fundo desenhado, não um catálogo.",
       "lookFor": "Caminhe para um mundo e observe a sua face cortada; o brilho marca a matéria mais quente, uma codificação da temperatura, não luz.",
       "limit": "Uma só simulação gravada por mundo, nada interpolado. Um centro pesado não basta por si só para separar a desmistura do arrefecimento comum como causa."
-    },
-    "stair-north": {
-      "title": "escada",
-      "kicker": "O que há sob o terraço?",
-      "intro": "Um pavilhão de jardim no extremo norte do terraço, em que se entra a partir do bosque oeste. Lá dentro, um lanço de degraus desce sob a terra até à cave, de onde se abre o clube. Uma segunda escada do mesmo género ergue-se no extremo sul do terraço, junto ao bosque este.",
-      "lookFor": "O corrimão da escada e a lâmpada ao seu pé; a luz do dia acaba onde começa a abóbada."
-    },
-    "stair-south": {
-      "title": "escada",
-      "kicker": "O que há sob o terraço?",
-      "intro": "Um pavilhão de jardim no extremo sul do terraço, em que se entra a partir do bosque este. Lá dentro, um lanço de degraus desce sob a terra até à cave, de onde se abre o clube. Uma segunda escada do mesmo género ergue-se no extremo norte do terraço, junto ao bosque oeste.",
-      "lookFor": "O corrimão da escada e a lâmpada ao seu pé; a luz do dia acaba onde começa a abóbada."
-    },
-    "foyer": {
-      "title": "foyer",
-      "kicker": "Por onde se desce?",
-      "intro": "A cave corre por todo o comprimento do terraço, uma abóbada baixa sob as suas lajes. Duas escadas descem até ela a partir dos jardins, uma em cada extremo do terraço, e duas portas seguem em frente para o clube, que só se abre ao visitante com o microfone e o som ligados.",
-      "lookFor": "As lanternas nas duas portas do clube, e a luz que entra por elas: a cave é quente, o clube é frio."
-    },
-    "club": {
-      "title": "clube",
-      "kicker": "Quanto soa uma cave abobadada?",
-      "intro": "Um clube sob a ala norte: uma abóbada baixa, uma pista de dança de lajes iluminadas, um bar ao longo da parede leste, reservados ao longo da oeste, um palco ao fundo. O que toca é a emissão própria da pista, um set calculado na máquina do palácio e transmitido em directo, de modo que todos os visitantes ouvem a mesma batida com poucos segundos de diferença entre si. As luzes seguem os seus graves; quando a pista se cala, respiram por si. A porta pede microfone e som, para que falar e cantar possam funcionar aqui assim que a ligação de voz existir.",
-      "lookFor": "A bola de espelhos sobre a pista e as duas linhas de cor ao longo da abóbada; pulsam com a música quando há música.",
-      "limit": "O set é composto por um programa de semente fixa, não por uma pessoa; nada aqui é uma afirmação sobre música, e o codificador pára quando o clube está vazio."
-    },
-    "stage": {
-      "title": "palco",
-      "kicker": "Quem canta?",
-      "intro": "Um degrau acima da pista, emoldurado pelo proscénio e iluminado de frente. O palco é para quem canta de visor: só se abre a uma sessão imersiva, e sair dela devolve-o à pista. O karaoke correrá daqui assim que a ligação de voz existir.",
-      "lookFor": "O pé de microfone ao centro e as luzes da ribalta ao longo da borda: quem canta fica onde as duas linhas do chão se encontram."
     },
     "arcedit": {
       "title": "arcedit",

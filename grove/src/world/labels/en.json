@@ -28,18 +28,61 @@
       "lookFor": "Compare the true view with the stretched ones; the holes are marked in magenta, and the fringe study shows what a convincing whole-room view conceals.",
       "limit": "These are still studies rendered from stored data, not a live reconstruction and not a working lens doorway; the repository's remaining question has not been measured."
     },
+    "orangery": {
+      "title": "orangery",
+      "kicker": "Let your eyes travel.",
+      "intro": "The orangery joins the world-engine chamber to the terrace. It is a place between exhibits: follow the open doors, look back towards the chambers, or step out under the sky. At the far end stands a chess table: walk up to play, or open it from the Guide.",
+      "lookFor": "The three doors on the garden side all open onto the terrace."
+    },
+    "court-north": {
+      "title": "north court",
+      "kicker": "Where does the cellar begin?",
+      "intro": "A court on the edge of the west grove, closed by a stone balustrade, at the north end of the terrace. This is the club's front door: the pavilion ahead holds one broad flight that runs straight down under the lawn to the undercroft, and the club opens off that.",
+      "lookFor": "The name over the pavilion's door is the room at the end of the walk, not the stair; the lamps of the flight show under its arch."
+    },
+    "stair-north": {
+      "title": "stair",
+      "kicker": "What is under the terrace?",
+      "intro": "A pavilion at the end of the terrace, entered from its court. One flight, six metres wide and gentler than the terrace's steps, runs straight down under the lawn, and the door at its foot stands square with the door at its head: one walk, no turn.",
+      "lookFor": "The rail of the flight and the lamp at its foot; from the top step the door of the undercroft is already straight ahead."
+    },
+    "stair-south": {
+      "title": "stair",
+      "kicker": "What is under the terrace?",
+      "intro": "A pavilion at the end of the terrace, entered from its court. One flight, six metres wide and gentler than the terrace's steps, runs straight down under the lawn, and the door at its foot stands square with the door at its head: one walk, no turn.",
+      "lookFor": "The rail of the flight and the lamp at its foot; from the top step the door of the undercroft is already straight ahead."
+    },
+    "court-south": {
+      "title": "south court",
+      "kicker": "Where does the cellar begin?",
+      "intro": "A court on the edge of the east grove, closed by a stone balustrade, at the south end of the terrace. This is the club's front door: the pavilion ahead holds one broad flight that runs straight down under the lawn to the undercroft, and the club opens off that.",
+      "lookFor": "The name over the pavilion's door is the room at the end of the walk, not the stair; the lamps of the flight show under its arch."
+    },
+    "foyer": {
+      "title": "foyer",
+      "kicker": "Which way down?",
+      "intro": "The undercroft runs the length of the terrace, a low vault under its flagstones. Two stairs come down into it from the grounds, one at each end of the terrace, and two doors lead on into the club, which opens only to a visitor whose microphone and sound are on.",
+      "lookFor": "The lanterns at the club's two doors, and the light through them: the undercroft is warm, the club is cold."
+    },
+    "club": {
+      "title": "club",
+      "kicker": "How loud is a vaulted cellar?",
+      "intro": "A club under the north wing: a low vault, a dance floor of lit tiles, a bar along the east wall, booths along the west, a stage at the far end. What plays is the floor's own stream, a set rendered on the palace's machine and carried live, so every visitor hears the same beat within a few seconds of one another. The lights follow its low end; when the floor is quiet, they breathe on their own. The door asks for a microphone and sound, so that talking and singing can work here once the voice link exists.",
+      "lookFor": "The mirror ball over the floor and the two colour lines along the vault; they pulse with the music when there is music.",
+      "limit": "The set is composed by a seeded program, not by a person; nothing here is a claim about music, and the encoder stops when the club is empty."
+    },
+    "stage": {
+      "title": "stage",
+      "kicker": "Who is singing?",
+      "intro": "A step up from the floor, framed by the proscenium and lit from the front. The stage is for singers in a headset: it opens only to an immersive session, and leaving one puts you back on the floor. Karaoke will run from here once the voice link exists.",
+      "lookFor": "The microphone stand at the centre and the footlights along the edge: the singer stands where the floor's two lines meet."
+    },
     "phototroph": {
       "title": "phototroph",
       "kicker": "What does a steady beam of light do to a soup of atoms?",
       "intro": "phototroph asks whether matter under a steady beam of one colour organises itself into structures that absorb that colour. The two floors in the middle of the room began as the same world of 432 atoms of six kinds. One has been lit for 500 time units; the other stayed dark. They play in lockstep. The atoms the beam is tuned to wear its colour on both floors. The chart on the wall measures how rarely a clump catches any light at all, and the small tape by the entrance shows how two atoms come to stay together.",
       "lookFor": "Compare the floors: the dark one has frozen into crystal patches, while under the beam the atoms stay a restless gas.",
       "limit": "The lit floor differs because the beam heats it, not because its clumps have learned to use light: by our measure they are tuned less to the beam's colour than the dark floor's clumps, and the beam itself is not drawn."
-    },
-    "orangery": {
-      "title": "orangery",
-      "kicker": "Let your eyes travel.",
-      "intro": "The orangery joins the world-engine chamber to the terrace. It is a place between exhibits: follow the open doors, look back towards the chambers, or step out under the sky. At the far end stands a chess table: walk up to play, or open it from the Guide.",
-      "lookFor": "The three doors on the garden side all open onto the terrace."
     },
     "gallery": {
       "title": "gallery",
@@ -95,37 +138,6 @@
       "intro": "The orrery is coarsen's three worlds at the scale of the sky, reached through the garden's armillary. You have shrunk fifty times to stand here; each globe is eighty metres across. They are coarsen's recorded runs: 508,744 particles each, the same even mixture of a heavy and a light kind, differing only in how strongly the two kinds repel. Each is cut open toward where you stand, its surface the measured edge of the particles and its interior measured from them. The stars are a designed backdrop, not a catalogue.",
       "lookFor": "Walk toward a world and watch its cut face; the glow marks the hottest matter, an encoding of temperature, not light.",
       "limit": "One recorded run per world, nothing interpolated. A heavy centre does not by itself separate unmixing from shared cooling as its cause."
-    },
-    "stair-north": {
-      "title": "stair",
-      "kicker": "What is under the terrace?",
-      "intro": "A garden pavilion at the north end of the terrace, entered from the west grove. Inside, a flight of steps goes down under the ground to the undercroft, from which the club opens. A second stair of the same kind stands at the terrace's south end, off the east grove.",
-      "lookFor": "The rail of the stair and the lamp at its foot; the daylight ends where the vault begins."
-    },
-    "stair-south": {
-      "title": "stair",
-      "kicker": "What is under the terrace?",
-      "intro": "A garden pavilion at the south end of the terrace, entered from the east grove. Inside, a flight of steps goes down under the ground to the undercroft, from which the club opens. A second stair of the same kind stands at the terrace's north end, off the west grove.",
-      "lookFor": "The rail of the stair and the lamp at its foot; the daylight ends where the vault begins."
-    },
-    "foyer": {
-      "title": "foyer",
-      "kicker": "Which way down?",
-      "intro": "The undercroft runs the length of the terrace, a low vault under its flagstones. Two stairs come down into it from the grounds, one at each end of the terrace, and two doors lead on into the club, which opens only to a visitor whose microphone and sound are on.",
-      "lookFor": "The lanterns at the club's two doors, and the light through them: the undercroft is warm, the club is cold."
-    },
-    "club": {
-      "title": "club",
-      "kicker": "How loud is a vaulted cellar?",
-      "intro": "A club under the north wing: a low vault, a dance floor of lit tiles, a bar along the east wall, booths along the west, a stage at the far end. What plays is the floor's own stream, a set rendered on the palace's machine and carried live, so every visitor hears the same beat within a few seconds of one another. The lights follow its low end; when the floor is quiet, they breathe on their own. The door asks for a microphone and sound, so that talking and singing can work here once the voice link exists.",
-      "lookFor": "The mirror ball over the floor and the two colour lines along the vault; they pulse with the music when there is music.",
-      "limit": "The set is composed by a seeded program, not by a person; nothing here is a claim about music, and the encoder stops when the club is empty."
-    },
-    "stage": {
-      "title": "stage",
-      "kicker": "Who is singing?",
-      "intro": "A step up from the floor, framed by the proscenium and lit from the front. The stage is for singers in a headset: it opens only to an immersive session, and leaving one puts you back on the floor. Karaoke will run from here once the voice link exists.",
-      "lookFor": "The microphone stand at the centre and the footlights along the edge: the singer stands where the floor's two lines meet."
     },
     "arcedit": {
       "title": "arcedit",

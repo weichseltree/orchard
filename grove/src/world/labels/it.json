@@ -28,18 +28,61 @@
       "lookFor": "Confronti la vista vera con quelle stirate; i buchi sono segnati in magenta, e lo studio della frangia mostra ciò che una vista convincente dell'intera stanza nasconde.",
       "limit": "Sono studi fissi resi da dati memorizzati, non una ricostruzione dal vivo né una porta-lente funzionante; la domanda rimasta del repository non è stata misurata."
     },
+    "orangery": {
+      "title": "orangerie",
+      "kicker": "Lasci viaggiare lo sguardo.",
+      "intro": "L'orangerie collega la sala di world-engine alla terrazza. È un luogo tra le opere: segua le porte aperte, guardi verso le sale, o esca sotto il cielo. In fondo c'è un tavolo da scacchi: si avvicini per giocare, o apra la partita dalla Guida.",
+      "lookFor": "Le tre porte sul lato del giardino danno tutte sulla terrazza."
+    },
+    "court-north": {
+      "title": "corte nord",
+      "kicker": "Dove comincia la cantina?",
+      "intro": "Una corte chiusa da una balaustra di pietra, al margine del bosco ovest, all'estremità nord della terrazza. È la porta d'ingresso del club: nel padiglione una sola rampa larga scende diritta sotto il prato fino al sotterraneo, da cui si apre il club.",
+      "lookFor": "Sopra la porta del padiglione si legge la sala in fondo al cammino, non la scala; le lampade della rampa brillano sotto l'arco."
+    },
+    "stair-north": {
+      "title": "scala",
+      "kicker": "Che cosa c'è sotto la terrazza?",
+      "intro": "Un padiglione all'estremità della terrazza, in cui si entra dalla sua corte. Una sola rampa, larga sei metri e più dolce dei gradini della terrazza, scende diritta sotto il prato; la porta ai piedi è in asse con quella in cima, senza alcuna svolta.",
+      "lookFor": "Il corrimano della rampa e la lampada ai suoi piedi; dal primo gradino la porta del sotterraneo è già dritta davanti."
+    },
+    "stair-south": {
+      "title": "scala",
+      "kicker": "Che cosa c'è sotto la terrazza?",
+      "intro": "Un padiglione all'estremità della terrazza, in cui si entra dalla sua corte. Una sola rampa, larga sei metri e più dolce dei gradini della terrazza, scende diritta sotto il prato; la porta ai piedi è in asse con quella in cima, senza alcuna svolta.",
+      "lookFor": "Il corrimano della rampa e la lampada ai suoi piedi; dal primo gradino la porta del sotterraneo è già dritta davanti."
+    },
+    "court-south": {
+      "title": "corte sud",
+      "kicker": "Dove comincia la cantina?",
+      "intro": "Una corte chiusa da una balaustra di pietra, al margine del bosco est, all'estremità sud della terrazza. È la porta d'ingresso del club: nel padiglione una sola rampa larga scende diritta sotto il prato fino al sotterraneo, da cui si apre il club.",
+      "lookFor": "Sopra la porta del padiglione si legge la sala in fondo al cammino, non la scala; le lampade della rampa brillano sotto l'arco."
+    },
+    "foyer": {
+      "title": "foyer",
+      "kicker": "Da che parte si scende?",
+      "intro": "Il sotterraneo corre per tutta la lunghezza della terrazza, una volta bassa sotto le sue lastre. Due scale vi scendono dai giardini, una a ciascuna estremità della terrazza, e due porte proseguono nel club, che si apre solo al visitatore con microfono e audio accesi.",
+      "lookFor": "Le lanterne alle due porte del club, e la luce che ne viene: il sotterraneo è caldo, il club è freddo."
+    },
+    "club": {
+      "title": "club",
+      "kicker": "Quanto suona una cantina a volta?",
+      "intro": "Un club sotto l'ala nord: una volta bassa, una pista da ballo di piastrelle luminose, un bancone lungo la parete est, séparé lungo quella ovest, un palco in fondo. Ciò che suona è la diretta della pista stessa, un set calcolato sulla macchina del palazzo e trasmesso dal vivo, così che tutti i visitatori sentono lo stesso battito a pochi secondi l'uno dall'altro. Le luci seguono i suoi bassi; quando la pista tace, respirano da sole. La porta chiede microfono e audio, perché parlare e cantare possano funzionare qui non appena esisterà il collegamento vocale.",
+      "lookFor": "La sfera a specchi sopra la pista e le due linee di colore lungo la volta; pulsano con la musica, quando c'è musica.",
+      "limit": "Il set lo compone un programma a seme fisso, non una persona; nulla qui è un'affermazione sulla musica, e l'encoder si ferma quando il club è vuoto."
+    },
+    "stage": {
+      "title": "palco",
+      "kicker": "Chi canta?",
+      "intro": "Un gradino sopra la pista, incorniciato dal proscenio e illuminato di fronte. Il palco è per chi canta con il visore: si apre solo a una sessione immersiva, e lasciarla riporta in pista. Il karaoke partirà da qui appena esisterà il collegamento vocale.",
+      "lookFor": "L'asta del microfono al centro e le luci di ribalta lungo il bordo: chi canta sta dove le due linee del pavimento si incontrano."
+    },
     "phototroph": {
       "title": "phototroph",
       "kicker": "Che cosa fa un fascio di luce costante a una zuppa di atomi?",
       "intro": "phototroph si chiede se la materia, sotto un fascio costante di un solo colore, si organizzi in strutture che assorbono quel colore. I due piani al centro della sala sono partiti dallo stesso mondo di 432 atomi di sei specie. Uno è stato illuminato per 500 unità di tempo; l'altro è rimasto al buio. Scorrono in perfetta sincronia. Gli atomi a cui il fascio è accordato portano il suo colore su entrambi i piani. Il grafico alla parete misura quanto raramente un aggregato catturi un po' di luce, e il piccolo nastro vicino all'ingresso mostra come due atomi arrivino a restare insieme.",
       "lookFor": "Confronti i piani: quello buio si è congelato in chiazze cristalline, mentre sotto il fascio gli atomi restano un gas irrequieto.",
       "limit": "Il piano illuminato è diverso perché il fascio lo riscalda, non perché i suoi aggregati abbiano imparato a usare la luce: secondo la nostra misura sono accordati al colore del fascio meno degli aggregati del piano buio, e il fascio stesso non è disegnato."
-    },
-    "orangery": {
-      "title": "orangerie",
-      "kicker": "Lasci viaggiare lo sguardo.",
-      "intro": "L'orangerie collega la sala di world-engine alla terrazza. È un luogo tra le opere: segua le porte aperte, guardi verso le sale, o esca sotto il cielo. In fondo c'è un tavolo da scacchi: si avvicini per giocare, o apra la partita dalla Guida.",
-      "lookFor": "Le tre porte sul lato del giardino danno tutte sulla terrazza."
     },
     "gallery": {
       "title": "galleria",
@@ -95,37 +138,6 @@
       "intro": "L'orrery mostra i tre mondi di coarsen alla scala del cielo, raggiunti attraverso la sfera armillare del giardino. Si è rimpiccioliti cinquanta volte per stare qui; ogni globo misura ottanta metri. Sono le simulazioni registrate di coarsen: 508.744 particelle ciascuna, la stessa miscela uniforme di una specie pesante e una leggera, che differiscono solo per quanto fortemente le due si respingono. Ognuna è aperta verso il punto in cui si trova, con la superficie come bordo misurato delle particelle e l'interno misurato da esse. Le stelle sono uno sfondo disegnato, non un catalogo.",
       "lookFor": "Cammini verso un mondo e osservi la sua faccia tagliata; il bagliore segna la materia più calda, una codifica della temperatura, non luce.",
       "limit": "Una sola simulazione registrata per mondo, nulla di interpolato. Un centro pesante non basta da solo a separare la smiscelazione dal raffreddamento comune come causa."
-    },
-    "stair-north": {
-      "title": "scala",
-      "kicker": "Che cosa c'è sotto la terrazza?",
-      "intro": "Un padiglione da giardino all'estremità nord della terrazza, in cui si entra dal boschetto ovest. Dentro, una rampa di gradini scende sotto terra fino al sotterraneo, da cui si apre il club. Una seconda scala dello stesso genere sta all'estremità sud della terrazza, presso il boschetto est.",
-      "lookFor": "Il corrimano della scala e la lampada ai suoi piedi; la luce del giorno finisce dove comincia la volta."
-    },
-    "stair-south": {
-      "title": "scala",
-      "kicker": "Che cosa c'è sotto la terrazza?",
-      "intro": "Un padiglione da giardino all'estremità sud della terrazza, in cui si entra dal boschetto est. Dentro, una rampa di gradini scende sotto terra fino al sotterraneo, da cui si apre il club. Una seconda scala dello stesso genere sta all'estremità nord della terrazza, presso il boschetto ovest.",
-      "lookFor": "Il corrimano della scala e la lampada ai suoi piedi; la luce del giorno finisce dove comincia la volta."
-    },
-    "foyer": {
-      "title": "foyer",
-      "kicker": "Da che parte si scende?",
-      "intro": "Il sotterraneo corre per tutta la lunghezza della terrazza, una volta bassa sotto le sue lastre. Due scale vi scendono dai giardini, una a ciascuna estremità della terrazza, e due porte proseguono nel club, che si apre solo al visitatore con microfono e audio accesi.",
-      "lookFor": "Le lanterne alle due porte del club, e la luce che ne viene: il sotterraneo è caldo, il club è freddo."
-    },
-    "club": {
-      "title": "club",
-      "kicker": "Quanto suona una cantina a volta?",
-      "intro": "Un club sotto l'ala nord: una volta bassa, una pista da ballo di piastrelle luminose, un bancone lungo la parete est, séparé lungo quella ovest, un palco in fondo. Ciò che suona è la diretta della pista stessa, un set calcolato sulla macchina del palazzo e trasmesso dal vivo, così che tutti i visitatori sentono lo stesso battito a pochi secondi l'uno dall'altro. Le luci seguono i suoi bassi; quando la pista tace, respirano da sole. La porta chiede microfono e audio, perché parlare e cantare possano funzionare qui non appena esisterà il collegamento vocale.",
-      "lookFor": "La sfera a specchi sopra la pista e le due linee di colore lungo la volta; pulsano con la musica, quando c'è musica.",
-      "limit": "Il set lo compone un programma a seme fisso, non una persona; nulla qui è un'affermazione sulla musica, e l'encoder si ferma quando il club è vuoto."
-    },
-    "stage": {
-      "title": "palco",
-      "kicker": "Chi canta?",
-      "intro": "Un gradino sopra la pista, incorniciato dal proscenio e illuminato di fronte. Il palco è per chi canta con il visore: si apre solo a una sessione immersiva, e lasciarla riporta in pista. Il karaoke partirà da qui appena esisterà il collegamento vocale.",
-      "lookFor": "L'asta del microfono al centro e le luci di ribalta lungo il bordo: chi canta sta dove le due linee del pavimento si incontrano."
     },
     "arcedit": {
       "title": "arcedit",

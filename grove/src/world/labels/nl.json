@@ -28,18 +28,61 @@
       "lookFor": "Vergelijk het ware beeld met de uitgerekte; de gaten zijn magenta gemarkeerd, en de rafelstudie toont wat een overtuigend beeld van het hele lokaal verbergt.",
       "limit": "Dit zijn stilstaande studies uit opgeslagen gegevens, geen live reconstructie en geen werkende lensdeur; de resterende vraag van de repository is niet gemeten."
     },
+    "orangery": {
+      "title": "oranjerie",
+      "kicker": "Laat uw ogen reizen.",
+      "intro": "De oranjerie verbindt de zaal van world-engine met het terras. Het is een plek tussen de werken: volg de open deuren, kijk terug naar de zalen, of stap naar buiten onder de hemel. Aan het verre einde staat een schaaktafel: loop ernaartoe om te spelen, of open het spel vanuit de Gids.",
+      "lookFor": "De drie deuren aan de tuinkant komen alle uit op het terras."
+    },
+    "court-north": {
+      "title": "noordhof",
+      "kicker": "Waar begint de kelder?",
+      "intro": "Een door een stenen balustrade omsloten hof aan de rand van het westelijke bosje, aan het noordeinde van het terras. Dit is de voordeur van de club: in het paviljoen daalt één brede trap recht onder het gazon naar de onderbouw, waaraan de club ligt.",
+      "lookFor": "Boven de deur van het paviljoen staat de zaal aan het eind van de weg, niet de trap; de lampen van de trap schijnen onder de boog."
+    },
+    "stair-north": {
+      "title": "trap",
+      "kicker": "Wat ligt er onder het terras?",
+      "intro": "Een paviljoen aan het eind van het terras, betreden vanaf zijn hof. Eén trap, zes meter breed en flauwer dan de treden van het terras, daalt recht onder het gazon; de deur aan de voet ligt in één lijn met die aan de kop, zonder bocht.",
+      "lookFor": "De leuning van de trap en de lamp aan de voet; vanaf de bovenste trede ligt de deur van de onderbouw al recht vooruit."
+    },
+    "stair-south": {
+      "title": "trap",
+      "kicker": "Wat ligt er onder het terras?",
+      "intro": "Een paviljoen aan het eind van het terras, betreden vanaf zijn hof. Eén trap, zes meter breed en flauwer dan de treden van het terras, daalt recht onder het gazon; de deur aan de voet ligt in één lijn met die aan de kop, zonder bocht.",
+      "lookFor": "De leuning van de trap en de lamp aan de voet; vanaf de bovenste trede ligt de deur van de onderbouw al recht vooruit."
+    },
+    "court-south": {
+      "title": "zuidhof",
+      "kicker": "Waar begint de kelder?",
+      "intro": "Een door een stenen balustrade omsloten hof aan de rand van het oostelijke bosje, aan het zuideinde van het terras. Dit is de voordeur van de club: in het paviljoen daalt één brede trap recht onder het gazon naar de onderbouw, waaraan de club ligt.",
+      "lookFor": "Boven de deur van het paviljoen staat de zaal aan het eind van de weg, niet de trap; de lampen van de trap schijnen onder de boog."
+    },
+    "foyer": {
+      "title": "foyer",
+      "kicker": "Welke kant naar beneden?",
+      "intro": "De kelder loopt over de hele lengte van het terras, een laag gewelf onder zijn stenen. Twee trappen komen erin uit vanaf de gronden, één aan elk eind van het terras, en twee deuren leiden verder de club in, die alleen opengaat voor een bezoeker met microfoon en geluid aan.",
+      "lookFor": "De lantaarns bij de twee clubdeuren, en het licht erdoorheen: de kelder is warm, de club is koud."
+    },
+    "club": {
+      "title": "club",
+      "kicker": "Hoe luid is een gewelfde kelder?",
+      "intro": "Een club onder de noordvleugel: een laag gewelf, een dansvloer van verlichte tegels, een bar langs de oostmuur, zitjes langs de westmuur, een podium aan het einde. Wat speelt is de eigen stream van de vloer, een set die op de machine van het paleis wordt berekend en live wordt doorgegeven, zodat alle bezoekers dezelfde slag binnen enkele seconden van elkaar horen. De lichten volgen de bas; als de vloer stil is, ademen ze uit zichzelf. De deur vraagt om een microfoon en geluid, zodat praten en zingen hier kunnen werken zodra de spraakverbinding bestaat.",
+      "lookFor": "De spiegelbol boven de vloer en de twee kleurlijnen langs het gewelf; ze pulseren mee met de muziek, als er muziek is.",
+      "limit": "De set wordt gecomponeerd door een programma met een vaste startwaarde, niet door een mens; niets hier is een uitspraak over muziek, en de encoder stopt als de club leeg is."
+    },
+    "stage": {
+      "title": "podium",
+      "kicker": "Wie zingt er?",
+      "intro": "Een trede boven de vloer, omlijst door het proscenium en van voren belicht. Het podium is voor zangers met een VR-bril: het gaat alleen open voor een immersieve sessie, en wie die verlaat staat weer op de vloer. Karaoke zal van hieruit lopen zodra de spraakverbinding bestaat.",
+      "lookFor": "De microfoonstandaard in het midden en het voetlicht langs de rand: de zanger staat waar de twee lijnen van de vloer samenkomen."
+    },
     "phototroph": {
       "title": "phototroph",
       "kicker": "Wat doet een gestage lichtbundel met een soep van atomen?",
       "intro": "phototroph vraagt of materie onder een gestage bundel van één kleur zich ordent tot structuren die die kleur absorberen. De twee vloeren midden in de zaal begonnen als dezelfde wereld van 432 atomen van zes soorten. De ene is 500 tijdseenheden belicht; de andere bleef donker. Ze spelen precies gelijk op. De atomen waarop de bundel is afgestemd dragen op beide vloeren zijn kleur. De grafiek aan de wand meet hoe zelden een klontje überhaupt licht vangt, en de kleine band bij de ingang laat zien hoe twee atomen bij elkaar komen te blijven.",
       "lookFor": "Vergelijk de vloeren: de donkere is bevroren tot kristallijne plekken, terwijl de atomen onder de bundel een onrustig gas blijven.",
       "limit": "De belichte vloer verschilt omdat de bundel hem verwarmt, niet omdat zijn klontjes hebben geleerd licht te gebruiken: volgens onze maat zijn ze minder op de kleur van de bundel afgestemd dan de klontjes van de donkere vloer, en de bundel zelf is niet getekend."
-    },
-    "orangery": {
-      "title": "oranjerie",
-      "kicker": "Laat uw ogen reizen.",
-      "intro": "De oranjerie verbindt de zaal van world-engine met het terras. Het is een plek tussen de werken: volg de open deuren, kijk terug naar de zalen, of stap naar buiten onder de hemel. Aan het verre einde staat een schaaktafel: loop ernaartoe om te spelen, of open het spel vanuit de Gids.",
-      "lookFor": "De drie deuren aan de tuinkant komen alle uit op het terras."
     },
     "gallery": {
       "title": "galerij",
@@ -95,37 +138,6 @@
       "intro": "Het orrery toont de drie werelden van coarsen op de schaal van de hemel, bereikt via het armillarium in de tuin. U bent vijftig keer gekrompen om hier te staan; elke bol is tachtig meter breed. Het zijn de opgenomen runs van coarsen: 508.744 deeltjes elk, hetzelfde gelijkmatige mengsel van een zware en een lichte soort, alleen verschillend in hoe sterk de twee elkaar afstoten. Elke wereld is opengesneden naar de plek waar u staat, met het oppervlak als gemeten rand van de deeltjes en het binnenste daaruit gemeten. De sterren zijn een ontworpen achtergrond, geen catalogus.",
       "lookFor": "Loop naar een wereld toe en bekijk het snijvlak; de gloed markeert de heetste materie, een codering van temperatuur, geen licht.",
       "limit": "Eén opgenomen run per wereld, niets geïnterpoleerd. Een zwaar midden scheidt op zichzelf ontmenging niet van gedeelde afkoeling als oorzaak."
-    },
-    "stair-north": {
-      "title": "trap",
-      "kicker": "Wat ligt er onder het terras?",
-      "intro": "Een tuinpaviljoen aan het noordeinde van het terras, te betreden vanuit het westelijke bosje. Binnen gaat een trap onder de grond naar de kelder, van waaruit de club opengaat. Een tweede trap van dezelfde soort staat aan het zuideinde van het terras, bij het oostelijke bosje.",
-      "lookFor": "De leuning van de trap en de lamp aan haar voet; het daglicht houdt op waar het gewelf begint."
-    },
-    "stair-south": {
-      "title": "trap",
-      "kicker": "Wat ligt er onder het terras?",
-      "intro": "Een tuinpaviljoen aan het zuideinde van het terras, te betreden vanuit het oostelijke bosje. Binnen gaat een trap onder de grond naar de kelder, van waaruit de club opengaat. Een tweede trap van dezelfde soort staat aan het noordeinde van het terras, bij het westelijke bosje.",
-      "lookFor": "De leuning van de trap en de lamp aan haar voet; het daglicht houdt op waar het gewelf begint."
-    },
-    "foyer": {
-      "title": "foyer",
-      "kicker": "Welke kant naar beneden?",
-      "intro": "De kelder loopt over de hele lengte van het terras, een laag gewelf onder zijn stenen. Twee trappen komen erin uit vanaf de gronden, één aan elk eind van het terras, en twee deuren leiden verder de club in, die alleen opengaat voor een bezoeker met microfoon en geluid aan.",
-      "lookFor": "De lantaarns bij de twee clubdeuren, en het licht erdoorheen: de kelder is warm, de club is koud."
-    },
-    "club": {
-      "title": "club",
-      "kicker": "Hoe luid is een gewelfde kelder?",
-      "intro": "Een club onder de noordvleugel: een laag gewelf, een dansvloer van verlichte tegels, een bar langs de oostmuur, zitjes langs de westmuur, een podium aan het einde. Wat speelt is de eigen stream van de vloer, een set die op de machine van het paleis wordt berekend en live wordt doorgegeven, zodat alle bezoekers dezelfde slag binnen enkele seconden van elkaar horen. De lichten volgen de bas; als de vloer stil is, ademen ze uit zichzelf. De deur vraagt om een microfoon en geluid, zodat praten en zingen hier kunnen werken zodra de spraakverbinding bestaat.",
-      "lookFor": "De spiegelbol boven de vloer en de twee kleurlijnen langs het gewelf; ze pulseren mee met de muziek, als er muziek is.",
-      "limit": "De set wordt gecomponeerd door een programma met een vaste startwaarde, niet door een mens; niets hier is een uitspraak over muziek, en de encoder stopt als de club leeg is."
-    },
-    "stage": {
-      "title": "podium",
-      "kicker": "Wie zingt er?",
-      "intro": "Een trede boven de vloer, omlijst door het proscenium en van voren belicht. Het podium is voor zangers met een VR-bril: het gaat alleen open voor een immersieve sessie, en wie die verlaat staat weer op de vloer. Karaoke zal van hieruit lopen zodra de spraakverbinding bestaat.",
-      "lookFor": "De microfoonstandaard in het midden en het voetlicht langs de rand: de zanger staat waar de twee lijnen van de vloer samenkomen."
     },
     "arcedit": {
       "title": "arcedit",
