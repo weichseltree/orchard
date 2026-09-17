@@ -8,8 +8,7 @@ streaming but work on the design and map integration first."* And his
 question: *"are we baking the light and sound maps or is that feature not
 ready?"* — answered in §6.
 
-§1 to §4 are built and live. §5 is the audio streaming as prepared: the
-client's side is wired and the pipeline is designed, but no stream exists yet.
+§1 to §5 are built; §5's stream is the first of the three ruled follow-ups.
 §7 lists the rulings that are Manuel's. Numbers marked **budget** are
 proposals, not measurements.
 
@@ -158,14 +157,14 @@ itself never changes.
   y = 0 everywhere, which put the raised wing's camera at ankle height and
   would have put the club's in the orangery); three stations added.
 
-## 5. The audio, as prepared
+## 5. The audio: the floor's stream, built
 
 **The club's music is a live exhibit** (AUDIO-STREAM.md §1–§3): a name with
-no bytes behind it, never cached, LL-HLS Opus. The hanging that will carry
-it is one line of JSON, left out of mansion.json on purpose until the stream
-exists — a playlist that answers 404 is a fatal HLS error, which the client
-reports as *"exhibit silent"* to every visitor who comes near, and the demo's
-"no external requests" check would fail on the fetch:
+no bytes behind it, never cached, Opus in fMP4 over HLS. This cut publishes
+plain two-second segments and no LL-HLS parts, so a listener sits about five
+to seven seconds behind the encoder and visitors hear the beat within a few
+seconds of one another; §3's two-second budget is not met by it and waits
+for a packager that writes parts. It is hung in the club:
 
 ```json
 { "id": "club-floor", "kind": "audio", "title": "The floor",
@@ -173,15 +172,52 @@ reports as *"exhibit silent"* to every visitor who comes near, and the demo's
   "position": [0, -2.5, -52], "sizeMeters": 14 }
 ```
 
-Landed for it: a live audio exhibit now joins the venue's shared
-`AudioContext` (`world.ts` `audioContext`, `audio-exhibit.ts` `context`), so
-the same **Sound on** that opens the door is what makes the stream audible —
-`AudioExhibit.unmute()` was never called from the app before; the venue's
-exhibits are unmuted the moment the gate is on (`syncVenueSound`) — and the
-beat follower reads the first venue exhibit's bed. With the hanging in place
-and a stream at `media.weichseltree.com/audio/live/club/floor/live.m3u8`
-(the encoder side of AUDIO-STREAM.md §3), the floor plays and the lights
-follow it. No topology: the bed alone, which is what a DJ set is.
+**The encoder** is `orchard stream run` (`orchard/stream.py`), a service on
+the host's machine (`deploy/stream/install.sh`, a systemd user unit like
+Faye's). ffmpeg encodes Opus into two-second fMP4 segments under a live
+playlist; the module uploads each new segment and then the playlist to the
+media bucket under `audio/live/club/floor/` (the playlist with `no-store`,
+the segments with a minute's cache) and deletes what fell out of the window,
+keeping two extra for a player mid-fetch. Every accounted minute goes to the
+ledger's `.audio_usage.jsonl` as encode hours and the host's operations.
+
+**What plays** is a directory of tracks the venue may distribute
+(`~/.local/share/orchard-stream/tracks`, looped; the ruling below allows own
+or licensed recordings only). With none, the floor plays **the seeded set**
+(`orchard/setgen.py`): an endless techno set rendered bar by bar as a pure
+function of a seed and the bar index, four-on-the-floor at 124, a bass
+pattern and a chord that change every eight bars, hats, a clap, a pad, now
+and then an arpeggio, a breakdown every fourth section. A program, not a
+person; the wall text says so. `orchard stream render out.wav --bars 16`
+writes it to listen to.
+
+**The encoder runs only while someone is in the club.** It counts the rows
+of the live `whereabouts` table in the venue's presence room every five
+seconds, on a thread of its own so a slow database never holds the players
+up, and stops a minute after the last visitor leaves (AUDIO-STREAM.md §6).
+While idle it leaves an **empty live playlist** published, so a player that
+arrives waits rather than fails; when someone comes the encoder starts
+within a poll and the playlist fills. The sequence and the set's position
+survive a restart (`sequence.txt` in the workdir); a failed upload is logged
+and retried with a backoff of up to half a minute while the encoder runs on;
+an encoder that dies or stalls is restarted with a backoff; on stop the
+retire is bounded. **The client's player is awake only in its room**: the
+club's floor is fetched by the club's visitors, not by everyone in the
+palace. Waking, it looks at the playlist first: a live one is attached, an
+empty one is waited on quietly (a notice once), and it looks again every
+eight seconds (`audio/exhibit.ts`). A playlist whose newest segment is more
+than half a minute old is a leftover of an encoder that died, not a stream
+(`playlistIsFresh`). Playback holds the live edge two segments back and
+jumps back to it when it drifts by more than four seconds; §3's silence
+applies when jumping does not help. A live exhibit joins the venue's shared
+`AudioContext` so the same **Sound on** that opens the door is what makes
+the stream audible, and the beat follower reads its bed for the lights; a
+floor that is on but silent breathes like no stream at all. The demo loads
+no live exhibit, having no network.
+
+**Dev**: `orchard stream run --local results/bundles/audio/live/club/floor
+--always` publishes into the directory Vite serves as `/local-bundles/`, so
+`pnpm dev` plays the floor from this box.
 
 **Karaoke** is three things, none of them the stream above:
 
@@ -277,3 +313,12 @@ Proposed, in two steps, both **budget**:
    the first stream plays, so it is heard on something.
 6. **The presence room**: one `club` for the three rooms (as built), or a
    `stage` of its own so a singer's chat is the stage's. One is recommended.
+
+## Ruled by Manuel, 2026-09-17
+
+1. **The look stays**: magenta lamps and cyan lines over near-black stone.
+2. **Karaoke material**: own or licensed recordings only, attribution in the bundle manifest.
+3. **Cloudflare Realtime** carries the voice link, under Weichseltree OÜ's account.
+4. **The microphone is asked for at the door**, as built.
+5. **Order of work**: the floor's live stream, then the karaoke queue, then acoustics step 1 — each its own PR, reviewed by a subagent (Copilot credits are used up), merged and deployed by the session.
+6. **One presence room** (`club`) for the three rooms.

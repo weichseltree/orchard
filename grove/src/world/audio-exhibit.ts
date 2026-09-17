@@ -65,6 +65,8 @@ export interface AudioExhibitOptions {
   voice?: VoiceFactory;
   onNotice?: (message: string) => void;
   fetch?: typeof globalThis.fetch;
+  /** Start the stream asleep; `setActive(true)` when the visitor is in its room (audio/exhibit.ts). */
+  dormant?: boolean;
 }
 
 export class AudioExhibit {
@@ -125,6 +127,7 @@ export class AudioExhibit {
       stream = await ExhibitStream.create({
         url: `${base}${PLAYLIST_FILE}`,
         ...(onNotice ? { onNotice } : {}),
+        ...(options.dormant ? { dormant: true } : {}),
       });
       field.connectBed(stream.audio);
     } catch (error) {
@@ -140,6 +143,11 @@ export class AudioExhibit {
       exhibit.#poll = setInterval(() => void pollScore(url, follower, fetchImpl), LIVE_POLL_MS);
     }
     return exhibit;
+  }
+
+  /** Awake in its room, asleep elsewhere (audio/exhibit.ts `setActive`): the stream is fetched only where it is heard. */
+  setActive(active: boolean): void {
+    if (!this.#disposed) this.stream?.setActive(active);
   }
 
   /** Keeps the voices on the score. Cheap when nothing changed; call it from the frame loop. */
@@ -228,6 +236,8 @@ async function loadNodes(
     // `no-store` says what the exhibit rule already says: this document
     // changes as the observed system does, and keeping it is keeping a lie.
     const response = await fetchImpl(url, { cache: "no-store" });
+    // A provider that publishes no topology at all (the club's floor is a bed with no nodes) is the §5 fallback, not news.
+    if (response.status === 404) return [];
     if (!response.ok) throw new Error(`${response.status}`);
     return placeTopology(parseTopology(await response.json()), placement);
   } catch (error) {
