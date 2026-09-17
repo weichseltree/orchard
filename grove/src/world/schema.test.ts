@@ -224,7 +224,7 @@ function postersOf(room: Room): Array<{ wall: Wall; center: number; width: numbe
   return room.hangings.flatMap((hanging) => {
     // Nothing that stands in the room's volume rather than on a wall: a tape
     // box, one of spectre's worlds, or a live audio exhibit's topology.
-    if (hanging.kind === "tape" || hanging.kind === "planet" || hanging.kind === "audio") return [];
+    if (hanging.kind === "tape" || hanging.kind === "planet" || hanging.kind === "model" || hanging.kind === "audio") return [];
     const [x, , z] = hanging.position;
     const candidates: Array<[Wall, number, number]> = [
       ["-x", Math.abs(x - room.bounds.min[0]), z], ["+x", Math.abs(x - room.bounds.max[0]), z],

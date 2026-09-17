@@ -431,6 +431,7 @@ class Builder {
 function hangingWidth(h: Room["hangings"][number]): number {
   if (h.kind === "tape") return h.longSideMeters;
   if (h.kind === "planet") return h.radiusMeters * 2;
+  if (h.kind === "model") return h.sizeMeters;
   // A live audio exhibit is a volume standing in the room, not a thing on a
   // wall (audio/topology.ts places its topology around the visitor), so it
   // clears no wall panel.

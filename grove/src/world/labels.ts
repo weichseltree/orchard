@@ -13,6 +13,7 @@ import {
 } from "three";
 import { wrap } from "../ui/worldnotice";
 import { OBSERVATORY_PALETTE } from "./observatory";
+import { PLINTH_MARGIN_M } from "./model-placement";
 import { STAND, standFoot, standFrame } from "./stand";
 import type { Labels } from "./labels/index";
 import type { Doorway, Hanging, Mansion, Room } from "./schema";
@@ -363,7 +364,11 @@ function footprint(h: Hanging): { min: Vector3; max: Vector3 } {
     }
     return { min, max };
   }
-  const half = h.kind === "tape" ? h.longSideMeters / 2 : h.kind === "audio" ? h.sizeMeters / 2 : 0.5;
+  // A model's plinth reaches past the model, and past the circle a turning one
+  // sweeps (model-placement.ts); its lectern stands clear of both.
+  const half = h.kind === "tape" ? h.longSideMeters / 2
+    : h.kind === "model" ? h.sizeMeters * (h.yawSpinDegPerSec !== 0 ? Math.SQRT1_2 : 0.5) + PLINTH_MARGIN_M
+    : h.kind === "audio" ? h.sizeMeters / 2 : 0.5;
   return { min: new Vector3(p.x - half, 0, p.z - half), max: new Vector3(p.x + half, 0, p.z + half) };
 }
 

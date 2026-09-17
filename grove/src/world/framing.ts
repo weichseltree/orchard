@@ -55,6 +55,15 @@ export function hangingFace(room: Room, hanging: Hanging): Face {
       const radius = hanging.radiusMeters;
       return { centre, normal: toward(centre, spawn), width: 2 * (spread + radius), height: 2 * radius };
     }
+    case "model": {
+      // Read from where the visitor lands, like its lectern (labels.ts); the
+      // model's height is not known before its bundle, so its longest side
+      // stands in for it, over the plinth.
+      const [x, y, z] = hanging.position;
+      const size = hanging.sizeMeters;
+      const centre: [number, number, number] = [x, y + (hanging.plinth?.heightMeters ?? 0) + size / 2, z];
+      return { centre, normal: toward(centre, spawn), width: size, height: size };
+    }
     case "audio":
       return { centre: hanging.position, normal: toward(hanging.position, spawn), width: hanging.sizeMeters, height: hanging.sizeMeters };
   }
