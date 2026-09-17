@@ -339,14 +339,28 @@ mirror, so an announcement feed would run beside it rather than replacing it:
   compares what she would SAY, not the producer's spelling; otherwise one set
   of starts is announced twice, in the same sentence both times.
 - **A line is as long as a room can take, not as long as the module allows.**
-  Run against the emulator's feed on 2026-09-17, the planet watcher's plateau
-  alert arrives as a 179-character sentence of which 83 are the thresholds it
-  fired on, while its cap and finish lines are 53 and 69. The module would
-  carry it — and clip anything over 280 silently and mid-word — so the trim is
-  hers: over 140 characters a trailing parenthetical of evidence goes first,
-  and only then the sentence, at a word boundary. Its producers also end their
-  titles with a full stop where expdash does not, so she no longer adds a
-  second one.
+  Read off the emulator's feed on 2026-09-17: the planet watcher's plateau
+  alert is 178 characters, 83 of them the thresholds it fired on, while its
+  cap, finish and "no longer watched" lines are 68, 66 and 127. The module
+  would carry all of it — and clip anything past 280 silently and mid-word —
+  so the trim is hers: over 140 characters the parenthetical evidence goes
+  first, **wherever in the sentence it sits**, and only then the sentence
+  itself, at a word boundary, counted in code points so a cut cannot split a
+  surrogate pair, and never leaving a bracket she did not close. Dropping only
+  a *trailing* parenthesis was the first attempt and was wrong: the slowdown
+  alert reads "…so far (load 25.1 on 16 cores; top: chrome 310%, node 180%).
+  Box load, not the code", and a cut at the last word would have dropped the
+  one clause ANNOUNCE-FEED.md §3 requires it to keep while leaving the numbers
+  that invite the reading it forbids. Every line she says goes through this,
+  not only the ones `announce` built.
+- **A condition ending and a condition going unwatched are different facts.**
+  The metric engine names both from whatever a person called the condition:
+  `<name>-cleared` is the condition genuinely over, `<name>-expired` is the
+  group dropped because the samples stopped — worded by the producer itself as
+  "no longer watched (no samples)". So they are said as "cleared the plateau"
+  and "are no longer watched for the plateau"; calling the second one cleared
+  would announce a resolution to a run that merely went quiet, which is
+  `completed`-is-not-success in another coat.
 - **No declared state becomes a conclusion.** A collapsed burst needs English
   ("2 runs hit the cap unbalanced"), and that translation is the whole of it:
   `balanced` is not "stable", `plateau` is not "stuck", `finished` is not
