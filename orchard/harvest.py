@@ -5,7 +5,7 @@
 
 The manifest is the list of what a tree can show; the bundle is what the
 grove can download. This is the join. For each artefact whose kind has a
-bundler (tape, clip, master, still, figure) the source is hashed, bundled
+bundler (tape, clip, master, still, figure, model) the source is hashed, bundled
 unless the manifest already names a bundle made from those bytes, and the
 bundle id, the source digest and the tree commit are written into the
 artefact. Nothing here uploads or hangs anything: `orchard exhibit` does
@@ -53,7 +53,7 @@ from .manifest import Artefact, Tree
 from .portfolio import manifest_path, save  # noqa: F401  (manifest_path: callers import it from here)
 
 #: A `planet` artefact is bundled by `orchard bundle planet` from a bake delivery, not here.
-BUNDLED_KINDS = ("tape", "clip", "master", "still", "figure")
+BUNDLED_KINDS = ("tape", "clip", "master", "still", "figure", "model")
 
 
 def resolve_source(tree: Tree, art: Artefact) -> Path | None:
@@ -131,7 +131,7 @@ def _bundler(kind: str):
     from . import bundle
     return {"tape": bundle.bundle_tape, "clip": bundle.bundle_video,
             "master": bundle.bundle_video, "still": bundle.bundle_still,
-            "figure": bundle.bundle_still}[kind]
+            "figure": bundle.bundle_still, "model": bundle.bundle_model}[kind]
 
 
 DIRTY = "refused: the tree has uncommitted changes to tracked files"

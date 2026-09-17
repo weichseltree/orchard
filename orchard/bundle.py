@@ -1119,6 +1119,303 @@ def bundle_still(image, tree: str, title: str, out_root=None, *,
     return dest
 
 
+# ------------------------------------------------------------------- models
+
+
+#: What one `model` exhibit may cost a visitor. A phone downloads the whole glb
+#: and uploads every primitive as its own draw; past these it is a different
+#: exhibit (a room, a planet), not a thing on a plinth.
+MODEL_MAX_BYTES = 8_000_000
+MODEL_MAX_TRIANGLES = 150_000
+MODEL_MAX_DRAWS = 256
+
+GLB_MAGIC = b"glTF"
+GLB_CHUNK_JSON = 0x4E4F534A
+GLB_CHUNK_BIN = 0x004E4942
+
+#: Extensions a model may REQUIRE: what three's GLTFLoader decodes by itself,
+#: plus meshopt (the grove imports the decoder when a bundle says so) and Basis
+#: textures (the grove's KTX2 transcoder). Draco is not here: its decoder is a
+#: wasm the grove does not host; re-export with meshopt instead.
+MODEL_EXTENSIONS_REQUIRED_OK = frozenset({
+    "KHR_mesh_quantization", "KHR_texture_transform", "KHR_materials_unlit",
+    "KHR_texture_basisu", "EXT_meshopt_compression", "EXT_texture_webp",
+    "EXT_texture_avif",
+})
+
+#: glTF's `mode` 4 (TRIANGLES), 5 (TRIANGLE_STRIP), 6 (TRIANGLE_FAN); the rest draw no triangles.
+_TRIANGLE_MODES = {4, 5, 6}
+#: The largest magnitude of a normalized integer component type (glTF 3.11).
+_NORMALIZED_MAX = {5120: 127.0, 5121: 255.0, 5122: 32767.0, 5123: 65535.0, 5125: 4294967295.0}
+
+
+class ModelRefused(ValueError):
+    """A glb the grove will not show: malformed, external, or over budget."""
+
+
+def _node_matrix(node: dict) -> np.ndarray:
+    """A node's local transform: `matrix` (column-major) or T * R * S."""
+    if "matrix" in node:
+        return np.asarray(node["matrix"], dtype=np.float64).reshape(4, 4).T
+    t = np.asarray(node.get("translation", [0, 0, 0]), dtype=np.float64)
+    x, y, z, w = (float(v) for v in node.get("rotation", [0, 0, 0, 1]))
+    s = np.asarray(node.get("scale", [1, 1, 1]), dtype=np.float64)
+    r = np.array([
+        [1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w)],
+        [2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w)],
+        [2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y)],
+    ])
+    m = np.eye(4)
+    m[:3, :3] = r * s
+    m[:3, 3] = t
+    return m
+
+
+def _read_glb(data: bytes) -> tuple[dict, bytes | None]:
+    """(the JSON chunk parsed, the BIN chunk) of a binary glTF, checked as it goes."""
+    if len(data) < 20:
+        raise ModelRefused(f"{len(data)} bytes is too short for a glb header and a chunk")
+    magic, version, length = struct.unpack_from("<4sII", data, 0)
+    if magic != GLB_MAGIC:
+        raise ModelRefused(f"not a glb: magic {magic!r}, expected {GLB_MAGIC!r}")
+    if version != 2:
+        raise ModelRefused(f"glb container version {version}; only glTF 2 is read")
+    if length != len(data):
+        raise ModelRefused(f"the header says {length} bytes, the file has {len(data)}: truncated or padded")
+    off, doc, binary = 12, None, None
+    while off < length:
+        if off + 8 > length:
+            raise ModelRefused(f"a chunk header at byte {off} runs past the end")
+        clen, ctype = struct.unpack_from("<II", data, off)
+        body = data[off + 8: off + 8 + clen]
+        if len(body) != clen:
+            raise ModelRefused(f"chunk at byte {off} says {clen} bytes and runs past the end")
+        if doc is None:
+            if ctype != GLB_CHUNK_JSON:
+                raise ModelRefused(f"the first chunk is 0x{ctype:08x}, not JSON")
+            try:
+                doc = json.loads(body.decode("utf-8").rstrip(" \0"))
+            except (UnicodeDecodeError, json.JSONDecodeError) as e:
+                raise ModelRefused(f"the JSON chunk does not parse: {e}") from e
+            if not isinstance(doc, dict):
+                raise ModelRefused("the JSON chunk is not an object")
+        elif ctype == GLB_CHUNK_BIN and binary is None:
+            binary = body
+        off += 8 + clen
+    if doc is None:
+        raise ModelRefused("no JSON chunk")
+    return doc, binary
+
+
+def inspect_glb(path) -> dict:
+    """What a glb costs and how large it stands, from its header and JSON alone.
+
+    `triangles` and `draws` count every primitive once per node that places its
+    mesh in the default scene (a mesh placed twice is drawn twice); instances
+    of `EXT_mesh_gpu_instancing` multiply the triangles, not the draws. `bbox`
+    is the POSITION accessors' min/max carried through each node's world
+    transform, so it is the model's extent as the file places it, in the
+    file's metres. No vertex is read. Raises `ModelRefused` for anything the
+    grove could not load by itself (a malformed container, an external
+    buffer or image, a required extension it has no decoder for).
+    """
+    data = Path(path).read_bytes()
+    doc, binary = _read_glb(data)
+    asset = doc.get("asset") or {}
+    if not str(asset.get("version", "")).startswith("2."):
+        raise ModelRefused(f"asset.version is {asset.get('version')!r}; only glTF 2.x is read")
+    for what in ("buffers", "images"):
+        for i, item in enumerate(doc.get(what) or []):
+            uri = item.get("uri")
+            if uri is not None and not str(uri).startswith("data:"):
+                raise ModelRefused(f"{what}[{i}] points outside the file ({uri!r}); "
+                                   "pack everything into the glb")
+    buffers = doc.get("buffers") or []
+    if buffers and "uri" not in buffers[0] and binary is None:
+        raise ModelRefused("buffers[0] names the BIN chunk and the file has none")
+    required = sorted(doc.get("extensionsRequired") or [])
+    unsupported = [e for e in required if e not in MODEL_EXTENSIONS_REQUIRED_OK]
+    if unsupported:
+        hint = " (Draco: re-export with EXT_meshopt_compression)" if "KHR_draco_mesh_compression" in unsupported else ""
+        raise ModelRefused(f"requires {', '.join(unsupported)}, which the grove cannot decode{hint}")
+
+    accessors = doc.get("accessors") or []
+    meshes = doc.get("meshes") or []
+    nodes = doc.get("nodes") or []
+
+    def accessor(i, why):
+        if not isinstance(i, int) or not 0 <= i < len(accessors):
+            raise ModelRefused(f"{why} names accessor {i!r}, which does not exist")
+        return accessors[i]
+
+    def placements():
+        """(mesh index, world matrix, instances) for every mesh the scene draws."""
+        scenes = doc.get("scenes") or []
+        if scenes:
+            roots = scenes[doc.get("scene", 0)].get("nodes") or []
+        elif nodes:
+            children = {c for n in nodes for c in n.get("children") or []}
+            roots = [i for i in range(len(nodes)) if i not in children]
+        else:
+            yield from ((m, np.eye(4), 1) for m in range(len(meshes)))
+            return
+        stack, seen = [(r, np.eye(4)) for r in roots], set()
+        while stack:
+            i, parent = stack.pop()
+            if not isinstance(i, int) or not 0 <= i < len(nodes) or i in seen:
+                raise ModelRefused(f"node {i!r} does not exist or is reached twice (a cycle)")
+            seen.add(i)
+            node = nodes[i]
+            world = parent @ _node_matrix(node)
+            if "mesh" in node:
+                inst = (node.get("extensions") or {}).get("EXT_mesh_gpu_instancing")
+                n = 1
+                if inst and inst.get("attributes"):
+                    n = int(accessor(next(iter(inst["attributes"].values())), f"node {i} instancing")["count"])
+                yield node["mesh"], world, n
+            stack.extend((c, world) for c in node.get("children") or [])
+
+    triangles = draws = 0
+    lo = np.full(3, np.inf)
+    hi = np.full(3, -np.inf)
+    for m, world, instances in placements():
+        if not isinstance(m, int) or not 0 <= m < len(meshes):
+            raise ModelRefused(f"a node names mesh {m!r}, which does not exist")
+        for p, prim in enumerate(meshes[m].get("primitives") or []):
+            draws += 1
+            where = f"meshes[{m}].primitives[{p}]"
+            pos_i = (prim.get("attributes") or {}).get("POSITION")
+            if pos_i is None:
+                raise ModelRefused(f"{where} has no POSITION")
+            pos = accessor(pos_i, where)
+            mode = prim.get("mode", 4)
+            count = int(accessor(prim["indices"], where)["count"]) if "indices" in prim else int(pos["count"])
+            if mode in _TRIANGLE_MODES:
+                triangles += instances * (count // 3 if mode == 4 else max(count - 2, 0))
+            if "min" not in pos or "max" not in pos:
+                raise ModelRefused(f"{where}: POSITION accessor {pos_i} has no min/max (glTF requires them)")
+            amin = np.asarray(pos["min"][:3], dtype=np.float64)
+            amax = np.asarray(pos["max"][:3], dtype=np.float64)
+            if pos.get("normalized"):
+                scale = _NORMALIZED_MAX.get(pos.get("componentType"), 1.0)
+                amin, amax = np.maximum(amin / scale, -1.0), np.maximum(amax / scale, -1.0)
+            corners = np.array([[x, y, z, 1.0] for x in (amin[0], amax[0])
+                                for y in (amin[1], amax[1]) for z in (amin[2], amax[2])])
+            placed = (world @ corners.T).T[:, :3]
+            lo = np.minimum(lo, placed.min(axis=0))
+            hi = np.maximum(hi, placed.max(axis=0))
+    if draws == 0:
+        raise ModelRefused("the default scene draws nothing: no node places a mesh")
+    rnd = lambda v: [round(float(x), 6) for x in v]           # noqa: E731
+    return {
+        "bytes": len(data),
+        "triangles": triangles,
+        "draws": draws,
+        "bbox": {"min": rnd(lo), "max": rnd(hi)},
+        "size": rnd(hi - lo),
+        "meshes": len(meshes),
+        "nodes": len(nodes),
+        "materials": len(doc.get("materials") or []),
+        "textures": len(doc.get("textures") or []),
+        "animations": len(doc.get("animations") or []),
+        "extensions_used": sorted(doc.get("extensionsUsed") or []),
+        "extensions_required": required,
+        "generator": str(asset.get("generator", "")),
+    }
+
+
+def model_budget_failures(stats: dict) -> list[str]:
+    """Every budget a model is over, spelled for the person re-exporting it."""
+    out = []
+    if stats["bytes"] > MODEL_MAX_BYTES:
+        out.append(f"{stats['bytes'] / 1e6:.2f} MB > {MODEL_MAX_BYTES / 1e6:.0f} MB "
+                   "(compress textures to KTX2, geometry with meshopt)")
+    if stats["triangles"] > MODEL_MAX_TRIANGLES:
+        out.append(f"{stats['triangles']:,} triangles > {MODEL_MAX_TRIANGLES:,} (decimate)")
+    if stats["draws"] > MODEL_MAX_DRAWS:
+        out.append(f"{stats['draws']} draw calls > {MODEL_MAX_DRAWS} (merge meshes that share a material)")
+    return out
+
+
+MODEL_POSTER_SUFFIXES = (".jpg", ".jpeg", ".png", ".webp")
+
+
+def bundle_model(glb, tree: str, title: str, out_root=None, *, poster=None,
+                 verbose: bool = True, commit: str | None = None) -> Path:
+    """Write `<out_root>/<id>/` holding a glb as `model.glb`, and a poster when given.
+
+    The glb is shipped byte for byte; `bundle.json` records what it costs
+    (bytes, triangles, draw calls) and how large it stands (`bbox`, `size`),
+    so the grove can scale it onto its plinth before a byte of it downloads.
+    A glb over the budget is refused, naming every limit it breaks.
+    """
+    glb = Path(glb).resolve()
+    if not glb.is_file():
+        raise ModelRefused(f"{glb} does not exist")
+    size = glb.stat().st_size
+    if size > MODEL_MAX_BYTES:
+        # Refuse before reading a large file whole.
+        raise ModelRefused(f"{glb.name} is over the model budget: {model_budget_failures({'bytes': size, 'triangles': 0, 'draws': 0})[0]}")
+    stats = inspect_glb(glb)
+    over = model_budget_failures(stats)
+    if over:
+        raise ModelRefused(f"{glb.name} is over the model budget: " + "; ".join(over))
+    poster_src = Path(poster).resolve() if poster else None
+    if poster_src is not None:
+        if not poster_src.is_file():
+            raise ModelRefused(f"poster {poster_src} does not exist")
+        if poster_src.suffix.lower() not in MODEL_POSTER_SUFFIXES:
+            raise ModelRefused(f"poster {poster_src.name} must be one of {', '.join(MODEL_POSTER_SUFFIXES)}")
+
+    out_root = Path(out_root) if out_root else RESULTS / "bundles"
+    t_start = time.perf_counter()
+    staging = Path(tempfile.mkdtemp(prefix=".bundle-", dir=str(_ensure(out_root))))
+    try:
+        shutil.copyfile(glb, staging / "model.glb")
+        poster_name = ""
+        if poster_src is not None:
+            ext = ".jpg" if poster_src.suffix.lower() == ".jpeg" else poster_src.suffix.lower()
+            poster_name = f"poster{ext}"
+            shutil.copyfile(poster_src, staging / poster_name)
+        file_rel = _rel_to_tree(glb, tree)
+        prov = provenance_sidecar(glb)
+        produced = (f"uv run orchard bundle model {file_rel} --tree {tree} "
+                    f"--title {json.dumps(title)}")
+        if poster_src is not None:
+            produced += f" --poster {_rel_to_tree(poster_src, tree)}"
+        doc = {
+            "schema": SCHEMA,
+            "kind": "model",
+            "id": "",
+            "tree": tree,
+            "title": title,
+            "produced_by": produced,
+            "source": {
+                "file": file_rel,
+                "file_sha256": sha256_file(glb),
+                "bytes": size,
+                "tree_commit": commit or _git_describe(_tree_root(tree) or glb.parent),
+                **({"provenance": prov} if prov else {}),
+            },
+            "model": "model.glb",
+            "poster": poster_name,
+            **stats,
+            "budget": {"bytes": MODEL_MAX_BYTES, "triangles": MODEL_MAX_TRIANGLES,
+                       "draws": MODEL_MAX_DRAWS},
+            "files": file_digests(staging),
+        }
+        dest = _finalize(doc, staging, out_root)
+    except BaseException:
+        shutil.rmtree(staging, ignore_errors=True)
+        raise
+    if verbose:
+        s = stats["size"]
+        print(f"bundle {dest.name}  model {stats['triangles']:,} tris  {stats['draws']} draws  "
+              f"{s[0]:.2f} x {s[1]:.2f} x {s[2]:.2f}  {size / 1e6:.2f} MB  "
+              f"total {time.perf_counter() - t_start:.1f}s", flush=True)
+    return dest
+
+
 # ------------------------------------------------------------------- audio
 
 

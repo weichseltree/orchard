@@ -47,7 +47,8 @@ STAGE_ORDER = list(Stage)
 #: artefact (path: the bake delivery; sha256: the bake manifest's; bundle: the id `orchard bundle
 #: planet` printed), but harvest does not bundle it: the tree runs `orchard bundle planet` itself
 #: and writes the id back, since the bundle names the atlas videos the tree bundled first.
-ArtefactKind = Literal["tape", "clip", "still", "figure", "summary", "master", "audio", "planet"]
+ArtefactKind = Literal["tape", "clip", "still", "figure", "summary", "master", "audio", "planet",
+                       "model"]
 
 
 class Artefact(BaseModel):
