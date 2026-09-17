@@ -37,6 +37,21 @@ Every result is ok / fail / warn / skip, with a detail and path[:line]:
 
 Only what the repos TRACK is checked (`git ls-files`), read from the working
 tree, which is what runs. The audit never writes into a repo.
+
+Reading the working tree means a run can catch a file mid-save: on 2026-09-16 a
+run reported a tree's manifest as unreadable and the next one parsed it fine. A
+transient FAIL is expected on a box where several sessions edit at once, and it
+clears itself.
+
+A FAIL hides nothing, though. Every rule runs whatever the one before it found
+(`audit_repo`), so a FAIL never stops the rules after it, and a count that moves
+between runs is usually the drift moving -- or a check that could not reach
+the network, which downgrades to `skip` rather than failing. What moves a count with
+nothing visible to explain it is narrower, and is never a FAIL: `git ls-files`
+failing collapses that repo's per-repo checks to one `skip` (filed under
+python-lock), and a tracked `.py` that vanishes mid-rename is dropped silently
+by `read_sources`, taking its script-lock, sibling-import and, for a PEP 723
+script, pinned-tags checks with it.
 """
 from __future__ import annotations
 
