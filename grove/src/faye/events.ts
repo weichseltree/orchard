@@ -201,8 +201,47 @@ export interface Announcement {
   ids: string[];
 }
 
+/**
+ * A line finished with a full stop -- unless its producer already finished it.
+ * The planet watcher's titles end in one, and "…ice spreads.." is a sentence
+ * nobody wrote.
+ */
+function asSentence(body: string): string {
+  return /[.!?…]$/.test(body) ? body : `${body}.`;
+}
+
 /** At most this many announcements from one poll, however much happened. */
 export const ANNOUNCE_BUDGET = 3;
+
+/**
+ * The longest thing she says in one line.
+ *
+ * Not the module's limit, which is 280 and is applied silently and mid-word
+ * (`CHAT_MAX` and `clip` in spacetime/spacetimedb/src/index.ts), but what a
+ * person can take in from a room. Measured against the live emulator feed on
+ * 2026-09-17: a run's own feed writes much longer titles than expdash ever
+ * did -- the planet watcher's plateau alert is 179 characters, of which 83 are
+ * the thresholds it fired on, while its cap and finish lines are 53 and 69.
+ * So 140 keeps every sentence that says something and takes the arithmetic
+ * off the longest one.
+ */
+export const SPOKEN_MAX = 140;
+
+/**
+ * One line, short enough to be heard in a room and to survive the module
+ * uncut. A producer puts its evidence in a trailing parenthesis -- the
+ * thresholds an alert fired on -- and a room wants the sentence rather than
+ * the arithmetic, so that goes first; only then is the sentence itself cut,
+ * at a word boundary.
+ */
+export function fitToRoom(text: string): string {
+  if (text.length <= SPOKEN_MAX) return text;
+  const withoutEvidence = text.replace(/\s*\([^()]*\)\s*\.?$/, ".");
+  if (withoutEvidence.length <= SPOKEN_MAX) return withoutEvidence;
+  const cut = withoutEvidence.slice(0, SPOKEN_MAX - 1);
+  const space = cut.lastIndexOf(" ");
+  return `${(space > SPOKEN_MAX / 2 ? cut.slice(0, space) : cut).trimEnd()}…`;
+}
 /** A run of this many of one kind in one repo is summarised, not listed. */
 export const COLLAPSE_AT = 2;
 
@@ -257,15 +296,16 @@ export function announce(fresh: readonly ComputeEvent[], titles?: TreeTitles): A
     const first = events[0]!;
     const priority = Math.min(...events.map((e) => e.priority));
     const where = first.repo ? ` in ${treeLabel(first.repo, titles)}` : "";
-    let text: string;
+    let body: string;
     if (events.length >= COLLAPSE_AT) {
-      text = `${events.length} ${plural(first.type, events.length)}${where}.`;
+      body = `${events.length} ${plural(first.type, events.length)}${where}`;
     } else {
-      // One event keeps its own title, which expdash already wrote for a
+      // One event keeps its own title, which its producer already wrote for a
       // reader; the detail is added only when it says something short.
       const detail = first.detail && first.detail.length <= 40 ? ` - ${first.detail}` : "";
-      text = `${first.title}${detail}.`;
+      body = `${first.title}${detail}`;
     }
+    const text = fitToRoom(asSentence(body));
     out.push({ text, priority, count: events.length, ids: events.map((e) => e.id) });
   }
 
@@ -322,6 +362,7 @@ const COLLAPSED_PHRASES: Readonly<Record<string, string>> = {
   spinup: "entered spinup",
   record: "entered the record",
   plateau: "flagged a plateau",
+  "plateau-expired": "cleared their plateau",
   cap: "flagged as unlikely to reach the cap",
   slowdown: "flagged the box slowing them",
 };

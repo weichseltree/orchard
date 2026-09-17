@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-  ANNOUNCE_BUDGET, EMPTY_CURSOR, accumulate, announce, eventNumber,
-  peerIsSilent, readFeed, treeLabel, type ComputeEvent,
+  ANNOUNCE_BUDGET, EMPTY_CURSOR, SPOKEN_MAX, accumulate, announce, eventNumber,
+  fitToRoom, peerIsSilent, readFeed, treeLabel, type ComputeEvent,
 } from "./events";
 
 function event(over: Partial<ComputeEvent> = {}): ComputeEvent {
@@ -209,6 +209,8 @@ describe("announce", () => {
     expect(said("balanced")).toBe("2 runs balanced in spectre.");
     expect(said("stalled")).toBe("2 runs stalled in spectre.");
     expect(said("plateau")).toBe("2 runs flagged a plateau in spectre.");
+    // Seen on the live feed: the alert clearing is its own declared state.
+    expect(said("plateau-expired")).toBe("2 runs cleared their plateau in spectre.");
     expect(said("cap")).toBe("2 runs flagged as unlikely to reach the cap in spectre.");
     // The box slowing a run is never a regression: box load has fooled us before.
     expect(said("slowdown")).toBe("2 runs flagged the box slowing them in spectre.");
@@ -246,6 +248,41 @@ describe("announce", () => {
   it("keeps a lone event's own title", () => {
     const [only] = announce([event({ id: "ev_1", type: "crashed", priority: 1, title: "Crashed: m06-planet-tests-a", detail: "exit code 1" })]);
     expect(only!.text).toBe("Crashed: m06-planet-tests-a - exit code 1.");
+  });
+
+  it("does not end a sentence its producer already ended", () => {
+    // The planet watcher's titles carry their own full stop; expdash's do not.
+    const [ended] = announce([event({ id: "ev_1", title: "s=0.95: crashed, as the record says.", detail: "" })]);
+    expect(ended!.text).toBe("s=0.95: crashed, as the record says.");
+    const [unended] = announce([event({ id: "ev_2", title: "Crashed: a-run", detail: "" })]);
+    expect(unended!.text).toBe("Crashed: a-run.");
+  });
+
+  it("drops an alert's arithmetic before the sentence it fired on", () => {
+    // Measured against the emulator feed on 2026-09-17: the planet watcher's
+    // plateau alert is a 230-character title carrying its thresholds, and the
+    // module clips chat at 280 silently and mid-word.
+    const plateau = "m06-synthetic-c6-s0.96: spin-up plateau: |imbalance| not closing over 5 years while ice spreads (abs_imbalance 3.21 > 0.1, imbalance_trend 0.0021 > -0.02, ice_rise 0.068 > 0.005).";
+    const [only] = announce([event({ id: "ev_1", type: "plateau", priority: 2, title: plateau, detail: "" })]);
+    expect(only!.text).toBe("m06-synthetic-c6-s0.96: spin-up plateau: |imbalance| not closing over 5 years while ice spreads.");
+    expect(only!.text.length).toBeLessThanOrEqual(SPOKEN_MAX);
+  });
+
+  it("never says more in one line than the room can carry", () => {
+    const long = `${"word ".repeat(80)}end.`;
+    const [only] = announce([event({ id: "ev_1", title: long, detail: "" })]);
+    expect(only!.text.length).toBeLessThanOrEqual(SPOKEN_MAX);
+    // Cut at a word boundary, and visibly cut.
+    expect(only!.text.endsWith("…")).toBe(true);
+    expect(only!.text).not.toMatch(/wor…$/);
+  });
+
+  it("leaves a line that fits exactly as the producer wrote it", () => {
+    expect(fitToRoom("s=0.96: hit the 60-year cap unbalanced at -3.26 W/m²."))
+      .toBe("s=0.96: hit the 60-year cap unbalanced at -3.26 W/m².");
+    // A parenthetical is evidence, not decoration: it only goes when it must.
+    expect(fitToRoom("s=0.94: won't make the cap (31 more years projected)."))
+      .toBe("s=0.94: won't make the cap (31 more years projected).");
   });
 
   it("leaves out a detail too long to be heard in passing", () => {

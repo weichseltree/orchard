@@ -338,6 +338,15 @@ mirror, so an announcement feed would run beside it rather than replacing it:
   `started`, the planet watcher declares `running` — so the echo check
   compares what she would SAY, not the producer's spelling; otherwise one set
   of starts is announced twice, in the same sentence both times.
+- **A line is as long as a room can take, not as long as the module allows.**
+  Run against the emulator's feed on 2026-09-17, the planet watcher's plateau
+  alert arrives as a 179-character sentence of which 83 are the thresholds it
+  fired on, while its cap and finish lines are 53 and 69. The module would
+  carry it — and clip anything over 280 silently and mid-word — so the trim is
+  hers: over 140 characters a trailing parenthetical of evidence goes first,
+  and only then the sentence, at a word boundary. Its producers also end their
+  titles with a full stop where expdash does not, so she no longer adds a
+  second one.
 - **No declared state becomes a conclusion.** A collapsed burst needs English
   ("2 runs hit the cap unbalanced"), and that translation is the whole of it:
   `balanced` is not "stable", `plateau` is not "stuck", `finished` is not
