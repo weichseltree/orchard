@@ -91,6 +91,11 @@ describe("floors", () => {
       .sort();
     expect([...connectors.keys()].sort()).toEqual(expected);
     expect(expected.length).toBeGreaterThan(0);
+    // Anchored, so a changed RULE reads as a failure here rather than as the
+    // derivation above quietly agreeing with itself: the north stairwell joins
+    // the ground floor, and the undercroft joins nothing.
+    expect(connectors.get("stair-north")).toEqual([0]);
+    expect(connectors.has("foyer")).toBe(false);
     for (const [id, levels] of connectors) {
       expect(levels).not.toContain(floorOfRoom(floors, id));
       expect(levels.length).toBeGreaterThan(0);

@@ -209,6 +209,8 @@ const SIZE = 320;
 const MAX_ZOOM = 4;
 /** A press that travels this far in screen pixels is a drag, not a click. */
 const DRAG_SLOP_PX = 4;
+/** A finger wanders further than a mouse, so it is given more room before it pans. */
+const TOUCH_SLOP_PX = 10;
 
 /** The window never leaves the plan; zoomed out it is the plan exactly. */
 export function clampView(view: Viewport): Viewport {
@@ -268,6 +270,8 @@ export class RoomMap {
   #floorButtons = new Map<number, HTMLButtonElement>();
   #view: Viewport = { x: 0, y: 0, w: SIZE, h: SIZE };
   #drag: { pointer: number; x: number; y: number; fromX: number; fromY: number; panning: boolean } | null = null;
+  /** Set while a pan is under way, and read by the click the pan will produce. */
+  #panned = false;
   #redraw = 0;
 
   constructor(root: HTMLElement, onGo: (roomId: string) => boolean) {
@@ -328,6 +332,8 @@ export class RoomMap {
     this.#connectors = floorConnectors(state.mansion, this.#floors);
     this.#shown = this.#standingOn(state);
     this.#view = { x: 0, y: 0, w: SIZE, h: SIZE };
+    this.#drag = null;
+    this.#panned = false;
     const here = rooms.find((room) => room.id === state.room);
     this.#heading.textContent = `Plan · ${here ? state.title(here.id) : state.room}`;
     this.#note.textContent =
@@ -342,6 +348,10 @@ export class RoomMap {
     this.#drawPlan();
     if (document.pointerLockElement) document.exitPointerLock();
     if (!this.#dialog.open) this.#dialog.showModal();
+    // Only now does the plan have a box, and the marks are sized from it. The
+    // ResizeObserver does this too where there is one; this is for where there
+    // is not.
+    this.#drawPlan();
   }
 
   /**
@@ -351,13 +361,18 @@ export class RoomMap {
    */
   #standingOn(state: MapState): number {
     const here = state.mansion.rooms.find((room) => room.id === state.room);
-    if (here && here.bounds.max[1] - here.bounds.min[1] > FLOOR_GAP_M) {
+    const own = here ? floorOfRoom(this.#floors, here.id) : undefined;
+    if (here) {
       let best: Floor | null = null;
       for (const floor of this.#floors) {
         if (floor.y > state.y + 0.5) continue;
         if (!best || floor.y > best.y) best = floor;
       }
-      if (best && reaches(here, best)) return best.level;
+      // Their feet have to be nearer the other storey's floor than their own,
+      // or a visitor high on a terrain mound in the grounds would be told they
+      // are upstairs. `max[1]` is a ceiling, so a room's height decides nothing.
+      if (best && best.level !== own && reaches(here, best)
+          && state.y - here.bounds.min[1] >= best.y - state.y) return best.level;
     }
     return floorOfRoom(this.#floors, state.room) ?? this.#floors[0]?.level ?? 0;
   }
@@ -399,23 +414,50 @@ export class RoomMap {
       },
       { passive: false },
     );
+    // A pan ends in a click, and only some of them are swallowed for us:
+    // Chromium suppresses the click of a TOUCH that moved past its own slop,
+    // and pointer capture retargets the MOUSE's click to the svg, but a touch
+    // that moved four to twenty pixels does neither — so the plan panned and
+    // the room under the finger was entered at the same time. Stopping it here,
+    // in the capture phase, is what actually closes the hole: this runs before
+    // any room's own listener, whatever the pointer was.
+    this.#plan.addEventListener("click", (event) => {
+      if (!this.#panned) return;
+      this.#panned = false;
+      event.stopPropagation();
+    }, true);
     this.#plan.addEventListener("pointerdown", (event) => {
       // One pointer pans; a second would steal the gesture from the first and
       // leave it dead until every finger is lifted.
       if (event.button !== 0 || this.#drag) return;
       const at = this.#planPoint(event);
       if (!at) return;
+      this.#panned = false;
       this.#drag = { pointer: event.pointerId, x: at.x, y: at.y, fromX: event.clientX, fromY: event.clientY, panning: false };
     });
     this.#plan.addEventListener("pointermove", (event) => {
       const drag = this.#drag;
       if (!drag || drag.pointer !== event.pointerId) return;
+      // A mouse moving with no button down is a hover, not a drag. Without
+      // this a press released off the plan — onto the zoom button overlaid six
+      // pixels away, say — leaves the drag standing, and the plan then slides
+      // under an idle cursor for the rest of the session.
+      if (event.pointerType === "mouse" && event.buttons === 0) {
+        this.#drag = null;
+        return;
+      }
       if (!drag.panning) {
-        if (Math.hypot(event.clientX - drag.fromX, event.clientY - drag.fromY) < DRAG_SLOP_PX) return;
+        // Zoomed out there is nothing to pan, so a slip would cost the visitor
+        // their click and buy nothing. Re-checked per move, so panning begins
+        // as soon as a zoom makes it mean something.
+        if (this.#view.w >= SIZE && this.#view.h >= SIZE) return;
+        const slop = event.pointerType === "touch" ? TOUCH_SLOP_PX : DRAG_SLOP_PX;
+        if (Math.hypot(event.clientX - drag.fromX, event.clientY - drag.fromY) < slop) return;
         // Captured only once the press is a drag. Capturing on pointerdown
         // retargets the compatibility `click` to the SVG, so the room's own
         // click never fires and the plan is dead to a mouse (2026-09-17).
         drag.panning = true;
+        this.#panned = true;
         this.#plan.setPointerCapture(event.pointerId);
       }
       const at = this.#planPoint(event);

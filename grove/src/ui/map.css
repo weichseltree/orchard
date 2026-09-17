@@ -62,6 +62,8 @@
   padding-block: 2px;
   background: var(--bg);
 }
+.touch .room-map-floors .btn,
+.touch .room-map-zoom .btn { min-height: 2.25rem; }
 .room-map-floors .btn.on { background: #3a3225; border-color: var(--accent); color: var(--text); }
 .room-map-zoom .btn { width: 1.9rem; text-align: center; padding-inline: 0; }
 
