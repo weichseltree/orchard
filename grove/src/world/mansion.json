@@ -2149,9 +2149,10 @@
           ],
           "yawDeg": 0,
           "size": [
-            5.6,
-            4.2
+            8,
+            6
           ],
+          "tableHeight": 0.7,
           "entries": [
             {
               "path": "arcedit",
@@ -2179,13 +2180,13 @@
             },
             {
               "path": "results",
-              "bytes": 18874866,
+              "bytes": 18874912,
               "sentence": "The evidence of record: one directory per experiment, each with its dated account.",
               "room": ""
             },
             {
               "path": "results/grove",
-              "bytes": 5328902,
+              "bytes": 5328948,
               "sentence": "The exhibits: recorded episodes, films, stills, charts and the environment as a 3D model.",
               "room": "arcedit"
             },
@@ -2245,7 +2246,7 @@
             },
             {
               "path": "scripts",
-              "bytes": 514203,
+              "bytes": 515150,
               "sentence": "The instruments: one script per experiment, and the ones that make these exhibits.",
               "room": ""
             },

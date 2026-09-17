@@ -523,18 +523,25 @@ export function planRoomLabels(room: Room, labels: Labels, mansion: Mansion): Pl
     plans.push(lecternPlaque(foot, facing, LECTERN, { kind: "label", facing: "spawn", hangingId: hanging.id, text }));
   }
 
-  // The room's record lines: each where the plan puts it, facing the way it is turned.
+  // The room's record lines: each on the wall its plan faces, brought out to
+  // the wall's reading face so the pilasters never cut through it, and moved
+  // along the wall only as far as a doorway or a hanging requires.
   const lines = labels.rooms[room.id]?.lines ?? {};
   for (const line of room.wallLines) {
     const copy = lines[line.key];
     if (!copy) continue;
-    const q = hangingQuaternion(line);
-    const position = new Vector3(line.position[0], floor + LINE.centre, line.position[2]);
-    plans.push({
-      kind: "line", mount: "wall", facing: "room", hangingId: line.id, position, quaternion: q,
-      width: Math.min(LINE.width, line.widthMeters), height: LINE.height, texture: LINE.texture,
+    const normal = new Vector3(0, 0, 1).applyQuaternion(hangingQuaternion(line));
+    const wall = walls(room).reduce((best, w) => (inwardNormal(w).dot(normal) > inwardNormal(best).dot(normal) ? w : best));
+    const width = Math.min(LINE.width, line.widthMeters);
+    const p = new Vector3(...line.position);
+    const obstacles = [...wallObstacles(room, wall), ...spansOn(wall)];
+    const c = placeAlongWall(wall, along(wall, p), width / 2, rightAlong(wall), obstacles);
+    spansOn(wall).push([c - width / 2, c + width / 2]);
+    const plan = wallPlaque(wall, room, c, floor + LINE.centre, { ...LINE, width }, {
+      kind: "line", hangingId: line.id,
       text: { heading: labels.rooms[room.id]!.title, title: copy.title, body: copy.text },
     });
+    plans.push(plan);
   }
   return plans;
 }

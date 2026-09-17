@@ -880,8 +880,13 @@ function repoTables(b: Builder): void {
       if (block.width < 0.01 || block.depth < 0.01) continue;
       const at = fromTable(model, block.x, block.z);
       const bottom = block.level * PLATE_M;
-      const finish: Finish = block.leaf ? (block.room ? "light" : "stone") : block.level % 2 === 0 ? "inset" : "joint";
+      const finish: Finish = block.leaf ? "stone" : block.level % 2 === 0 ? "inset" : "joint";
       b.add("box", finish, at.x, top + 0.006 + (bottom + block.height) / 2, at.z, block.width, block.height - bottom, block.depth, turn);
+      if (block.leaf && block.room) {
+        // A folder with a room of its own carries a small lamp on its roof, not a lit roof.
+        const cap = Math.min(0.22, block.width * 0.4, block.depth * 0.4);
+        b.add("box", "light", at.x, top + 0.006 + block.height + 0.015, at.z, cap, 0.03, cap, turn);
+      }
     }
     // A ring of light over the model, as wide as the model, high enough to walk under.
     const ring = Math.max(0.7, Math.min(width, depth) * 0.4);

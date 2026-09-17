@@ -25,7 +25,7 @@ if (!areaPath || !labelsPath) {
 }
 
 /** How big a repository model's table is, whatever floor the plan reserves for it. */
-const TABLE_SIZE = [5.6, 4.2];
+const TABLE_SIZE = [8, 6];
 
 const area = JSON.parse(readFileSync(areaPath, "utf8"));
 const areaLabels = JSON.parse(readFileSync(labelsPath, "utf8"));
@@ -88,6 +88,8 @@ const rooms = area.rooms.map((source) => {
       position: shift(room.tabletop.position),
       yawDeg: 0,
       size: TABLE_SIZE,
+      // Low enough to see the far districts over the near ones from the table's edge.
+      tableHeight: 0.7,
       // The repository's root is the table itself, not a district on it.
       entries: area.repo_model.filter((e) => e.path !== "." && e.path !== "").map((e) => ({
         path: e.path, bytes: e.bytes, sentence: e.sentence ?? "", room: e.room ?? "",
