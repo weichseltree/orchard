@@ -37,7 +37,8 @@ import { startupFailed, startupReady } from "./ui/startup";
 import { finiteParameter, visitRoom } from "./world/visit";
 import { frameAt } from "./tape/time";
 import mansionDocument from "./world/mansion.json";
-import { parseMansion, roomById, type GameSurface as GameSurfaceConfig } from "./world/schema";
+import { parseMansion, roomById, type GameSurface as GameSurfaceConfig, type RepoModel } from "./world/schema";
+import { gazeBlock, layoutRepoModel, type RepoBlock } from "./world/repo-model";
 import { buildWorld, exhibitRoom, neighbourhood, type BuiltWorld } from "./world/world";
 import { PortalSystem } from "./world/portal";
 import { pickLocale } from "./ui/locale";
@@ -672,6 +673,33 @@ function offerGameTable(): void {
   hud.setGameOffer(surface ? { title: surface.title, key: device.touch ? null : "G" } : null);
 }
 
+// A repository's tabletop model (repo-model.ts): standing at the table, the
+// district under the gaze reads out below the crosshair. The layout is pure
+// and cached per model; the gaze is the camera's own ray, a few times a second.
+/** How near the table's centre counts as reading it: the model's reach plus an arm. */
+const REPO_TABLE_REACH_M = 3.2;
+const repoLayouts = new WeakMap<RepoModel, RepoBlock[]>();
+let readBlock: RepoBlock | null = null;
+let nextModelCheck = 0;
+function readRepoModel(): void {
+  const now = performance.now();
+  if (now < nextModelCheck) return;
+  nextModelCheck = now + 150;
+  let found: RepoBlock | null = null;
+  for (const model of roomById(mansion, body.room)?.repoModels ?? []) {
+    if (Math.hypot(model.position[0] - body.x, model.position[2] - body.z) > REPO_TABLE_REACH_M) continue;
+    let blocks = repoLayouts.get(model);
+    if (!blocks) repoLayouts.set(model, blocks = layoutRepoModel(model));
+    view.camera.getWorldPosition(headWorld);
+    view.camera.getWorldDirection(_forward);
+    found = gazeBlock(model, blocks, headWorld, _forward);
+    if (found) break;
+  }
+  if (found === readBlock) return;
+  readBlock = found;
+  hud.setModelReading(found ? { path: found.path, sentence: found.sentence, room: found.room ? roomById(mansion, found.room)?.title || found.room : "" } : null);
+}
+
 /** The mode buttons follow the screen that holds the decoder: a planet's modes, or nothing. */
 function syncAtlasHud(): void {
   const screen = activeScreen;
@@ -764,6 +792,7 @@ view.start((dt, time, rawDt) => {
   adaptExposure(dt);
   handOverVideo();
   offerGameTable();
+  readRepoModel();
   if (presenting) {
     // Room-scale walking can take the head through a wall the rig never met.
     view.camera.getWorldPosition(headWorld);

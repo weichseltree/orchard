@@ -69,6 +69,7 @@ export class Hud {
   #gameOffer: HTMLElement;
   #gameButton: HTMLButtonElement;
   #gameKey: HTMLElement;
+  #modelReading: HTMLElement;
   #vrButton: HTMLButtonElement;
   #unmuteButton: HTMLButtonElement;
   #scrubber: HTMLElement;
@@ -184,6 +185,11 @@ export class Hud {
     this.#gameKey = span("game-key");
     this.#gameOffer.append(this.#gameButton, this.#gameKey);
     root.append(this.#gameOffer);
+    // What the eye rests on at a repository model: a folder's path and its sentence.
+    this.#modelReading = div("model-reading panel");
+    this.#modelReading.hidden = true;
+    this.#modelReading.setAttribute("aria-live", "polite");
+    root.append(this.#modelReading);
 
     this.#scrubber = div("scrubber panel");
     this.#scrubber.hidden = true;
@@ -441,6 +447,25 @@ export class Hud {
     this.#gameButton.textContent = `Play ${state.title}`;
     this.#gameKey.textContent = state.key ? `or press ${state.key}` : "";
     this.#gameKey.hidden = state.key === null;
+  }
+
+  setModelReading(state: { path: string; sentence: string; room: string } | null): void {
+    this.#modelReading.hidden = state === null;
+    if (!state) return;
+    const path = span("model-path");
+    path.textContent = `${state.path}/`;
+    const parts: HTMLElement[] = [path];
+    if (state.sentence) {
+      const sentence = span("model-sentence");
+      sentence.textContent = state.sentence;
+      parts.push(sentence);
+    }
+    if (state.room) {
+      const room = span("model-room");
+      room.textContent = `has a room: ${state.room}`;
+      parts.push(room);
+    }
+    this.#modelReading.replaceChildren(...parts);
   }
 
   setScrubberVisible(visible: boolean): void {

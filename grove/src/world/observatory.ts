@@ -10,6 +10,7 @@ import { STAIR_MARGIN, STAIR_TREAD, flightsOf, moundHeight, stairSteps, type Fli
 import { LIGHT_FIELD_GLSL, applyLightField, bakeLightField, lightFieldUniforms, litRooms, type Emitter, type LightField } from "./lightfield";
 import { PORTAL_TINT } from "./portal-shader";
 import { SEALED_TINT, sealedLens } from "./sealed";
+import { PLATE_M, fromTable, layoutRepoModel } from "./repo-model";
 
 // The palace's architecture, generated at runtime from mansion.json: a
 // nocturne of mineral walls, brass and luminous inlays. Rooms may stand at
@@ -814,7 +815,7 @@ function obelisk(b: Builder, x: number, z: number): void {
 function plan(room: Room, mansion: Mansion | null): Builder {
   const b = new Builder(room, mansion);
   if (room.fallback.kind === "ground") grounds(b);
-  else { chamberFloor(b); chamberWalls(b); vault(b); statuary(b); gameTables(b); }
+  else { chamberFloor(b); chamberWalls(b); vault(b); statuary(b); gameTables(b); repoTables(b); }
   flights(b);
   return b;
 }
@@ -852,6 +853,40 @@ function gameTables(b: Builder): void {
     b.add("halo", "brass", x, y + 2.3, z, 0.5, 0.5, 0.7, FLAT);
     b.add("halo", "light", x, y + 2.25, z, 0.48, 0.48, 0.25, FLAT);
     b.bar("brass", new Vector3(x, y + 2.35, z), new Vector3(x, b.room.bounds.max[1] - 0.05, z), 0.015);
+  }
+}
+
+/**
+ * A table for every repository model in the room (repo-model.ts): a long
+ * brass-rimmed top on two stone pedestals, and on it the tree's directories
+ * as a small city, plates for folders and towers for the leaves. A
+ * directory with a room of its own is lit, the rest are stone. Everything is
+ * batched with the architecture, so a city of forty blocks costs no draws.
+ */
+function repoTables(b: Builder): void {
+  for (const model of b.room.repoModels) {
+    const [x, , z] = model.position;
+    const y = b.ground(x, z);
+    const [width, depth] = model.size;
+    const top = y + model.tableHeight;
+    const turn = new Quaternion().setFromAxisAngle(UNIT, model.yawDeg * Math.PI / 180);
+    for (const side of [-1, 1]) {
+      const leg = fromTable(model, side * width * 0.3, 0);
+      b.add("box", "stone", leg.x, y + (model.tableHeight - 0.06) / 2, leg.z, 0.3, model.tableHeight - 0.06, depth * 0.55, turn);
+    }
+    b.add("box", "brass", x, top - 0.03, z, width + 0.16, 0.06, depth + 0.16, turn);
+    b.add("box", "inset", x, top + 0.002, z, width + 0.04, 0.008, depth + 0.04, turn);
+    for (const block of layoutRepoModel(model)) {
+      if (block.width < 0.01 || block.depth < 0.01) continue;
+      const at = fromTable(model, block.x, block.z);
+      const bottom = block.level * PLATE_M;
+      const finish: Finish = block.leaf ? (block.room ? "light" : "stone") : block.level % 2 === 0 ? "joint" : "path";
+      b.add("box", finish, at.x, top + 0.006 + (bottom + block.height) / 2, at.z, block.width, block.height - bottom, block.depth, turn);
+    }
+    // A lamp over the model, low enough to read by.
+    b.add("halo", "brass", x, top + 1.5, z, 0.7, 0.7, 0.7, FLAT);
+    b.add("halo", "light", x, top + 1.45, z, 0.68, 0.68, 0.25, FLAT);
+    b.bar("brass", new Vector3(x, top + 1.55, z), new Vector3(x, b.room.bounds.max[1] - 0.05, z), 0.015);
   }
 }
 
