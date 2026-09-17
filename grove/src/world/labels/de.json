@@ -207,6 +207,24 @@
       "intro": "Hier haben Sie die Größe einer Zelle. Die Episode des Lehrers läuft um Sie herum: Das Vorlagegitter steht zur Seite, der Antwortrahmen füllt sich unter Ihren Füßen Zelle für Zelle, die Palette ist eine Reihe leuchtender Steine, und der Cursor ist eine Lichtsäule, die kommt und geht. Über Ihnen hängen die Schichten der Sicht des Agenten wie Glasböden, die unterste scharf und klein, jede darüber doppelt so breit und doppelt so vage, bis die oberste alles bedeckt und fast nichts sagt. Spulen Sie die Zeit, um zu sehen, wie die Farbe von der Palette zur Zelle wandert.",
       "lookFor": "Stellen Sie sich auf den Antwortrahmen und blicken Sie durch die Schichten nach oben, während der Cursor vorbeizieht; das scharfe Fenster folgt ihm.",
       "limit": "Dies ist die Episode des Lehrers, nicht die eines gelernten Agenten, und der Maßstab ist ein Mittel zum Sehen; der Agent sieht die Leinwand nie als Ort."
+    },
+    "foyer": {
+      "title": "Foyer",
+      "kicker": "Wer kommt an der Tür vorbei?",
+      "intro": "Die Treppe aus dem world-engine-Raum führt hinunter ins Foyer des Kellers. Zwei Türen gehen weiter: der Club, der sich nur öffnet, wenn Mikrofon und Ton eingeschaltet sind, und dahinter eine Bühne allein für Headsets. Die Angebote auf dem Bildschirm schalten beides ein.",
+      "lookFor": "Das Messinggeländer der langen Treppe und die Laternen neben der Clubtür: Sie leuchten warm, während die Farben des Clubs kalt sind."
+    },
+    "club": {
+      "title": "Club",
+      "kicker": "Wie laut ist ein Gewölbekeller?",
+      "intro": "Ein Club unter dem Nordflügel: ein niedriges Gewölbe, eine Tanzfläche aus leuchtenden Platten, eine Bar an der Ostwand, Nischen im Westen, am Ende eine Bühne. Die Musik wird ein Livestream sein; bis er spielt, atmen die Lichter von selbst.",
+      "lookFor": "Die Spiegelkugel über der Tanzfläche und die beiden Farblinien entlang des Gewölbes; sie pulsieren mit der Musik, wenn es Musik gibt."
+    },
+    "stage": {
+      "title": "Bühne",
+      "kicker": "Wer singt?",
+      "intro": "Eine Stufe über der Tanzfläche, gerahmt vom Proszenium und von vorn beleuchtet. Die Bühne ist für Sänger im Headset: Sie öffnet sich nur einer immersiven Sitzung, und wer sie verlässt, steht wieder unten. Karaoke läuft von hier, sobald die Sprachverbindung besteht.",
+      "lookFor": "Der Mikrofonständer in der Mitte und die Rampenlichter an der Kante: Der Sänger steht, wo sich die beiden Bodenlinien treffen."
     }
   },
   "exhibits": {

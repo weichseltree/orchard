@@ -779,6 +779,8 @@ const SEED_ROOMS: ReadonlyArray<{
   { name: 'orchard-south', title: 'The Far Grove', admin_only: false, capacity: 24 },
   { name: 'orchard-east', title: 'The Eastern Grove', admin_only: false, capacity: 24 },
   { name: 'arcedit', title: 'arcedit', admin_only: false, capacity: 24 },
+  // The cellar venue: its foyer, club and stage are one presence room (docs/specs/CLUB.md).
+  { name: 'club', title: 'The club', admin_only: false, capacity: 24 },
 ];
 
 export const init = spacetimedb.init(ctx => {

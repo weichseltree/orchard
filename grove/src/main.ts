@@ -35,6 +35,11 @@ import { VisitorGuide } from "./ui/guide";
 import { GameSurface } from "./ui/game-surface";
 import { startupFailed, startupReady } from "./ui/startup";
 import { finiteParameter, visitRoom } from "./world/visit";
+import { NOTHING_ON, barredRooms, nearbyNeeds, pulseGain, retreat, unmetNeeds, venueBarred, venueBox, venueReason, type VenueState } from "./world/venue";
+import type { VenueCurtains } from "./world/venue-curtain";
+import { setPulse, setPulseBox } from "./world/pulse";
+import type { VenueGear } from "./audio/venue-gear";
+import type { BeatFollower } from "./audio/beat";
 import { frameAt } from "./tape/time";
 import mansionDocument from "./world/mansion.json";
 import { parseMansion, roomById, type GameSurface as GameSurfaceConfig } from "./world/schema";
@@ -88,7 +93,8 @@ view.scene.add(avatars.group, worldNotices.panel);
 // `?room=<id>&yaw=<deg>` starts a visit in another room: for looking at a
 // room while it is built, and for a link straight to a tree's room.
 const query = new URLSearchParams(location.search);
-const startRoom = visitRoom(mansion, query);
+// A link into the club lands in its foyer: the door is met, not skipped (world/venue.ts).
+const startRoom = visitRoom(mansion, query, { gated: !demo });
 // The wall plaques speak the visitor's language: the browser's list, `?lang=` first, English last.
 const locale = pickLocale(AVAILABLE_LOCALES, navigator.languages, query.get("lang"));
 void labelsFor(locale).catch(() => labelsFor("en"));
@@ -199,7 +205,11 @@ function openGameSurface(surface: GameSurfaceConfig): void {
 }
 guide.setRoom(startRoom.id);
 if (query.has("room") && query.get("room") !== startRoom.id) {
-  hud.notice(`That room is not here. You have arrived in ${startRoom.title.replace(/^The /, "the ") || startRoom.id} instead.`);
+  const asked = roomById(mansion, query.get("room") ?? "");
+  const here = startRoom.title.replace(/^The /, "the ") || startRoom.id;
+  hud.notice(asked
+    ? `${asked.title || asked.id} asks for ${asked.requires.map((need) => need === "immersive" ? "a headset" : `your ${need} on`).join(" and ")}. You have arrived in the ${here}, where its door is.`
+    : `That room is not here. You have arrived in ${here} instead.`);
 }
 
 /** Every failure surface at once: the HUD, and the board that exists in VR. */
@@ -385,6 +395,9 @@ view.renderer.xr.addEventListener("sessionstart", () => {
 
 let perfOpen = false;
 let nextPerfReport = 0;
+const pulseActive = venueBox(mansion) !== null;
+let barredKey = -1;
+let barred: ReadonlySet<string> = barredRooms(mansion, NOTHING_ON);
 let nextAudioReassign = 0;
 let scrubbingUntil = 0;
 
@@ -427,6 +440,15 @@ const commands: Commands = {
     if (!perfOpen) hud.setPerf(null);
   },
   toggleUnmute: () => void toggleAudio(),
+  // In a headset the offers are not on any screen: the trigger takes them.
+  // A microphone cannot be allowed inside the session; sound can.
+  confirm: () => {
+    if (view.renderer.xr.isPresenting && nearbyNeeds(mansion, body.room, venueState()).includes("sound")) {
+      void switchSoundOn();
+      return true;
+    }
+    return false;
+  },
 };
 
 const xr = new XrControls({
@@ -498,6 +520,8 @@ function boot(): void {
   else {
     presence.connect(presenceRoomFor(body.room));
     chat.noteJoined();
+    // A visitor who arrives at the venue's door by link meets its offers at once.
+    offerVenue();
   }
 
   const built = buildWorld({
@@ -512,6 +536,8 @@ function boot(): void {
     // The hangings wait this long for the live exhibit table, then take the
     // pinned ids: a slow link costs seconds, a dead one costs nothing.
     exhibits: demo ? undefined : () => presence.whenExhibits(EXHIBIT_WAIT_MS),
+    audioContext: () => loadGear().then((g) => g.gate.context),
+    onAudio: () => syncVenueSound(),
     onRoomReady: (room, shell) => {
       // The sealed lenses over this room's closed doors may show now that their recesses stand.
       portals.roomReady(room.id);
@@ -543,6 +569,7 @@ function boot(): void {
     .load()
     .then(() => {
       handOverVideo(true);
+      syncVenueSound();
     })
     .catch((error: unknown) => {
       startupFailed();
@@ -552,6 +579,84 @@ function boot(): void {
 
 function presenceRoomFor(roomId: string): string {
   return roomById(mansion, roomId)?.presence ?? "grove";
+}
+
+// The venue's doors (world/venue.ts, docs/specs/CLUB.md). What the visitor
+// has on is read live from the sound gate, the microphone grant and the XR
+// session, so a door that was open closes again when the browser suspends
+// the audio or a track ends; the demo has no doors to ask.
+let gear: VenueGear | null = null;
+let gearLoad: Promise<VenueGear> | null = null;
+/** The two switches, made on first need; their answers are kept here so the door can be asked every frame. */
+function loadGear(): Promise<VenueGear> {
+  gearLoad ??= import("./audio/venue-gear").then(({ createVenueGear }) => {
+    gear = createVenueGear();
+    gear.gate.onChange(venueChanged);
+    gear.microphone.onChange(venueChanged);
+    return gear;
+  });
+  return gearLoad;
+}
+function venueState(): VenueState {
+  if (demo) return { microphone: true, sound: true, immersive: true };
+  return { microphone: gear?.microphone.live ?? false, sound: gear?.gate.enabled ?? false, immersive: view.renderer.xr.isPresenting };
+}
+// The curtains over the venue's doors and the beat follower are loaded off
+// the startup path: a palace with no venue never pays for them.
+let curtains: VenueCurtains | null = null;
+if (venueBox(mansion) && !demo) {
+  void import("./world/venue-curtain").then(({ VenueCurtains }) => {
+    curtains = new VenueCurtains(mansion);
+    view.world.add(curtains.group);
+  });
+}
+setPulseBox(venueBox(mansion));
+/** The offers standing in the HUD, one per need, until the need is met. */
+const venueOffers = new Map<"microphone" | "sound", HTMLElement>();
+function offerVenue(): void {
+  const state = venueState();
+  const needs = nearbyNeeds(mansion, body.room, state);
+  for (const [need, element] of venueOffers) {
+    if (!needs.includes(need)) {
+      element.remove();
+      venueOffers.delete(need);
+    }
+  }
+  if (needs.includes("microphone") && !venueOffers.has("microphone")) {
+    venueOffers.set("microphone", hud.offer("The club asks for your microphone.", "Allow the microphone", () => void allowMicrophone()));
+  }
+  if (needs.includes("sound") && !venueOffers.has("sound")) {
+    venueOffers.set("sound", hud.offer("The club asks for your sound.", "Sound on", () => void switchSoundOn()));
+  }
+}
+async function allowMicrophone(): Promise<void> {
+  const ok = await (await loadGear()).microphone.open();
+  notice(ok ? "Microphone on." : "The microphone was not allowed; the club's door stays shut.");
+}
+async function switchSoundOn(): Promise<void> {
+  const ok = await (await loadGear()).gate.enable();
+  notice(ok ? "Sound on." : "Sound could not start; try the button once more.");
+}
+/** The venue's live exhibits follow the gate: heard the moment sound is on, and the beat read off the first of them. */
+let beat: BeatFollower | null = null;
+function venueAudios() {
+  return (world?.audios ?? []).filter((audio) => (roomById(mansion, exhibitRoom(audio) ?? "")?.requires.length ?? 0) > 0);
+}
+let beatLoad: Promise<void> | null = null;
+function syncVenueSound(): void {
+  if (!gear?.gate.enabled) return;
+  for (const audio of venueAudios()) {
+    void audio.unmute();
+    beatLoad ??= import("./audio/beat").then(({ BeatFollower }) => {
+      beat = new BeatFollower(audio.field.context, audio.field.bed);
+    });
+  }
+}
+function venueChanged(): void {
+  offerVenue();
+  syncVenueSound();
+  // A door that has just opened has nothing more to say; the next refusal is a new one.
+  toldAboutLock = null;
 }
 
 /**
@@ -568,7 +673,10 @@ function lockedRoom(roomId: string): boolean {
   // question, so it cannot disagree with the ordinary locks about where a
   // visitor may stand (world/turnstile.ts).
   if (turnstile.closed(performance.now())) return true;
-  return !demo && !presence.canEnter(presenceRoomFor(roomId));
+  if (demo) return false;
+  // The venue's door asks the visitor, not the server (world/venue.ts).
+  if (venueBarred(mansion, roomId, venueState())) return true;
+  return !presence.canEnter(presenceRoomFor(roomId));
 }
 
 /** Said once per locked room, not once per frame the visitor leans on it. */
@@ -586,9 +694,29 @@ function tellAboutLock(roomId: string | null): void {
     return;
   }
   const title = roomById(mansion, roomId)?.title ?? roomId;
+  const unmet = unmetNeeds(roomById(mansion, roomId), venueState());
+  if (unmet.length > 0) {
+    notice(venueReason(title, unmet, view.renderer.xr.isPresenting));
+    offerVenue();
+    return;
+  }
   const why = presence.whyLocked(presenceRoomFor(roomId));
   notice(why === null ? `${title} is not open just now.` : `${title}: ${why}.`);
 }
+
+// A room that asks for a headset is left with it: when the session ends on
+// the stage, the body steps down to the nearest room it may still be in.
+view.renderer.xr.addEventListener("sessionend", () => {
+  const here = roomById(mansion, body.room);
+  if (!here?.requires.includes("immersive")) return;
+  const to = retreat(mansion, body.room, venueState());
+  const [x, , z] = to.spawn.position;
+  if (teleport(body, mansion, x, z, undefined, { walls: false, into: to.id })) {
+    body.yaw = MathUtils.degToRad(to.spawn.yawDeg);
+    view.rig.position.set(body.x, body.y, body.z);
+    notice(`The ${here.title || here.id} is for headsets; you are back in the ${to.title || to.id}.`);
+  }
+});
 
 async function enterVr(): Promise<void> {
   try {
@@ -858,6 +986,9 @@ view.start((dt, time, rawDt) => {
     }
     guide.setRoom(body.crossedInto);
     notice(roomTitle(labelsLoaded(locale), body.crossedInto) ?? roomById(mansion, body.crossedInto)?.title ?? body.crossedInto);
+    // Arriving in the foyer is when the club's door is worth explaining.
+    offerVenue();
+    syncVenueSound();
     // Acted on: cleared here, once, rather than at the start of `step`, so a
     // teleport earlier in the frame is not erased before it is seen.
     body.crossedInto = null;
@@ -897,6 +1028,21 @@ view.start((dt, time, rawDt) => {
       audio.tick();
       if (reassign) audio.reassign();
     }
+  }
+
+  // The club's pulse: a gain on its baked light and its own lamps, from the
+  // music's low end when there is music, a slow breath when there is not
+  // (audio/beat.ts); and the curtains over the doors barred to this visitor.
+  if (pulseActive) {
+    const gain = pulseGain(beat && gear?.gate.enabled ? beat.level() : null, time / 1000);
+    setPulse(gain);
+    // Re-derived only when a switch changed: nothing allocated on a quiet frame.
+    const key = (gear?.microphone.live ? 1 : 0) | (gear?.gate.enabled ? 2 : 0) | (view.renderer.xr.isPresenting ? 4 : 0);
+    if (key !== barredKey) {
+      barredKey = key;
+      barred = barredRooms(mansion, venueState());
+    }
+    curtains?.update(time / 1000, barred);
   }
 
   if (perfOpen && time >= nextPerfReport) {
@@ -976,7 +1122,7 @@ Object.defineProperty(window, "grove", {
       if (!room) return false;
       const x = (room.bounds.min[0] + room.bounds.max[0]) / 2;
       const z = (room.bounds.min[2] + room.bounds.max[2]) / 2;
-      return teleport(body, mansion, x, z, lockedRoom, { walls: false });
+      return teleport(body, mansion, x, z, lockedRoom, { walls: false, into: roomId });
     },
     /**
      * Resolves once everything the world is loading has landed (world.ts
@@ -999,6 +1145,7 @@ Object.defineProperty(window, "grove", {
 
 window.addEventListener("pagehide", (event) => {
   if (event.persisted) return;
+  gear?.microphone.close();
   presence.dispose();
   gameSurface.dispose();
   chunks.dispose();

@@ -1,5 +1,6 @@
 import { ClampToEdgeWrapping, Data3DTexture, LinearFilter, RGBAFormat, UnsignedByteType, Vector3 } from "three";
 import type { Mansion, Room } from "./schema";
+import { pulseUniforms } from "./pulse";
 
 // The palace's light, baked at build time into a small 3D texture the stone
 // shader samples once per fragment. Every luminous element of the
@@ -55,6 +56,7 @@ export const lightFieldUniforms = {
   uFieldMin: { value: new Vector3() },
   uFieldInvSize: { value: new Vector3(1, 1, 1) },
   uFieldGain: { value: 0 },
+  ...pulseUniforms,
 };
 
 /**
@@ -68,6 +70,13 @@ export const LIGHT_FIELD_GLSL = /* glsl */ `
   vec3 fieldAt = observatoryWorld + observatoryNormal * ${FIELD_SURFACE_OFFSET_M.toFixed(2)};
   vec3 fieldUvw = (fieldAt - uFieldMin) * uFieldInvSize;
   vec3 fieldLight = texture(uLightField, fieldUvw).rgb * ${(1 / ENCODE).toFixed(1)} * uFieldGain;
+  vec3 pulseIn = step(uPulseMin, observatoryWorld) * step(observatoryWorld, uPulseMax);
+  fieldLight *= mix(1.0, uPulse, pulseIn.x * pulseIn.y * pulseIn.z);
+`;
+/** The uniforms `LIGHT_FIELD_GLSL` reads, for a shader's header. */
+export const LIGHT_FIELD_UNIFORMS_GLSL = /* glsl */ `
+  uniform sampler3D uLightField; uniform vec3 uFieldMin; uniform vec3 uFieldInvSize; uniform float uFieldGain;
+  uniform vec3 uPulseMin; uniform vec3 uPulseMax; uniform float uPulse;
 `;
 
 /** Rooms the field covers: the palace's own scale, built by the runtime architecture. */

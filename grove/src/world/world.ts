@@ -41,6 +41,8 @@ export interface BuildWorldOptions {
    * itself. The caller uses it to put the body on the asset's own spawn.
    */
   onRoomReady?: (room: Room, shell: RoomShell) => void;
+  /** A live audio exhibit has landed (after its room's crossing, asynchronously): the venue re-syncs its sound. */
+  onAudio?: (audio: AudioExhibit) => void;
   /**
    * The live exhibit table, when a hanging asks for one. Awaited once, after
    * the rooms are up; a resolver that never answers holds up only the
@@ -48,6 +50,8 @@ export interface BuildWorldOptions {
    * which is different from answering with nothing hung.
    */
   exhibits?: () => Promise<ExhibitRow[] | null>;
+  /** The AudioContext a live audio exhibit joins (audio/gate.ts); each makes its own when absent. */
+  audioContext?: () => Promise<AudioContext>;
   /** The room the visitor starts in; `mansion.start` when absent. */
   startRoom?: string;
   scheduler?: ChunkScheduler;
@@ -335,12 +339,14 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
           continue;
         }
         pending.push(
-          import("./audio-exhibit").then(({ AudioExhibit }) => AudioExhibit.load({
+          Promise.all([import("./audio-exhibit"), options.audioContext?.()]).then(([{ AudioExhibit }, context]) => AudioExhibit.load({
             hanging, archivedBase: archived, tier: device.tier, onNotice,
+            ...(context ? { context } : {}),
           }))
             .then((audio) => {
               world.audios.push(audio);
               roomOf.set(audio, room.id);
+              options.onAudio?.(audio);
               provenance.register({
                 id: `audio:${hanging.id}`,
                 title: hanging.title,

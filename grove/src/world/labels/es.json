@@ -207,6 +207,24 @@
       "intro": "Aquí usted tiene el tamaño de una celda. El episodio del profesor se desarrolla a su alrededor: la cuadrícula fuente está a un lado, el marco de respuesta se llena bajo sus pies celda a celda, la paleta es una fila de piedras encendidas, y el cursor es una columna de luz que va y viene. Arriba, las capas de la vista del agente cuelgan como suelos de vidrio, la más baja nítida y pequeña, cada una por encima el doble de ancha y el doble de vaga, hasta que la de arriba lo cubre todo y casi no dice nada. Recorra el tiempo para ver el color viajar de la paleta a la celda.",
       "lookFor": "Párese sobre el marco de respuesta y mire hacia arriba a través de las capas cuando pase el cursor; la ventana nítida lo sigue.",
       "limit": "Este es el episodio del profesor, no el de un agente entrenado, y la escala es un recurso para mirar; el agente nunca ve el lienzo como un lugar."
+    },
+    "foyer": {
+      "title": "foyer",
+      "kicker": "¿Quién pasa la puerta?",
+      "intro": "La escalera de la sala de world-engine baja hasta el foyer del sótano. Dos puertas siguen adelante: el club, que solo se abre al visitante que tiene el micrófono y el sonido encendidos, y más allá un escenario reservado a los visores. Las propuestas en su pantalla encienden ambos.",
+      "lookFor": "La barandilla de latón de la larga escalera y los faroles junto a la puerta del club: arden cálidos, mientras que los colores del club son fríos."
+    },
+    "club": {
+      "title": "club",
+      "kicker": "¿Cuánto suena un sótano abovedado?",
+      "intro": "Un club bajo el ala norte: una bóveda baja, una pista de baile de baldosas iluminadas, una barra a lo largo del muro este, reservados a lo largo del oeste, un escenario al fondo. La música será una emisión en directo; hasta que suene, las luces respiran por su cuenta.",
+      "lookFor": "La bola de espejos sobre la pista y las dos líneas de color a lo largo de la bóveda; laten con la música cuando hay música."
+    },
+    "stage": {
+      "title": "escenario",
+      "kicker": "¿Quién canta?",
+      "intro": "Un peldaño por encima de la pista, enmarcado por el proscenio e iluminado de frente. El escenario es para cantantes con visor: solo se abre a una sesión inmersiva, y salir de ella le devuelve a la pista. El karaoke funcionará desde aquí en cuanto exista el enlace de voz.",
+      "lookFor": "El pie de micrófono en el centro y las candilejas a lo largo del borde: el cantante se sitúa donde se encuentran las dos líneas del suelo."
     }
   },
   "exhibits": {

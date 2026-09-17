@@ -230,6 +230,8 @@ export const PortalSchema = z.looseObject({
   }),
 });
 
+export const VenueNeedSchema = z.enum(["microphone", "sound", "immersive"]);
+
 export const RoomSchema = z.looseObject({
   id: z.string().min(1),
   title: z.string().default(""),
@@ -276,6 +278,13 @@ export const RoomSchema = z.looseObject({
    * would clip to white at the hall's exposure.
    */
   exposure: z.number().positive().default(1),
+  /**
+   * What a visitor must have switched on to be let in (world/venue.ts): the
+   * club's door opens only to a microphone and sound that are on, its stage
+   * only to an immersive session. Checked at the doorway, like a lock; a
+   * shared link into such a room lands in the nearest room that asks nothing.
+   */
+  requires: z.array(VenueNeedSchema).default([]),
 });
 
 /**
@@ -374,6 +383,15 @@ export const MansionSchema = z
           ctx.addIssue({ code: "custom", message: `doorway ${room.id} -> ${door.to} at ${door.axis}=${door.at}, ${door.center} is not listed by "${door.to}"` });
         }
       }
+      // A gated room is entered from a doorway, so there must be one leading
+      // in from a room that asks less; otherwise nobody could ever get in.
+      if (room.requires.length > 0) {
+        const approach = room.doorways.some((door) => {
+          const other = doc.rooms.find((r) => r.id === door.to);
+          return !!other && !door.closed && other.requires.every((need) => room.requires.includes(need)) && other.requires.length < room.requires.length;
+        });
+        if (!approach) ctx.addIssue({ code: "custom", message: `room "${room.id}" requires ${room.requires.join(", ")} but no doorway reaches it from a room that asks less` });
+      }
       for (const portal of room.portals) {
         const target = doc.rooms.find((r) => r.id === portal.to);
         if (!target) {
@@ -416,6 +434,7 @@ export type AudioHanging = z.infer<typeof AudioHangingSchema>;
 export type Portal = z.infer<typeof PortalSchema>;
 export type Hanging = z.infer<typeof HangingSchema>;
 export type Room = z.infer<typeof RoomSchema>;
+export type VenueNeed = z.infer<typeof VenueNeedSchema>;
 export type Sky = z.infer<typeof SkySchema>;
 export type Mound = z.infer<typeof MoundSchema>;
 export type Terrain = z.infer<typeof TerrainSchema>;

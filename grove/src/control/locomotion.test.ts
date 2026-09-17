@@ -41,6 +41,24 @@ describe("a crossing survives until the frame loop acts on it", () => {
   });
 });
 
+describe("a teleport under another room", () => {
+  const mansion = parseMansion(mansionDocument);
+  it("stays on its own storey, and goes to the room it names", () => {
+    const body = createBody(0, -20, 0, "club", 1, -5);
+    expect(teleport(body, mansion, 0, -40)).toBe(true);
+    expect(body.room).toBe("club");
+    expect(body.y).toBe(-5);
+    const above = createBody(0, -36, 0, "orangery", 1, 1.5);
+    expect(teleport(above, mansion, 0, -40)).toBe(true);
+    expect(above.room).toBe("orangery");
+    expect(above.y).toBe(1.5);
+    expect(teleport(above, mansion, 0, -40, undefined, { walls: false, into: "club" })).toBe(true);
+    expect(above.room).toBe("club");
+    expect(above.crossedInto).toBe("club");
+    expect(teleport(above, mansion, 0, -40, undefined, { walls: false, into: "hall" })).toBe(false);
+  });
+});
+
 describe("a teleport goes only where a walk could", () => {
   const room = (id: string) => mansion.rooms.find((r) => r.id === id)!;
   const sealed = mansion.rooms.find((r) => r.doorways.length > 0 && r.doorways.every((d) => d.closed))!;

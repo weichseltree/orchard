@@ -37,6 +37,13 @@ export interface Commands {
   toggleUnmute(): void;
   /** The game whose table the visitor stands at, when the room has one (G). */
   openGame(): void;
+  /**
+   * Takes the offer standing in the room, when there is one (the club's
+   * door asking for sound): true when it did, so the trigger that would
+   * otherwise toggle playback is spent. Optional: a caller with no offers
+   * leaves it out.
+   */
+  confirm?(): boolean;
 }
 
 /** A stick reading with its dead zone removed and its edge rescaled. */

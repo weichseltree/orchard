@@ -149,9 +149,33 @@ export function insideRoom(room: Room, x: number, z: number, radius = 0): boolea
   );
 }
 
-/** The room a world point falls in, if any. */
-export function roomAt(mansion: Mansion, x: number, z: number): Room | undefined {
-  return mansion.rooms.find((room) => insideRoom(room, x, z));
+/**
+ * The room a world point falls in, if any. Rooms may stand over one another
+ * (the club is under the north wing), so of the rooms whose footprint holds
+ * the point, `prefer` wins when it is one of them, and otherwise the one
+ * whose floor is nearest to `y`: a pointer aimed at the floor lands on the
+ * storey the body is on, never on the one above it.
+ */
+export function roomAt(
+  mansion: Mansion,
+  x: number,
+  z: number,
+  radius = 0,
+  y?: number,
+  prefer?: string,
+): Room | undefined {
+  let best: Room | undefined;
+  let bestGap = Infinity;
+  for (const room of mansion.rooms) {
+    if (!insideRoom(room, x, z, radius)) continue;
+    if (room.id === prefer) return room;
+    const gap = y === undefined ? 0 : Math.abs(room.bounds.min[1] - y);
+    if (gap < bestGap) {
+      best = room;
+      bestGap = gap;
+    }
+  }
+  return best;
 }
 
 /**

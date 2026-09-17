@@ -204,7 +204,6 @@
           "width": 3,
           "height": 4
         }
-
       ],
       "hangings": [
         {
@@ -375,8 +374,15 @@
           "center": 0,
           "width": 4.8,
           "height": 4.6
+        },
+        {
+          "to": "foyer",
+          "axis": "x",
+          "at": 10,
+          "center": -27,
+          "width": 3,
+          "height": 4.0
         }
-
       ],
       "hangings": [
         {
@@ -537,6 +543,142 @@
           ],
           "yawDeg": 0
         }
+      ]
+    },
+    {
+      "id": "foyer",
+      "title": "foyer",
+      "presence": "club",
+      "bounds": {
+        "min": [
+          10,
+          -5,
+          -34
+        ],
+        "max": [
+          24,
+          8,
+          -20
+        ]
+      },
+      "spawn": {
+        "position": [
+          21,
+          -5,
+          -22.5
+        ],
+        "yawDeg": 90
+      },
+      "doorways": [
+        {
+          "to": "world-engine",
+          "axis": "x",
+          "at": 10,
+          "center": -27,
+          "width": 3,
+          "height": 4.0
+        },
+        {
+          "to": "club",
+          "axis": "x",
+          "at": 10,
+          "center": -22.5,
+          "width": 3,
+          "height": 4.0
+        }
+      ],
+      "hangings": [],
+      "architecture": "observatory"
+    },
+    {
+      "id": "club",
+      "title": "club",
+      "presence": "club",
+      "bounds": {
+        "min": [
+          -10,
+          -5,
+          -70
+        ],
+        "max": [
+          10,
+          1.1,
+          -12
+        ]
+      },
+      "spawn": {
+        "position": [
+          0,
+          -5,
+          -64
+        ],
+        "yawDeg": 0
+      },
+      "doorways": [
+        {
+          "to": "foyer",
+          "axis": "x",
+          "at": 10,
+          "center": -22.5,
+          "width": 3,
+          "height": 4.0
+        },
+        {
+          "to": "stage",
+          "axis": "z",
+          "at": -70,
+          "center": 0,
+          "width": 10,
+          "height": 4.0
+        }
+      ],
+      "hangings": [],
+      "architecture": "observatory",
+      "requires": [
+        "microphone",
+        "sound"
+      ]
+    },
+    {
+      "id": "stage",
+      "title": "stage",
+      "presence": "club",
+      "bounds": {
+        "min": [
+          -6,
+          -4,
+          -76
+        ],
+        "max": [
+          6,
+          1.1,
+          -70
+        ]
+      },
+      "spawn": {
+        "position": [
+          0,
+          -4,
+          -73
+        ],
+        "yawDeg": 180
+      },
+      "doorways": [
+        {
+          "to": "club",
+          "axis": "z",
+          "at": -70,
+          "center": 0,
+          "width": 10,
+          "height": 4.0
+        }
+      ],
+      "hangings": [],
+      "architecture": "observatory",
+      "requires": [
+        "microphone",
+        "sound",
+        "immersive"
       ]
     },
     {

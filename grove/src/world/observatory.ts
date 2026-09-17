@@ -7,7 +7,9 @@ import {
 import type { Room, Doorway, Mansion } from "./schema";
 import type { RoomShell } from "./rooms";
 import { STAIR_MARGIN, STAIR_TREAD, flightsOf, moundHeight, stairSteps, type Flight } from "./terrain";
-import { LIGHT_FIELD_GLSL, applyLightField, bakeLightField, lightFieldUniforms, litRooms, type Emitter, type LightField } from "./lightfield";
+import { LIGHT_FIELD_GLSL, LIGHT_FIELD_UNIFORMS_GLSL, applyLightField, bakeLightField, lightFieldUniforms, litRooms, type Emitter, type LightField } from "./lightfield";
+import { onPulse } from "./pulse";
+import { VENUE_TINT } from "./venue";
 import { PORTAL_TINT } from "./portal-shader";
 import { SEALED_TINT, sealedLens } from "./sealed";
 
@@ -25,6 +27,8 @@ export const OBSERVATORY_PALETTE = {
   brass: "#a98551", light: "#eed3a5", blue: "#87b9db",
   joint: "#263540", path: "#243544", earth: "#0b1822", grove: "#345355",
   hedge: "#1c3a33", water: "#0c2634", gravel: "#2b3543",
+  /** Self-luminous but not a lamp: it lights nothing around it (the club's floor tiles). */
+  neon: VENUE_TINT,
 } as const;
 type Finish = keyof typeof OBSERVATORY_PALETTE;
 type Primitive = "box" | "column" | "arch" | "ring" | "crown" | "halo";
@@ -37,20 +41,28 @@ const ROOM_FINISH: Record<string, Partial<Record<Finish, string>>> = {
   belvedere: { wall: "#1b2c3c", inset: "#121f2b", stone: "#5c6b77", roof: "#172838" },
   // arcedit's area: slate walls and the editor's yellow in the lamps, one finish for all its rooms.
   arcedit: { wall: "#141b26", floor: "#0f1620", inset: "#0c121a", stone: "#4c5766", brass: "#a8905c", light: "#ffe4ad", blue: "#d1a94b", roof: "#111a26" },
+  // The cellar venue (docs/specs/CLUB.md): the foyer warm, the club in its
+  // own cold pair, magenta lamps and cyan lines, over near-black stone. The
+  // club's luminous finishes are its own materials so the pulse can tint them.
+  foyer: { wall: "#1a1424", floor: "#14101c", inset: "#0f0b16", stone: "#4a3f5e", brass: "#b8905a", light: "#ffc27a", blue: "#8f7bff", roof: "#130f1c" },
+  club: { wall: "#120d1c", floor: "#0a0712", inset: "#07050e", stone: "#3b3050", brass: "#b4884d", light: "#ff62d6", blue: "#3fdcff", neon: "#ff3fb0", joint: "#1c1430", roof: "#0e0a17" },
 };
+/** Rooms finished as another room: the stage is part of the club and shares its materials. */
+const FINISH_ALIAS: Record<string, string> = { stage: "club" };
 /**
  * Which finish a room takes: its own, or its tree's for the rooms of an area
  * ("arcedit/results/grove" is finished as "arcedit"), so an area's rooms
  * share materials as well as a look (TREE-AREAS.md §7).
  */
 function finishOf(roomId: string): Partial<Record<Finish, string>> | undefined {
-  return ROOM_FINISH[roomId] ?? ROOM_FINISH[roomId.split("/")[0]!];
+  return ROOM_FINISH[finishKey(roomId)];
 }
 function finishKey(roomId: string): string {
-  return ROOM_FINISH[roomId] ? roomId : roomId.split("/")[0]!;
+  const id = FINISH_ALIAS[roomId] ?? roomId;
+  return ROOM_FINISH[id] ? id : id.split("/")[0]!;
 }
 /** Rooms whose walls carry brass sconces between the panels. */
-const SCONCED = ["hall", "gallery", "orangery", "belvedere", "world-engine"];
+const SCONCED = ["hall", "gallery", "orangery", "belvedere", "world-engine", "foyer", "club"];
 /** Rooms with a colonnade along their long walls. */
 const COLONNADED = ["hall", "gallery", "orangery", "belvedere"];
 const materials = new Map<string, MeshBasicMaterial>();
@@ -61,13 +73,47 @@ function material(finish: Finish, roomId: string): MeshBasicMaterial {
   const key = override ? `${finishKey(roomId)}-${finish}` : finish;
   let result = materials.get(key);
   if (!result) {
-    const luminous = finish === "light" || finish === "blue";
+    const luminous = finish === "light" || finish === "blue" || finish === "neon";
     result = new MeshBasicMaterial({ color: override ?? OBSERVATORY_PALETTE[finish], vertexColors: !luminous, side: DoubleSide, toneMapped: !luminous });
     result.name = `observatory-${key}`;
     if (!luminous) stoneSurface(result, finish, roomId === "spectre");
     materials.set(key, result);
   }
   return result;
+}
+
+/**
+ * The pulse on a room's own lamps (audio/beat.ts): its luminous finishes,
+ * tinted by a gain about one. Only finishes the room overrides are touched,
+ * because the others are the whole palace's materials; the baked light on
+ * the walls pulses separately, through the field's uniform (lightfield.ts).
+ * A room that asks something of its visitors (the club) follows the pulse
+ * from the moment it is built; this file is not on the startup path, so it
+ * registers itself rather than being called from the frame loop.
+ */
+const pulsing = new Set<string>();
+function followPulse(room: Room): void {
+  if (room.requires.length === 0) return;
+  const key = finishKey(room.id);
+  if (pulsing.has(key)) return;
+  pulsing.add(key);
+  // The materials once, not three map lookups a frame.
+  const lamps = luminousOf(key);
+  onPulse((gain) => { for (const { m, base } of lamps) m.color.copy(base).multiplyScalar(gain); });
+}
+function luminousOf(roomId: string): Array<{ m: MeshBasicMaterial; base: Color }> {
+  const own = finishOf(roomId);
+  if (!own) return [];
+  const out: Array<{ m: MeshBasicMaterial; base: Color }> = [];
+  for (const finish of ["light", "blue", "neon"] as const) {
+    if (!own[finish]) continue;
+    const m = material(finish, roomId);
+    out.push({ m, base: (m.userData.base ??= m.color.clone()) as Color });
+  }
+  return out;
+}
+export function tintLuminous(roomId: string, gain: number): void {
+  for (const { m, base } of luminousOf(roomId)) m.color.copy(base).multiplyScalar(gain);
 }
 
 /** Quiet architectural surface shading, independent of all exhibit materials. */
@@ -96,7 +142,7 @@ function stoneSurface(material: MeshBasicMaterial, finish: Finish, quiet: boolea
       observatoryNormal = normalize(mat3(modelMatrix) * architectureNormal);
     `);
     shader.fragmentShader = `varying vec3 observatoryWorld; varying vec3 observatoryCenter; varying vec3 observatoryNormal;
-      uniform sampler3D uLightField; uniform vec3 uFieldMin; uniform vec3 uFieldInvSize; uniform float uFieldGain;
+      ${LIGHT_FIELD_UNIFORMS_GLSL}
       float stoneHash(vec2 p) {
         vec3 q = fract(vec3(p.xyx) * .1031);
         q += dot(q, q.yzx + 33.33);
@@ -194,6 +240,19 @@ function geometry(kind: Primitive): BufferGeometry {
  */
 export function areaRoom(room: Room, mansion: Mansion | null): boolean {
   return room.id.includes("/") || (mansion?.rooms.some(r => r.id.startsWith(`${room.id}/`)) ?? false);
+}
+/**
+ * Whether another room of the same scale stands over this one: its footprint
+ * overlaps and its floor is at or above this room's ceiling. The palace's
+ * chambers look up through the open crown of their vault at the sky; a
+ * cellar under a wing looks up at that wing's floor, so it gets a lid.
+ */
+export function covered(room: Room, mansion: Mansion | null): boolean {
+  if (!mansion) return false;
+  const [x0, , z0] = room.bounds.min, [x1, y1, z1] = room.bounds.max;
+  return mansion.rooms.some(other => other.id !== room.id && (other.scale ?? 1) === (room.scale ?? 1)
+    && other.bounds.min[1] >= y1 - 0.001
+    && other.bounds.min[0] < x1 && other.bounds.max[0] > x0 && other.bounds.min[2] < z1 && other.bounds.max[2] > z0);
 }
 export function runsAlongX(room: Room, mansion: Mansion | null): boolean {
   return areaRoom(room, mansion) && room.bounds.max[0] - room.bounds.min[0] > room.bounds.max[2] - room.bounds.min[2];
@@ -475,7 +534,10 @@ function vault(b: Builder): void {
   const at = (u: number, v: number): [number, number] => (turned ? [v, u] : [u, v]);
   const turn = turned ? new Quaternion().setFromAxisAngle(UNIT, Math.PI / 2) : new Quaternion();
   const cu = (u0 + u1) / 2, width = u1 - u0, depth = v1 - v0, cx = (x0 + x1) / 2;
-  const doorTop = Math.max(y0, ...room.doorways.map(d => b.doorBase(d) + d.height));
+  // A proscenium is wider than eight metres and stands in an end wall, so it
+  // does not lift the springing the way a doorway in the side does; the wall
+  // above it is drawn to the vault (chamberWalls), like the grounds' gates.
+  const doorTop = Math.max(y0, ...room.doorways.filter(d => d.width <= 8).map(d => b.doorBase(d) + d.height));
   const spring = Math.max(y0 + (y1 - y0) * 0.6, doorTop + 0.15);
   const rise = Math.max(0.25, y1 - spring - 0.12), radius = width / 2 - 0.19;
   const positions: number[] = [], colors: number[] = [];
@@ -511,6 +573,8 @@ function vault(b: Builder): void {
     const [x, z] = at(cu + side * width * 0.078, (v0 + v1) / 2);
     b.box("blue", x, y1 - 0.11, z, turned ? depth - 0.3 : 0.04, 0.035, turned ? 0.04 : depth - 0.3);
   }
+  // A room under another room closes its crown with a dark lid: what stands above it is a floor, not the sky.
+  if (covered(room, b.mansion)) b.box("inset", cx, y1 + 0.03, (z0 + z1) / 2, x1 - x0, 0.06, z1 - z0);
   // Oculi distinguish the quieter chambers. They hang above the exhibit envelope.
   if (["hall", "phototroph", "spectre", "greenhouse", "belvedere"].includes(room.id)) {
     const radius = room.id === "hall" ? 2.6 : 1.65;
@@ -554,7 +618,7 @@ function chandeliers(b: Builder): void {
     chandelier(b, cx, y1, (z0 + z1) / 2, 2.4, 3);
     return;
   }
-  if (["gallery", "orangery", "world-engine", "einstruct", "phototroph", "belvedere"].includes(room.id)) {
+  if (["gallery", "orangery", "world-engine", "einstruct", "phototroph", "belvedere", "foyer"].includes(room.id)) {
     const count = Math.max(1, Math.round(depth / 12));
     for (let i = 0; i < count; i++) chandelier(b, cx, y1, z0 + depth * (i + 0.5) / count, Math.min(1.6, (x1 - x0) * 0.09), 2);
     return;
@@ -814,9 +878,141 @@ function obelisk(b: Builder, x: number, z: number): void {
 function plan(room: Room, mansion: Mansion | null): Builder {
   const b = new Builder(room, mansion);
   if (room.fallback.kind === "ground") grounds(b);
-  else { chamberFloor(b); chamberWalls(b); vault(b); statuary(b); gameTables(b); }
+  else { chamberFloor(b); chamberWalls(b); vault(b); statuary(b); gameTables(b); venue(b); }
   flights(b);
   return b;
+}
+
+/** The cellar venue's fittings, by room (docs/specs/CLUB.md). */
+function venue(b: Builder): void {
+  if (b.room.id === "club") clubFittings(b);
+  else if (b.room.id === "stage") stageFittings(b);
+  else if (b.room.id === "foyer") foyerFittings(b);
+}
+
+/** A rotation about y: a box turned to run along z instead of x, a ring turned to face along x. */
+const ALONG_Z = /* @__PURE__ */ new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), Math.PI / 2);
+
+/**
+ * The club under the north wing (its lid is the vault's, `covered`): a dance floor of neon tiles
+ * before the stage under a mirror ball, two trusses of colour along the
+ * vault, a bar down the east wall by the foyer door, booths along the west,
+ * the DJ's desk and stacks beside the stage, and the proscenium's frame. The
+ * lamps are the room's own light and blue, so the bake lights the walls
+ * from them and the pulse tints them (tintLuminous).
+ */
+function clubFittings(b: Builder): void {
+  const room = b.room, [x0, y0, z0] = room.bounds.min, [x1, y1, z1] = room.bounds.max;
+  const cx = (x0 + x1) / 2;
+  // The dance floor, eight metres before the stage: a dark deck, a brass edge, a checker of neon tiles.
+  const fz0 = z0 + 8, fz1 = fz0 + 16, fcz = (fz0 + fz1) / 2;
+  b.box("inset", cx, y0 + 0.02, fcz, 12.4, 0.04, 16.4);
+  for (const side of [-1, 1]) {
+    b.box("brass", cx + side * 6.2, y0 + 0.045, fcz, 0.06, 0.01, 16.4);
+    b.box("brass", cx, y0 + 0.045, fcz + side * 8.2, 12.4, 0.01, 0.06);
+  }
+  for (let i = 0; i < 6; i++) for (let j = 0; j < 8; j++) {
+    b.box((i + j) % 2 === 0 ? "neon" : "joint", cx - 5 + i * 2, y0 + 0.046, fz0 + 1 + j * 2, 1.7, 0.012, 1.7);
+  }
+  // The mirror ball over its centre, hung from the lid, ringed with light.
+  const ballY = y1 - 1.7;
+  b.add("crown", "stone", cx, ballY, fcz, 0.75, 0.75, 0.75);
+  b.add("ring", "light", cx, ballY, fcz, 1.0, 1.0, 0.8, FLAT);
+  b.bar("brass", new Vector3(cx, ballY + 0.7, fcz), new Vector3(cx, y1, fcz), 0.02);
+  // Two trusses along the vault, each carrying four lines of colour that alternate with the other's.
+  const tz0 = z0 + 4, tz1 = z1 - 4, segments = 4, length = (tz1 - tz0) / segments;
+  for (const side of [-1, 1]) {
+    const x = cx + side * 4.5, y = y1 - 0.9;
+    b.bar("brass", new Vector3(x, y, tz0), new Vector3(x, y, tz1), 0.05);
+    for (let i = 0; i < segments; i++) {
+      b.box((i + (side > 0 ? 0 : 1)) % 2 === 0 ? "light" : "blue", x, y - 0.06, tz0 + length * (i + 0.5), 0.07, 0.05, length - 0.6);
+    }
+    for (let z = tz0; z <= tz1 + 0.01; z += 10) b.bar("brass", new Vector3(x, y, z), new Vector3(x, y1, z), 0.015);
+  }
+  // The bar down the east wall, south of the foyer door: counter, foot rail, stools, and a lit back-bar case.
+  const bz0 = z1 - 22, bz1 = z1 - 13, bcz = (bz0 + bz1) / 2, blen = bz1 - bz0, bx = x1 - 1.9;
+  b.box("stone", bx, y0 + 0.55, bcz, 0.7, 1.1, blen);
+  b.box("brass", bx, y0 + 1.12, bcz, 0.85, 0.04, blen + 0.1);
+  b.box("inset", bx - 0.36, y0 + 0.5, bcz, 0.02, 0.9, blen - 0.2);
+  b.bar("brass", new Vector3(bx - 0.5, y0 + 0.22, bz0), new Vector3(bx - 0.5, y0 + 0.22, bz1), 0.02);
+  for (let z = bz0 + 0.9; z < bz1 - 0.5; z += 1.5) {
+    b.add("column", "stone", bx - 1.1, y0 + 0.36, z, 0.17, 0.72, 0.17);
+    b.add("column", "brass", bx - 1.1, y0 + 0.73, z, 0.19, 0.02, 0.19);
+  }
+  b.box("inset", x1 - 0.45, y0 + 1.9, bcz, 0.4, 2.6, blen);
+  for (const y of [y0 + 1.3, y0 + 2.2, y0 + 3.0]) b.box("light", x1 - 0.5, y, bcz, 0.25, 0.03, blen - 0.4);
+  // Booths along the west wall: a bench, a table on a brass stem, a lamp hung over it.
+  for (let z = z1 - 14; z > fz1 + 3; z -= 6) {
+    const x = x0 + 1.0;
+    b.box("stone", x, y0 + 0.25, z, 0.6, 0.5, 3.0);
+    b.box("inset", x + 0.05, y0 + 0.6, z, 0.5, 0.2, 3.0);
+    b.add("column", "brass", x + 1.3, y0 + 0.4, z, 0.06, 0.8, 0.06);
+    b.add("column", "stone", x + 1.3, y0 + 0.81, z, 0.55, 0.03, 0.55);
+    b.box("light", x + 1.3, y0 + 1.5, z, 0.16, 0.22, 0.16);
+    b.bar("brass", new Vector3(x + 1.3, y0 + 1.62, z), new Vector3(x + 1.3, y1, z), 0.012);
+  }
+  // The DJ's desk beside the stage on the west, facing the floor across the apron, and a wall of sound behind it.
+  const dx = x0 + 2.2, dz = z0 + 4.5;
+  b.add("box", "stone", dx, y0 + 0.5, dz, 3.2, 1.0, 0.9, ALONG_Z);
+  b.add("box", "brass", dx, y0 + 1.02, dz, 3.3, 0.04, 1.0, ALONG_Z);
+  b.add("box", "light", dx + 0.47, y0 + 0.5, dz, 3.0, 0.05, 0.02, ALONG_Z);
+  for (const z of [dz - 2.2, dz + 2.2]) {
+    b.box("inset", x0 + 0.75, y0 + 1.2, z, 1.1, 2.4, 1.4);
+    for (const y of [y0 + 0.5, y0 + 1.2, y0 + 1.9]) b.add("ring", "blue", x0 + 1.32, y, z, 0.42, 0.42, 0.6, ALONG_Z);
+  }
+  // Speaker stacks at the stage's mouth, and the proscenium's frame, which the plain surrounds skip for so wide an opening.
+  const stage = room.doorways.find(d => d.width > 8);
+  if (stage) {
+    const top = b.doorBase(stage) + stage.height, half = stage.width / 2;
+    // The apron's flight stands in front of the frame: its strips start above the parapet.
+    const apron = b.doorBase(stage) - y0 + 0.95 + 0.1;
+    for (const side of [-1, 1]) {
+      const x = cx + side * (half + 2.2), z = z0 + 1.2;
+      b.box("inset", x, y0 + 1.5, z, 1.6, 3.0, 1.6);
+      b.box("brass", x, y0 + 3.02, z, 1.7, 0.04, 1.7);
+      for (const y of [y0 + 0.6, y0 + 1.5, y0 + 2.4]) b.add("ring", "blue", x, y, z + 0.81, 0.5, 0.5, 0.6);
+      b.box("stone", cx + side * (half + 0.85), (y0 + top) / 2, z0 + 0.3, 0.7, top - y0, 0.5);
+      b.box("light", cx + side * (half + 0.47), (y0 + apron + top) / 2, z0 + 0.3, 0.05, top - y0 - apron, 0.05);
+    }
+    b.box("stone", cx, top + 0.35, z0 + 0.3, stage.width + 2.4, 0.7, 0.5);
+    b.box("neon", cx, top + 0.02, z0 + 0.32, stage.width + 0.2, 0.05, 0.05);
+  }
+}
+
+/**
+ * The stage: footlights along its edge, the singer's
+ * microphone stand, a dark word wall at the back framed in neon (the lyrics'
+ * place when the karaoke link exists), and a short truss of cans.
+ */
+function stageFittings(b: Builder): void {
+  const room = b.room, [x0, y0, z0] = room.bounds.min, [x1, y1, z1] = room.bounds.max;
+  const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, width = x1 - x0;
+  b.box("brass", cx, y0 + 0.05, z1 - 0.25, width - 2.4, 0.1, 0.2);
+  b.box("light", cx, y0 + 0.11, z1 - 0.25, width - 2.6, 0.03, 0.12);
+  b.add("column", "brass", cx, y0 + 0.02, cz + 0.5, 0.25, 0.04, 0.25);
+  b.add("column", "brass", cx, y0 + 0.8, cz + 0.5, 0.02, 1.6, 0.02);
+  b.add("column", "stone", cx, y0 + 1.62, cz + 0.5, 0.05, 0.14, 0.05);
+  b.box("inset", cx, y0 + 2.3, z0 + 0.42, width - 4, 3.0, 0.08);
+  for (const y of [y0 + 0.75, y0 + 3.85]) b.box("neon", cx, y, z0 + 0.42, width - 3.8, 0.05, 0.05);
+  for (const side of [-1, 1]) b.box("neon", cx + side * (width / 2 - 1.9), y0 + 2.3, z0 + 0.42, 0.05, 3.15, 0.05);
+  const trussY = y1 - 1.0, trussZ = z1 - 1.5, reach = width / 2 - 1.8;
+  b.bar("brass", new Vector3(cx - reach, trussY, trussZ), new Vector3(cx + reach, trussY, trussZ), 0.05);
+  for (let i = 0; i < 5; i++) {
+    const x = cx - reach + 0.4 + (2 * reach - 0.8) * i / 4;
+    b.box("brass", x, trussY - 0.25, trussZ, 0.22, 0.3, 0.22);
+    b.box(i % 2 === 0 ? "light" : "blue", x, trussY - 0.42, trussZ, 0.18, 0.04, 0.18);
+  }
+}
+
+/** The foyer: a cloakroom counter along the south wall, and lanterns either side of the club's door. */
+function foyerFittings(b: Builder): void {
+  const room = b.room, [x0, y0, z0] = room.bounds.min, [x1] = room.bounds.max;
+  const cx = (x0 + x1) / 2;
+  b.box("stone", cx, y0 + 0.55, z0 + 1.0, 8, 1.1, 0.7);
+  b.box("brass", cx, y0 + 1.12, z0 + 1.0, 8.1, 0.04, 0.85);
+  // Close beside the door's surround: further out stands the north wall on one side and the stair's cheek on the other.
+  const door = room.doorways.find(d => d.to === "club");
+  if (door) for (const side of [-1, 1]) lantern(b, x0 + 0.6, door.center + side * (door.width / 2 + 0.6));
 }
 
 /**
@@ -857,6 +1053,7 @@ function gameTables(b: Builder): void {
 
 export function buildObservatory(room: Room, mansion: Mansion | null = null): RoomShell {
   if (mansion) ensureLightField(mansion);
+  followPulse(room);
   const b = plan(room, mansion);
   const group = b.finish();
   return {

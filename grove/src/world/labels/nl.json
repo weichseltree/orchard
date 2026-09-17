@@ -207,6 +207,24 @@
       "intro": "Hier hebt u de grootte van een cel. De episode van de leraar speelt zich om u heen af: het bronraster staat aan één kant, het antwoordkader vult zich onder uw voeten cel voor cel, het palet is een rij verlichte stenen, en de cursor is een lichtzuil die komt en gaat. Boven u hangen de lagen van het zicht van de agent als glazen vloeren, de laagste scherp en klein, elke laag erboven twee keer zo breed en twee keer zo vaag, tot de bovenste alles bedekt en bijna niets zegt. Spoel de tijd om de kleur van het palet naar de cel te zien reizen.",
       "lookFor": "Sta op het antwoordkader en kijk omhoog door de lagen terwijl de cursor passeert; het scherpe venster volgt hem.",
       "limit": "Dit is de episode van de leraar, niet die van een getrainde agent, en de schaal is een middel om te kijken; de agent ziet het canvas nooit als een plaats."
+    },
+    "foyer": {
+      "title": "foyer",
+      "kicker": "Wie komt de deur voorbij?",
+      "intro": "De trap uit de zaal van world-engine komt uit in de foyer van de kelder. Twee deuren leiden verder: de club, die alleen opengaat voor een bezoeker met microfoon en geluid aan, en daarachter een podium alleen voor VR-brillen. De aanbiedingen op uw scherm zetten beide aan.",
+      "lookFor": "De messing leuning van de lange trap en de lantaarns naast de clubdeur: ze branden warm, terwijl de kleuren van de club zelf koud zijn."
+    },
+    "club": {
+      "title": "club",
+      "kicker": "Hoe luid is een gewelfde kelder?",
+      "intro": "Een club onder de noordvleugel: een laag gewelf, een dansvloer van verlichte tegels, een bar langs de oostmuur, zitjes langs de westmuur, een podium aan het einde. De muziek wordt een livestream; tot die speelt, ademen de lichten uit zichzelf.",
+      "lookFor": "De spiegelbol boven de vloer en de twee kleurlijnen langs het gewelf; ze pulseren mee met de muziek, als er muziek is."
+    },
+    "stage": {
+      "title": "podium",
+      "kicker": "Wie zingt er?",
+      "intro": "Een trede boven de vloer, omlijst door het proscenium en van voren belicht. Het podium is voor zangers met een VR-bril: het gaat alleen open voor een immersieve sessie, en wie die verlaat staat weer op de vloer. Karaoke zal van hieruit lopen zodra de spraakverbinding bestaat.",
+      "lookFor": "De microfoonstandaard in het midden en het voetlicht langs de rand: de zanger staat waar de twee lijnen van de vloer samenkomen."
     }
   },
   "exhibits": {
