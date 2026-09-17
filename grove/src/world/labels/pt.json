@@ -117,8 +117,9 @@
     "club": {
       "title": "clube",
       "kicker": "Quanto soa uma cave abobadada?",
-      "intro": "Um clube sob a ala norte: uma abóbada baixa, uma pista de dança de lajes iluminadas, um bar ao longo da parede leste, reservados ao longo da oeste, um palco ao fundo. A música será uma emissão em directo; até tocar, as luzes respiram por si.",
-      "lookFor": "A bola de espelhos sobre a pista e as duas linhas de cor ao longo da abóbada; pulsam com a música quando há música."
+      "intro": "Um clube sob a ala norte: uma abóbada baixa, uma pista de dança de lajes iluminadas, um bar ao longo da parede leste, reservados ao longo da oeste, um palco ao fundo. O que toca é a emissão própria da pista, um set calculado na máquina do palácio e transmitido em directo, de modo que todos os visitantes ouvem a mesma batida com poucos segundos de diferença entre si. As luzes seguem os seus graves; quando a pista se cala, respiram por si. A porta pede microfone e som, para que falar e cantar possam funcionar aqui assim que a ligação de voz existir.",
+      "lookFor": "A bola de espelhos sobre a pista e as duas linhas de cor ao longo da abóbada; pulsam com a música quando há música.",
+      "limit": "O set é composto por um programa de semente fixa, não por uma pessoa; nada aqui é uma afirmação sobre música, e o codificador pára quando o clube está vazio."
     },
     "stage": {
       "title": "palco",
@@ -306,6 +307,10 @@
     "arcedit.inside.canvas": {
       "title": "A tela à escala de uma célula",
       "caption": "O professor programado copia uma grelha multicolorida de cinco por cinco em 114 cliques: à paleta, à célula, de volta à paleta. Mostra a tarefa pelo programa que a define; nenhum agente treinado resolve ainda a cópia multicolorida."
+    },
+    "club-floor": {
+      "title": "A pista",
+      "caption": "O set próprio do clube, feito na máquina do palácio a partir de uma semente e trazido aqui como emissão em directo: bombo, baixo, pratos e uma camada de fundo que mudam a cada oito compassos. Nada fica gravado; quando o último visitante sai, o codificador pára e a pista fica em silêncio."
     }
   }
 }

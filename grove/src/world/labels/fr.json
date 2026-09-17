@@ -117,8 +117,9 @@
     "club": {
       "title": "club",
       "kicker": "Quel bruit fait une cave voûtée ?",
-      "intro": "Un club sous l'aile nord : une voûte basse, une piste de danse en dalles lumineuses, un bar le long du mur est, des alcôves le long du mur ouest, une scène au fond. La musique sera un flux en direct ; tant qu'elle ne joue pas, les lumières respirent d'elles-mêmes.",
-      "lookFor": "La boule à facettes au-dessus de la piste et les deux lignes de couleur le long de la voûte ; elles battent avec la musique quand il y a de la musique."
+      "intro": "Un club sous l'aile nord : une voûte basse, une piste de danse en dalles lumineuses, un bar le long du mur est, des alcôves le long du mur ouest, une scène au fond. Ce qui joue est le flux propre de la piste, un set calculé sur la machine du palais et transmis en direct, de sorte que tous les visiteurs entendent le même battement à quelques secondes près les uns des autres. Les lumières suivent ses graves ; quand la piste est silencieuse, elles respirent d'elles-mêmes. La porte demande un microphone et le son, pour que parler et chanter puissent fonctionner ici dès que la liaison vocale existera.",
+      "lookFor": "La boule à facettes au-dessus de la piste et les deux lignes de couleur le long de la voûte ; elles battent avec la musique quand il y a de la musique.",
+      "limit": "Le set est composé par un programme à graine fixe, non par une personne ; rien ici n'est une affirmation sur la musique, et l'encodeur s'arrête quand le club est vide."
     },
     "stage": {
       "title": "scène",
@@ -306,6 +307,10 @@
     "arcedit.inside.canvas": {
       "title": "La toile à l'échelle d'une cellule",
       "caption": "Le professeur scripté copie une grille multicolore de cinq sur cinq en 114 clics : vers la palette, vers la cellule, retour à la palette. C'est la tâche montrée par le programme qui la définit ; aucun agent entraîné ne résout encore la copie multicolore."
+    },
+    "club-floor": {
+      "title": "La piste",
+      "caption": "Le set propre du club, produit sur la machine du palais à partir d'une graine et porté ici en flux direct : grosse caisse, basse, charleston et une nappe qui changent toutes les huit mesures. Rien n'est enregistré ; quand le dernier visiteur s'en va, l'encodeur s'arrête et la piste se tait."
     }
   }
 }
