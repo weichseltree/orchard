@@ -31,8 +31,9 @@
     "orangery": {
       "title": "orangerie",
       "kicker": "Lasci viaggiare lo sguardo.",
-      "intro": "L'orangerie collega la sala di world-engine alla terrazza. È un luogo tra le opere: segua le porte aperte, guardi verso le sale, o esca sotto il cielo. In fondo c'è un tavolo da scacchi: si avvicini per giocare, o apra la partita dalla Guida.",
-      "lookFor": "Le tre porte sul lato del giardino danno tutte sulla terrazza."
+      "intro": "L'orangerie collega la sala di world-engine alla terrazza. È un luogo tra le opere: segua le porte aperte, guardi verso le sale, o esca sotto il cielo. In fondo c'è un tavolo da scacchi: si avvicini per giocare, o apra la partita dalla Guida. Sei orbitali stanno lungo la sala, ciascuno su un plinto la cui altezza è la sua stessa energia, a nove decimi di metro per Hartree. Il secondo e il terzo stanno alla stessa altezza perché hanno la stessa energia, e la densità che tutti insieme compongono sta poco più in là.",
+      "lookFor": "Le tre porte sul lato del giardino danno tutte sulla terrazza.",
+      "limit": "Sono elettroni non interagenti in una buca scelta da noi, non una molecola misurata; i colori sono densità di energia cinetica e non qualcosa che una macchina fotografica potrebbe riprendere."
     },
     "court-north": {
       "title": "corte nord",
@@ -222,38 +223,44 @@
     "quantumflow": {
       "title": "quantumflow",
       "kicker": "Perché un elettrone assume soltanto certe energie?",
-      "intro": "Questo è il poligono. Girate la manopola e un'onda parte dalla parete vicina, tastando la sala. A quasi ogni impostazione si disperde prima di raggiungere la parete lontana. In poche si distende piatta. Quelle poche non le ha scelte nessuno.",
-      "lookFor": "Le poche impostazioni in cui l'onda resta piatta invece di disperdersi."
+      "intro": "Questo è il poligono. Girate la manopola e un'onda parte dalla parete vicina, tastando la sala. A quasi ogni impostazione si disperde prima di raggiungere la parete lontana. In poche si distende piatta. Quelle poche non le ha scelte nessuno. Il nastro sul suo sostegno è l'esperimento stesso. Trascinate la barra e attraversate in ordine le energie di prova; all'estremità lontana l'onda si strappa verso l'alto quasi a ognuna di esse, e solo pochissime la lasciano posare. Tutto ciò che vedete qui è stato calcolato, non disposto a mano.",
+      "lookFor": "Le poche impostazioni in cui l'onda resta piatta invece di disperdersi.",
+      "limit": "La barra è energia di prova, non tempo. Nulla in questo nastro si muove; ogni fotogramma è un tentativo a sé, mostrato in ordine crescente."
     },
     "quantumflow/cloud": {
       "title": "La nube",
       "kicker": "Sei onde entrano e una nube esce: che cosa si perde?",
-      "intro": "Gli orbitali arrivano ciascuno con un proprio colore e una propria forma. Vengono sommati, e i colori sbiadiscono in un'unica nube pallida. Tutto ciò che quei sei sapevano è ancora qui dentro, e la parete dietro lo dimostrerà.",
-      "lookFor": "L'istante in cui i colori svaniscono, e la buca di potenziale che poi si riforma sulla parete."
+      "intro": "Gli orbitali arrivano ciascuno con un proprio colore e una propria forma. Vengono sommati, e i colori sbiadiscono in un'unica nube pallida. Tutto ciò che quei sei sapevano è ancora qui dentro, e la parete dietro lo dimostrerà. La densità sta qui come un rilievo, nelle valli della buca che l'ha fatta. Attraverso il portale potete stare dentro quella stessa nube, a un decimo di questa scala, dove nulla intorno a voi è mai vuoto. Tutto ciò che vedete qui è stato calcolato, non disposto a mano.",
+      "lookFor": "L'istante in cui i colori svaniscono, e la buca di potenziale che poi si riforma sulla parete.",
+      "limit": "Ogni guscio contiene una quota dichiarata degli elettroni, misurata sulla griglia risolta. L'insieme occupato è un guscio intero, e perciò la nube non dipende da una scelta."
     },
     "quantumflow/bowl": {
       "title": "La ciotola",
       "kicker": "Come si trova il punto più basso di un paesaggio che non si vede?",
-      "intro": "Due superfici stanno una accanto all'altra. Una è una ciotola: ovunque cominciate, scendere porta all'unico punto più basso. L'altra è bitorzoluta, e scendere può lasciarvi in una conca che non è il fondo. Di una sola ci si può fidare.",
-      "lookFor": "Le conche della seconda superficie che non sono il suo punto più basso."
+      "intro": "Due superfici stanno una accanto all'altra. Una è una ciotola: ovunque cominciate, scendere porta all'unico punto più basso. L'altra è bitorzoluta, e scendere può lasciarvi in una conca che non è il fondo. Di una sola ci si può fidare. Due superfici stanno una accanto all'altra, la stessa rete e lo stesso seme, con un solo vincolo tolto. Nastri verdi segnano le corde che tengono e rossi quelle che cedono, e potete contarle dal punto in cui vi trovate. Tutto ciò che vedete qui è stato calcolato, non disposto a mano.",
+      "lookFor": "Le conche della seconda superficie che non sono il suo punto più basso.",
+      "limit": "La sezione nello spazio delle densità è dritta, ed è proprio questo che permette all'immagine di valere come prova. Nessuna delle due reti è addestrata; la garanzia sta in come una è costruita."
     },
     "quantumflow/inversion": {
       "title": "L'inversione",
       "kicker": "La nube da sola rivela le forze che l'hanno formata?",
-      "intro": "Qui la tesi viene messa alla prova. Su una parete la buca di potenziale in cui l'elettrone stava davvero. Sull'altra la buca ricostruita dalla sola nube, senza mai vedere le onde. In mezzo pende la differenza, a grandezza naturale, per quanto grande risulti essere.",
-      "lookFor": "Lo scarto fra le due buche, che è l'intera misura della tesi."
+      "intro": "Qui la tesi viene messa alla prova. Su una parete la buca di potenziale in cui l'elettrone stava davvero. Sull'altra la buca ricostruita dalla sola nube, senza mai vedere le onde. In mezzo pende la differenza, a grandezza naturale, per quanto grande risulti essere. Qui non pende ancora nulla se non l'equazione. Il numero per cui questa sala è costruita non è stato misurato: il funzionale è implementato e provato, e non è ancora stato addestrato contro l'insieme di riferimento.",
+      "lookFor": "Lo scarto fra le due buche, che è l'intera misura della tesi.",
+      "limit": "Questa sala avanza una tesi che non può ancora sostenere con un numero. Se la ricostruzione fallisce, il risultato pende qui come negativo, con la sua cifra sulla targa."
     },
     "quantumflow/flow": {
       "title": "Il flusso",
       "kicker": "Che cosa è accaduto quando il progetto ha aggiunto una regola di cui era certo che avrebbe aiutato?",
-      "intro": "Una nube di particelle viene portata da dove parte a dove deve finire. Il progetto ha aggiunto un vincolo in cui credeva per buone ragioni, e ha misurato che peggiorava il viaggio a ogni intensità provata. La curva accanto al flusso è quel risultato.",
-      "lookFor": "La curva sulla parete, che sale dove dovrebbe scendere."
+      "intro": "Una nube di particelle viene portata da dove parte a dove deve finire. Il progetto ha aggiunto un vincolo in cui credeva per buone ragioni, e ha misurato che peggiorava il viaggio a ogni intensità provata. La curva accanto al flusso è quel risultato. Il nastro porta quattromila particelle da dove partono a dove devono finire, sotto la condizione di base su cui nulla è stato promosso. L'equazione accanto nomina il vincolo che non ha reso quel che prometteva. Tutto ciò che vedete qui è stato calcolato, non disposto a mano.",
+      "lookFor": "La curva sulla parete, che sale dove dovrebbe scendere.",
+      "limit": "L'altezza di questo flusso è un potenziale fissato solo a meno di uno scarto, e due flussi di prove diverse non si possono quindi confrontare per altezza. Per questo qui ne pende uno solo."
     },
     "quantumflow/inside": {
       "title": "Dentro la nube",
       "kicker": "Che aspetto ha un singolo orbitale elettronico visto da dentro?",
-      "intro": "Ora siete grandi come la nube. La foschia intorno a voi è un orbitale, disegnato dove la sua onda è più intensa. Vicino al centro c'è una superficie che non potete attraversare, perché lì l'onda è esattamente nulla.",
-      "lookFor": "La superficie che non potete attraversare, dove l'onda scende a zero."
+      "intro": "Ora siete grandi come la nube. La foschia intorno a voi è un orbitale, disegnato dove la sua onda è più intensa. Vicino al centro c'è una superficie che non potete attraversare, perché lì l'onda è esattamente nulla. Siete passati attraverso il portale, a un decimo della scala del palazzo. L'equazione sulla parete è tutto ciò per cui questa sala esiste: un'onda può svanire dove la nube a cui appartiene non svanisce affatto. Tutto ciò che vedete qui è stato calcolato, non disposto a mano.",
+      "lookFor": "La superficie che non potete attraversare, dove l'onda scende a zero.",
+      "limit": "La nube stessa non è ancora modellata qui; ciò che sta qui è l'enunciato su cui essa poggia. Una somma di onde che svaniscono ciascuna da qualche parte non deve svanire in nessun punto."
     }
   },
   "exhibits": {
@@ -380,6 +387,86 @@
     "arcedit.inside.canvas": {
       "title": "La tela alla scala di una cella",
       "caption": "Il maestro programmato copia una griglia multicolore cinque per cinque in 114 clic: alla tavolozza, alla cella, di nuovo alla tavolozza. Mostra il compito tramite il programma che lo definisce; nessun agente addestrato risolve ancora la copia multicolore."
+    },
+    "quantumflow.orbital.0": {
+      "title": "Lo stato fondamentale",
+      "caption": "Lo stato più basso che un'onda può assumere in questa buca. Un solo lobo, nessun nodo da nessuna parte, la curvatura minima: oro dove l'onda è positiva, e la sua altezza qui è la sua energia. Risolto su quarantotto punti per asse; il colore è la densità di energia cinetica."
+    },
+    "quantumflow.orbital.1": {
+      "title": "Il primo stato eccitato",
+      "caption": "Una superficie nodale, dove l'onda passa esattamente per il nulla e i due colori si incontrano. Quella superficie costa energia, ed è per questo che questo stato sta più in alto del precedente. Risolto su quarantotto punti per asse; il colore è la densità di energia cinetica."
+    },
+    "quantumflow.orbital.2": {
+      "title": "Il secondo stato",
+      "caption": "Uno di una coppia degenere: divide la sua energia esattamente con il vicino, e per questo i due stanno alla stessa altezza. La sua forma è misurata; la direzione in cui punta è una scelta. Risolto su quarantotto punti per asse; il colore è la densità di energia cinetica."
+    },
+    "quantumflow.orbital.3": {
+      "title": "Il terzo stato",
+      "caption": "Il gemello di quello accanto, alla stessa energia fino alla dodicesima cifra. La stessa forma, girata. Da che parte guardi ciascuno dei due, non lo decide questa buca. Risolto su quarantotto punti per asse; il colore è la densità di energia cinetica."
+    },
+    "quantumflow.orbital.4": {
+      "title": "Il quarto stato",
+      "caption": "Più nodi degli stati sottostanti, e con essi più curvatura. Le bande chiare si stringono alle superfici nodali, perché è lì che un'onda si piega di più ed è lì che si raccoglie l'energia cinetica. Risolto su quarantotto punti per asse; il colore è la densità di energia cinetica."
+    },
+    "quantumflow.orbital.5": {
+      "title": "Il quinto stato",
+      "caption": "Il più alto dei sei occupati, con il maggior numero di nodi e la curvatura più grande. Ogni nodo sotto di lui è stato pagato in energia, e questo è il totale corrente. Risolto su quarantotto punti per asse; il colore è la densità di energia cinetica."
+    },
+    "quantumflow.density.shells": {
+      "title": "La densità",
+      "caption": "Tutte e sei le onde, elevate al quadrato e sommate. Le tre superfici contengono la metà, quattro quinti e diciannove ventesimi degli elettroni; ognuna è misurata sulla griglia risolta, non scelta per l'aspetto. Ogni numero qui viene dalla griglia risolta e non da una scelta di forma."
+    },
+    "quantumflow.potential.relief": {
+      "title": "La buca",
+      "caption": "La buca stessa, stesa come un terreno attorno a cui camminare. In questa sala non è entrato altro: ogni forma che sta qui è stata risolta da questa sola superficie e da nient'altro. Ogni numero qui viene dalla griglia risolta e non da una scelta di forma."
+    },
+    "quantumflow.density.relief": {
+      "title": "La nube nelle valli",
+      "caption": "La stessa nube di nuovo, distesa nelle valli della buca che l'ha fatta. Dove il terreno sprofonda gli elettroni si raccolgono, e dove sale si diradano fino a nulla. Ogni numero qui viene dalla griglia risolta e non da una scelta di forma."
+    },
+    "quantumflow.bowl.convex": {
+      "title": "La ciotola che non può fallire",
+      "caption": "Costruita perché questo non possa fallire: ogni corda fra due punti della superficie le sta sopra. Quattromila corde casuali sono state provate in doppia precisione e nemmeno una è risultata negativa. Quattromila corde in doppia precisione, per entrambe le superfici lo stesso seme di partenza."
+    },
+    "quantumflow.bowl.unconstrained": {
+      "title": "La stessa rete, senza vincolo",
+      "caption": "La stessa rete, lo stesso seme, un vincolo tolto. Novantatré delle stesse corde ora tagliano sotto la superficie, e le conche in cui cadono si vedono da un capo all'altro della sala. Quattromila corde in doppia precisione, per entrambe le superfici lo stesso seme di partenza."
+    },
+    "quantumflow.tape.shooting": {
+      "title": "La quantizzazione, trovata a mano",
+      "caption": "Scorrendolo si gira una manopola dell'energia, non un orologio: ogni fotogramma è un tentativo sull'energia, in ordine. A quasi ogni tentativo l'onda scappa via alla parete lontana. Che cosa muova il cursore sta nel registro del nastro stesso, insieme alla scala."
+    },
+    "quantumflow.tape.flow": {
+      "title": "Il flusso e la sua calibrazione",
+      "caption": "Quattromila particelle portate da dove partono a dove devono finire. L'altezza è un potenziale fissato solo a meno di uno scarto, e due flussi non si possono quindi confrontare per altezza. Che cosa muova il cursore sta nel registro del nastro stesso, insieme alla scala."
+    },
+    "quantumflow.equation.orbitary": {
+      "title": "Una buca, un'onda, un'energia",
+      "caption": "Una buca, un'onda, un'energia. Ogni forma in questa sala è una soluzione di questa sola equazione, e ciascuna fluttua all'energia per cui è stata risolta, in una scala dichiarata. La sala che sta davanti è esattamente ciò di cui questa equazione parla."
+    },
+    "quantumflow.equation.gallery": {
+      "title": "Deve posarsi su entrambe le pareti",
+      "caption": "L'onda deve posarsi su entrambe le pareti insieme, e quasi nessuna energia glielo permette. Le poche che lo fanno non le ha scelte nessuno; sono ciò che la buca consente. La sala che sta davanti è esattamente ciò di cui questa equazione parla."
+    },
+    "quantumflow.equation.cloud": {
+      "title": "Ogni onda, al quadrato e sommata",
+      "caption": "Ogni onda, elevata al quadrato e sommata, una volta. Quella somma è tutto ciò che quest'ala dichiara sufficiente: se la nube porta tutto, le onde non andranno più guardate. La sala che sta davanti è esattamente ciò di cui questa equazione parla."
+    },
+    "quantumflow.equation.bowl": {
+      "title": "Mai sopra le proprie corde",
+      "caption": "Una superficie non sale mai sopra le proprie corde. È tutta qui la convessità, ed è l'unica proprietà di questa sala che potete verificare con l'occhio invece che prendere per buona. La sala che sta davanti è esattamente ciò di cui questa equazione parla."
+    },
+    "quantumflow.equation.inversion": {
+      "title": "La nube cede la buca",
+      "caption": "Se si percorre l'argomento all'indietro, la nube cede la buca che le ha dato forma. Su questa tesi è costruita l'intera ala, e il numero che la accompagna non è ancora misurato. La sala che sta davanti è esattamente ciò di cui questa equazione parla."
+    },
+    "quantumflow.equation.flow": {
+      "title": "Un pendio, e un vincolo su di esso",
+      "caption": "La massa segue un pendio, e il vincolo a destra chiede che quel pendio si curvi ovunque allo stesso modo. Il progetto aveva buone ragioni per crederlo utile. Non lo è stato. La sala che sta davanti è esattamente ciò di cui questa equazione parla."
+    },
+    "quantumflow.equation.inside": {
+      "title": "Nulla, dove la nube non lo è",
+      "caption": "Una singola onda può essere esattamente nulla in un punto dove la nube a cui appartiene non lo è. La somma conserva il totale e dimentica quale onda l'abbia pagato. La sala che sta davanti è esattamente ciò di cui questa equazione parla."
     }
   }
 }

@@ -534,7 +534,249 @@
           "height": 4.6
         }
       ],
-      "hangings": [],
+      "hangings": [
+        {
+          "id": "quantumflow.orbital.0",
+          "kind": "model",
+          "title": "The ground state: one lobe, no node anywhere, and the lowest energy a wave in this well can have",
+          "bundle": {
+            "exhibit": {
+              "tree": "quantumflow",
+              "kind": "model",
+              "bundle": "9f6d60e18af17223"
+            },
+            "id": "9f6d60e18af17223"
+          },
+          "position": [
+            -5.5,
+            1.5,
+            -40.0
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "sizeMeters": 1.6,
+          "plinth": {
+            "heightMeters": 2.0
+          }
+        },
+        {
+          "id": "quantumflow.orbital.1",
+          "kind": "model",
+          "title": "The first excited state: one nodal surface, where the wave passes through nothing and the colours meet",
+          "bundle": {
+            "exhibit": {
+              "tree": "quantumflow",
+              "kind": "model",
+              "bundle": "b4eff3e1758ec294"
+            },
+            "id": "b4eff3e1758ec294"
+          },
+          "position": [
+            -5.5,
+            1.5,
+            -44.5
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "sizeMeters": 1.6,
+          "plinth": {
+            "heightMeters": 4.237
+          }
+        },
+        {
+          "id": "quantumflow.orbital.2",
+          "kind": "model",
+          "title": "The second state, one of a degenerate pair: its shape is measured, the direction it points is a choice",
+          "bundle": {
+            "exhibit": {
+              "tree": "quantumflow",
+              "kind": "model",
+              "bundle": "b5e9428c4280adf4"
+            },
+            "id": "b5e9428c4280adf4"
+          },
+          "position": [
+            -5.5,
+            1.5,
+            -49.0
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "sizeMeters": 1.6,
+          "plinth": {
+            "heightMeters": 4.895
+          }
+        },
+        {
+          "id": "quantumflow.orbital.3",
+          "kind": "model",
+          "title": "The third state, the twin of the second at the same energy: the same shape, turned",
+          "bundle": {
+            "exhibit": {
+              "tree": "quantumflow",
+              "kind": "model",
+              "bundle": "b0db573910499117"
+            },
+            "id": "b0db573910499117"
+          },
+          "position": [
+            -5.5,
+            1.5,
+            -53.5
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "sizeMeters": 1.6,
+          "plinth": {
+            "heightMeters": 4.895
+          }
+        },
+        {
+          "id": "quantumflow.orbital.4",
+          "kind": "model",
+          "title": "The fourth state: more nodes, more curvature, and the kinetic energy that every node costs",
+          "bundle": {
+            "exhibit": {
+              "tree": "quantumflow",
+              "kind": "model",
+              "bundle": "ecd5198a647ea6dc"
+            },
+            "id": "ecd5198a647ea6dc"
+          },
+          "position": [
+            -5.5,
+            1.5,
+            -58.0
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "sizeMeters": 1.6,
+          "plinth": {
+            "heightMeters": 6.349
+          }
+        },
+        {
+          "id": "quantumflow.orbital.5",
+          "kind": "model",
+          "title": "The fifth state, the highest occupied: the most nodes of the six and the price paid in energy",
+          "bundle": {
+            "exhibit": {
+              "tree": "quantumflow",
+              "kind": "model",
+              "bundle": "4c9d81c7f46f3e77"
+            },
+            "id": "4c9d81c7f46f3e77"
+          },
+          "position": [
+            -5.5,
+            1.5,
+            -62.5
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "sizeMeters": 1.6,
+          "plinth": {
+            "heightMeters": 7.0
+          }
+        },
+        {
+          "id": "quantumflow.density.shells",
+          "kind": "model",
+          "title": "The density: all six waves squared and added, as three shells holding half, four fifths and nineteen twentieths of the electrons",
+          "bundle": {
+            "exhibit": {
+              "tree": "quantumflow",
+              "kind": "model",
+              "bundle": "b090c770f18968ff"
+            },
+            "id": "b090c770f18968ff"
+          },
+          "position": [
+            5.0,
+            1.5,
+            -46.0
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "sizeMeters": 2.5,
+          "plinth": {
+            "heightMeters": 0.6
+          }
+        },
+        {
+          "id": "quantumflow.potential.relief",
+          "kind": "model",
+          "title": "The well itself, as a relief you walk around: the shape that made every wave in this room",
+          "bundle": {
+            "exhibit": {
+              "tree": "quantumflow",
+              "kind": "model",
+              "bundle": "d45054efde22173f"
+            },
+            "id": "d45054efde22173f"
+          },
+          "position": [
+            5.0,
+            1.5,
+            -56.0
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "sizeMeters": 3.2,
+          "plinth": {
+            "heightMeters": 0.7
+          }
+        },
+        {
+          "id": "quantumflow.equation.orbitary",
+          "kind": "still",
+          "title": "One well, one wave, one energy: the equation every shape in this room solves",
+          "bundle": {
+            "exhibit": {
+              "tree": "quantumflow",
+              "kind": "still",
+              "bundle": "15a99efa9ed3800b"
+            },
+            "id": "15a99efa9ed3800b"
+          },
+          "position": [
+            9.74,
+            4.2,
+            -45.0
+          ],
+          "rotationDeg": [
+            0,
+            -90,
+            0
+          ],
+          "widthMeters": 5.0,
+          "heightMeters": 2.1
+        }
+      ],
       "architecture": "observatory",
       "exposure": 1,
       "gameSurfaces": [
@@ -2909,7 +3151,69 @@
           "height": 4.6
         }
       ],
-      "hangings": [],
+      "hangings": [
+        {
+          "id": "quantumflow.tape.shooting",
+          "kind": "tape",
+          "title": "Quantization found by hand: one frame per trial energy, and at almost every one the wave blows up at the far wall",
+          "bundle": {
+            "exhibit": {
+              "tree": "quantumflow",
+              "kind": "tape",
+              "bundle": "398220f48be7b55d"
+            },
+            "id": "398220f48be7b55d"
+          },
+          "position": [
+            31.0,
+            3.4,
+            -55.0
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "longSideMeters": 9.5,
+          "pedestal": {
+            "position": [
+              27.0,
+              1.5,
+              -55.0
+            ],
+            "rotationDeg": [
+              0,
+              -90,
+              0
+            ]
+          }
+        },
+        {
+          "id": "quantumflow.equation.gallery",
+          "kind": "still",
+          "title": "The wave must land on both walls, and almost no energy lets it",
+          "bundle": {
+            "exhibit": {
+              "tree": "quantumflow",
+              "kind": "still",
+              "bundle": "07af20e2e4a7e173"
+            },
+            "id": "07af20e2e4a7e173"
+          },
+          "position": [
+            20.0,
+            4.0,
+            -69.74
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "widthMeters": 5.0,
+          "heightMeters": 2.1
+        }
+      ],
       "portals": [],
       "exposure": 1
     },
@@ -2960,7 +3264,60 @@
           "height": 4.6
         }
       ],
-      "hangings": [],
+      "hangings": [
+        {
+          "id": "quantumflow.density.relief",
+          "kind": "model",
+          "title": "The same density lying in the valleys of the well that produced it",
+          "bundle": {
+            "exhibit": {
+              "tree": "quantumflow",
+              "kind": "model",
+              "bundle": "2434867f7fe38567"
+            },
+            "id": "2434867f7fe38567"
+          },
+          "position": [
+            71.0,
+            1.5,
+            -55.0
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "sizeMeters": 3.2,
+          "plinth": {
+            "heightMeters": 0.7
+          }
+        },
+        {
+          "id": "quantumflow.equation.cloud",
+          "kind": "still",
+          "title": "Every wave, squared and added, once",
+          "bundle": {
+            "exhibit": {
+              "tree": "quantumflow",
+              "kind": "still",
+              "bundle": "fed9161c090fa54c"
+            },
+            "id": "fed9161c090fa54c"
+          },
+          "position": [
+            80.0,
+            4.0,
+            -69.74
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "widthMeters": 5.0,
+          "heightMeters": 2.1
+        }
+      ],
       "portals": [
         {
           "id": "quantumflow.portal.inside",
@@ -3030,7 +3387,87 @@
           "height": 4.6
         }
       ],
-      "hangings": [],
+      "hangings": [
+        {
+          "id": "quantumflow.bowl.convex",
+          "kind": "model",
+          "title": "The convex functional: a bowl by construction, where sliding downhill finds the one lowest point",
+          "bundle": {
+            "exhibit": {
+              "tree": "quantumflow",
+              "kind": "model",
+              "bundle": "eb7c9d93fc67b92b"
+            },
+            "id": "eb7c9d93fc67b92b"
+          },
+          "position": [
+            64.0,
+            1.5,
+            -87.0
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "sizeMeters": 1.8,
+          "plinth": {
+            "heightMeters": 0.9
+          }
+        },
+        {
+          "id": "quantumflow.bowl.unconstrained",
+          "kind": "model",
+          "title": "The same network without the constraint: a lumpy surface with hollows that are not the bottom",
+          "bundle": {
+            "exhibit": {
+              "tree": "quantumflow",
+              "kind": "model",
+              "bundle": "5cccc13ab0970a17"
+            },
+            "id": "5cccc13ab0970a17"
+          },
+          "position": [
+            78.0,
+            1.5,
+            -87.0
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "sizeMeters": 1.8,
+          "plinth": {
+            "heightMeters": 0.9
+          }
+        },
+        {
+          "id": "quantumflow.equation.bowl",
+          "kind": "still",
+          "title": "The surface never rises above its own chords",
+          "bundle": {
+            "exhibit": {
+              "tree": "quantumflow",
+              "kind": "still",
+              "bundle": "749065d79d685160"
+            },
+            "id": "749065d79d685160"
+          },
+          "position": [
+            71.0,
+            4.0,
+            -103.74
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "widthMeters": 5.0,
+          "heightMeters": 2.1
+        }
+      ],
       "portals": [],
       "exposure": 1
     },
@@ -3081,7 +3518,33 @@
           "height": 4.6
         }
       ],
-      "hangings": [],
+      "hangings": [
+        {
+          "id": "quantumflow.equation.inversion",
+          "kind": "still",
+          "title": "Run it backwards: the cloud gives up the well",
+          "bundle": {
+            "exhibit": {
+              "tree": "quantumflow",
+              "kind": "still",
+              "bundle": "1988c68ca85f254b"
+            },
+            "id": "1988c68ca85f254b"
+          },
+          "position": [
+            31.0,
+            4.0,
+            -103.74
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "widthMeters": 5.0,
+          "heightMeters": 2.1
+        }
+      ],
       "portals": [],
       "exposure": 1
     },
@@ -3132,7 +3595,69 @@
           "height": 4.6
         }
       ],
-      "hangings": [],
+      "hangings": [
+        {
+          "id": "quantumflow.tape.flow",
+          "kind": "tape",
+          "title": "Four thousand particles carried from where they start to where they must end, by the baseline that nothing was promoted over",
+          "bundle": {
+            "exhibit": {
+              "tree": "quantumflow",
+              "kind": "tape",
+              "bundle": "34da82de8db236df"
+            },
+            "id": "34da82de8db236df"
+          },
+          "position": [
+            31.0,
+            4.4,
+            -30.0
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "longSideMeters": 7.0,
+          "pedestal": {
+            "position": [
+              31.0,
+              1.5,
+              -34.0
+            ],
+            "rotationDeg": [
+              0,
+              180,
+              0
+            ]
+          }
+        },
+        {
+          "id": "quantumflow.equation.flow",
+          "kind": "still",
+          "title": "Mass follows a slope; the penalty asks that slope to curve evenly",
+          "bundle": {
+            "exhibit": {
+              "tree": "quantumflow",
+              "kind": "still",
+              "bundle": "82be846057010bfc"
+            },
+            "id": "82be846057010bfc"
+          },
+          "position": [
+            31.0,
+            4.0,
+            -20.26
+          ],
+          "rotationDeg": [
+            0,
+            180,
+            0
+          ],
+          "widthMeters": 5.0,
+          "heightMeters": 2.1
+        }
+      ],
       "portals": [],
       "exposure": 1
     },
@@ -3167,7 +3692,33 @@
         "yawDeg": 0
       },
       "doorways": [],
-      "hangings": [],
+      "hangings": [
+        {
+          "id": "quantumflow.equation.inside",
+          "kind": "still",
+          "title": "A wave can be nothing where the cloud it belongs to is not",
+          "bundle": {
+            "exhibit": {
+              "tree": "quantumflow",
+              "kind": "still",
+              "bundle": "89d866f34e184991"
+            },
+            "id": "89d866f34e184991"
+          },
+          "position": [
+            440.0,
+            6.0,
+            -159.5
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "widthMeters": 24.0,
+          "heightMeters": 10.1
+        }
+      ],
       "portals": [],
       "exposure": 1
     }

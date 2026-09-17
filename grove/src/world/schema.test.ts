@@ -210,7 +210,10 @@ describe("BundleRefSchema", () => {
         if (hanging.kind === "audio") continue;
         // The hall's wall shows coarsen's film; the Orrery's worlds are spectre's.
         // A room of a tree's area ("arcedit/results/grove") shows its tree's.
-        const guest: Record<string, string> = { hall: "spectre", orrery: "spectre" };
+        // The orangery is the palace's own room, and quantumflow's Orbitary
+        // hangs in it: Manuel's ruling of 2026-09-17 put the wing's main models
+        // in the glass house rather than behind its own door.
+        const guest: Record<string, string> = { hall: "spectre", orrery: "spectre", orangery: "quantumflow" };
         expect(hanging.bundle.exhibit?.tree).toBe(guest[room.id] ?? room.id.split("/")[0]);
         expect(hanging.bundle.exhibit?.kind).toBe(hanging.kind);
         expect(hanging.bundle.id).toMatch(/^[0-9a-f]{16}$/);
