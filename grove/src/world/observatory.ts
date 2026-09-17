@@ -908,8 +908,10 @@ function grounds(b: Builder): void {
     path(b, cx, cz, 5.2, depth);
     // ...and a cross walk out to the gate in the side wall, so the paving
     // starts at the grove's edge rather than 2.4 m inside the lawn.
+    // Narrower than it is long, or path() would read it as the walk it
+    // crosses and lay its brass kerbs across the axis instead of along it.
     for (const gate of room.doorways.filter(d => d.axis === "x")) {
-      path(b, (gate.at + cx) / 2, gate.center, Math.abs(cx - gate.at), 5.2);
+      path(b, (gate.at + cx) / 2, gate.center, Math.abs(cx - gate.at), 4.8);
     }
     for (const wall of walls(room)) {
       const gaps = room.doorways

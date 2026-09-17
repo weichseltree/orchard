@@ -83,7 +83,9 @@ describe("the designed observatory", () => {
       expect(above.intersectObject(shell.group, true), `${room.id} arrival`).toEqual([]);
       // A post the visitor lands inside is parallel to that ray and misses
       // it: a lamp on a court's centre line stood in the eye and the test
-      // passed (2026-09-17). Sweep the body's own space instead.
+      // passed (2026-09-17). Sweep the body's own space instead. The
+      // narrowest arrival in the palace is the stage's, 0.45 m from a
+      // proscenium column, so this reach is 0.4 m.
       for (const height of [0.9, 1.6]) {
         for (let turn = 0; turn < 12; turn++) {
           const angle = (turn / 12) * Math.PI * 2;
