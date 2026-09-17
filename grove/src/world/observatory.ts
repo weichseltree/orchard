@@ -269,6 +269,10 @@ export function coverOf(room: Room, mansion: Mansion | null): Room | null {
 }
 /** How far below a covered room's ceiling its cladding reaches: past any outside ground beside it. */
 const CLADDING_DROP_M = 2.5;
+/** A lid or cladding tops this far under the floor above: inside a chamber's 0.2 m slab and the grounds' skirt, off every face. */
+const SLAB_INSET_M = 0.12;
+/** The string course under the floor above: a dash every bay, so the plinth is lit without a hundred lamps. */
+const STRING_COURSE = { dash: 1.6, bay: 4 };
 /**
  * A cellar's outer faces are what the grounds see of it: from the garden,
  * the terrace's edge is the undercroft's wall and the wing's foot is the
@@ -281,7 +285,8 @@ const CLADDING_DROP_M = 2.5;
 function cladding(b: Builder): void {
   const cover = coverOf(b.room, b.mansion);
   if (!cover) return;
-  const room = b.room, y1 = room.bounds.max[1], top = cover.bounds.min[1] + 0.01, bottom = y1 - CLADDING_DROP_M;
+  const room = b.room, y1 = room.bounds.max[1], top = cover.bounds.min[1] - SLAB_INSET_M, bottom = y1 - CLADDING_DROP_M;
+  if (top <= bottom) return;
   const grounds = b.mansion?.rooms.filter(r => r.fallback.kind === "ground" && (r.scale ?? 1) === (room.scale ?? 1)) ?? [];
   for (const wall of walls(room)) {
     const at = wall.at - wall.inward * 0.05, cy = (bottom + top) / 2, h = top - bottom;
@@ -298,9 +303,13 @@ function cladding(b: Builder): void {
       const px = wall.axis === "x" ? at - wall.inward * 0.05 : mid, pz = wall.axis === "x" ? mid : at - wall.inward * 0.05, py = top - 0.18;
       const outside = grounds.find(r => px >= r.bounds.min[0] && px <= r.bounds.max[0] && py >= r.bounds.min[1] && py <= r.bounds.max[1] && pz >= r.bounds.min[2] && pz <= r.bounds.max[2]);
       if (!outside) return;
-      const lx = wall.axis === "x" ? at - wall.inward * 0.07 : mid, lz = wall.axis === "x" ? mid : at - wall.inward * 0.07;
-      if (wall.axis === "x") b.add("box", "light", lx, py, lz, 0.04, 0.04, to - from - 0.3, undefined, cover.id, outside.id);
-      else b.add("box", "light", lx, py, lz, to - from - 0.3, 0.04, 0.04, undefined, cover.id, outside.id);
+      // Dashes in the cornice's blue: each is one lamp of a cornice's power, one per bay.
+      const l = at - wall.inward * 0.07;
+      for (let s = from + 0.6; s + STRING_COURSE.dash < to - 0.3; s += STRING_COURSE.bay) {
+        const c = s + STRING_COURSE.dash / 2;
+        if (wall.axis === "x") b.add("box", "blue", l, py, c, 0.04, 0.04, STRING_COURSE.dash, undefined, cover.id, outside.id);
+        else b.add("box", "blue", c, py, l, STRING_COURSE.dash, 0.04, 0.04, undefined, cover.id, outside.id);
+      }
     };
     for (const door of doorsOn(room, wall)) {
       run(cursor, door.center - door.width / 2 - DOOR_JAMB_M);
@@ -641,8 +650,10 @@ function vault(b: Builder): void {
   // sky, and a void between the two would show from outside as a slot into the
   // underground. Inset a little, so its faces stand inside the walls and never
   // on the face of the slab above.
+  // The room above lays its slab (or the grounds their skirt) BELOW its floor
+  // level, so the lid tops inside that slab, never at or above the floor.
   const cover = coverFloor(room, b.mansion);
-  if (cover !== null) b.box("wall", cx, (y1 + cover) / 2 + 0.01, (z0 + z1) / 2, x1 - x0 - 0.08, cover - y1 + 0.02, z1 - z0 - 0.08);
+  if (cover !== null && cover - SLAB_INSET_M > y1) b.box("wall", cx, (y1 + cover - SLAB_INSET_M) / 2, (z0 + z1) / 2, x1 - x0 - 0.08, cover - SLAB_INSET_M - y1, z1 - z0 - 0.08);
   // Oculi distinguish the quieter chambers. They hang above the exhibit envelope.
   if (["hall", "phototroph", "spectre", "greenhouse", "belvedere"].includes(room.id)) {
     const radius = room.id === "hall" ? 2.6 : 1.65;
@@ -997,7 +1008,7 @@ function clubFittings(b: Builder): void {
     }
     for (let z = tz0; z <= tz1 + 0.01; z += 10) b.bar("brass", new Vector3(x, y, z), new Vector3(x, y1, z), 0.015);
   }
-  // The bar down the east wall, south of the foyer door: counter, foot rail, stools, and a lit back-bar case.
+  // The bar down the east wall: counter, foot rail, stools, and a lit back-bar case.
   const bz0 = z1 - 22, bz1 = z1 - 13, bcz = (bz0 + bz1) / 2, blen = bz1 - bz0, bx = x1 - 1.9;
   b.box("stone", bx, y0 + 0.55, bcz, 0.7, 1.1, blen);
   b.box("brass", bx, y0 + 1.12, bcz, 0.85, 0.04, blen + 0.1);
@@ -1009,8 +1020,9 @@ function clubFittings(b: Builder): void {
   }
   b.box("inset", x1 - 0.45, y0 + 1.9, bcz, 0.4, 2.6, blen);
   for (const y of [y0 + 1.3, y0 + 2.2, y0 + 3.0]) b.box("light", x1 - 0.5, y, bcz, 0.25, 0.03, blen - 0.4);
-  // Booths along the west wall: a bench, a table on a brass stem, a lamp hung over it.
+  // Booths along the west wall, clear of the foyer's doors: a bench, a table on a brass stem, a lamp hung over it.
   for (let z = z1 - 14; z > fz1 + 3; z -= 6) {
+    if (doorNear(room, walls(room)[0]!, z, 1.7)) continue;
     const x = x0 + 1.0;
     b.box("stone", x, y0 + 0.25, z, 0.6, 0.5, 3.0);
     b.box("inset", x + 0.05, y0 + 0.6, z, 0.5, 0.2, 3.0);

@@ -17,23 +17,30 @@ proposals, not measurements.
 
 ## 1. The map
 
-Three rooms, one presence room (`club`), all `observatory` architecture at
+Five rooms, one presence room (`club`), all `observatory` architecture at
 the palace's scale. "Below" is taken literally: the club is a cellar under the
 north wing, and the wing's floor is its lid.
 
 | room | bounds (m) | floor | doors |
 |---|---|---|---|
-| `foyer` | x 10..24, z −34..−20, 13 m tall | −5.0 | world-engine (x = 10, z −27, 3 × 4, opens at 1.5); club (x = 10, z −22.5, 3 × 4) |
-| `club` | x −10..10, z −70..−12, 6.1 m tall | −5.0 | foyer; stage (z = −70, 10 m proscenium, 4 m high) |
+| `stair-north` | x −20..−11, z −84..−76, 7.6 m tall | −5.0 | west grove (x = −20, z −80, 2.4 × 3.2, opens at −1.6); foyer (z = −76) |
+| `stair-south` | x −20..−11, z 72..80 | −5.0 | east grove (x = −20, z 76); foyer (z = 72) |
+| `foyer` | x −20..−10, z −76..72, 3.6 m tall | −5.0 | the two stairs; club (x = −10, z −55 and z −27, 4 × 3.2) |
+| `club` | x −10..10, z −70..−12, 6.1 m tall | −5.0 | foyer ×2; stage (z = −70, 10 m proscenium, 4 m high) |
 | `stage` | x −6..6, z −76..−70 | −4.0 | club |
 
-The descent is the generated stair the palace already uses for every change
-of floor (`terrain.ts`): the foyer is the lower room of its world-engine
-door, so it carries one flight of 41 steps, 11.9 m long, from the door at 1.5
-down to −5, with the cheek walls, rail and newel lamps of every other flight.
-The stage is a metre above the club floor, so the proscenium's threshold is a
-7-step flight the full width of the opening: the stage's apron. Nothing here
-was drawn by hand; every step is `bounds.min[1]`.
+**Ruled 2026-09-17, second pass (Manuel: "remove the stairs from the
+world-engine room and put them into the garden, leading below the terrace
+from multiple sides").** A room cannot overlap another at the same height,
+so a stair pit cut into the garden's ground is not a room this engine can
+hold. The descents are two stair pavilions at the terrace's ends, one
+entered from the west grove, one from the east grove: each is a walled
+garden building whose flight (22 steps, 6.4 m) goes down inside it to an
+undercroft, the `foyer`, that runs the length of the terrace under its
+flagstones and opens into the club through two doors. World-engine's east
+door and the stair tower of the first pass are gone. The flights are the
+generated ones (`terrain.ts`); the stage's apron is a 7-step flight the
+width of the proscenium.
 
 **Rooms may now stand over one another.** Navigation was xz-only: `roomAt`
 and a pointer teleport took the first room in document order whose footprint
@@ -42,10 +49,21 @@ held the point, which under the wing would have been the orangery. Now
 wins when it holds the point, else the room whose floor is nearest the body's
 feet; a caller that means a room names it (`into`), which the quality tour
 does. The light bake was already three-dimensional; its cells sit inside the
-club or inside the wing, never both, because the club's ceiling (1.1) is under
-the wing's floor (1.5). A room under another (`observatory.ts` `covered`)
-closes its vault's open crown with a dark lid, and the test that wants every
-crown open to the sky now wants exactly that lid there.
+cellar or inside the room above, never both.
+
+**A cellar is finished on the outside too.** Three things follow from a room
+under another (`observatory.ts` `coverOf`): it closes its vault's open crown
+with a lid that fills the void up to just inside the slab of the floor above
+(never to the floor itself, where the visitor walks); its walls are clad on
+the outside, from below any outside ground up to that slab, in the stone of
+the room above, gapped at doorways, so the terrace's edge and the wing's foot
+are the palace's stone and not the club's black; and a run of cladding the
+grounds can see carries a dashed string course of the cornice's blue under
+the floor above, credited to the grounds' light region, because in this
+nocturne an unlit wall is black and a plinth is only a plinth once it is lit.
+And a room over or under a loaded room loads with it (`world.ts`
+`neighbourhood`): before this, from the terrace nothing stood under the wing
+and the void showed through, which was the "see-through to the underground".
 
 The club's finish is its own (`ROOM_FINISH.club`, the stage aliased to it):
 near-black stone, magenta lamps, cyan lines, and one new finish, `neon`, which
@@ -53,12 +71,12 @@ is self-luminous but not a lamp — it lights nothing around it in the bake —
 for the floor tiles and the frames. The fittings (`clubFittings`,
 `stageFittings`, `foyerFittings`): the dance floor of 24 neon tiles under a
 mirror ball, two trusses of alternating colour along the vault, the bar and
-back-bar down the east wall by the foyer door, four booths along the west,
-the DJ's desk and stacks beside the stage, speaker stacks and a stone-and-neon
-frame at the proscenium; footlights, the microphone stand, a neon-framed word
-wall for the lyrics, a truss of five cans on the stage; a cloakroom counter
-and two lanterns in the foyer. All instanced into the existing batches; the
-world stays under the sixteen-batches-a-room budget.
+back-bar down the east wall, booths along the west clear of the foyer's
+doors, the DJ's desk and stacks beside the stage, speaker stacks and a
+stone-and-neon frame at the proscenium; footlights, the microphone stand, a
+neon-framed word wall for the lyrics, a truss of five cans on the stage; a
+lantern either side of each club door in the undercroft. All instanced into
+the existing batches; the world stays under the sixteen-batches-a-room budget.
 
 ## 2. The door
 
@@ -131,8 +149,8 @@ itself never changes.
 
 ## 4. Where the palace meets it
 
-- `world-engine` gained an east door at z −27 to the foyer; door signs and
-  plaques come from the label files (eight languages, all written).
+- The west and east groves each gained a door to a stair pavilion; door
+  signs and plaques come from the label files (eight languages, all written).
 - Presence: one live row `club` (`set_room`), one line in the module's
   `SEED_ROOMS`. Chat and avatars are shared by the three rooms, as arcedit's
   eighteen share theirs.

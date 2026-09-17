@@ -113,17 +113,28 @@ describe("the designed observatory", () => {
     const margin = 0.12;
     for (const { room, shell } of shells.filter(s => ["stair-north", "stair-south", "foyer", "club", "stage"].includes(s.room.id))) {
       const [x0, y0, z0] = room.bounds.min, [x1, , z1] = room.bounds.max;
-      // A covered room's lid fills the void up to the floor above, and its cladding stands a hand outside its walls.
-      const y1 = coverFloor(room, mansion) ?? room.bounds.max[1];
+      // A covered room's lid fills the void up to just inside the slab of the floor above -- never to the
+      // floor itself, where the visitor walks -- and its cladding stands a hand outside its walls.
+      const cover = coverFloor(room, mansion);
+      const y1 = cover === null ? room.bounds.max[1] : cover - 0.12;
       const outside: string[] = [];
-      const m = new Matrix4(), p = new Vector3();
+      const m = new Matrix4(), p = new Vector3(), s = new Vector3();
       for (const child of shell.group.children) {
         if (!(child instanceof InstancedMesh)) continue;
         for (let i = 0; i < child.count; i++) {
           child.getMatrixAt(i, m);
           p.setFromMatrixPosition(m);
-          if (child.name.includes("@")) continue;
-          if (p.x < x0 - margin || p.x > x1 + margin || p.y < y0 - margin || p.y > y1 + margin || p.z < z0 - margin || p.z > z1 + margin) {
+          s.setFromMatrixScale(m);
+          // An upright box's top; a bar is a column turned on its side, whose scale says nothing about height.
+          const e = m.elements, upright = Math.abs(e[1]!) < 1e-6 && Math.abs(e[4]!) < 1e-6 && Math.abs(e[6]!) < 1e-6 && Math.abs(e[9]!) < 1e-6;
+          if (child.name.startsWith("observatory-box") && upright && p.y + s.y / 2 > y1 + 0.01) outside.push(`${child.name}[${i}] tops at ${(p.y + s.y / 2).toFixed(2)} over ${y1.toFixed(2)}`);
+          if (child.name.includes("@")) {
+            // Cladding and its string course: on a wall's outside, within a hand of it, never in the room.
+            const onX = Math.abs(p.x - x0) < 0.16 || Math.abs(p.x - x1) < 0.16, onZ = Math.abs(p.z - z0) < 0.16 || Math.abs(p.z - z1) < 0.16;
+            if (!onX && !onZ) outside.push(`${child.name}[${i}] off the walls at ${p.x.toFixed(2)}, ${p.z.toFixed(2)}`);
+            continue;
+          }
+          if (p.x < x0 - margin || p.x > x1 + margin || p.y < y0 - margin || p.z < z0 - margin || p.z > z1 + margin) {
             outside.push(`${child.name}[${i}] at ${p.x.toFixed(2)}, ${p.y.toFixed(2)}, ${p.z.toFixed(2)}`);
           }
         }
