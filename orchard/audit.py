@@ -30,6 +30,7 @@ Every result is ok / fail / warn / skip, with a detail and path[:line]:
     sibling-import  a .py that names a sibling repo's path and edits sys.path
     manifest-dirty  an artefact commit ending in -dirty in <repo>/orchard.yaml (warn)
     fund-copies     trees/*.yaml equal to what `orchard trees refresh` writes (orchard)
+    vendored        every file of a vendored copy still hashes to its VENDORED.json
     pinned-tags     a git pin on a repo the audit knows (its checkout's GitHub
                     origin) names a tag that exists in that checkout and on origin
     toolchain       orchard doctor's tools: a mismatch fails, a missing tool warns (orchard)
@@ -56,6 +57,7 @@ script, pinned-tags checks with it.
 from __future__ import annotations
 
 import fnmatch
+import hashlib
 import json
 import os
 import re
@@ -830,6 +832,121 @@ def check_fund_copies(ctx: Context, repo: Repo) -> list[Finding]:
     return out
 
 
+# vendored ------------------------------------------------------------------------
+
+#: The manifest beside a vendored copy (PACKAGES.md section 2).
+VENDORED = "VENDORED.json"
+#: A sha256 as the manifest must spell it; compared case-insensitively.
+SHA256 = re.compile(r"[0-9a-fA-F]{64}")
+
+
+def _sha256(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as fh:
+        for block in iter(lambda: fh.read(1 << 20), b""):
+            h.update(block)
+    return h.hexdigest()
+
+
+def _manifest_home(homes: list[PurePosixPath], p: PurePosixPath) -> PurePosixPath | None:
+    """The deepest vendored copy `p` is inside, so a copy that vendors something itself
+    does not have its inner copy's files read as strays of the outer one."""
+    best = None
+    for h in homes:
+        if p.is_relative_to(h) and (best is None or len(h.parts) > len(best.parts)):
+            best = h
+    return best
+
+
+def check_vendored(repo: Repo, tracked: list[str]) -> list[Finding]:
+    """Every copied file still hashes to what its VENDORED.json says.
+
+    Code that cannot be pinned by tag is copied, and the copy carries a
+    manifest. This is the half of the drift question that the copy answers
+    alone: has anyone edited it here. Whether the copy is BEHIND its upstream
+    needs the upstream checkout, which for a private producer this box may not
+    have, so that half stays with whoever owns the source.
+
+    An edit made in a vendored copy is lost at the next sync, and until then
+    the two disagree with nothing saying so -- hence fail, not warn.
+    """
+    rule, out = "vendored", []
+    manifests = [PurePosixPath(rel) for rel in tracked if PurePosixPath(rel).name == VENDORED]
+    if not manifests:
+        return out
+    homes = [m.parent for m in manifests]
+    # Each tracked file belongs to the deepest copy holding it, resolved once for every
+    # manifest rather than per manifest.
+    owner = {rel: _manifest_home(homes, PurePosixPath(rel)) for rel in tracked}
+    for rel_path in manifests:
+        rel, home = rel_path.as_posix(), rel_path.parent
+        try:
+            doc = json.loads((repo.path / rel).read_text())
+        except FileNotFoundError:
+            out.append(fail(rule, f"{VENDORED} is tracked but not in the working tree", rel))
+            continue
+        except OSError as exc:
+            out.append(fail(rule, f"{VENDORED} could not be read ({type(exc).__name__})", rel))
+            continue
+        except ValueError as exc:
+            out.append(fail(rule, f"{VENDORED} does not parse ({type(exc).__name__})", rel))
+            continue
+        files = doc.get("files")
+        if not isinstance(files, dict):
+            kind = "is missing" if files is None else f"is a {type(files).__name__}, not an object of path -> sha256"
+            out.append(fail(rule, f"{VENDORED}'s file list {kind}, so nothing about the copy is checkable", rel))
+            continue
+        if not files:
+            out.append(fail(rule, f"{VENDORED} lists no files, so nothing about the copy is checkable", rel))
+            continue
+        upstream = str(doc.get("upstream") or doc.get("source_repo") or doc.get("repo") or "")
+        commit = str(doc.get("commit") or "")
+        listed, bad = set(), 0
+        if not upstream or not commit:
+            missing = " and ".join(w for w, got in (("an upstream", upstream), ("a commit", commit)) if not got)
+            out.append(fail(rule, f"{VENDORED} records {missing}, so the copy cannot be traced to what it came from", rel))
+            bad += 1
+        for name, entry in sorted(files.items()):
+            want = entry.get("sha256") if isinstance(entry, dict) else entry
+            named = PurePosixPath(name)
+            if named.is_absolute() or ".." in named.parts:
+                out.append(fail(rule, f"{VENDORED} lists {name}, which is outside the copy", rel)); bad += 1
+                continue
+            here = (home / name).as_posix()
+            listed.add(here)
+            path = repo.path / here
+            if not isinstance(want, str) or not SHA256.fullmatch(want.strip()):
+                out.append(fail(rule, f"{VENDORED} records no usable sha256 for it, so it is not checkable", here))
+            elif path.is_symlink():
+                out.append(fail(rule, "is a symlink; a vendored copy holds regular files, and a link "
+                                      "hashes differently on every box", here))
+            elif not path.is_file():
+                out.append(fail(rule, f"is in {VENDORED} but is not a file here; re-sync from {upstream}", here))
+            else:
+                try:
+                    got = _sha256(path)
+                except OSError as exc:
+                    out.append(fail(rule, f"could not be read ({type(exc).__name__}), so the copy is unchecked", here))
+                else:
+                    if got == want.strip().lower():
+                        continue
+                    out.append(fail(rule, f"differs from {VENDORED}: an edit here is lost at the next sync, "
+                                          f"so make it in {upstream} and re-sync", here))
+            bad += 1
+        for other, belongs in owner.items():
+            if belongs == home and other != rel and other not in listed:
+                out.append(fail(rule, f"is in the copy but not in {VENDORED}; add it upstream or delete it", other))
+                bad += 1
+        if doc.get("dirty") is True:
+            out.append(warn(rule, f"synced from {upstream} at {commit} with a dirty tree: not reproducible "
+                                  "from that sha; re-sync from a clean one", rel))
+        if not bad:
+            n = len(files)
+            out.append(ok(rule, f"{n} file{'' if n == 1 else 's'} {'matches' if n == 1 else 'match'} "
+                                f"{upstream} at {commit}", rel))
+    return out
+
+
 # tags ----------------------------------------------------------------------------
 
 def github_host_re(home: Path) -> str:
@@ -1037,7 +1154,8 @@ def audit_repo(ctx: Context, repo: Repo) -> list[Finding]:
                   lambda: check_node_pins(repo, tracked, ts),
                   lambda: check_sibling_import(ctx, repo, sources),
                   lambda: check_manifest_dirty(repo, ts),
-                  lambda: check_pinned_tags(ctx, repo, tracked, sources)):
+                  lambda: check_pinned_tags(ctx, repo, tracked, sources),
+                  lambda: check_vendored(repo, tracked)):
         try:
             out += check()
         except Exception as exc:                                  # noqa: BLE001

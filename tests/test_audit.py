@@ -1,4 +1,5 @@
 """orchard audit over a synthetic ~/weichseltree of tiny git repos: one per check, ok and fail."""
+import hashlib
 import json
 import os
 import subprocess
@@ -146,6 +147,116 @@ def test_requirements_need_a_pinned_freeze_without_a_pyproject(tree):
 # --- script-lock ---------------------------------------------------------------------
 
 SCRIPT = '# /// script\n# requires-python = ">=3.12"\n# dependencies = []\n# ///\nprint("hi")\n'
+
+
+def vendored(files: dict[str, str], **doc) -> dict[str, str]:
+    """A vendored copy under src/vendor/pkg/, plus the manifest that describes it."""
+    manifest = {"upstream": "https://example.invalid/up", "commit": "abc1234", "version": "0.1.0",
+                "files": {k: {"sha256": hashlib.sha256(v.encode()).hexdigest()} for k, v in files.items()},
+                **doc}
+    out = {f"src/vendor/pkg/{k}": v for k, v in files.items()}
+    out["src/vendor/pkg/VENDORED.json"] = json.dumps(manifest, indent=1)
+    return out
+
+
+def test_vendored_passes_a_copy_that_matches_its_manifest(tree):
+    make_repo(tree.root, "consumer", vendored({"cat.ts": "export const a = 1;\n", "LICENSE": "AGPL\n"}))
+    [f] = findings(tree(), "consumer", "vendored")
+    assert f["status"] == "ok" and f["where"] == "src/vendor/pkg/VENDORED.json"
+    assert "2 files match https://example.invalid/up at abc1234" in f["detail"]
+
+
+def test_vendored_fails_a_file_edited_in_the_copy(tree):
+    repo = make_repo(tree.root, "consumer", vendored({"cat.ts": "export const a = 1;\n"}))
+    (repo / "src/vendor/pkg/cat.ts").write_text("export const a = 2;  // fixed it here\n")
+    commit_all(repo)
+    [f] = findings(tree(), "consumer", "vendored")
+    assert f["status"] == "fail" and f["where"] == "src/vendor/pkg/cat.ts"
+    assert "lost at the next sync" in f["detail"]
+
+
+def test_vendored_fails_a_file_missing_from_the_copy_and_one_it_does_not_list(tree):
+    files = vendored({"cat.ts": "export const a = 1;\n"})
+    del files["src/vendor/pkg/cat.ts"]
+    files["src/vendor/pkg/extra.ts"] = "export const b = 2;\n"
+    make_repo(tree.root, "consumer", files)
+    got = findings(tree(), "consumer", "vendored")
+    assert {f["status"] for f in got} == {"fail"}
+    assert {f["where"] for f in got} == {"src/vendor/pkg/cat.ts", "src/vendor/pkg/extra.ts"}
+
+
+def test_vendored_warns_when_the_sync_came_from_a_dirty_tree(tree):
+    make_repo(tree.root, "consumer", vendored({"cat.ts": "export const a = 1;\n"}, dirty=True))
+    got = findings(tree(), "consumer", "vendored")
+    assert sorted(f["status"] for f in got) == ["ok", "warn"]
+    assert any("dirty tree" in f["detail"] for f in got)
+
+
+def test_vendored_fails_a_manifest_that_does_not_parse(tree):
+    make_repo(tree.root, "consumer", {"src/vendor/pkg/VENDORED.json": "{not json",
+                                      "src/vendor/pkg/cat.ts": "export const a = 1;\n"})
+    [f] = findings(tree(), "consumer", "vendored")
+    assert f["status"] == "fail" and "does not parse" in f["detail"]
+
+
+def test_vendored_does_not_read_a_nested_copy_as_strays_of_the_outer_one(tree):
+    files = vendored({"cat.ts": "export const a = 1;\n"})
+    files |= {f"src/vendor/pkg/inner/{k.split('/')[-1]}": v
+              for k, v in vendored({"dog.ts": "export const b = 2;\n"}).items()}
+    make_repo(tree.root, "consumer", files)
+    got = findings(tree(), "consumer", "vendored")
+    assert [f["status"] for f in got] == ["ok", "ok"], got
+    assert {f["where"] for f in got} == {"src/vendor/pkg/VENDORED.json", "src/vendor/pkg/inner/VENDORED.json"}
+
+
+def test_vendored_refuses_a_manifest_reaching_outside_the_copy(tree):
+    manifest = {"upstream": "u", "commit": "c",
+                "files": {"../../../etc/passwd": {"sha256": "0" * 64}}}
+    make_repo(tree.root, "consumer", {"src/vendor/pkg/VENDORED.json": json.dumps(manifest)})
+    [f] = findings(tree(), "consumer", "vendored")
+    assert f["status"] == "fail" and "outside the copy" in f["detail"]
+
+
+def test_vendored_refuses_a_symlink_rather_than_hashing_its_target(tree):
+    repo = make_repo(tree.root, "consumer", vendored({"cat.ts": "export const a = 1;\n"}), commit=False)
+    link = repo / "src/vendor/pkg/cat.ts"
+    link.unlink(); link.symlink_to("/etc/hostname")
+    commit_all(repo)
+    [f] = findings(tree(), "consumer", "vendored")
+    assert f["status"] == "fail" and "symlink" in f["detail"]
+
+
+def test_vendored_costs_one_finding_when_a_file_cannot_be_read(tree):
+    repo = make_repo(tree.root, "consumer", vendored({"cat.ts": "export const a = 1;\n",
+                                                      "b.ts": "export const b = 2;\n"}))
+    locked = repo / "src/vendor/pkg/cat.ts"
+    locked.chmod(0o000)
+    try:
+        got = findings(tree(), "consumer", "vendored")
+    finally:
+        locked.chmod(0o644)
+    assert [f["status"] for f in got] == ["fail"] and got[0]["where"] == "src/vendor/pkg/cat.ts"
+    assert "could not be read" in got[0]["detail"]
+
+
+def test_vendored_accepts_an_uppercase_digest(tree):
+    files = vendored({"cat.ts": "export const a = 1;\n"})
+    doc = json.loads(files["src/vendor/pkg/VENDORED.json"])
+    doc["files"]["cat.ts"]["sha256"] = doc["files"]["cat.ts"]["sha256"].upper()
+    files["src/vendor/pkg/VENDORED.json"] = json.dumps(doc)
+    make_repo(tree.root, "consumer", files)
+    [f] = findings(tree(), "consumer", "vendored")
+    assert f["status"] == "ok", f
+
+
+def test_vendored_fails_a_manifest_with_no_provenance(tree):
+    files = vendored({"cat.ts": "export const a = 1;\n"})
+    doc = json.loads(files["src/vendor/pkg/VENDORED.json"]); del doc["commit"]
+    files["src/vendor/pkg/VENDORED.json"] = json.dumps(doc)
+    make_repo(tree.root, "consumer", files)
+    got = findings(tree(), "consumer", "vendored")
+    assert [f["status"] for f in got] == ["fail"]
+    assert "a commit" in got[0]["detail"] and "traced" in got[0]["detail"]
 
 
 def test_a_pep723_script_needs_its_lock_beside_it(tree):
