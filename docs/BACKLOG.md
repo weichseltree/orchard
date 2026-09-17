@@ -367,14 +367,19 @@ reviewed. What each asks next:
 
 PACKAGES.md is the rule set; `orchard audit` checks it every 15 minutes.
 
-1. **logswarm is archived until its next job** (Manuel, 2026-09-13). It
-   comes back to stream monitoring data from the live platforms and the
-   simulations, and to give every active repo and live product an audio
-   stream, so a visitor can hear the compute. Nothing is designed yet; the
-   sources it would read already exist (`~/.exp_status`, expdash's
-   `/api/status`, orchard's ledger), and the grove's spatial voice path
-   (item 7) is where the sound would play. Until then audit.yaml lists it as
-   archived, and its failing pins and lockfile are not fixed.
+1. **logswarm is back, with its first job** (Manuel, 2026-09-16; archived
+   2026-09-13 to 2026-09-16). It keeps its own pipeline (SDK, RTDB, graph
+   runner) with server-side preprocessing, and LLM agents that propose filter
+   and outlier types for the residual stream on graphs that opt in. What is
+   deployed publicly is a **synthetic event stream** that shows LogSwarm
+   itself working, and its `orchard/score/1` sink is what the grove's
+   per-node voices (#14) play. Design and five open rulings:
+   logswarm `docs/specs/LIVE-EXHIBIT.md`
+   ([Weichseltree-OU/logswarm#208](https://github.com/Weichseltree-OU/logswarm/pull/208)).
+   License: AGPL-3.0-or-later, SDKs and `shared` MIT (logswarm#207). Off
+   audit.yaml's archived list; its pins are fixed in logswarm#209.
+   Monitoring our own compute (`~/.exp_status`, expdash, the ledger) is not
+   its first job, and stays unscheduled.
 2. **The shared research packages.** event-atoms' `gridevents` and agivity's
    `agivity-ihwm`, consumed by arcagi2026 by tag, replace the last cross-repo
    `sys.path` imports outside the studio extraction (item 31 above).
