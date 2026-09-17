@@ -130,7 +130,7 @@
     "arcedit": {
       "title": "arcedit",
       "kicker": "Can a machine learn to solve ARC puzzles the way a person does at a screen?",
-      "intro": "arcedit asks whether an agent can solve puzzles by editing: it looks around, picks a colour and clicks, and it sees sharply only what lies near its cursor. This first room shows the task. A scripted teacher copies a five-by-five grid of many colours, cell by cell, shown as a cloud of cells to walk through, as a film with the agent's view beneath the canvas, and as stills. On the west wall the environment is built as a model, the view stacked in glass above the tiles. The sphere beside the cloud takes you inside the canvas.",
+      "intro": "arcedit asks whether an agent can solve puzzles by editing: it looks around, picks a colour and clicks, and it sees sharply only what lies near its cursor. This first room shows the task. A scripted teacher copies a five-by-five grid of many colours, cell by cell, shown as a cloud of cells to walk through, as a film with the agent's view beneath the canvas, and as stills. On the west wall hangs a picture of the environment built as a model, the view stacked in glass above the tiles; the model itself stands in the workshop. The sphere beside the cloud takes you inside the canvas.",
       "lookFor": "Watch how rarely the source grid is sharp while the answer is painted; the colour has to be fetched and carried.",
       "limit": "What hangs here is the task, performed by the program that defines it; no learned agent solves this many-coloured copy yet."
     },
@@ -195,9 +195,10 @@
     },
     "arcedit/workshop": {
       "title": "The workshop",
-      "kicker": "What is the repository made of?",
-      "intro": "The repository as a model on a table: each block a directory, sized by the bytes it holds. The engine, the instruments, the checks and the records are all here; a few of them are what hangs in the other rooms.",
-      "lookFor": "The records take up most of the table; the engine itself is small."
+      "kicker": "What is the repository made of, and what does the editor look like as a thing?",
+      "intro": "The workshop holds two models. On the table is the repository: each block a directory, sized by the bytes it holds; the engine, the instruments, the checks and the records are all here, and a few of them are what hangs in the other rooms. On a plinth nearby stands the editor as a model, frozen at one step of the scripted teacher's episode: cells as tiles, the cursor a column of light, and the agent's view as glass plates stacked above the canvas, each twice as wide as the one below. Walk around it to see how fast the view widens away from the cursor.",
+      "lookFor": "On the table the records dwarf the engine; on the plinth, follow the frames of light up from the foot of the cursor: each is twice as wide as the one below, and glass hangs only where that level sees something other than empty canvas.",
+      "limit": "The model shows the scripted teacher at one moment, not a learned agent. Positions and colours are the episode's; the proportions are designed. The blocks on the table show size, not importance."
     },
     "arcedit/inside": {
       "title": "Inside the canvas",
@@ -247,6 +248,26 @@
     "orrery-worlds": {
       "title": "The planet trio at the scale of the sky",
       "caption": "The same three recorded worlds as in the coarsen chamber, each eighty metres across: 508,744 particles, 1,129 frames over 96 dynamical times, one starting arrangement, three strengths of repulsion between the heavy and the light kind. Iron-warm regions hold more heavy particles, pale ones more light; the glow encodes temperature."
+    },
+    "club-floor": {
+      "title": "The floor",
+      "caption": "The club's own set, made on the palace's machine from a seed and carried here as a live stream: kick, bass, hats and a pad that change every eight bars. Nothing is recorded; when the last visitor leaves, the encoder stops and the floor goes quiet."
+    },
+    "phototroph-lit": {
+      "title": "Lit: the world under the beam",
+      "caption": "432 atoms after 500 time units under a steady beam tuned to one kind, shown for 60 more. About a third are bonded and the box runs warm; clumps form and break apart within tens of time units."
+    },
+    "phototroph-dark": {
+      "title": "Dark: the same world without the beam",
+      "caption": "The same 432 atoms from the same start, never lit, playing in lockstep with the lit floor. Four in five are bonded, the box runs at less than half the lit floor's temperature, and the clumps have settled into crystal patches."
+    },
+    "phototroph-walkup": {
+      "title": "The lit floor and the dark floor",
+      "caption": "One instant of both worlds, laid flat side by side. Atoms of the kind the beam is tuned to are violet on both floors; the violet haze over the lit floor is staging for the beam, not a measured quantity."
+    },
+    "phototroph-starved": {
+      "title": "Bathed in light, catching almost none",
+      "caption": "How many photons a clump absorbs during its own lifetime, measured at three beam strengths and three internal transfer rates. For light to shape clumps the answer must approach one; the best of nine runs reaches 0.08, twelve and a half times short."
     },
     "arcedit#0": {
       "title": "The teacher copies a grid of many colours",
@@ -304,29 +325,13 @@
       "title": "Which vocabulary is better depends on how you ask",
       "caption": "The same editor, two vocabularies. Imitating a teacher step by step, raw clicks score far higher above chance. Choosing at random, raw clicks never end a game with a cell right, while 'paint this cell this colour' does in 152 of 256 games."
     },
+    "arcedit.workshop.env": {
+      "title": "The editor as a model",
+      "caption": "The editor as an object: cells as tiles, the cursor a column of light, the agent's view as glass plates above the canvas, doubling in width going up. One frozen step, 68, of the scripted teacher's episode; positions and colours are the episode's, the proportions designed."
+    },
     "arcedit.inside.canvas": {
       "title": "The canvas at the scale of a cell",
       "caption": "The scripted teacher copies a five-by-five grid of many colours in 114 clicks: to the palette, to the cell, back to the palette. This shows the task by the program that defines it; no learned agent solves the many-coloured copy yet."
-    },
-    "club-floor": {
-      "title": "The floor",
-      "caption": "The club's own set, made on the palace's machine from a seed and carried here as a live stream: kick, bass, hats and a pad that change every eight bars. Nothing is recorded; when the last visitor leaves, the encoder stops and the floor goes quiet."
-    },
-    "phototroph-lit": {
-      "title": "Lit: the world under the beam",
-      "caption": "432 atoms after 500 time units under a steady beam tuned to one kind, shown for 60 more. About a third are bonded and the box runs warm; clumps form and break apart within tens of time units."
-    },
-    "phototroph-dark": {
-      "title": "Dark: the same world without the beam",
-      "caption": "The same 432 atoms from the same start, never lit, playing in lockstep with the lit floor. Four in five are bonded, the box runs at less than half the lit floor's temperature, and the clumps have settled into crystal patches."
-    },
-    "phototroph-walkup": {
-      "title": "The lit floor and the dark floor",
-      "caption": "One instant of both worlds, laid flat side by side. Atoms of the kind the beam is tuned to are violet on both floors; the violet haze over the lit floor is staging for the beam, not a measured quantity."
-    },
-    "phototroph-starved": {
-      "title": "Bathed in light, catching almost none",
-      "caption": "How many photons a clump absorbs during its own lifetime, measured at three beam strengths and three internal transfer rates. For light to shape clumps the answer must approach one; the best of nine runs reaches 0.08, twelve and a half times short."
     }
   }
 }

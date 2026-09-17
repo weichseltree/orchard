@@ -174,11 +174,24 @@ artefacts:
   sha256: ee45182ed0ec70c7f47cb0e44c37fe7c70e51e489942af0295a108d7b9abcdf8
   approved: true
   bundle: c888f5c37cff4348
+- kind: model
+  path: results/grove/env.glb
+  title: 'The editor built as a model at one step of the teacher''s episode: cells as tiles, the cursor
+    a column of light, the agent''s view stacked in glass above'
+  produced_by: exp run grove-blender-glb --prio 10 --lane cpu -- /home/manuel/tools/blender/blender --background
+    --python scripts/grove_blender.py -- --scene results/grove/oracle_side5/scene.json --out results/grove
+    --no-render
+  commit: 699c1eb
+  sha256: d10c20cada1c4c90d77982f66297046c75c4572050b81d03e717ae5c465097e6
+  approved: true
+  bundle: 84ee7ea2f6d5cb36
 producers:
   tape: CUDA_VISIBLE_DEVICES="" exp run grove-exhibit --prio 10 --lane cpu -- .venv/bin/python scripts/grove_exhibit.py
     --out {out}
   render: exp run grove-blender --prio 10 --lane cpu -- /home/manuel/tools/blender/blender --background
     --python scripts/grove_blender.py -- --scene {scene} --out {out} --samples 96
+  model: exp run grove-blender-glb --prio 10 --lane cpu -- /home/manuel/tools/blender/blender --background
+    --python scripts/grove_blender.py -- --scene {scene} --out {out} --no-render
   figure: CUDA_VISIBLE_DEVICES="" exp run grove-charts --prio 10 --lane cpu -- uv run --no-project --with
     matplotlib==3.10.9 --with numpy python scripts/grove_charts.py
   lane: cpu

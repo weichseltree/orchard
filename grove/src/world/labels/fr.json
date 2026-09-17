@@ -130,7 +130,7 @@
     "arcedit": {
       "title": "arcedit",
       "kicker": "Une machine peut-elle apprendre à résoudre les casse-têtes ARC comme une personne devant un écran ?",
-      "intro": "arcedit demande si un agent peut résoudre des casse-têtes en éditant : il regarde autour de lui, choisit une couleur et clique, et il ne voit nettement que ce qui est proche de son curseur. Cette première salle montre la tâche. Un professeur scripté copie une grille multicolore de cinq sur cinq, cellule par cellule, montrée comme un nuage de cellules où marcher, comme un film avec la vue de l'agent sous la toile, et comme des images fixes. Au mur ouest, l'environnement est construit en maquette, la vue empilée en verre au-dessus des dalles. La sphère près du nuage vous emmène à l'intérieur de la toile.",
+      "intro": "arcedit demande si un agent peut résoudre des casse-têtes en éditant : il regarde autour de lui, choisit une couleur et clique, et il ne voit nettement que ce qui est proche de son curseur. Cette première salle montre la tâche. Un professeur scripté copie une grille multicolore de cinq sur cinq, cellule par cellule, montrée comme un nuage de cellules où marcher, comme un film avec la vue de l'agent sous la toile, et comme des images fixes. Au mur ouest, une image montre l'environnement construit en maquette, la vue empilée en verre au-dessus des dalles ; la maquette elle-même se trouve dans l'atelier. La sphère près du nuage vous emmène à l'intérieur de la toile.",
       "lookFor": "Observez combien rarement la grille source est nette pendant que la réponse se peint ; la couleur doit être cherchée et transportée.",
       "limit": "Ce qui est accroché ici est la tâche, exécutée par le programme qui la définit ; aucun agent entraîné ne résout encore cette copie multicolore."
     },
@@ -195,9 +195,10 @@
     },
     "arcedit/workshop": {
       "title": "L'atelier",
-      "kicker": "De quoi est fait le dépôt ?",
-      "intro": "Le dépôt en maquette sur une table : chaque bloc est un répertoire, à la taille des octets qu'il contient. Le moteur, les instruments, les vérifications et les comptes rendus sont tous là ; quelques-uns sont ce qui est accroché dans les autres salles.",
-      "lookFor": "Les comptes rendus occupent la plus grande part de la table ; le moteur lui-même est petit."
+      "kicker": "De quoi est fait le dépôt, et à quoi ressemble l'éditeur en tant qu'objet ?",
+      "intro": "L'atelier présente deux maquettes. Sur la table, le dépôt : chaque bloc est un répertoire, à la taille des octets qu'il contient ; le moteur, les instruments, les vérifications et les comptes rendus sont tous là, et quelques-uns sont ce qui est accroché dans les autres salles. Sur un socle non loin est posé l'éditeur en maquette, figé à l'un des pas de l'épisode du professeur scripté : les cellules en dalles, le curseur en colonne de lumière, la vue de l'agent en plaques de verre empilées au-dessus de la toile, chacune deux fois plus large que celle du dessous. Faites-en le tour pour voir combien vite la vue s'élargit loin du curseur.",
+      "lookFor": "Sur la table, les comptes rendus écrasent le moteur ; sur le socle, suivez vers le haut les cadres lumineux depuis le pied du curseur : chacun est deux fois plus large que celui du dessous, et le verre n'apparaît que là où ce niveau voit autre chose que de la toile vide.",
+      "limit": "La maquette montre le professeur scripté à un instant, non un agent entraîné. Positions et couleurs viennent de l'épisode ; les proportions sont dessinées. Les blocs de la table montrent la taille, non l'importance."
     },
     "arcedit/inside": {
       "title": "À l'intérieur de la toile",
@@ -247,6 +248,26 @@
     "orrery-worlds": {
       "title": "Le trio de planètes à l'échelle du ciel",
       "caption": "Les trois mêmes mondes enregistrés que dans la salle de coarsen, chacun de quatre-vingts mètres : 508 744 particules, 1 129 images sur 96 temps dynamiques, un seul arrangement initial, trois forces de répulsion entre l'espèce lourde et la légère. Les régions couleur de fer contiennent plus de particules lourdes, les pâles plus de légères ; la lueur code la température."
+    },
+    "club-floor": {
+      "title": "La piste",
+      "caption": "Le set propre du club, produit sur la machine du palais à partir d'une graine et porté ici en flux direct : grosse caisse, basse, charleston et une nappe qui changent toutes les huit mesures. Rien n'est enregistré ; quand le dernier visiteur s'en va, l'encodeur s'arrête et la piste se tait."
+    },
+    "phototroph-lit": {
+      "title": "Éclairé : le monde sous le faisceau",
+      "caption": "432 atomes après 500 unités de temps sous un faisceau constant accordé à une espèce, montrés pendant 60 de plus. Environ un tiers sont liés et la boîte reste chaude ; des amas se forment et se défont en quelques dizaines d'unités de temps."
+    },
+    "phototroph-dark": {
+      "title": "Sombre : le même monde sans le faisceau",
+      "caption": "Les mêmes 432 atomes, partis du même état initial, jamais éclairés, joués en synchronie avec le plateau éclairé. Quatre sur cinq sont liés, la boîte est à moins de la moitié de la température du plateau éclairé, et les amas se sont figés en îlots cristallins."
+    },
+    "phototroph-walkup": {
+      "title": "Le plateau éclairé et le plateau sombre",
+      "caption": "Un seul instant des deux mondes, posés à plat côte à côte. Les atomes de l'espèce à laquelle le faisceau est accordé sont violets sur les deux plateaux ; le halo violet au-dessus du plateau éclairé est une mise en scène du faisceau, pas une grandeur mesurée."
+    },
+    "phototroph-starved": {
+      "title": "Baigné de lumière, n'en captant presque pas",
+      "caption": "Le nombre de photons qu'un amas absorbe pendant sa propre durée de vie, mesuré pour trois intensités de faisceau et trois taux de transfert internes. Pour que la lumière façonne les amas, ce nombre doit approcher un ; la meilleure des neuf simulations atteint 0,08, soit douze fois et demie trop peu."
     },
     "arcedit#0": {
       "title": "Le professeur copie une grille multicolore",
@@ -304,29 +325,13 @@
       "title": "Le meilleur vocabulaire dépend de la question",
       "caption": "Le même éditeur, deux vocabulaires. En imitant un professeur pas à pas, les clics bruts dépassent bien plus le hasard. En choisissant au hasard, les clics bruts ne finissent jamais une partie avec une cellule juste, « peins cette cellule de cette couleur » si, dans 152 parties sur 256."
     },
+    "arcedit.workshop.env": {
+      "title": "L'éditeur en maquette",
+      "caption": "L'éditeur comme objet : les cellules en dalles, le curseur en colonne de lumière, la vue de l'agent en plaques de verre au-dessus de la toile, chaque couche deux fois plus large en montant. Un pas figé, le 68e, de l'épisode du professeur scripté ; positions et couleurs viennent de l'épisode, les proportions sont dessinées."
+    },
     "arcedit.inside.canvas": {
       "title": "La toile à l'échelle d'une cellule",
       "caption": "Le professeur scripté copie une grille multicolore de cinq sur cinq en 114 clics : vers la palette, vers la cellule, retour à la palette. C'est la tâche montrée par le programme qui la définit ; aucun agent entraîné ne résout encore la copie multicolore."
-    },
-    "club-floor": {
-      "title": "La piste",
-      "caption": "Le set propre du club, produit sur la machine du palais à partir d'une graine et porté ici en flux direct : grosse caisse, basse, charleston et une nappe qui changent toutes les huit mesures. Rien n'est enregistré ; quand le dernier visiteur s'en va, l'encodeur s'arrête et la piste se tait."
-    },
-    "phototroph-lit": {
-      "title": "Éclairé : le monde sous le faisceau",
-      "caption": "432 atomes après 500 unités de temps sous un faisceau constant accordé à une espèce, montrés pendant 60 de plus. Environ un tiers sont liés et la boîte reste chaude ; des amas se forment et se défont en quelques dizaines d'unités de temps."
-    },
-    "phototroph-dark": {
-      "title": "Sombre : le même monde sans le faisceau",
-      "caption": "Les mêmes 432 atomes, partis du même état initial, jamais éclairés, joués en synchronie avec le plateau éclairé. Quatre sur cinq sont liés, la boîte est à moins de la moitié de la température du plateau éclairé, et les amas se sont figés en îlots cristallins."
-    },
-    "phototroph-walkup": {
-      "title": "Le plateau éclairé et le plateau sombre",
-      "caption": "Un seul instant des deux mondes, posés à plat côte à côte. Les atomes de l'espèce à laquelle le faisceau est accordé sont violets sur les deux plateaux ; le halo violet au-dessus du plateau éclairé est une mise en scène du faisceau, pas une grandeur mesurée."
-    },
-    "phototroph-starved": {
-      "title": "Baigné de lumière, n'en captant presque pas",
-      "caption": "Le nombre de photons qu'un amas absorbe pendant sa propre durée de vie, mesuré pour trois intensités de faisceau et trois taux de transfert internes. Pour que la lumière façonne les amas, ce nombre doit approcher un ; la meilleure des neuf simulations atteint 0,08, soit douze fois et demie trop peu."
     }
   }
 }

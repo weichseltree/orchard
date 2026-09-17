@@ -130,7 +130,7 @@
     "arcedit": {
       "title": "arcedit",
       "kicker": "Kan een machine leren ARC-puzzels op te lossen zoals een mens achter een scherm?",
-      "intro": "arcedit vraagt of een agent puzzels kan oplossen door te bewerken: hij kijkt rond, kiest een kleur en klikt, en hij ziet alleen scherp wat dicht bij zijn cursor ligt. Deze eerste zaal toont de taak. Een gescripte leraar kopieert een veelkleurig raster van vijf bij vijf, cel voor cel, getoond als een wolk van cellen om doorheen te lopen, als een film met het zicht van de agent onder het canvas, en als stilstaande beelden. Aan de westmuur is de omgeving als model gebouwd, het zicht in glas boven de tegels gestapeld. De bol naast de wolk brengt u in het canvas.",
+      "intro": "arcedit vraagt of een agent puzzels kan oplossen door te bewerken: hij kijkt rond, kiest een kleur en klikt, en hij ziet alleen scherp wat dicht bij zijn cursor ligt. Deze eerste zaal toont de taak. Een gescripte leraar kopieert een veelkleurig raster van vijf bij vijf, cel voor cel, getoond als een wolk van cellen om doorheen te lopen, als een film met het zicht van de agent onder het canvas, en als stilstaande beelden. Aan de westmuur hangt een afbeelding van de omgeving, als model gebouwd, het zicht in glas boven de tegels gestapeld; het model zelf staat in de werkplaats. De bol naast de wolk brengt u in het canvas.",
       "lookFor": "Let op hoe zelden het bronraster scherp is terwijl het antwoord wordt geschilderd; de kleur moet worden gehaald en meegedragen.",
       "limit": "Wat hier hangt is de taak, uitgevoerd door het programma dat haar definieert; geen getrainde agent lost deze veelkleurige kopie al op."
     },
@@ -195,9 +195,10 @@
     },
     "arcedit/workshop": {
       "title": "De werkplaats",
-      "kicker": "Waaruit bestaat de repository?",
-      "intro": "De repository als model op een tafel: elk blok een map, zo groot als de bytes die ze bevat. De motor, de instrumenten, de controles en de verslagen zijn er allemaal; een paar ervan hangen in de andere zalen.",
-      "lookFor": "De verslagen nemen het grootste deel van de tafel in; de motor zelf is klein."
+      "kicker": "Waaruit bestaat de repository, en hoe ziet de editor eruit als voorwerp?",
+      "intro": "De werkplaats toont twee modellen. Op de tafel staat de repository: elk blok een map, zo groot als de bytes die ze bevat; de motor, de instrumenten, de controles en de verslagen zijn er allemaal, en een paar ervan hangen in de andere zalen. Op een sokkel vlakbij staat de editor als model, stilgezet bij een stap uit de episode van de gescripte leraar: cellen als tegels, de cursor een zuil van licht, het zicht van de agent als glazen platen boven het canvas gestapeld, elke twee keer zo breed als die eronder. Loop eromheen en zie hoe snel het zicht breder wordt, weg van de cursor.",
+      "lookFor": "Op de tafel stellen de verslagen de motor in de schaduw; volg op de sokkel de lichtkaders omhoog vanaf de voet van de cursor: elk is twee keer zo breed als het kader eronder, en er hangt alleen glas waar dat niveau iets anders ziet dan leeg canvas.",
+      "limit": "Het model toont de gescripte leraar op één moment, geen getrainde agent. Posities en kleuren komen uit de episode; de verhoudingen zijn ontworpen. De blokken op de tafel tonen grootte, geen belang."
     },
     "arcedit/inside": {
       "title": "Binnen in het canvas",
@@ -247,6 +248,26 @@
     "orrery-worlds": {
       "title": "Het planetentrio op de schaal van de hemel",
       "caption": "Dezelfde drie opgenomen werelden als in de zaal van coarsen, elk tachtig meter breed: 508.744 deeltjes, 1.129 beelden over 96 dynamische tijden, één beginopstelling, drie sterktes van afstoting tussen de zware en de lichte soort. IJzerwarme gebieden bevatten meer zware deeltjes, bleke meer lichte; de gloed codeert temperatuur."
+    },
+    "club-floor": {
+      "title": "De vloer",
+      "caption": "De eigen set van de club, op de machine van het paleis uit een startwaarde gemaakt en als livestream hierheen gebracht: kick, bas, hi-hats en een vlakke klank die elke acht maten veranderen. Niets wordt opgenomen; als de laatste bezoeker vertrekt, stopt de encoder en wordt de vloer stil."
+    },
+    "phototroph-lit": {
+      "title": "Belicht: de wereld onder de bundel",
+      "caption": "432 atomen na 500 tijdseenheden onder een gestage bundel die op één soort is afgestemd, nog 60 verder getoond. Ongeveer een derde is gebonden en de doos blijft warm; klontjes vormen zich en vallen binnen enkele tientallen tijdseenheden weer uiteen."
+    },
+    "phototroph-dark": {
+      "title": "Donker: dezelfde wereld zonder de bundel",
+      "caption": "Dezelfde 432 atomen vanuit hetzelfde begin, nooit belicht, precies gelijk opspelend met de belichte vloer. Vier op de vijf zijn gebonden, de doos heeft minder dan de helft van de temperatuur van de belichte vloer, en de klontjes zijn neergeslagen in kristallijne plekken."
+    },
+    "phototroph-walkup": {
+      "title": "De belichte en de donkere vloer",
+      "caption": "Eén moment van beide werelden, plat naast elkaar gelegd. Atomen van de soort waarop de bundel is afgestemd zijn op beide vloeren violet; de violette waas boven de belichte vloer is enscenering van de bundel, geen gemeten grootheid."
+    },
+    "phototroph-starved": {
+      "title": "Badend in licht, bijna niets gevangen",
+      "caption": "Hoeveel fotonen een klontje tijdens zijn eigen levensduur absorbeert, gemeten bij drie bundelsterktes en drie interne overdrachtssnelheden. Wil licht de klontjes vormen, dan moet het antwoord één naderen; de beste van negen runs haalt 0,08, twaalfenhalf keer te weinig."
     },
     "arcedit#0": {
       "title": "De leraar kopieert een veelkleurig raster",
@@ -304,29 +325,13 @@
       "title": "Welke woordenschat beter is hangt af van de vraag",
       "caption": "Dezelfde editor, twee woordenschatten. Bij het stap voor stap nabootsen van een leraar scoren rauwe klikken veel hoger boven toeval. Bij willekeurige keuze eindigen rauwe klikken nooit een spel met een goede cel, 'schilder deze cel in deze kleur' wel, in 152 van 256 spellen."
     },
+    "arcedit.workshop.env": {
+      "title": "De editor als model",
+      "caption": "De editor als voorwerp: cellen als tegels, de cursor een zuil van licht, het zicht van de agent als glazen platen boven het canvas, naar boven telkens twee keer zo breed. Eén stilgezette stap, de 68e, uit de episode van de gescripte leraar; posities en kleuren komen uit de episode, de verhoudingen zijn ontworpen."
+    },
     "arcedit.inside.canvas": {
       "title": "Het canvas op celschaal",
       "caption": "De gescripte leraar kopieert een veelkleurig raster van vijf bij vijf in 114 klikken: naar het palet, naar de cel, terug naar het palet. Dit toont de taak via het programma dat haar definieert; geen getrainde agent lost de veelkleurige kopie al op."
-    },
-    "club-floor": {
-      "title": "De vloer",
-      "caption": "De eigen set van de club, op de machine van het paleis uit een startwaarde gemaakt en als livestream hierheen gebracht: kick, bas, hi-hats en een vlakke klank die elke acht maten veranderen. Niets wordt opgenomen; als de laatste bezoeker vertrekt, stopt de encoder en wordt de vloer stil."
-    },
-    "phototroph-lit": {
-      "title": "Belicht: de wereld onder de bundel",
-      "caption": "432 atomen na 500 tijdseenheden onder een gestage bundel die op één soort is afgestemd, nog 60 verder getoond. Ongeveer een derde is gebonden en de doos blijft warm; klontjes vormen zich en vallen binnen enkele tientallen tijdseenheden weer uiteen."
-    },
-    "phototroph-dark": {
-      "title": "Donker: dezelfde wereld zonder de bundel",
-      "caption": "Dezelfde 432 atomen vanuit hetzelfde begin, nooit belicht, precies gelijk opspelend met de belichte vloer. Vier op de vijf zijn gebonden, de doos heeft minder dan de helft van de temperatuur van de belichte vloer, en de klontjes zijn neergeslagen in kristallijne plekken."
-    },
-    "phototroph-walkup": {
-      "title": "De belichte en de donkere vloer",
-      "caption": "Eén moment van beide werelden, plat naast elkaar gelegd. Atomen van de soort waarop de bundel is afgestemd zijn op beide vloeren violet; de violette waas boven de belichte vloer is enscenering van de bundel, geen gemeten grootheid."
-    },
-    "phototroph-starved": {
-      "title": "Badend in licht, bijna niets gevangen",
-      "caption": "Hoeveel fotonen een klontje tijdens zijn eigen levensduur absorbeert, gemeten bij drie bundelsterktes en drie interne overdrachtssnelheden. Wil licht de klontjes vormen, dan moet het antwoord één naderen; de beste van negen runs haalt 0,08, twaalfenhalf keer te weinig."
     }
   }
 }

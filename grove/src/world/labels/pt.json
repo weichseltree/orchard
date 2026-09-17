@@ -130,7 +130,7 @@
     "arcedit": {
       "title": "arcedit",
       "kicker": "Pode uma máquina aprender a resolver quebra-cabeças ARC como uma pessoa diante de um ecrã?",
-      "intro": "arcedit pergunta se um agente consegue resolver quebra-cabeças editando: olha em volta, escolhe uma cor e clica, e só vê com nitidez o que está perto do seu cursor. Esta primeira sala mostra a tarefa. Um professor programado copia uma grelha multicolorida de cinco por cinco, célula a célula, mostrada como uma nuvem de células por onde caminhar, como um filme com a visão do agente por baixo da tela, e como imagens fixas. Na parede oeste, o ambiente está construído como maqueta, com a visão empilhada em vidro sobre os ladrilhos. A esfera junto à nuvem leva ao interior da tela.",
+      "intro": "arcedit pergunta se um agente consegue resolver quebra-cabeças editando: olha em volta, escolhe uma cor e clica, e só vê com nitidez o que está perto do seu cursor. Esta primeira sala mostra a tarefa. Um professor programado copia uma grelha multicolorida de cinco por cinco, célula a célula, mostrada como uma nuvem de células por onde caminhar, como um filme com a visão do agente por baixo da tela, e como imagens fixas. Na parede oeste, uma imagem mostra o ambiente construído como maqueta, com a visão empilhada em vidro sobre os ladrilhos; a própria maqueta está na oficina. A esfera junto à nuvem leva ao interior da tela.",
       "lookFor": "Repare em quão raramente a grelha fonte está nítida enquanto a resposta é pintada; a cor tem de ser buscada e transportada.",
       "limit": "O que aqui está pendurado é a tarefa, executada pelo programa que a define; nenhum agente treinado resolve ainda esta cópia multicolorida."
     },
@@ -195,9 +195,10 @@
     },
     "arcedit/workshop": {
       "title": "A oficina",
-      "kicker": "De que é feito o repositório?",
-      "intro": "O repositório como maqueta sobre uma mesa: cada bloco é uma pasta, do tamanho dos bytes que guarda. O motor, os instrumentos, as verificações e os registos estão todos aqui; alguns são o que está pendurado nas outras salas.",
-      "lookFor": "Os registos ocupam a maior parte da mesa; o motor em si é pequeno."
+      "kicker": "De que é feito o repositório, e como é o editor enquanto objeto?",
+      "intro": "A oficina mostra duas maquetas. Sobre a mesa está o repositório: cada bloco é uma pasta, do tamanho dos bytes que guarda; o motor, os instrumentos, as verificações e os registos estão todos aqui, e alguns são o que está pendurado nas outras salas. Perto, numa base baixa, está o editor como maqueta, parado num passo do episódio do professor programado: as células como ladrilhos, o cursor como uma coluna de luz e a visão do agente como placas de vidro empilhadas sobre a tela, cada uma com o dobro da largura da de baixo. Dê-lhe a volta para ver com que rapidez a visão se alarga longe do cursor.",
+      "lookFor": "Na mesa os registos ofuscam o motor; na base, siga as molduras de luz para cima a partir do pé do cursor: cada uma tem o dobro da largura da de baixo, e só há vidro onde esse nível vê algo que não seja tela vazia.",
+      "limit": "A maqueta mostra o professor programado num instante, não um agente treinado. As posições e as cores são as do episódio; as proporções são desenhadas. Os blocos da mesa mostram tamanho, não importância."
     },
     "arcedit/inside": {
       "title": "Dentro da tela",
@@ -247,6 +248,26 @@
     "orrery-worlds": {
       "title": "O trio de planetas à escala do céu",
       "caption": "Os mesmos três mundos gravados da sala de coarsen, cada um com oitenta metros: 508 744 partículas, 1 129 fotogramas ao longo de 96 tempos dinâmicos, uma única disposição inicial, três forças de repulsão entre a espécie pesada e a leve. As regiões cor de ferro contêm mais partículas pesadas, as pálidas mais leves; o brilho codifica a temperatura."
+    },
+    "club-floor": {
+      "title": "A pista",
+      "caption": "O set próprio do clube, feito na máquina do palácio a partir de uma semente e trazido aqui como emissão em directo: bombo, baixo, pratos e uma camada de fundo que mudam a cada oito compassos. Nada fica gravado; quando o último visitante sai, o codificador pára e a pista fica em silêncio."
+    },
+    "phototroph-lit": {
+      "title": "Iluminada: o mundo sob o feixe",
+      "caption": "432 átomos após 500 unidades de tempo sob um feixe constante sintonizado para uma espécie, mostrados durante mais 60. Cerca de um terço está ligado e a caixa mantém-se quente; os aglomerados formam-se e desfazem-se em poucas dezenas de unidades de tempo."
+    },
+    "phototroph-dark": {
+      "title": "Escura: o mesmo mundo sem o feixe",
+      "caption": "Os mesmos 432 átomos a partir do mesmo início, nunca iluminados, em sincronia com a plataforma iluminada. Quatro em cada cinco estão ligados, a caixa está a menos de metade da temperatura da plataforma iluminada e os aglomerados assentaram em manchas cristalinas."
+    },
+    "phototroph-walkup": {
+      "title": "A plataforma iluminada e a plataforma escura",
+      "caption": "Um instante de ambos os mundos, dispostos na horizontal lado a lado. Os átomos da espécie para a qual o feixe está sintonizado são violeta em ambas as plataformas; a névoa violeta sobre a plataforma iluminada é encenação do feixe, não uma grandeza medida."
+    },
+    "phototroph-starved": {
+      "title": "Banhados em luz, quase nada apanham",
+      "caption": "Quantos fotões um aglomerado absorve durante a sua própria vida, medido com três intensidades de feixe e três taxas de transferência internas. Para a luz moldar os aglomerados, a resposta tem de se aproximar de um; a melhor de nove simulações chega a 0,08, doze vezes e meia aquém."
     },
     "arcedit#0": {
       "title": "O professor copia uma grelha multicolorida",
@@ -304,29 +325,13 @@
       "title": "Qual vocabulário é melhor depende de como se pergunta",
       "caption": "O mesmo editor, dois vocabulários. A imitar um professor passo a passo, os cliques crus ficam muito mais acima do acaso. Escolhendo ao acaso, os cliques crus nunca acabam um jogo com uma célula certa, enquanto «pinta esta célula desta cor» acaba, em 152 de 256 jogos."
     },
+    "arcedit.workshop.env": {
+      "title": "O editor como maqueta",
+      "caption": "O editor como objeto: as células como ladrilhos, o cursor como uma coluna de luz, a visão do agente como placas de vidro sobre a tela, cada camada com o dobro da largura a subir. Um passo congelado, o 68.º, do episódio do professor programado; as posições e as cores são as do episódio, as proporções desenhadas."
+    },
     "arcedit.inside.canvas": {
       "title": "A tela à escala de uma célula",
       "caption": "O professor programado copia uma grelha multicolorida de cinco por cinco em 114 cliques: à paleta, à célula, de volta à paleta. Mostra a tarefa pelo programa que a define; nenhum agente treinado resolve ainda a cópia multicolorida."
-    },
-    "club-floor": {
-      "title": "A pista",
-      "caption": "O set próprio do clube, feito na máquina do palácio a partir de uma semente e trazido aqui como emissão em directo: bombo, baixo, pratos e uma camada de fundo que mudam a cada oito compassos. Nada fica gravado; quando o último visitante sai, o codificador pára e a pista fica em silêncio."
-    },
-    "phototroph-lit": {
-      "title": "Iluminada: o mundo sob o feixe",
-      "caption": "432 átomos após 500 unidades de tempo sob um feixe constante sintonizado para uma espécie, mostrados durante mais 60. Cerca de um terço está ligado e a caixa mantém-se quente; os aglomerados formam-se e desfazem-se em poucas dezenas de unidades de tempo."
-    },
-    "phototroph-dark": {
-      "title": "Escura: o mesmo mundo sem o feixe",
-      "caption": "Os mesmos 432 átomos a partir do mesmo início, nunca iluminados, em sincronia com a plataforma iluminada. Quatro em cada cinco estão ligados, a caixa está a menos de metade da temperatura da plataforma iluminada e os aglomerados assentaram em manchas cristalinas."
-    },
-    "phototroph-walkup": {
-      "title": "A plataforma iluminada e a plataforma escura",
-      "caption": "Um instante de ambos os mundos, dispostos na horizontal lado a lado. Os átomos da espécie para a qual o feixe está sintonizado são violeta em ambas as plataformas; a névoa violeta sobre a plataforma iluminada é encenação do feixe, não uma grandeza medida."
-    },
-    "phototroph-starved": {
-      "title": "Banhados em luz, quase nada apanham",
-      "caption": "Quantos fotões um aglomerado absorve durante a sua própria vida, medido com três intensidades de feixe e três taxas de transferência internas. Para a luz moldar os aglomerados, a resposta tem de se aproximar de um; a melhor de nove simulações chega a 0,08, doze vezes e meia aquém."
     }
   }
 }
