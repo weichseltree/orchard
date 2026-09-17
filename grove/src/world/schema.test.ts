@@ -45,8 +45,8 @@ describe("mansion.json", () => {
 
   it("titles the tree rooms after their repositories and stands the grounds below the terrace", () => {
     const mansion = parseMansion(mansionDocument);
-    expect(mansion.rooms.filter((r) => ["einstruct", "world-engine", "phototroph"].includes(r.id)).map((r) => r.title))
-      .toEqual(["einstruct", "world-engine", "phototroph"]);
+    expect(mansion.rooms.filter((r) => ["einstruct", "world-engine", "phototroph", "quantumflow"].includes(r.id)).map((r) => r.title))
+      .toEqual(["einstruct", "world-engine", "phototroph", "quantumflow"]);
     expect(roomById(mansion, "terrace")!.bounds.min[1]).toBe(0);
     expect(roomById(mansion, "parterre")!.bounds.min[1]).toBeCloseTo(-1.6);
     expect(roomById(mansion, "belvedere")!.bounds.min[1]).toBeCloseTo(1.8);

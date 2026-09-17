@@ -311,7 +311,7 @@ still unbuilt, this is the authored path of §8.
 ## The east wing: quantumflow (2026-09-17)
 
 Six rooms east of the orangery, entered by a 7 by 5.5 m opening in its east
-wall at z -55 — the widest doorway in the state rooms, and thirteen metres of
+wall at z -55 — the widest doorway with a stone surround, and thirteen metres of
 clear wall from the orangery's other new door, fourteen and a half from the FTL
 Chess table at z -73. The
 Shooting Gallery (`quantumflow`, x 10..52, z -70..-40) is the hall that door
@@ -325,7 +325,7 @@ Inside the Cloud (`quantumflow/inside`, 400..480, -160..-80) is a tenth of the
 palace's metre, reached by a portal in the Cloud.
 
 Why it is a hub and not an enfilade: the wing was first laid out as one line
-running to x 164 under a 12.5 m hall. The light field is a single grid over
+running to x 164 under a hall whose ceiling stood at y 14. The light field is a single grid over
 every lit room with a budget of 1,500,000 bytes, and that laid out measured
 1,728,496 — the length and the height both, which is why the figure does not
 reproduce from the eastward reach alone — the palace

@@ -61,6 +61,16 @@ describe.each(files)("labels/%s.json", (locale, raw) => {
   for (const room of mansion.rooms) {
     const copy = labels.rooms[room.id];
     if (!copy) continue;
+    // Both documents are read by visitors and neither is derived from the
+    // other: the relief over a door and the wall text come from here, while
+    // the Guide's heading, the door list and the notices come from
+    // mansion.json's own `title`. They drifted apart on 2026-09-17 when the
+    // wing's rooms were renamed here alone, and nothing failed.
+    if (locale === "en") {
+      it(`${room.id}: is titled the same here as in mansion.json`, () => {
+        expect(copy.title).toBe(room.title);
+      });
+    }
     const exhibits = room.hangings.length > 0;
     it(`${room.id}: an introduction of ${exhibits ? "60 to 110" : "25 to 50"} words, a look-for line${exhibits ? ", a limit" : ""}`, () => {
       const n = measure(locale, copy.intro);
