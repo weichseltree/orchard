@@ -1,0 +1,239 @@
+{
+  "package": "@someother/cat-proxy",
+  "version": "0.0.0",
+  "license": "AGPL-3.0-or-later",
+  "source_repo": "someotherlife (private), packages/cat-proxy",
+  "source_url": "private repository; ask the owner for access (AGPL corresponding source)",
+  "commit": "780c039c15ec1a3b655dfdb12692d2ba69e1db2a",
+  "dirty": false,
+  "generated_at_utc": "2026-09-17T22:12:27Z",
+  "generated_by": "packages/cat-proxy/tools/sync-to-orchard.mjs",
+  "three_peer_range": ">=0.180.0 <0.200.0",
+  "note": "Edits belong upstream. `node check-vendor.mjs` re-hashes this copy against the list below.",
+  "files": {
+    "assets/blue-preview.png": {
+      "bytes": 92064,
+      "sha256": "4481ace7693b15df5df2e603d03952a4b1db109b509ff0b32406b502299aca29"
+    },
+    "assets/blue.glb": {
+      "bytes": 1854460,
+      "sha256": "1232a4aa12444615bfe5760d24f0d7e5bbd3de0153394ec596e0d1a25dd8d435"
+    },
+    "assets/blue.json": {
+      "bytes": 6812,
+      "sha256": "59609e0c4693a35e48694ebd631228f77b093057e301c0cc6d054db0b7be9913"
+    },
+    "assets/seal-preview.png": {
+      "bytes": 93026,
+      "sha256": "5b911a112fd00d8bf5821f9cde1403edc0550af0c0b598142370a0b0efd3db1d"
+    },
+    "assets/seal.glb": {
+      "bytes": 1854388,
+      "sha256": "96d40b2c568fa7335c7b866fbbccf77c4dd421f609aee10fd1cf70c4a3a02621"
+    },
+    "assets/seal.json": {
+      "bytes": 6817,
+      "sha256": "e7debc69c0a06af13aeb1ce3d12359635af77e1c9ae17dc9512edb0b2b73729c"
+    },
+    "check-vendor.mjs": {
+      "bytes": 2985,
+      "sha256": "2cf461469fc351be56e9c999063dbf833d015c0fad47e8f5eb51d31c2249f15a"
+    },
+    "LICENSE": {
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    "src/arena.ts": {
+      "bytes": 4350,
+      "sha256": "203484dd25a60b3f155be9fe9e863ff281637f69be2a9a9cdd6afc9076cfcf66"
+    },
+    "src/body/appearance.ts": {
+      "bytes": 6607,
+      "sha256": "2f98a693fde66caca6f34ac9eac0a870ff73dc7b3e84f8838df9b71f661b9da6"
+    },
+    "src/body/cat.test.ts": {
+      "bytes": 8722,
+      "sha256": "accea22aaf408ac50e177796d544b9ddcedaf51e0861f8a7a86b01e1058c0542"
+    },
+    "src/body/cat.ts": {
+      "bytes": 32978,
+      "sha256": "962a281122b37c40dec432befa3fe90b40064acfa2554067f765a19e51cbbf29"
+    },
+    "src/body/clipdefs.test.ts": {
+      "bytes": 2842,
+      "sha256": "6dd65c281a9f44b44b0552b9dd797344ab04ccc91ed1af68f3c5170d9d891e6d"
+    },
+    "src/body/clipdefs.ts": {
+      "bytes": 15334,
+      "sha256": "2c5d9fba94eafe0bfb418d6193759207ddcd1e92ff22e8cbae55c0b8ea532d98"
+    },
+    "src/body/clips.ts": {
+      "bytes": 2555,
+      "sha256": "d3ad48f2567eeb7e35ae2c57340dc263a3124c6d4e3ea440908a5a6895c085b8"
+    },
+    "src/body/controller.test.ts": {
+      "bytes": 8913,
+      "sha256": "cef1257f99fefe841502c82351a5cc67f1aa1ff6e135a8f3132f134ff52a519e"
+    },
+    "src/body/controller.ts": {
+      "bytes": 18869,
+      "sha256": "9cd1aeccbf3f346f788fc4539609ab349549220b0589f78febb8dfecb3398c25"
+    },
+    "src/body/face.ts": {
+      "bytes": 14488,
+      "sha256": "356134eac31d1ce2285134932cffcd61e6081f45d90ae0540e1407c662d95756"
+    },
+    "src/body/gait.test.ts": {
+      "bytes": 2633,
+      "sha256": "3fbe66ad7c33db937126a987fdda39e6db194cfdb3bc622eaa0212e76c0c829f"
+    },
+    "src/body/gait.ts": {
+      "bytes": 5147,
+      "sha256": "e7ba48f9d0ae866245bc57505d02ce304b0720aa6fd98dc839fdb56156bc796a"
+    },
+    "src/body/legs.test.ts": {
+      "bytes": 1661,
+      "sha256": "3d1d755f3b5febd6a0e4a8ec3877d26af2c484f76fc555ca8bddb4574a7377d9"
+    },
+    "src/body/legs.ts": {
+      "bytes": 2599,
+      "sha256": "27994f822611c8d19dbcd81b6c4a810e96c3f462cdabf07fbacf1bae75ea0fe4"
+    },
+    "src/body/planner.test.ts": {
+      "bytes": 3298,
+      "sha256": "c426577b4ced7cfa19f1cffd7b7e4fb7a6b2af90b08bb9cbd760c8fd6e53d9e5"
+    },
+    "src/body/planner.ts": {
+      "bytes": 2139,
+      "sha256": "62adae7865477645316ca55e8afffb1843ed1cdee74ba757c0ec0ef70c741d12"
+    },
+    "src/body/pose-support.ts": {
+      "bytes": 1373,
+      "sha256": "86f405530a08d72b8022c1bd3564fbb8db3b49280937baf35644728942a4689a"
+    },
+    "src/body/pose.ts": {
+      "bytes": 9692,
+      "sha256": "c67604c5c9a627556368935ce70ee919e03d994cfc22d8500fe091cd313494c8"
+    },
+    "src/body/separate.test.ts": {
+      "bytes": 1716,
+      "sha256": "34f774d0b6a86f1395baa645dd6cac0d6003698799dae54ba16e5fa1924bd84d"
+    },
+    "src/body/separate.ts": {
+      "bytes": 1278,
+      "sha256": "655a6228f37c2c7296b3c7b937c77f8849a41d1473f13667ddc9b5c41f39ca63"
+    },
+    "src/body/skeleton.ts": {
+      "bytes": 7301,
+      "sha256": "5203e3d3c095461ba6dd550c3e7b841c2b6bba75865e48e36ff4df092b0aa271"
+    },
+    "src/body/steer.test.ts": {
+      "bytes": 2475,
+      "sha256": "f1f4d3eb18538605699e5f0111e9590294b40ecfd3de8d1da50fa37e0040d890"
+    },
+    "src/body/steer.ts": {
+      "bytes": 2541,
+      "sha256": "d56f57ec1d515ce30735de4bc6dfa29fbde27e718b21caa990c19b657986dc42"
+    },
+    "src/brain/behaviours.ts": {
+      "bytes": 17574,
+      "sha256": "18e1c5e816e46d22fa505407ed947f83039c6611edda2f3f64e73ce96d457b07"
+    },
+    "src/brain/brain.ts": {
+      "bytes": 17598,
+      "sha256": "0ba6f69fb709b1a4ce8d8b115afdf715ca0cb89d42bc9730f17e5786a58b7af2"
+    },
+    "src/brain/budget.test.ts": {
+      "bytes": 1803,
+      "sha256": "d31e57ccc5bc53d73a4a5316f88f04ca406bcfba51a890db6071f968d2ee4296"
+    },
+    "src/brain/contract.test.ts": {
+      "bytes": 2857,
+      "sha256": "de3778175da71e34f7f999eaad3c5d2f8d5f6c1cdc9113c1a705278b267ab28a"
+    },
+    "src/brain/determinism.test.ts": {
+      "bytes": 1000,
+      "sha256": "eb89c5a4a2c0f33a726a419711736dba95ef6deab703a71228e10e101eac912f"
+    },
+    "src/brain/drives.ts": {
+      "bytes": 1531,
+      "sha256": "cfaacf32dbe3b7b2fc458ac8f8a6a835250fac0242dfd3c864fb2add1b8d741c"
+    },
+    "src/brain/episode-duration.test.ts": {
+      "bytes": 3854,
+      "sha256": "a713578ed02a0aa6e901599a51793393034b9a5fb605d2adefb7122b16fbd9ae"
+    },
+    "src/brain/geom.ts": {
+      "bytes": 2431,
+      "sha256": "0f80c3857e6e220a27c401eeebe64245643b685b08365a2c11027a02f5184933"
+    },
+    "src/brain/index.ts": {
+      "bytes": 661,
+      "sha256": "2917491f4b486ae659be988495242e934c57a93321a520af8e9c4c5297a99456"
+    },
+    "src/brain/interrupts.test.ts": {
+      "bytes": 4451,
+      "sha256": "8cbecd67a0624a9d323411d658171e95708e9f03fef41c98b988916bd5c5c41c"
+    },
+    "src/brain/params.ts": {
+      "bytes": 8661,
+      "sha256": "923ae6f188fbc4cc517a5bf7beb46870d68630c659cba92104a64b0206376ade"
+    },
+    "src/brain/repeats.test.ts": {
+      "bytes": 702,
+      "sha256": "f8d15f20dc560195cb89dd88d0639ef396b2abad21f389893d82309de02a14b0"
+    },
+    "src/brain/rng.ts": {
+      "bytes": 3148,
+      "sha256": "cdddc1c91c5c3b489a31eac8069ef669335e1ae88dec225f843749a2162c25ce"
+    },
+    "src/brain/salience.ts": {
+      "bytes": 1136,
+      "sha256": "13fc0981bb82aa9a8121829cde631f616b2a8eebcf061bc0c34f0d3112f3f628"
+    },
+    "src/brain/selection.ts": {
+      "bytes": 2597,
+      "sha256": "c050ee11c191f453d44bfaca1935d07b008c9394302afb4036dd5d49c95f5d58"
+    },
+    "src/brain/simulate.ts": {
+      "bytes": 4067,
+      "sha256": "6868de43c938e7b8b202e53b9986c7e78f069b89f475b1a9b1df8f8b3245ee75"
+    },
+    "src/brain/test-support.ts": {
+      "bytes": 2140,
+      "sha256": "270b03b5abb04fe3d565c31f2066c5b3f56ad488d1aaeafb7cfa539f37200d28"
+    },
+    "src/brain/types.ts": {
+      "bytes": 6192,
+      "sha256": "5d3bd7ea02c915851e6b98a486413bd7ed7765cf96be8e69789fe35f2e111ef8"
+    },
+    "src/brain/waking.test.ts": {
+      "bytes": 1369,
+      "sha256": "3277667fd21b1a533d8743f2496252dbb599636b9d59a83dbdd7477af3f353d7"
+    },
+    "src/contract.ts": {
+      "bytes": 3412,
+      "sha256": "3276fb02059c7174918006ca33cb7761685ceec060bc248496197c768da38b68"
+    },
+    "src/headless.ts": {
+      "bytes": 6854,
+      "sha256": "3e09d09f96588996803554cce032d0ed482c93219b3a712ceb7448628d03652f"
+    },
+    "src/index.ts": {
+      "bytes": 3045,
+      "sha256": "afd9e381097c24ec2b2b958e5468ba2b4a6eca82236de77bf8e138c0df043ffe"
+    },
+    "src/world.test.ts": {
+      "bytes": 9443,
+      "sha256": "981aa7a6c19158ee41b105a75cdffca7f03789ba78cdfe7d87be59d931c74fb6"
+    },
+    "src/world.ts": {
+      "bytes": 5863,
+      "sha256": "c2bb15e5819d577e78e53a02fe9a868e74f8c6990f7b514c9101709605fed49d"
+    },
+    "README.md": {
+      "bytes": 1386,
+      "sha256": "b9f6db12d675adc5827c145f8cdc2449480d501a60653e1fe8d5ea71b6fc5cb4"
+    }
+  }
+}

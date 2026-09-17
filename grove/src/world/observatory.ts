@@ -687,24 +687,46 @@ function roofMaterial(): Material {
   return roofFinish ??= new MeshBasicMaterial({ vertexColors: true, side: DoubleSide });
 }
 
-/** Columns along the long walls of the great rooms, clear of doors and hangings. */
-function colonnade(b: Builder, spring: number): void {
-  const room = b.room;
-  if (!COLONNADED.includes(room.id)) return;
-  const [, y0, z0] = room.bounds.min, [, , z1] = room.bounds.max;
-  const height = spring - 0.42 - y0;
-  if (height < 3) return;
+/** How far a column's base stands out from its centre, metres: what a body must keep off it. */
+export const COLUMN_FOOT_M = 0.42;
+
+/**
+ * Where a colonnaded room's columns meet the floor. The geometry below lays itself
+ * on this list, and `roomArena` (room-arena.ts) hands the same list to the cats, so
+ * they walk round exactly the columns the room drew -- including the ones a doorway
+ * or a hanging suppressed. A static list would be wrong the first time an exhibit moved.
+ *
+ * A room too low for a colonnade draws none; this still reports where they would
+ * stand, which costs an arena a few phantom obstacles in a room under ~3.5 m and
+ * nothing in the four rooms that are colonnaded today.
+ */
+export function columnFootprints(room: Room): Array<{ x: number; z: number }> {
+  if (!COLONNADED.includes(room.id)) return [];
+  const [, , z0] = room.bounds.min, [, , z1] = room.bounds.max;
   const bays = Math.max(2, Math.round((z1 - z0) / 4.6));
+  const out: Array<{ x: number; z: number }> = [];
   for (const wall of walls(room).filter(w => w.axis === "x")) {
     const x = wall.at + wall.inward * 1.15;
     for (let i = 0; i <= bays; i++) {
       const z = z0 + 1.6 + (z1 - z0 - 3.2) * i / bays;
       if (doorNear(room, wall, z, 1.0) || hangingNear(room, wall, z, 0.9)) continue;
-      b.add("column", "stone", x, y0 + height / 2 + 0.12, z, 0.3, height, 0.3);
-      b.add("column", "brass", x, y0 + 0.07, z, 0.42, 0.14, 0.42);
-      b.add("column", "brass", x, y0 + height + 0.2, z, 0.44, 0.16, 0.44);
-      b.box("stone", x, y0 + height + 0.36, z, 0.9, 0.16, 0.9);
+      out.push({ x, z });
     }
+  }
+  return out;
+}
+
+/** Columns along the long walls of the great rooms, clear of doors and hangings. */
+function colonnade(b: Builder, spring: number): void {
+  const room = b.room;
+  const [, y0] = room.bounds.min;
+  const height = spring - 0.42 - y0;
+  if (height < 3) return;
+  for (const { x, z } of columnFootprints(room)) {
+    b.add("column", "stone", x, y0 + height / 2 + 0.12, z, 0.3, height, 0.3);
+    b.add("column", "brass", x, y0 + 0.07, z, COLUMN_FOOT_M, 0.14, COLUMN_FOOT_M);
+    b.add("column", "brass", x, y0 + height + 0.2, z, 0.44, 0.16, 0.44);
+    b.box("stone", x, y0 + height + 0.36, z, 0.9, 0.16, 0.9);
   }
 }
 

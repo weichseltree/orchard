@@ -18,6 +18,7 @@ import type { VideoWall } from "../media/videowall";
 import type { PlanetExhibit } from "./planet-exhibit";
 import type { ModelExhibit } from "./model-exhibit";
 import type { AudioExhibit } from "./audio-exhibit";
+import type { CatWorld } from "../vendor/cat-proxy/src/index";
 import { StillBundleSchema, VideoBundleSchema } from "../tape/bundle";
 import type { Provenance } from "../ui/provenance";
 import { bundleBaseOf, pickExhibit, type ExhibitRow } from "./exhibits";
@@ -92,6 +93,11 @@ export interface BuiltWorld {
    * (`reassign`); nothing else drives them.
    */
   audios: AudioExhibit[];
+  /**
+   * Manuel's two cats, in the one room that has them, or null everywhere else.
+   * The frame loop ticks them with the visitor's position; see cats.ts.
+   */
+  cats: CatWorld | null;
   /** Streams the start room's neighbourhood in. Resolves when everything that can load has. */
   load(): Promise<void>;
   /** Loads more rooms (a doorway crossing widens the neighbourhood); rooms already loaded are skipped. */
@@ -276,6 +282,18 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
       read: () => shell.provenance,
     });
     options.onRoomReady?.(room, shell);
+    // The hall's cats. Generated in code -- no glb, no texture, nothing to download --
+    // but the module still has to arrive, and awaiting it here would hold up this room's
+    // tapes behind two cats. Tracked, not awaited, exactly as a reading stand is.
+    if (!world.cats) {
+      void track(import("./cats").then(({ buildCats, attachCats }) => {
+        const cats = buildCats(room);
+        // The world went while the module was loading, or another room got there first.
+        if (!cats || disposed || world.cats) return cats?.dispose();
+        world.cats = cats;
+        attachCats(cats, groupFor(room));
+      }).catch((error: unknown) => onNotice(`cats: ${message(error)}`)));
+    }
     // A reading stand at every tape, from the document alone, so it stands
     // whether or not the tape loads and the wall text has a plate to face.
     for (const hanging of room.hangings) {
@@ -552,6 +570,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
     planets: [],
     models: [],
     audios: [],
+    cats: null,
     load: () => ensureRooms(neighbourhood(mansion, options.startRoom ?? mansion.start)),
     ensureRooms: (ids) => ensureRooms(ids),
     settled,
@@ -569,6 +588,8 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
       for (const planet of world.planets) planet.dispose();
       for (const model of world.models) model.dispose();
       for (const audio of world.audios) audio.dispose();
+      world.cats?.dispose();
+      world.cats = null;
       for (const stand of stands.values()) void stand.then((s) => s.dispose());
       stands.clear();
       if (labelGroups.size) {

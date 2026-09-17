@@ -53,6 +53,7 @@ import { pickLocale } from "./ui/locale";
 import { AVAILABLE_LOCALES, labelsFor, labelsLoaded, roomTitle } from "./world/labels/index";
 import { ATLAS_LABELS, type Screen } from "./media/screen";
 import type { TapeExhibit } from "./world/tape-exhibit";
+import { CAT_ROOM, visitorsIn } from "./world/cats";
 
 // The grove. Boot order matters: the canvas renders within a frame of the
 // module loading, the world streams in behind it room by room, and the network
@@ -1120,6 +1121,13 @@ view.start((dt, time, rawDt) => {
   }
   for (const planet of world?.planets ?? []) planet.update();
   for (const model of world?.models ?? []) model.update(dt);
+  // The cats tick only while somebody is in their room: two brains and two skinned
+  // bodies are not free, and nothing about them is observable from three rooms away.
+  if (world?.cats && body.room === CAT_ROOM) {
+    // `time` is the frame timestamp in milliseconds; the brain counts in seconds
+    // (a greeting's cooldown is 120 s), and takes its clock injected rather than read.
+    world.cats.tick(dt, time / 1000, visitorsIn(body.room, body));
+  }
 
   const tape = nearestTape();
   hud.setScrubberVisible(tape !== null);
