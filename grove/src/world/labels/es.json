@@ -117,8 +117,9 @@
     "club": {
       "title": "club",
       "kicker": "¿Cuánto suena un sótano abovedado?",
-      "intro": "Un club bajo el ala norte: una bóveda baja, una pista de baile de baldosas iluminadas, una barra a lo largo del muro este, reservados a lo largo del oeste, un escenario al fondo. La música será una emisión en directo; hasta que suene, las luces respiran por su cuenta.",
-      "lookFor": "La bola de espejos sobre la pista y las dos líneas de color a lo largo de la bóveda; laten con la música cuando hay música."
+      "intro": "Un club bajo el ala norte: una bóveda baja, una pista de baile de baldosas iluminadas, una barra a lo largo del muro este, reservados a lo largo del oeste, un escenario al fondo. Lo que suena es la emisión propia de la pista, un set calculado en la máquina del palacio y transmitido en directo, de modo que todos los visitantes oyen el mismo golpe con pocos segundos de diferencia entre sí. Las luces siguen sus graves; cuando la pista calla, respiran por su cuenta. La puerta pide micrófono y sonido, para que hablar y cantar puedan funcionar aquí en cuanto exista el enlace de voz.",
+      "lookFor": "La bola de espejos sobre la pista y las dos líneas de color a lo largo de la bóveda; laten con la música cuando hay música.",
+      "limit": "El set lo compone un programa con semilla fija, no una persona; nada aquí es una afirmación sobre la música, y el codificador se detiene cuando el club está vacío."
     },
     "stage": {
       "title": "escenario",
@@ -306,6 +307,10 @@
     "arcedit.inside.canvas": {
       "title": "El lienzo a escala de una celda",
       "caption": "El profesor programado copia una cuadrícula de cinco por cinco de muchos colores en 114 clics: a la paleta, a la celda, de vuelta a la paleta. Muestra la tarea mediante el programa que la define; ningún agente entrenado resuelve aún la copia multicolor."
+    },
+    "club-floor": {
+      "title": "La pista",
+      "caption": "El set propio del club, hecho en la máquina del palacio a partir de una semilla y traído aquí como emisión en directo: bombo, bajo, platos y un colchón que cambian cada ocho compases. Nada se graba; cuando el último visitante se va, el codificador se detiene y la pista queda en silencio."
     },
     "phototroph-lit": {
       "title": "Iluminada: el mundo bajo el haz",

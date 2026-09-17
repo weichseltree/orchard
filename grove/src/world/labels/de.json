@@ -117,8 +117,9 @@
     "club": {
       "title": "Club",
       "kicker": "Wie laut ist ein Gewölbekeller?",
-      "intro": "Ein Club unter dem Nordflügel: ein niedriges Gewölbe, eine Tanzfläche aus leuchtenden Platten, eine Bar an der Ostwand, Nischen im Westen, am Ende eine Bühne. Die Musik wird ein Livestream sein; bis er spielt, atmen die Lichter von selbst.",
-      "lookFor": "Die Spiegelkugel über der Tanzfläche und die beiden Farblinien entlang des Gewölbes; sie pulsieren mit der Musik, wenn es Musik gibt."
+      "intro": "Ein Club unter dem Nordflügel: ein niedriges Gewölbe, eine Tanzfläche aus leuchtenden Platten, eine Bar an der Ostwand, Nischen im Westen, am Ende eine Bühne. Es spielt der Stream der Tanzfläche, ein Set, das die Maschine des Palastes berechnet und live überträgt, sodass alle Besucher denselben Schlag bis auf wenige Sekunden gleichzeitig hören. Die Lichter folgen seinem Bass; ist es still, atmen sie von selbst. Die Tür verlangt Mikrofon und Ton, damit Reden und Singen hier funktionieren, sobald die Sprachverbindung besteht.",
+      "lookFor": "Die Spiegelkugel über der Tanzfläche und die beiden Farblinien entlang des Gewölbes; sie pulsieren mit der Musik, wenn es Musik gibt.",
+      "limit": "Das Set komponiert ein Programm mit festem Startwert, kein Mensch; nichts hier ist eine Aussage über Musik, und der Encoder hält an, wenn der Club leer ist."
     },
     "stage": {
       "title": "Bühne",
@@ -306,6 +307,10 @@
     "arcedit.inside.canvas": {
       "title": "Die Leinwand im Maßstab einer Zelle",
       "caption": "Der geskriptete Lehrer kopiert ein vielfarbiges Fünf-mal-fünf-Gitter in 114 Klicks: zur Palette, zur Zelle, zurück zur Palette. Das zeigt die Aufgabe durch das Programm, das sie definiert; kein gelernter Agent löst die vielfarbige Kopie bisher."
+    },
+    "club-floor": {
+      "title": "Die Tanzfläche",
+      "caption": "Das eigene Set des Clubs, auf der Maschine des Palastes aus einem Startwert erzeugt und als Livestream hierher getragen: Kick, Bass, Hi-Hats und ein Flächenklang, die sich alle acht Takte ändern. Nichts wird aufgezeichnet; geht der letzte Besucher, hält der Encoder an."
     },
     "phototroph-lit": {
       "title": "Belichtet: die Welt unter dem Strahl",

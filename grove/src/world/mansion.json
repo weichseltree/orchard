@@ -738,7 +738,23 @@
           "height": 4
         }
       ],
-      "hangings": [],
+      "hangings": [
+        {
+          "id": "club-floor",
+          "kind": "audio",
+          "title": "The floor",
+          "live": {
+            "provider": "club",
+            "streamId": "floor"
+          },
+          "position": [
+            0,
+            -2.5,
+            -52
+          ],
+          "sizeMeters": 14
+        }
+      ],
       "architecture": "observatory",
       "requires": [
         "microphone",

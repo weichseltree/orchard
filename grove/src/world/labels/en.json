@@ -117,8 +117,9 @@
     "club": {
       "title": "club",
       "kicker": "How loud is a vaulted cellar?",
-      "intro": "A club under the north wing: a low vault, a dance floor of lit tiles, a bar along the east wall, booths along the west, a stage at the far end. The music will be a live stream; until it plays, the lights breathe on their own.",
-      "lookFor": "The mirror ball over the floor and the two colour lines along the vault; they pulse with the music when there is music."
+      "intro": "A club under the north wing: a low vault, a dance floor of lit tiles, a bar along the east wall, booths along the west, a stage at the far end. What plays is the floor's own stream, a set rendered on the palace's machine and carried live, so every visitor hears the same beat within a few seconds of one another. The lights follow its low end; when the floor is quiet, they breathe on their own. The door asks for a microphone and sound, so that talking and singing can work here once the voice link exists.",
+      "lookFor": "The mirror ball over the floor and the two colour lines along the vault; they pulse with the music when there is music.",
+      "limit": "The set is composed by a seeded program, not by a person; nothing here is a claim about music, and the encoder stops when the club is empty."
     },
     "stage": {
       "title": "stage",
@@ -306,6 +307,10 @@
     "arcedit.inside.canvas": {
       "title": "The canvas at the scale of a cell",
       "caption": "The scripted teacher copies a five-by-five grid of many colours in 114 clicks: to the palette, to the cell, back to the palette. This shows the task by the program that defines it; no learned agent solves the many-coloured copy yet."
+    },
+    "club-floor": {
+      "title": "The floor",
+      "caption": "The club's own set, made on the palace's machine from a seed and carried here as a live stream: kick, bass, hats and a pad that change every eight bars. Nothing is recorded; when the last visitor leaves, the encoder stops and the floor goes quiet."
     },
     "phototroph-lit": {
       "title": "Lit: the world under the beam",
