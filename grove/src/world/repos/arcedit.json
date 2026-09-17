@@ -25,13 +25,13 @@
   },
   {
     "path": "results",
-    "bytes": 20976127,
+    "bytes": 22857319,
     "sentence": "The evidence of record: one directory per experiment, each with its dated account.",
     "room": ""
   },
   {
     "path": "results/grove",
-    "bytes": 5300894,
+    "bytes": 5314711,
     "sentence": "The exhibits: recorded episodes, films, stills, charts and the environment as a 3D model.",
     "room": "arcedit"
   },
@@ -55,7 +55,7 @@
   },
   {
     "path": "results/i15_perception_under_reward",
-    "bytes": 10502223,
+    "bytes": 12369275,
     "sentence": "Learning without a teacher, paid by a score: side 2 learned in three of three runs; at side 3 runs read the colour and often do not hand in; seed 0, rerun on repaired code with twice the budget, reached 107 of 128 by 7.8 million steps.",
     "room": "arcedit/reward"
   },
@@ -91,7 +91,7 @@
   },
   {
     "path": "scripts",
-    "bytes": 523466,
+    "bytes": 531085,
     "sentence": "The instruments: one script per experiment, and the ones that make these exhibits.",
     "room": ""
   },

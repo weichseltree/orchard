@@ -130,7 +130,7 @@
     "arcedit": {
       "title": "arcedit",
       "kicker": "Una macchina può imparare a risolvere i rompicapi ARC come una persona davanti a uno schermo?",
-      "intro": "arcedit chiede se un agente possa risolvere rompicapi modificando: si guarda intorno, sceglie un colore e clicca, e vede nitido solo ciò che è vicino al cursore. Questa prima sala mostra il compito. Un maestro programmato copia una griglia multicolore cinque per cinque, cella per cella, mostrata come una nuvola di celle in cui camminare, come un filmato con la vista dell'agente sotto la tela, e come immagini fisse. Sulla parete ovest l'ambiente è costruito come modello, con la vista impilata in vetro sopra le piastrelle. La sfera accanto alla nuvola porta dentro la tela.",
+      "intro": "arcedit chiede se un agente possa risolvere rompicapi modificando: si guarda intorno, sceglie un colore e clicca, e vede nitido solo ciò che è vicino al cursore. Questa prima sala mostra il compito. Un maestro programmato copia una griglia multicolore cinque per cinque, cella per cella, mostrata come una nuvola di celle in cui camminare, come un filmato con la vista dell'agente sotto la tela, e come immagini fisse. Sulla parete ovest un'immagine mostra l'ambiente costruito come modello, con la vista impilata in vetro sopra le piastrelle; il modello stesso si trova nel laboratorio. La sfera accanto alla nuvola porta dentro la tela.",
       "lookFor": "Osservate quanto raramente la griglia sorgente sia nitida mentre si dipinge la risposta; il colore va cercato e portato.",
       "limit": "Ciò che è appeso qui è il compito, eseguito dal programma che lo definisce; nessun agente addestrato risolve ancora questa copia multicolore."
     },
@@ -195,9 +195,10 @@
     },
     "arcedit/workshop": {
       "title": "Il laboratorio",
-      "kicker": "Di che cosa è fatto il repository?",
-      "intro": "Il repository come modello su un tavolo: ogni blocco è una cartella, grande quanto i byte che contiene. Il motore, gli strumenti, le verifiche e i resoconti sono tutti qui; alcuni sono ciò che è appeso nelle altre sale.",
-      "lookFor": "I resoconti occupano gran parte del tavolo; il motore in sé è piccolo."
+      "kicker": "Di che cosa è fatto il repository, e che aspetto ha l'editor come oggetto?",
+      "intro": "Il laboratorio mostra due modelli. Sul tavolo c'è il repository: ogni blocco è una cartella, grande quanto i byte che contiene; il motore, gli strumenti, le verifiche e i resoconti sono tutti qui, e alcuni sono ciò che è appeso nelle altre sale. Su un basamento lì accanto si trova l'editor come modello, fermo in uno dei passi dell'episodio del maestro programmato: le celle come piastrelle, il cursore come una colonna di luce, la vista dell'agente come lastre di vetro impilate sopra la tela, ognuna larga il doppio di quella sotto. Girategli intorno per vedere quanto in fretta la vista si allarga lontano dal cursore.",
+      "lookFor": "Sul tavolo i resoconti sovrastano il motore; sul basamento, la cornice di luce più bassa non ha vetro: a questo passo la parte nitida della vista vede solo tela vuota.",
+      "limit": "Il modello mostra il maestro programmato in un istante, non un agente addestrato. Posizioni e colori sono quelli dell'episodio; le proporzioni sono disegnate. I blocchi sul tavolo mostrano la dimensione, non l'importanza."
     },
     "arcedit/inside": {
       "title": "Dentro la tela",
@@ -247,6 +248,26 @@
     "orrery-worlds": {
       "title": "Il trio di pianeti alla scala del cielo",
       "caption": "Gli stessi tre mondi registrati della sala di coarsen, ciascuno di ottanta metri: 508.744 particelle, 1.129 fotogrammi lungo 96 tempi dinamici, un'unica disposizione iniziale, tre forze di repulsione tra la specie pesante e quella leggera. Le regioni color ferro contengono più particelle pesanti, quelle pallide più leggere; il bagliore codifica la temperatura."
+    },
+    "club-floor": {
+      "title": "La pista",
+      "caption": "Il set del club, generato sulla macchina del palazzo da un seme e portato qui come diretta: cassa, basso, charleston e un tappeto sonoro che cambiano ogni otto battute. Nulla viene registrato; quando l'ultimo visitatore se ne va, l'encoder si ferma e la pista tace."
+    },
+    "phototroph-lit": {
+      "title": "Illuminato: il mondo sotto il fascio",
+      "caption": "432 atomi dopo 500 unità di tempo sotto un fascio costante accordato a una specie, mostrati per altre 60. Circa un terzo sono legati e la scatola resta calda; gli aggregati si formano e si disfano nel giro di decine di unità di tempo."
+    },
+    "phototroph-dark": {
+      "title": "Buio: lo stesso mondo senza il fascio",
+      "caption": "Gli stessi 432 atomi dallo stesso inizio, mai illuminati, in sincronia con il piano illuminato. Quattro su cinque sono legati, la scatola sta a meno della metà della temperatura del piano illuminato e gli aggregati si sono assestati in chiazze cristalline."
+    },
+    "phototroph-walkup": {
+      "title": "Il piano illuminato e il piano buio",
+      "caption": "Un istante di entrambi i mondi, stesi in piano uno accanto all'altro. Gli atomi della specie a cui il fascio è accordato sono viola su entrambi i piani; la foschia viola sopra il piano illuminato è una messa in scena del fascio, non una grandezza misurata."
+    },
+    "phototroph-starved": {
+      "title": "Immersi nella luce, non ne catturano quasi nulla",
+      "caption": "Quanti fotoni un aggregato assorbe durante la propria vita, misurato a tre intensità del fascio e tre tassi di trasferimento interno. Perché la luce plasmi gli aggregati, la risposta deve avvicinarsi a uno; la migliore di nove simulazioni arriva a 0,08, dodici volte e mezzo troppo poco."
     },
     "arcedit#0": {
       "title": "Il maestro copia una griglia multicolore",
@@ -304,29 +325,13 @@
       "title": "Quale vocabolario sia migliore dipende da come si chiede",
       "caption": "Lo stesso editor, due vocabolari. Imitando un maestro passo per passo, i clic grezzi superano molto di più il caso. Scegliendo a caso, i clic grezzi non finiscono mai una partita con una cella giusta, mentre «dipingi questa cella di questo colore» sì, in 152 partite su 256."
     },
+    "arcedit.workshop.env": {
+      "title": "L'editor come modello",
+      "caption": "L'editor come oggetto: le celle come piastrelle, il cursore come una colonna di luce, la vista dell'agente come lastre di vetro sopra la tela, ogni strato largo il doppio salendo. Un passo fermato, il 68°, dell'episodio del maestro programmato; posizioni e colori sono quelli dell'episodio, le proporzioni disegnate."
+    },
     "arcedit.inside.canvas": {
       "title": "La tela alla scala di una cella",
       "caption": "Il maestro programmato copia una griglia multicolore cinque per cinque in 114 clic: alla tavolozza, alla cella, di nuovo alla tavolozza. Mostra il compito tramite il programma che lo definisce; nessun agente addestrato risolve ancora la copia multicolore."
-    },
-    "club-floor": {
-      "title": "La pista",
-      "caption": "Il set del club, generato sulla macchina del palazzo da un seme e portato qui come diretta: cassa, basso, charleston e un tappeto sonoro che cambiano ogni otto battute. Nulla viene registrato; quando l'ultimo visitatore se ne va, l'encoder si ferma e la pista tace."
-    },
-    "phototroph-lit": {
-      "title": "Illuminato: il mondo sotto il fascio",
-      "caption": "432 atomi dopo 500 unità di tempo sotto un fascio costante accordato a una specie, mostrati per altre 60. Circa un terzo sono legati e la scatola resta calda; gli aggregati si formano e si disfano nel giro di decine di unità di tempo."
-    },
-    "phototroph-dark": {
-      "title": "Buio: lo stesso mondo senza il fascio",
-      "caption": "Gli stessi 432 atomi dallo stesso inizio, mai illuminati, in sincronia con il piano illuminato. Quattro su cinque sono legati, la scatola sta a meno della metà della temperatura del piano illuminato e gli aggregati si sono assestati in chiazze cristalline."
-    },
-    "phototroph-walkup": {
-      "title": "Il piano illuminato e il piano buio",
-      "caption": "Un istante di entrambi i mondi, stesi in piano uno accanto all'altro. Gli atomi della specie a cui il fascio è accordato sono viola su entrambi i piani; la foschia viola sopra il piano illuminato è una messa in scena del fascio, non una grandezza misurata."
-    },
-    "phototroph-starved": {
-      "title": "Immersi nella luce, non ne catturano quasi nulla",
-      "caption": "Quanti fotoni un aggregato assorbe durante la propria vita, misurato a tre intensità del fascio e tre tassi di trasferimento interno. Perché la luce plasmi gli aggregati, la risposta deve avvicinarsi a uno; la migliore di nove simulazioni arriva a 0,08, dodici volte e mezzo troppo poco."
     }
   }
 }

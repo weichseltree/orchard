@@ -130,7 +130,7 @@
     "arcedit": {
       "title": "arcedit",
       "kicker": "¿Puede una máquina aprender a resolver rompecabezas ARC como una persona frente a una pantalla?",
-      "intro": "arcedit pregunta si un agente puede resolver rompecabezas editando: mira a su alrededor, elige un color y hace clic, y solo ve con nitidez lo que está cerca de su cursor. Esta primera sala muestra la tarea. Un profesor programado copia una cuadrícula multicolor de cinco por cinco, celda a celda, mostrada como una nube de celdas por la que caminar, como una película con la vista del agente bajo el lienzo, y como imágenes fijas. En la pared oeste, el entorno está construido como maqueta, con la vista apilada en vidrio sobre las baldosas. La esfera junto a la nube lleva al interior del lienzo.",
+      "intro": "arcedit pregunta si un agente puede resolver rompecabezas editando: mira a su alrededor, elige un color y hace clic, y solo ve con nitidez lo que está cerca de su cursor. Esta primera sala muestra la tarea. Un profesor programado copia una cuadrícula multicolor de cinco por cinco, celda a celda, mostrada como una nube de celdas por la que caminar, como una película con la vista del agente bajo el lienzo, y como imágenes fijas. En la pared oeste, una imagen muestra el entorno construido como maqueta, con la vista apilada en vidrio sobre las baldosas; la maqueta misma está en el taller. La esfera junto a la nube lleva al interior del lienzo.",
       "lookFor": "Observe qué pocas veces la cuadrícula fuente está nítida mientras se pinta la respuesta; el color hay que buscarlo y llevarlo.",
       "limit": "Lo que cuelga aquí es la tarea, ejecutada por el programa que la define; ningún agente entrenado resuelve aún esta copia multicolor."
     },
@@ -195,9 +195,10 @@
     },
     "arcedit/workshop": {
       "title": "El taller",
-      "kicker": "¿De qué está hecho el repositorio?",
-      "intro": "El repositorio como maqueta sobre una mesa: cada bloque es un directorio, del tamaño de los bytes que guarda. El motor, los instrumentos, las comprobaciones y los registros están todos aquí; algunos son lo que cuelga en las otras salas.",
-      "lookFor": "Los registros ocupan la mayor parte de la mesa; el motor en sí es pequeño."
+      "kicker": "¿De qué está hecho el repositorio, y cómo es el editor como objeto?",
+      "intro": "El taller muestra dos maquetas. Sobre la mesa está el repositorio: cada bloque es un directorio, del tamaño de los bytes que guarda; el motor, los instrumentos, las comprobaciones y los registros están todos aquí, y algunos son lo que cuelga en las otras salas. Sobre una base baja a su lado está el editor como maqueta, detenido en un paso del episodio del profesor programado: las celdas como baldosas, el cursor como una columna de luz y la vista del agente como placas de vidrio apiladas sobre el lienzo, cada una el doble de ancha que la de abajo. Rodéelo para ver qué rápido se ensancha la vista lejos del cursor.",
+      "lookFor": "En la mesa los registros empequeñecen al motor; en la base, el marco de luz más bajo no tiene vidrio: en este paso, la parte nítida de la vista solo ve lienzo vacío.",
+      "limit": "La maqueta muestra al profesor programado en un instante, no a un agente entrenado. Las posiciones y los colores son los del episodio; las proporciones son de diseño. Los bloques de la mesa muestran tamaño, no importancia."
     },
     "arcedit/inside": {
       "title": "Dentro del lienzo",
@@ -247,6 +248,26 @@
     "orrery-worlds": {
       "title": "El trío de planetas a la escala del cielo",
       "caption": "Los mismos tres mundos grabados que en la sala de coarsen, cada uno de ochenta metros: 508.744 partículas, 1.129 fotogramas a lo largo de 96 tiempos dinámicos, una única disposición inicial, tres fuerzas de repulsión entre la clase pesada y la ligera. Las regiones color hierro contienen más partículas pesadas, las pálidas más ligeras; el brillo codifica la temperatura."
+    },
+    "club-floor": {
+      "title": "La pista",
+      "caption": "El set propio del club, hecho en la máquina del palacio a partir de una semilla y traído aquí como emisión en directo: bombo, bajo, platos y un colchón que cambian cada ocho compases. Nada se graba; cuando el último visitante se va, el codificador se detiene y la pista queda en silencio."
+    },
+    "phototroph-lit": {
+      "title": "Iluminada: el mundo bajo el haz",
+      "caption": "432 átomos tras 500 unidades de tiempo bajo un haz constante sintonizado con una clase, mostrados durante 60 más. Cerca de un tercio están enlazados y la caja se mantiene caliente; los cúmulos se forman y se deshacen en unas decenas de unidades de tiempo."
+    },
+    "phototroph-dark": {
+      "title": "Oscura: el mismo mundo sin el haz",
+      "caption": "Los mismos 432 átomos desde el mismo inicio, nunca iluminados, reproducidos en sincronía con la plataforma iluminada. Cuatro de cada cinco están enlazados, la caja está a menos de la mitad de la temperatura de la plataforma iluminada y los cúmulos se han asentado en parches cristalinos."
+    },
+    "phototroph-walkup": {
+      "title": "La plataforma iluminada y la plataforma oscura",
+      "caption": "Un instante de ambos mundos, dispuestos en plano uno junto al otro. Los átomos de la clase con la que está sintonizado el haz son violetas en ambas plataformas; la neblina violeta sobre la plataforma iluminada es una puesta en escena del haz, no una magnitud medida."
+    },
+    "phototroph-starved": {
+      "title": "Bañados en luz, sin captar casi nada",
+      "caption": "Cuántos fotones absorbe un cúmulo durante su propia vida, medido con tres intensidades de haz y tres tasas de transferencia internas. Para que la luz dé forma a los cúmulos, la respuesta debe acercarse a uno; la mejor de nueve ejecuciones alcanza 0,08, doce veces y media por debajo."
     },
     "arcedit#0": {
       "title": "El profesor copia una cuadrícula multicolor",
@@ -304,29 +325,13 @@
       "title": "Qué vocabulario es mejor depende de cómo se pregunte",
       "caption": "El mismo editor, dos vocabularios. Imitando a un profesor paso a paso, los clics crudos superan mucho más al azar. Eligiendo al azar, los clics crudos nunca terminan una partida con una celda correcta, mientras que «pinta esta celda de este color» sí, en 152 de 256."
     },
+    "arcedit.workshop.env": {
+      "title": "El editor como maqueta",
+      "caption": "El editor como objeto: las celdas como baldosas, el cursor como una columna de luz, la vista del agente como placas de vidrio sobre el lienzo, cada capa el doble de ancha hacia arriba. Un paso detenido, el 68, del episodio del profesor programado; las posiciones y los colores son los del episodio, las proporciones de diseño."
+    },
     "arcedit.inside.canvas": {
       "title": "El lienzo a escala de una celda",
       "caption": "El profesor programado copia una cuadrícula de cinco por cinco de muchos colores en 114 clics: a la paleta, a la celda, de vuelta a la paleta. Muestra la tarea mediante el programa que la define; ningún agente entrenado resuelve aún la copia multicolor."
-    },
-    "club-floor": {
-      "title": "La pista",
-      "caption": "El set propio del club, hecho en la máquina del palacio a partir de una semilla y traído aquí como emisión en directo: bombo, bajo, platos y un colchón que cambian cada ocho compases. Nada se graba; cuando el último visitante se va, el codificador se detiene y la pista queda en silencio."
-    },
-    "phototroph-lit": {
-      "title": "Iluminada: el mundo bajo el haz",
-      "caption": "432 átomos tras 500 unidades de tiempo bajo un haz constante sintonizado con una clase, mostrados durante 60 más. Cerca de un tercio están enlazados y la caja se mantiene caliente; los cúmulos se forman y se deshacen en unas decenas de unidades de tiempo."
-    },
-    "phototroph-dark": {
-      "title": "Oscura: el mismo mundo sin el haz",
-      "caption": "Los mismos 432 átomos desde el mismo inicio, nunca iluminados, reproducidos en sincronía con la plataforma iluminada. Cuatro de cada cinco están enlazados, la caja está a menos de la mitad de la temperatura de la plataforma iluminada y los cúmulos se han asentado en parches cristalinos."
-    },
-    "phototroph-walkup": {
-      "title": "La plataforma iluminada y la plataforma oscura",
-      "caption": "Un instante de ambos mundos, dispuestos en plano uno junto al otro. Los átomos de la clase con la que está sintonizado el haz son violetas en ambas plataformas; la neblina violeta sobre la plataforma iluminada es una puesta en escena del haz, no una magnitud medida."
-    },
-    "phototroph-starved": {
-      "title": "Bañados en luz, sin captar casi nada",
-      "caption": "Cuántos fotones absorbe un cúmulo durante su propia vida, medido con tres intensidades de haz y tres tasas de transferencia internas. Para que la luz dé forma a los cúmulos, la respuesta debe acercarse a uno; la mejor de nueve ejecuciones alcanza 0,08, doce veces y media por debajo."
     }
   }
 }

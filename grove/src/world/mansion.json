@@ -557,7 +557,7 @@
         "position": [
           -13,
           -5,
-          -80.0
+          -80
         ],
         "yawDeg": 90
       },
@@ -576,7 +576,7 @@
           "at": -76,
           "center": -15.5,
           "width": 2.4,
-          "height": 3.0
+          "height": 3
         }
       ],
       "hangings": [],
@@ -602,7 +602,7 @@
         "position": [
           -13,
           -5,
-          76.0
+          76
         ],
         "yawDeg": 90
       },
@@ -621,7 +621,7 @@
           "at": 72,
           "center": -15.5,
           "width": 2.4,
-          "height": 3.0
+          "height": 3
         }
       ],
       "hangings": [],
@@ -658,7 +658,7 @@
           "at": -76,
           "center": -15.5,
           "width": 2.4,
-          "height": 3.0
+          "height": 3
         },
         {
           "to": "stair-south",
@@ -666,7 +666,7 @@
           "at": 72,
           "center": -15.5,
           "width": 2.4,
-          "height": 3.0
+          "height": 3
         },
         {
           "to": "club",
@@ -2570,7 +2570,35 @@
           "height": 3.2
         }
       ],
-      "hangings": [],
+      "hangings": [
+        {
+          "id": "arcedit.workshop.env",
+          "kind": "model",
+          "title": "The editor built as a model at one step of the teacher's episode: cells as tiles, the cursor a column of light, the agent's view stacked in glass above",
+          "bundle": {
+            "exhibit": {
+              "tree": "arcedit",
+              "kind": "model",
+              "bundle": "84ee7ea2f6d5cb36"
+            },
+            "id": "84ee7ea2f6d5cb36"
+          },
+          "position": [
+            13,
+            0,
+            58.5
+          ],
+          "rotationDeg": [
+            0,
+            90,
+            0
+          ],
+          "sizeMeters": 6.4,
+          "plinth": {
+            "heightMeters": 0.25
+          }
+        }
+      ],
       "portals": [],
       "exposure": 1,
       "repoModels": [

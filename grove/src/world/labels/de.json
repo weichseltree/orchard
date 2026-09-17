@@ -130,7 +130,7 @@
     "arcedit": {
       "title": "arcedit",
       "kicker": "Kann eine Maschine lernen, ARC-Rätsel so zu lösen wie ein Mensch am Bildschirm?",
-      "intro": "arcedit fragt, ob ein Agent Rätsel durch Bearbeiten lösen kann: Er sieht sich um, wählt eine Farbe und klickt, und scharf sieht er nur, was nahe an seinem Cursor liegt. Dieser erste Raum zeigt die Aufgabe. Ein geskripteter Lehrer kopiert ein vielfarbiges Fünf-mal-fünf-Gitter Zelle für Zelle, gezeigt als begehbare Zellwolke, als Film mit der Sicht des Agenten unter der Leinwand und als Standbilder. An der Westwand ist die Umgebung als Modell gebaut, die Sicht in Glas über den Kacheln gestapelt. Die Kugel neben der Wolke führt ins Innere der Leinwand.",
+      "intro": "arcedit fragt, ob ein Agent Rätsel durch Bearbeiten lösen kann: Er sieht sich um, wählt eine Farbe und klickt, und scharf sieht er nur, was nahe an seinem Cursor liegt. Dieser erste Raum zeigt die Aufgabe. Ein geskripteter Lehrer kopiert ein vielfarbiges Fünf-mal-fünf-Gitter Zelle für Zelle, gezeigt als begehbare Zellwolke, als Film mit der Sicht des Agenten unter der Leinwand und als Standbilder. An der Westwand hängt ein Bild der als Modell gebauten Umgebung, die Sicht in Glas über den Kacheln gestapelt; das Modell selbst steht in der Werkstatt. Die Kugel neben der Wolke führt ins Innere der Leinwand.",
       "lookFor": "Achten Sie darauf, wie selten das Vorlagegitter scharf ist, während die Antwort gemalt wird; die Farbe muss geholt und getragen werden.",
       "limit": "Hier hängt die Aufgabe, ausgeführt vom Programm, das sie definiert; kein gelernter Agent löst diese vielfarbige Kopie bisher."
     },
@@ -195,9 +195,10 @@
     },
     "arcedit/workshop": {
       "title": "Die Werkstatt",
-      "kicker": "Woraus besteht das Repository?",
-      "intro": "Das Repository als Modell auf einem Tisch: jeder Block ein Verzeichnis, so groß wie die Bytes, die es enthält. Maschine, Instrumente, Prüfungen und Berichte sind alle hier; einige davon hängen in den anderen Räumen.",
-      "lookFor": "Die Berichte nehmen den größten Teil des Tisches ein; die Maschine selbst ist klein."
+      "kicker": "Woraus besteht das Repository, und wie sieht der Editor als Gegenstand aus?",
+      "intro": "Die Werkstatt zeigt zwei Modelle. Auf dem Tisch steht das Repository: jeder Block ein Verzeichnis, so groß wie die Bytes, die es enthält; Maschine, Instrumente, Prüfungen und Berichte sind alle hier, und einige davon hängen in den anderen Räumen. Auf einem Sockel daneben steht der Editor als Modell, festgehalten bei einem Schritt aus der Episode des geskripteten Lehrers: Zellen als Kacheln, der Cursor eine Lichtsäule, die Sicht des Agenten als Glasplatten über der Leinwand, jede doppelt so breit wie die darunter. Gehen Sie um ihn herum und sehen Sie, wie schnell die Sicht vom Cursor weg breiter wird.",
+      "lookFor": "Auf dem Tisch stellen die Berichte die Maschine in den Schatten; auf dem Sockel trägt der unterste Lichtrahmen kein Glas: In diesem Schritt sieht der scharfe Teil der Sicht nur leere Leinwand.",
+      "limit": "Das Modell zeigt den geskripteten Lehrer in einem Moment, keinen gelernten Agenten. Positionen und Farben stammen aus der Episode; die Proportionen sind gestaltet. Die Blöcke auf dem Tisch zeigen Größe, nicht Bedeutung."
     },
     "arcedit/inside": {
       "title": "Im Inneren der Leinwand",
@@ -247,6 +248,26 @@
     "orrery-worlds": {
       "title": "Das Planetentrio im Maßstab des Himmels",
       "caption": "Dieselben drei aufgezeichneten Welten wie in der Kammer von coarsen, hier je achtzig Meter im Durchmesser: 508.744 Teilchen, 1.129 Bilder über 96 dynamische Zeiten, eine Startanordnung, drei Stärken der Abstoßung zwischen schwerer und leichter Sorte. Eisenwarme Regionen halten mehr schwere Teilchen, blasse mehr leichte; das Glühen kodiert die Temperatur."
+    },
+    "club-floor": {
+      "title": "Die Tanzfläche",
+      "caption": "Das eigene Set des Clubs, auf der Maschine des Palastes aus einem Startwert erzeugt und als Livestream hierher getragen: Kick, Bass, Hi-Hats und ein Flächenklang, die sich alle acht Takte ändern. Nichts wird aufgezeichnet; geht der letzte Besucher, hält der Encoder an."
+    },
+    "phototroph-lit": {
+      "title": "Belichtet: die Welt unter dem Strahl",
+      "caption": "432 Atome nach 500 Zeiteinheiten unter einem stetigen Strahl, der auf eine ihrer Sorten abgestimmt ist, hier über 60 weitere gezeigt. Etwa ein Drittel ist gebunden, und der Kasten bleibt warm; Klumpen bilden sich und zerfallen binnen einiger Dutzend Zeiteinheiten."
+    },
+    "phototroph-dark": {
+      "title": "Dunkel: dieselbe Welt ohne den Strahl",
+      "caption": "Dieselben 432 Atome aus demselben Anfangszustand, nie belichtet, im Gleichschritt mit der belichteten Fläche. Vier von fünf sind gebunden, der Kasten hat weniger als die halbe Temperatur der belichteten Fläche, und die Klumpen haben sich zu kristallinen Inseln gesetzt."
+    },
+    "phototroph-walkup": {
+      "title": "Die belichtete und die dunkle Fläche",
+      "caption": "Ein Augenblick beider Welten, flach nebeneinander gelegt. Atome der Sorte, auf die der Strahl abgestimmt ist, sind auf beiden Flächen violett; der violette Schleier über der belichteten Fläche setzt den Strahl in Szene und ist keine gemessene Größe."
+    },
+    "phototroph-starved": {
+      "title": "Im Licht gebadet, kaum Licht gefangen",
+      "caption": "Wie viele Photonen ein Klumpen während seiner eigenen Lebensdauer absorbiert, gemessen bei drei Strahlstärken und drei internen Übertragungsraten. Sollte Licht die Klumpen formen, müsste der Wert an eins heranreichen; der beste von neun Läufen erreicht 0,08 und bleibt damit um das Zwölfeinhalbfache zu klein."
     },
     "arcedit#0": {
       "title": "Der Lehrer kopiert ein vielfarbiges Gitter",
@@ -304,29 +325,13 @@
       "title": "Welches Vokabular besser ist, hängt von der Frage ab",
       "caption": "Derselbe Editor, zwei Vokabulare. Beim schrittweisen Nachahmen eines Lehrers liegen rohe Klicks weit höher über dem Zufall. Bei zufälliger Wahl beenden rohe Klicks nie ein Spiel mit einer richtigen Zelle, 'male diese Zelle in dieser Farbe' dagegen in 152 von 256 Spielen."
     },
+    "arcedit.workshop.env": {
+      "title": "Der Editor als Modell",
+      "caption": "Der Editor als Gegenstand: Zellen als Kacheln, der Cursor eine Lichtsäule, die Sicht des Agenten als Glasplatten über der Leinwand, nach oben jeweils doppelt so breit. Ein angehaltener Schritt, der 68., aus der Episode des geskripteten Lehrers; Positionen und Farben stammen aus der Episode, die Proportionen sind gestaltet."
+    },
     "arcedit.inside.canvas": {
       "title": "Die Leinwand im Maßstab einer Zelle",
       "caption": "Der geskriptete Lehrer kopiert ein vielfarbiges Fünf-mal-fünf-Gitter in 114 Klicks: zur Palette, zur Zelle, zurück zur Palette. Das zeigt die Aufgabe durch das Programm, das sie definiert; kein gelernter Agent löst die vielfarbige Kopie bisher."
-    },
-    "club-floor": {
-      "title": "Die Tanzfläche",
-      "caption": "Das eigene Set des Clubs, auf der Maschine des Palastes aus einem Startwert erzeugt und als Livestream hierher getragen: Kick, Bass, Hi-Hats und ein Flächenklang, die sich alle acht Takte ändern. Nichts wird aufgezeichnet; geht der letzte Besucher, hält der Encoder an."
-    },
-    "phototroph-lit": {
-      "title": "Belichtet: die Welt unter dem Strahl",
-      "caption": "432 Atome nach 500 Zeiteinheiten unter einem stetigen Strahl, der auf eine ihrer Sorten abgestimmt ist, hier über 60 weitere gezeigt. Etwa ein Drittel ist gebunden, und der Kasten bleibt warm; Klumpen bilden sich und zerfallen binnen einiger Dutzend Zeiteinheiten."
-    },
-    "phototroph-dark": {
-      "title": "Dunkel: dieselbe Welt ohne den Strahl",
-      "caption": "Dieselben 432 Atome aus demselben Anfangszustand, nie belichtet, im Gleichschritt mit der belichteten Fläche. Vier von fünf sind gebunden, der Kasten hat weniger als die halbe Temperatur der belichteten Fläche, und die Klumpen haben sich zu kristallinen Inseln gesetzt."
-    },
-    "phototroph-walkup": {
-      "title": "Die belichtete und die dunkle Fläche",
-      "caption": "Ein Augenblick beider Welten, flach nebeneinander gelegt. Atome der Sorte, auf die der Strahl abgestimmt ist, sind auf beiden Flächen violett; der violette Schleier über der belichteten Fläche setzt den Strahl in Szene und ist keine gemessene Größe."
-    },
-    "phototroph-starved": {
-      "title": "Im Licht gebadet, kaum Licht gefangen",
-      "caption": "Wie viele Photonen ein Klumpen während seiner eigenen Lebensdauer absorbiert, gemessen bei drei Strahlstärken und drei internen Übertragungsraten. Sollte Licht die Klumpen formen, müsste der Wert an eins heranreichen; der beste von neun Läufen erreicht 0,08 und bleibt damit um das Zwölfeinhalbfache zu klein."
     }
   }
 }
