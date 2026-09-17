@@ -7,6 +7,10 @@ function state(over: Partial<FayeState> = {}): FayeState {
   return {
     ...EMPTY_STATE,
     hasFeed: true,
+    // expdash answering is what makes the lanes knowable; a state built
+    // without it is the second feed alone (see the tests below).
+    knowsRunning: true,
+    lanesFresh: true,
     hosts: ["Legion", "SirBase"],
     mirror: { state: "ok", ageSeconds: 3, peer: "Legion", records: 105 },
     ...over,
@@ -88,6 +92,31 @@ describe("replyTo", () => {
 
   it("treats an empty card as a real answer", () => {
     expect(replyTo("faye what is running", state())).toBe("Nothing is running that I can see.");
+  });
+
+  it("says what she last saw as the past, not as the present", () => {
+    // The lane facts survive an expdash outage rather than becoming an idle
+    // box, but an hour-old count in the present tense is a made-up freshness.
+    // And how long ago: an hour-old count must not read like a fresh one.
+    const stale = state({
+      lanesFresh: false, lanesAgeSeconds: 1200,
+      running: [{ host: "SirBase", tree: "spectre" }],
+    });
+    expect(replyTo("faye what is running", stale, titles))
+      .toBe("When I last looked, 20 minutes ago, 1 run: 1 on SirBase (coarsen).");
+    expect(replyTo("faye what is running", state({ lanesFresh: false, lanesAgeSeconds: 45 })))
+      .toBe("When I last looked, 45 seconds ago, nothing was running.");
+    // The mirror's age is the age of a reading she is no longer getting, so it
+    // is the dashboard's silence she reports, not "last heard 3 seconds ago".
+    expect(replyTo("faye how is the peer", state({ lanesFresh: false, lanesAgeSeconds: 1200 })))
+      .toBe("The dashboard has not answered for 20 minutes; when it last did, Legion was reporting.");
+  });
+
+  it("does not call the boxes idle when she only hears what runs declare", () => {
+    // With a run's own announcement feed and no expdash, an empty `running` is
+    // what she cannot see, not what the boxes are doing (src/faye/feeds.ts).
+    expect(replyTo("faye what is running", state({ knowsRunning: false })))
+      .toBe("I hear what the runs say about themselves, but I cannot see the lanes from here.");
   });
 
   const run = (host: string, tree: string) => ({ host, tree });

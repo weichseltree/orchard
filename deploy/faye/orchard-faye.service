@@ -2,6 +2,10 @@
 Description=Faye, the Great Admin Spirit, standing in the live Mind Palace
 # She reads the compute from expdash; without it she stands there and says
 # she has not heard from the compute yet, which is true and harmless.
+# No --feed-url here yet: the second feed, of what runs declare about
+# themselves, exists only on the local LogSwarm emulator, and a feed that
+# observes real boxes goes behind the no-store Worker before the live service
+# reads it (docs/specs/VR-PRESENCE.md §10).
 After=network-online.target
 Wants=network-online.target
 # A refused connection (her admin removed, the module unreachable) must not

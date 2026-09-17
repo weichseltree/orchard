@@ -8,6 +8,7 @@ function event(over: Partial<ComputeEvent> = {}): ComputeEvent {
   return {
     id: "ev_1", ts: 1789524730, type: "completed", priority: 3,
     title: "Completed: a-run", detail: "ran 0m 20s", repo: "spectre", host: "SirBase",
+    exp: "",
     ...over,
   };
 }
@@ -28,6 +29,25 @@ const feed = {
     { id: "ev_14448", ts: 1, type: "crashed", priority: 1, title: "Crashed: a", detail: "exit code 1", repo: "spectre" },
     { id: "ev_14450", ts: 2, type: "completed", priority: 3, title: "Completed: b", detail: "ran 0m 20s", repo: "spectre" },
   ],
+};
+
+// A trimmed sample of `logswarm/announce/1`: the same `events[]`, no
+// `experiments[]`, and its hosts stated outright
+// (logswarm/docs/specs/ANNOUNCE-FEED.md).
+const announceFeed = {
+  schema: "logswarm/announce/1",
+  provider: "logswarm",
+  project: "proj_1", graph: "graph_1", feed: "planet",
+  time: 1789650100,
+  events: [
+    {
+      id: "ev_43", ts: 1789650000.1, type: "hit-cap-unbalanced", priority: 2,
+      title: "s=0.96: hit the 60-year cap unbalanced at -3.26 W/m²",
+      detail: "", repo: "spectre", host: "SirBase", exp: "m06-fold-s0.96",
+    },
+  ],
+  hosts: ["SirBase"],
+  running: [],
 };
 
 describe("readFeed", () => {
@@ -73,6 +93,33 @@ describe("readFeed", () => {
 
   it("defaults a missing priority to routine, never to urgent", () => {
     expect(readFeed({ events: [{ id: "ev_1" }] }).events[0]!.priority).toBe(3);
+  });
+
+  it("reads a run's own announcement feed with no new parsing", () => {
+    const reading = readFeed(announceFeed);
+    expect(reading.events).toEqual([{
+      id: "ev_43", ts: 1789650000.1, type: "hit-cap-unbalanced", priority: 2,
+      title: "s=0.96: hit the 60-year cap unbalanced at -3.26 W/m²",
+      detail: "", repo: "spectre", host: "SirBase", exp: "m06-fold-s0.96",
+    }]);
+    // It states its hosts; there are no experiments to derive them from, and
+    // nothing about the lanes is invented from an event's host.
+    expect(reading.hosts).toEqual(["SirBase"]);
+    expect(reading.running).toEqual([]);
+    expect(reading.mirror).toBeNull();
+  });
+
+  it("does not call a mirror that names no peer a peer", () => {
+    // expdash reports `{"state": "never"}` on a box where the mirror has never
+    // run: a legitimate single-box setup, not a fault. Calling it a peer would
+    // have her say " has stopped reporting" about nobody.
+    expect(readFeed({ health: { mirror: { state: "never" } } }).mirror).toBeNull();
+    expect(readFeed({ health: { mirror: { state: "ok", peer: "", age_s: 3 } } }).mirror).toBeNull();
+  });
+
+  it("ignores a hosts field that is not a list of names", () => {
+    expect(readFeed({ hosts: "SirBase" }).hosts).toEqual([]);
+    expect(readFeed({ hosts: [1, "", null, "Legion"] }).hosts).toEqual(["Legion"]);
   });
 });
 
@@ -147,6 +194,53 @@ describe("announce", () => {
     expect(first!.text).toBe("8 runs crashed in spectre.");
     expect(first!.count).toBe(8);
     expect(first!.ids).toHaveLength(8);
+  });
+
+  it("says a declared state the way the run declared it — the acceptance line of #60", () => {
+    const [only] = announce(readFeed(announceFeed).events, new Map([["spectre", "coarsen"]]));
+    expect(only!.text).toBe("s=0.96: hit the 60-year cap unbalanced at -3.26 W/m².");
+    expect(only!.priority).toBe(2);
+  });
+
+  it("puts a collapsed burst of declared states into English, without interpreting them", () => {
+    const said = (type: string, n = 2) => announce(Array.from({ length: n }, (_, i) =>
+      event({ id: `ev_${i + 1}`, type, priority: 2, repo: "spectre" })))[0]!.text;
+    expect(said("hit-cap-unbalanced")).toBe("2 runs hit the cap unbalanced in spectre.");
+    expect(said("balanced")).toBe("2 runs balanced in spectre.");
+    expect(said("stalled")).toBe("2 runs stalled in spectre.");
+    expect(said("plateau")).toBe("2 runs flagged a plateau in spectre.");
+    expect(said("cap")).toBe("2 runs flagged as unlikely to reach the cap in spectre.");
+    // The box slowing a run is never a regression: box load has fooled us before.
+    expect(said("slowdown")).toBe("2 runs flagged the box slowing them in spectre.");
+    // `running` is a run declaring it HAS started; "2 runs running" would read
+    // as two runs on the lanes now, which a declaration feed cannot know.
+    expect(said("running")).toBe("2 runs started in spectre.");
+    expect(said("live-stalled")).toBe("2 runs lost their live stream in spectre.");
+    // A state nobody wrote a phrase for is still said as the producer wrote it.
+    expect(said("spun-down")).toBe("2 runs spun-down in spectre.");
+  });
+
+  it("never turns a declared finish into a success either", () => {
+    const said = announce([
+      event({ id: "ev_1", type: "finished", title: "m06-fold-s0.95: finished 32/32" }),
+      event({ id: "ev_2", type: "finished", repo: "einstruct" }),
+      event({ id: "ev_3", type: "finished", repo: "einstruct" }),
+    ]).map((a) => a.text).join(" ");
+    expect(said).toMatch(/finished/);
+    expect(said).not.toMatch(/success|succeeded|worked|passed|verified/i);
+  });
+
+  it("counts one kind of thing once, however the feeds spell it", () => {
+    // The planet watcher follows the fold members and expdash sees every job
+    // in the tree, so a partial overlap is the normal case: two starts seen
+    // only by one and two only by the other are four starts, not two twice.
+    const said = announce([
+      event({ id: "ev_1", type: "started", priority: 3, exp: "a" }),
+      event({ id: "ev_2", type: "started", priority: 3, exp: "b" }),
+      event({ id: "ev_3", type: "running", priority: 3, exp: "c" }),
+      event({ id: "ev_4", type: "running", priority: 3, exp: "d" }),
+    ], new Map([["spectre", "coarsen"]]));
+    expect(said.map((a) => a.text)).toEqual(["4 runs started in coarsen."]);
   });
 
   it("keeps a lone event's own title", () => {

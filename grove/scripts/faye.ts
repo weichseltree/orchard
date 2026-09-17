@@ -21,6 +21,15 @@
 //     --token-file ~/.config/orchard/faye.token --new-identity   # once
 //   pnpm tsx scripts/faye.ts --uri wss://maincloud.spacetimedb.com --live \
 //     --token-file ~/.config/orchard/faye.token                  # the service
+//
+// She reads expdash's feed for what the LANES did, and any number of
+// `--feed-url` feeds for what a RUN declares about itself (src/faye/feeds.ts).
+// Against the LogSwarm emulator that is its RTDB path and the emulator's owner
+// token, which is why the token comes from a file and never from the argv:
+//
+//   pnpm tsx scripts/faye.ts --db orchard --cli-config <scratch>/stdb/cli.toml \
+//     --feed-url 'http://localhost:6104/feeds/<project>/planet/live.json?ns=demo-logswarm-default-rtdb' \
+//     --feed-token-file ~/.config/orchard/logswarm-feed.token
 import { readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
@@ -28,11 +37,12 @@ import { parseArgs } from "node:util";
 import type { Identity } from "spacetimedb";
 import { DbConnection } from "../src/module_bindings";
 import { connectionPolicy } from "../src/faye/local";
+import { readFeed, type TreeTitles } from "../src/faye/events";
 import {
-  EMPTY_CURSOR, accumulate, announce, peerIsSilent, readFeed,
-  type Cursor, type TreeTitles,
-} from "../src/faye/events";
-import { EMPTY_STATE, replyTo, type FayeState } from "../src/faye/reply";
+  NEW_WATCH, feedRequest, feedTimeoutMs, planFeeds, takeReadings,
+  type FeedSource, type Watch,
+} from "../src/faye/feeds";
+import { replyTo } from "../src/faye/reply";
 import { Speaker, TURN_POSE_HZ, isNewLine, onDisconnectAction } from "../src/faye/listen";
 import { FAYE_NAME, FAYE_ROOM } from "../src/faye/names";
 
@@ -53,8 +63,20 @@ const { values: args } = parseArgs({
     turn: { type: "string", default: "24" },
     /** One line on arrival. Empty says nothing. */
     say: { type: "string", default: "" },
-    /** expdash's feed: both boxes at once (src/faye/events.ts says why). */
+    /** expdash's feed: both boxes at once (src/faye/events.ts says why). Empty drops it. */
     "status-url": { type: "string", default: "http://localhost:8686/api/status" },
+    /**
+     * A second feed of what runs declare about themselves, in the same shape:
+     * `logswarm/announce/1` (src/faye/feeds.ts). Repeatable. Read beside
+     * expdash's, never instead of it.
+     */
+    "feed-url": { type: "string", multiple: true, default: [] },
+    /**
+     * A bearer token for those feeds, one line, mode 600. None means no
+     * header. One token for every `--feed-url` and never for `--status-url`:
+     * pair them per feed only when a second origin needs a different one.
+     */
+    "feed-token-file": { type: "string", default: "" },
     /** Seconds between polls; 0 leaves her silent about the compute. */
     poll: { type: "string", default: "30" },
     /** Where trees/*.yaml live, for the label a visitor reads rather than the tree identity. */
@@ -115,8 +137,12 @@ function parseAt(raw: string): { x: number; y: number; z: number } {
   return { x, y, z };
 }
 
-/** Faye's own token: the first line of the file, which nobody but her user may read. */
-function ownToken(path: string): string {
+/**
+ * A secret's first line, from a file nobody but her user may read. Both the
+ * identity token and a feed's bearer token come this way: a token on a command
+ * line is in every `ps` on the box.
+ */
+function secretFirstLine(path: string): string {
   const mode = statSync(path).mode & 0o077;
   if (mode !== 0) throw new Error(`${path} is readable by others (mode ${(statSync(path).mode & 0o777).toString(8)}); chmod 600 it`);
   const token = readFileSync(path, "utf8").split("\n")[0]?.trim() ?? "";
@@ -192,7 +218,15 @@ async function main(): Promise<void> {
     return;
   }
 
-  const token = policy.ok && policy.token === "token-file" ? ownToken(args["token-file"] ?? "") : publisherToken(args["cli-config"] ?? "");
+  // Both secrets and the feed plan are read BEFORE she connects: a mode-644
+  // token file must not throw after she is standing in the room, where the
+  // exit skips `leave` and her capsule lingers until the socket times out.
+  const bearer = args["feed-token-file"] ? secretFirstLine(args["feed-token-file"]) : "";
+  const sources = planFeeds(args["status-url"] ?? "", args["feed-url"] ?? []);
+  const pollSeconds = Number(args.poll);
+  if (!Number.isFinite(pollSeconds) || pollSeconds < 0) throw new Error("--poll wants seconds");
+
+  const token = policy.ok && policy.token === "token-file" ? secretFirstLine(args["token-file"] ?? "") : publisherToken(args["cli-config"] ?? "");
   const { conn, hex, identity } = await connect(token);
   console.log(`faye: connected to ${DB} at ${URI} as ${hex.slice(0, 16)}…`);
 
@@ -203,9 +237,13 @@ async function main(): Promise<void> {
   const titles = readTreeTitles(args.trees);
   if (titles.size > 0) console.log(`faye: ${titles.size} tree label(s) loaded from ${args.trees}`);
 
-  // What she knows, for answering a visitor who speaks to her. Updated by the
-  // poll loop; read by the chat handler.
-  let known: FayeState = EMPTY_STATE;
+  // What she has taken in of the feeds, and so what she can tell a visitor.
+  // Declared here because the chat handler below reads it, and updated by the
+  // poll loop. It lives only as long as she stands here: a spirit that
+  // remembered across restarts would announce a backlog on arrival.
+  // `takeReadings` (src/faye/feeds.ts) holds the whole of that behaviour, and
+  // its tests.
+  let watch: Watch = NEW_WATCH;
 
   // Everything she says goes through one queue (src/faye/listen.ts).
   const speaker = new Speaker((text) => conn.reducers.say({ text }), {
@@ -248,7 +286,8 @@ async function main(): Promise<void> {
     if (life.leaving) return;
     const line = { sender: row.sender.toHexString(), atMicros: row.at.microsSinceUnixEpoch };
     if (!isNewLine(line, hex, joinedAt())) return;
-    const answer = replyTo(row.text, known, titles);
+    // What the poll loop last left her knowing, read fresh on every line.
+    const answer = replyTo(row.text, watch.known, titles);
     if (!answer) return;
     console.log(`faye: ${row.name} said "${row.text}" -> "${answer}"`);
     void speaker.say(answer, { droppable: true });
@@ -288,71 +327,49 @@ async function main(): Promise<void> {
   // not paying for around the clock (TURN_POSE_HZ says why).
   const timer = turnSeconds > 0 ? setInterval(sendPose, 1000 / TURN_POSE_HZ) : null;
 
-  // What she has taken in of the compute, and what she has already said about
-  // the peer. Both live only as long as she stands here: a spirit that
-  // remembers across restarts would announce a backlog on arrival.
-  let cursor: Cursor = EMPTY_CURSOR;
-  let peerWasSilent: boolean | null = null;
-  let firstPoll = true;
-  const pollSeconds = Number(args.poll);
-  if (!Number.isFinite(pollSeconds) || pollSeconds < 0) throw new Error("--poll wants seconds");
+  // Which feeds, and in which order (src/faye/feeds.ts says why expdash leads).
+  if (sources.length === 0) console.log("faye: no compute feed; she will say she has not heard from it");
+
+  const timeoutMs = feedTimeoutMs(pollSeconds);
+
+  /** One feed's document, or null when it did not answer. Never spoken about. */
+  const fetchFeed = async (source: FeedSource): Promise<unknown> => {
+    try {
+      const response = await fetch(source.url, feedRequest(source.lanes ? "" : bearer, timeoutMs));
+      if (!response.ok) throw new Error(`${response.status}`);
+      return await response.json();
+    } catch (error) {
+      // A feed being down is not Faye's news to break. She goes on standing;
+      // the room is never told the plumbing failed.
+      console.warn(`faye: no feed from ${source.name} (${error instanceof Error ? error.message : String(error)})`);
+      return null;
+    }
+  };
 
   const pollOnce = async (): Promise<void> => {
     if (life.leaving) return;
-    let doc: unknown;
-    try {
-      const response = await fetch(args["status-url"], { cache: "no-store" });
-      if (!response.ok) throw new Error(`${response.status}`);
-      doc = await response.json();
-    } catch (error) {
-      // The dashboard being down is not Faye's news to break. She goes on
-      // standing; the room is never told the plumbing failed.
-      console.warn(`faye: no feed (${error instanceof Error ? error.message : String(error)})`);
-      return;
-    }
-    const reading = readFeed(doc);
-    const taken = accumulate(cursor, reading.events);
-    cursor = taken.cursor;
-    if (taken.rebaselined) console.log("faye: the feed restarted its numbering; re-baselined");
+    // Every feed at once, each with its own timeout: a stalled feed costs this
+    // poll that timeout and no more, and never a run of polls in which she
+    // stands there saying nothing.
+    const docs = await Promise.all(sources.map(fetchFeed));
+    if (life.leaving) return;
 
-    // The first poll is a baseline, not news: everything in the feed happened
-    // before she arrived, and a spirit who walks in reciting the last hour is
-    // not informing anyone.
-    known = {
-      hosts: reading.hosts,
-      mirror: reading.mirror,
-      seenByType: countBy(taken.fresh.map((e) => e.type), known.seenByType),
-      running: reading.running,
-      hasFeed: true,
-    };
+    const polled = takeReadings(watch, sources.map((source, index) => ({
+      feed: source.name,
+      lanes: source.lanes,
+      reading: docs[index] === null ? null : readFeed(docs[index]),
+    })), titles);
+    watch = polled.state;
+    for (const note of polled.notes) console.log(`faye: ${note}`);
 
-    if (firstPoll) {
-      firstPoll = false;
-      peerWasSilent = peerIsSilent(reading.mirror);
-      console.log(`faye: baseline taken at ${reading.events.length} event(s); watching ${reading.hosts.join(", ")}`);
-      return;
-    }
-
-    const lines = announce(taken.fresh, titles).map((a) => a.text);
-
-    // The peer going quiet or coming back is worth one line each way, never
-    // one per poll. This is the mirror's freshness, not any job's age.
-    const silentNow = peerIsSilent(reading.mirror);
-    if (peerWasSilent !== null && silentNow !== peerWasSilent && reading.mirror) {
-      lines.push(silentNow
-        ? `${reading.mirror.peer} has stopped reporting.`
-        : `${reading.mirror.peer} is reporting again.`);
-    }
-    peerWasSilent = silentNow;
-
-    for (const text of lines) {
+    for (const text of polled.lines) {
       if (life.leaving) return;
       await speaker.say(text);
     }
   };
 
   let pollTimer: ReturnType<typeof setInterval> | null = null;
-  if (pollSeconds > 0) {
+  if (pollSeconds > 0 && sources.length > 0) {
     // One poll at a time. Each can queue announcements that take 0.9 s apiece
     // to say; with a short --poll, overlapping polls would pile them up behind
     // one another faster than she can speak, with every reply behind them.
@@ -368,7 +385,7 @@ async function main(): Promise<void> {
     };
     void pollAlone();
     pollTimer = setInterval(() => void pollAlone(), pollSeconds * 1000);
-    console.log(`faye: watching the compute every ${pollSeconds}s`);
+    console.log(`faye: watching ${sources.map((source) => source.name).join(", ")} every ${pollSeconds}s`);
   }
 
   console.log("faye: listening — say her name in the room");
@@ -426,11 +443,6 @@ function unquote(raw: string): string {
   return raw.replace(/^['"]|['"]$/g, "");
 }
 
-function countBy(values: readonly string[], into: ReadonlyMap<string, number>): Map<string, number> {
-  const out = new Map(into);
-  for (const v of values) out.set(v, (out.get(v) ?? 0) + 1);
-  return out;
-}
 
 function wrapAngle(angle: number): number {
   const wrapped = angle % (Math.PI * 2);
