@@ -208,11 +208,23 @@
       "lookFor": "Stellen Sie sich auf den Antwortrahmen und blicken Sie durch die Schichten nach oben, während der Cursor vorbeizieht; das scharfe Fenster folgt ihm.",
       "limit": "Dies ist die Episode des Lehrers, nicht die eines gelernten Agenten, und der Maßstab ist ein Mittel zum Sehen; der Agent sieht die Leinwand nie als Ort."
     },
+    "stair-north": {
+      "title": "Treppe",
+      "kicker": "Was liegt unter der Terrasse?",
+      "intro": "Ein Gartenpavillon am Nordende der Terrasse, betreten vom westlichen Hain. Innen führt eine Treppe unter die Erde hinab ins Untergeschoss, von dem aus sich der Club öffnet. Eine zweite Treppe gleicher Art steht am Südende der Terrasse, am östlichen Hain.",
+      "lookFor": "Das Geländer der Treppe und die Lampe an ihrem Fuß; das Tageslicht endet, wo das Gewölbe beginnt."
+    },
+    "stair-south": {
+      "title": "Treppe",
+      "kicker": "Was liegt unter der Terrasse?",
+      "intro": "Ein Gartenpavillon am Südende der Terrasse, betreten vom östlichen Hain. Innen führt eine Treppe unter die Erde hinab ins Untergeschoss, von dem aus sich der Club öffnet. Eine zweite Treppe gleicher Art steht am Nordende der Terrasse, am westlichen Hain.",
+      "lookFor": "Das Geländer der Treppe und die Lampe an ihrem Fuß; das Tageslicht endet, wo das Gewölbe beginnt."
+    },
     "foyer": {
       "title": "Foyer",
-      "kicker": "Wer kommt an der Tür vorbei?",
-      "intro": "Die Treppe aus dem world-engine-Raum führt hinunter ins Foyer des Kellers. Zwei Türen gehen weiter: der Club, der sich nur öffnet, wenn Mikrofon und Ton eingeschaltet sind, und dahinter eine Bühne allein für Headsets. Die Angebote auf dem Bildschirm schalten beides ein.",
-      "lookFor": "Das Messinggeländer der langen Treppe und die Laternen neben der Clubtür: Sie leuchten warm, während die Farben des Clubs kalt sind."
+      "kicker": "Welcher Weg hinunter?",
+      "intro": "Das Untergeschoss läuft die ganze Länge der Terrasse entlang, ein niedriges Gewölbe unter ihren Platten. Zwei Treppen führen aus den Gärten hinunter, eine an jedem Ende, und zwei Türen gehen weiter in den Club, der sich nur öffnet, wenn Mikrofon und Ton eingeschaltet sind.",
+      "lookFor": "Die Laternen an den beiden Clubtüren und das Licht dahinter: Das Untergeschoss ist warm, der Club ist kalt."
     },
     "club": {
       "title": "Club",

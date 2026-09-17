@@ -208,11 +208,23 @@
       "lookFor": "Fique sobre a moldura de resposta e olhe para cima através das camadas quando o cursor passar; a janela nítida segue-o.",
       "limit": "Este é o episódio do professor, não o de um agente treinado, e a escala é um recurso para olhar; o agente nunca vê a tela como um lugar."
     },
+    "stair-north": {
+      "title": "escada",
+      "kicker": "O que há sob o terraço?",
+      "intro": "Um pavilhão de jardim no extremo norte do terraço, em que se entra a partir do bosque oeste. Lá dentro, um lanço de degraus desce sob a terra até à cave, de onde se abre o clube. Uma segunda escada do mesmo género ergue-se no extremo sul do terraço, junto ao bosque este.",
+      "lookFor": "O corrimão da escada e a lâmpada ao seu pé; a luz do dia acaba onde começa a abóbada."
+    },
+    "stair-south": {
+      "title": "escada",
+      "kicker": "O que há sob o terraço?",
+      "intro": "Um pavilhão de jardim no extremo sul do terraço, em que se entra a partir do bosque este. Lá dentro, um lanço de degraus desce sob a terra até à cave, de onde se abre o clube. Uma segunda escada do mesmo género ergue-se no extremo norte do terraço, junto ao bosque oeste.",
+      "lookFor": "O corrimão da escada e a lâmpada ao seu pé; a luz do dia acaba onde começa a abóbada."
+    },
     "foyer": {
       "title": "foyer",
-      "kicker": "Quem passa a porta?",
-      "intro": "A escada da sala de world-engine desce até ao foyer da cave. Duas portas seguem em frente: o clube, que só se abre ao visitante com o microfone e o som ligados, e mais além um palco reservado aos visores. As propostas no seu ecrã ligam ambos.",
-      "lookFor": "O corrimão de latão da longa escada e as lanternas junto à porta do clube: ardem quentes, enquanto as cores do clube são frias."
+      "kicker": "Por onde se desce?",
+      "intro": "A cave corre por todo o comprimento do terraço, uma abóbada baixa sob as suas lajes. Duas escadas descem até ela a partir dos jardins, uma em cada extremo do terraço, e duas portas seguem em frente para o clube, que só se abre ao visitante com o microfone e o som ligados.",
+      "lookFor": "As lanternas nas duas portas do clube, e a luz que entra por elas: a cave é quente, o clube é frio."
     },
     "club": {
       "title": "clube",

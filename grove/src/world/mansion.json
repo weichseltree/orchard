@@ -374,14 +374,6 @@
           "center": 0,
           "width": 4.8,
           "height": 4.6
-        },
-        {
-          "to": "foyer",
-          "axis": "x",
-          "at": 10,
-          "center": -27,
-          "width": 3,
-          "height": 4.0
         }
       ],
       "hangings": [
@@ -546,45 +538,151 @@
       ]
     },
     {
-      "id": "foyer",
-      "title": "foyer",
+      "id": "stair-north",
+      "title": "stair",
       "presence": "club",
       "bounds": {
         "min": [
-          10,
+          -20,
           -5,
-          -34
+          -84
         ],
         "max": [
-          24,
-          8,
-          -20
+          -11,
+          2.6,
+          -76
         ]
       },
       "spawn": {
         "position": [
-          21,
+          -13,
           -5,
-          -22.5
+          -80.0
         ],
         "yawDeg": 90
       },
       "doorways": [
         {
-          "to": "world-engine",
+          "to": "orchard-west",
           "axis": "x",
-          "at": 10,
-          "center": -27,
-          "width": 3,
-          "height": 4.0
+          "at": -20,
+          "center": -80,
+          "width": 2.4,
+          "height": 3.2
+        },
+        {
+          "to": "foyer",
+          "axis": "z",
+          "at": -76,
+          "center": -15.5,
+          "width": 2.4,
+          "height": 3.0
+        }
+      ],
+      "hangings": [],
+      "architecture": "observatory"
+    },
+    {
+      "id": "stair-south",
+      "title": "stair",
+      "presence": "club",
+      "bounds": {
+        "min": [
+          -20,
+          -5,
+          72
+        ],
+        "max": [
+          -11,
+          2.6,
+          80
+        ]
+      },
+      "spawn": {
+        "position": [
+          -13,
+          -5,
+          76.0
+        ],
+        "yawDeg": 90
+      },
+      "doorways": [
+        {
+          "to": "orchard-east",
+          "axis": "x",
+          "at": -20,
+          "center": 76,
+          "width": 2.4,
+          "height": 3.2
+        },
+        {
+          "to": "foyer",
+          "axis": "z",
+          "at": 72,
+          "center": -15.5,
+          "width": 2.4,
+          "height": 3.0
+        }
+      ],
+      "hangings": [],
+      "architecture": "observatory"
+    },
+    {
+      "id": "foyer",
+      "title": "foyer",
+      "presence": "club",
+      "bounds": {
+        "min": [
+          -20,
+          -5,
+          -76
+        ],
+        "max": [
+          -10,
+          -1.4,
+          72
+        ]
+      },
+      "spawn": {
+        "position": [
+          -15,
+          -5,
+          -41
+        ],
+        "yawDeg": -90
+      },
+      "doorways": [
+        {
+          "to": "stair-north",
+          "axis": "z",
+          "at": -76,
+          "center": -15.5,
+          "width": 2.4,
+          "height": 3.0
+        },
+        {
+          "to": "stair-south",
+          "axis": "z",
+          "at": 72,
+          "center": -15.5,
+          "width": 2.4,
+          "height": 3.0
         },
         {
           "to": "club",
           "axis": "x",
-          "at": 10,
-          "center": -22.5,
-          "width": 3,
-          "height": 4.0
+          "at": -10,
+          "center": -55,
+          "width": 4,
+          "height": 3.2
+        },
+        {
+          "to": "club",
+          "axis": "x",
+          "at": -10,
+          "center": -27,
+          "width": 4,
+          "height": 3.2
         }
       ],
       "hangings": [],
@@ -618,10 +716,18 @@
         {
           "to": "foyer",
           "axis": "x",
-          "at": 10,
-          "center": -22.5,
-          "width": 3,
-          "height": 4.0
+          "at": -10,
+          "center": -55,
+          "width": 4,
+          "height": 3.2
+        },
+        {
+          "to": "foyer",
+          "axis": "x",
+          "at": -10,
+          "center": -27,
+          "width": 4,
+          "height": 3.2
         },
         {
           "to": "stage",
@@ -1234,6 +1340,14 @@
           "center": -105,
           "width": 70,
           "height": 8
+        },
+        {
+          "to": "stair-north",
+          "axis": "x",
+          "at": -20,
+          "center": -80,
+          "width": 2.4,
+          "height": 3.2
         }
       ],
       "hangings": [],
@@ -1342,6 +1456,14 @@
           "center": -105,
           "width": 70,
           "height": 8
+        },
+        {
+          "to": "stair-south",
+          "axis": "x",
+          "at": -20,
+          "center": 76,
+          "width": 2.4,
+          "height": 3.2
         }
       ],
       "hangings": [],

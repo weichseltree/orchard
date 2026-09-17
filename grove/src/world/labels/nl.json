@@ -208,11 +208,23 @@
       "lookFor": "Sta op het antwoordkader en kijk omhoog door de lagen terwijl de cursor passeert; het scherpe venster volgt hem.",
       "limit": "Dit is de episode van de leraar, niet die van een getrainde agent, en de schaal is een middel om te kijken; de agent ziet het canvas nooit als een plaats."
     },
+    "stair-north": {
+      "title": "trap",
+      "kicker": "Wat ligt er onder het terras?",
+      "intro": "Een tuinpaviljoen aan het noordeinde van het terras, te betreden vanuit het westelijke bosje. Binnen gaat een trap onder de grond naar de kelder, van waaruit de club opengaat. Een tweede trap van dezelfde soort staat aan het zuideinde van het terras, bij het oostelijke bosje.",
+      "lookFor": "De leuning van de trap en de lamp aan haar voet; het daglicht houdt op waar het gewelf begint."
+    },
+    "stair-south": {
+      "title": "trap",
+      "kicker": "Wat ligt er onder het terras?",
+      "intro": "Een tuinpaviljoen aan het zuideinde van het terras, te betreden vanuit het oostelijke bosje. Binnen gaat een trap onder de grond naar de kelder, van waaruit de club opengaat. Een tweede trap van dezelfde soort staat aan het noordeinde van het terras, bij het westelijke bosje.",
+      "lookFor": "De leuning van de trap en de lamp aan haar voet; het daglicht houdt op waar het gewelf begint."
+    },
     "foyer": {
       "title": "foyer",
-      "kicker": "Wie komt de deur voorbij?",
-      "intro": "De trap uit de zaal van world-engine komt uit in de foyer van de kelder. Twee deuren leiden verder: de club, die alleen opengaat voor een bezoeker met microfoon en geluid aan, en daarachter een podium alleen voor VR-brillen. De aanbiedingen op uw scherm zetten beide aan.",
-      "lookFor": "De messing leuning van de lange trap en de lantaarns naast de clubdeur: ze branden warm, terwijl de kleuren van de club zelf koud zijn."
+      "kicker": "Welke kant naar beneden?",
+      "intro": "De kelder loopt over de hele lengte van het terras, een laag gewelf onder zijn stenen. Twee trappen komen erin uit vanaf de gronden, één aan elk eind van het terras, en twee deuren leiden verder de club in, die alleen opengaat voor een bezoeker met microfoon en geluid aan.",
+      "lookFor": "De lantaarns bij de twee clubdeuren, en het licht erdoorheen: de kelder is warm, de club is koud."
     },
     "club": {
       "title": "club",

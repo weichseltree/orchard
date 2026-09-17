@@ -208,11 +208,23 @@
       "lookFor": "Stand on the answer frame and look up through the layers as the cursor passes; the sharp window follows it.",
       "limit": "This is the teacher's episode, not a learned agent's, and the scale is a device for looking; the agent never sees the canvas as a place."
     },
+    "stair-north": {
+      "title": "stair",
+      "kicker": "What is under the terrace?",
+      "intro": "A garden pavilion at the north end of the terrace, entered from the west grove. Inside, a flight of steps goes down under the ground to the undercroft, from which the club opens. A second stair of the same kind stands at the terrace's south end, off the east grove.",
+      "lookFor": "The rail of the stair and the lamp at its foot; the daylight ends where the vault begins."
+    },
+    "stair-south": {
+      "title": "stair",
+      "kicker": "What is under the terrace?",
+      "intro": "A garden pavilion at the south end of the terrace, entered from the east grove. Inside, a flight of steps goes down under the ground to the undercroft, from which the club opens. A second stair of the same kind stands at the terrace's north end, off the west grove.",
+      "lookFor": "The rail of the stair and the lamp at its foot; the daylight ends where the vault begins."
+    },
     "foyer": {
       "title": "foyer",
-      "kicker": "Who gets past the door?",
-      "intro": "The stair from the world-engine room comes down to the cellar's foyer. Two doors lead on: the club, which opens only to a visitor whose microphone and sound are on, and beyond it a stage for headsets alone. The offers on your screen switch both on.",
-      "lookFor": "The brass rail of the long stair and the lanterns beside the club door: they burn warm, while the club's own colours are cold."
+      "kicker": "Which way down?",
+      "intro": "The undercroft runs the length of the terrace, a low vault under its flagstones. Two stairs come down into it from the grounds, one at each end of the terrace, and two doors lead on into the club, which opens only to a visitor whose microphone and sound are on.",
+      "lookFor": "The lanterns at the club's two doors, and the light through them: the undercroft is warm, the club is cold."
     },
     "club": {
       "title": "club",

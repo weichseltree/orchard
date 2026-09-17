@@ -208,11 +208,23 @@
       "lookFor": "Tenez-vous sur le cadre de réponse et regardez vers le haut à travers les couches quand le curseur passe ; la fenêtre nette le suit.",
       "limit": "C'est l'épisode du professeur, non celui d'un agent entraîné, et l'échelle est un dispositif pour regarder ; l'agent ne voit jamais la toile comme un lieu."
     },
+    "stair-north": {
+      "title": "escalier",
+      "kicker": "Qu'y a-t-il sous la terrasse ?",
+      "intro": "Un pavillon de jardin à l'extrémité nord de la terrasse, où l'on entre depuis le bosquet ouest. À l'intérieur, une volée de marches descend sous terre jusqu'au sous-sol, d'où s'ouvre le club. Un second escalier du même genre se dresse à l'extrémité sud de la terrasse, du côté du bosquet est.",
+      "lookFor": "La rampe de l'escalier et la lampe à son pied ; la lumière du jour s'arrête où commence la voûte."
+    },
+    "stair-south": {
+      "title": "escalier",
+      "kicker": "Qu'y a-t-il sous la terrasse ?",
+      "intro": "Un pavillon de jardin à l'extrémité sud de la terrasse, où l'on entre depuis le bosquet est. À l'intérieur, une volée de marches descend sous terre jusqu'au sous-sol, d'où s'ouvre le club. Un second escalier du même genre se dresse à l'extrémité nord de la terrasse, du côté du bosquet ouest.",
+      "lookFor": "La rampe de l'escalier et la lampe à son pied ; la lumière du jour s'arrête où commence la voûte."
+    },
     "foyer": {
       "title": "foyer",
-      "kicker": "Qui passe la porte ?",
-      "intro": "L'escalier de la salle de world-engine descend jusqu'au foyer de la cave. Deux portes mènent plus loin : le club, qui ne s'ouvre qu'au visiteur dont le micro et le son sont allumés, et au-delà une scène réservée aux casques. Les propositions à l'écran allument les deux.",
-      "lookFor": "La rampe de laiton du long escalier et les lanternes près de la porte du club : elles brûlent chaud, tandis que les couleurs du club sont froides."
+      "kicker": "Par où descendre ?",
+      "intro": "Le sous-sol court sur toute la longueur de la terrasse, une voûte basse sous ses dalles. Deux escaliers y descendent depuis le domaine, un à chaque extrémité de la terrasse, et deux portes mènent plus loin dans le club, qui ne s'ouvre qu'au visiteur dont le micro et le son sont allumés.",
+      "lookFor": "Les lanternes aux deux portes du club, et la lumière qui en vient : le sous-sol est chaud, le club est froid."
     },
     "club": {
       "title": "club",

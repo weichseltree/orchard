@@ -248,19 +248,76 @@ export function areaRoom(room: Room, mansion: Mansion | null): boolean {
  * cellar under a wing looks up at that wing's floor, so it gets a lid.
  */
 export function covered(room: Room, mansion: Mansion | null): boolean {
-  if (!mansion) return false;
-  const [x0, , z0] = room.bounds.min, [x1, y1, z1] = room.bounds.max;
-  return mansion.rooms.some(other => other.id !== room.id && (other.scale ?? 1) === (room.scale ?? 1)
-    && other.bounds.min[1] >= y1 - 0.001
-    && other.bounds.min[0] < x1 && other.bounds.max[0] > x0 && other.bounds.min[2] < z1 && other.bounds.max[2] > z0);
+  return coverFloor(room, mansion) !== null;
 }
+/** The lowest floor standing over this room, or null when the sky is. */
+export function coverFloor(room: Room, mansion: Mansion | null): number | null {
+  return coverOf(room, mansion)?.bounds.min[1] ?? null;
+}
+/** The room standing over this one with the lowest floor, if any. */
+export function coverOf(room: Room, mansion: Mansion | null): Room | null {
+  if (!mansion) return null;
+  const [x0, , z0] = room.bounds.min, [x1, y1, z1] = room.bounds.max;
+  let cover: Room | null = null;
+  for (const other of mansion.rooms) {
+    if (other.id === room.id || (other.scale ?? 1) !== (room.scale ?? 1)) continue;
+    if (other.bounds.min[1] < y1 - 0.001) continue;
+    if (other.bounds.min[0] >= x1 || other.bounds.max[0] <= x0 || other.bounds.min[2] >= z1 || other.bounds.max[2] <= z0) continue;
+    if (!cover || other.bounds.min[1] < cover.bounds.min[1]) cover = other;
+  }
+  return cover;
+}
+/** How far below a covered room's ceiling its cladding reaches: past any outside ground beside it. */
+const CLADDING_DROP_M = 2.5;
+/**
+ * A cellar's outer faces are what the grounds see of it: from the garden,
+ * the terrace's edge is the undercroft's wall and the wing's foot is the
+ * club's. Those walls are the cellar's own dark finish, so a covered room
+ * wears the stone of the room above it on the outside, from below the
+ * outside ground up to that room's floor. The cladding stands just outside
+ * the wall, so from inside the cellar it is hidden behind the wall, and
+ * inside a neighbour it lies within that neighbour's own wall.
+ */
+function cladding(b: Builder): void {
+  const cover = coverOf(b.room, b.mansion);
+  if (!cover) return;
+  const room = b.room, y1 = room.bounds.max[1], top = cover.bounds.min[1] + 0.01, bottom = y1 - CLADDING_DROP_M;
+  const grounds = b.mansion?.rooms.filter(r => r.fallback.kind === "ground" && (r.scale ?? 1) === (room.scale ?? 1)) ?? [];
+  for (const wall of walls(room)) {
+    const at = wall.at - wall.inward * 0.05, cy = (bottom + top) / 2, h = top - bottom;
+    // In runs between the doorways, each left open a jamb's width beyond its aperture.
+    let cursor = wall.min - 0.05;
+    const run = (from: number, to: number): void => {
+      if (to - from < 0.05) return;
+      const mid = (from + to) / 2;
+      if (wall.axis === "x") b.add("box", "wall", at, cy, mid, 0.1, h, to - from, undefined, cover.id);
+      else b.add("box", "wall", mid, cy, at, to - from, h, 0.1, undefined, cover.id);
+      // A run the grounds can see gets a string course of light under the
+      // floor above, in the grounds' own light region: in this nocturne an
+      // unlit wall is black, and a plinth is only a plinth once it is lit.
+      const px = wall.axis === "x" ? at - wall.inward * 0.05 : mid, pz = wall.axis === "x" ? mid : at - wall.inward * 0.05, py = top - 0.18;
+      const outside = grounds.find(r => px >= r.bounds.min[0] && px <= r.bounds.max[0] && py >= r.bounds.min[1] && py <= r.bounds.max[1] && pz >= r.bounds.min[2] && pz <= r.bounds.max[2]);
+      if (!outside) return;
+      const lx = wall.axis === "x" ? at - wall.inward * 0.07 : mid, lz = wall.axis === "x" ? mid : at - wall.inward * 0.07;
+      if (wall.axis === "x") b.add("box", "light", lx, py, lz, 0.04, 0.04, to - from - 0.3, undefined, cover.id, outside.id);
+      else b.add("box", "light", lx, py, lz, to - from - 0.3, 0.04, 0.04, undefined, cover.id, outside.id);
+    };
+    for (const door of doorsOn(room, wall)) {
+      run(cursor, door.center - door.width / 2 - DOOR_JAMB_M);
+      cursor = Math.max(cursor, door.center + door.width / 2 + DOOR_JAMB_M);
+    }
+    run(cursor, wall.max + 0.05);
+  }
+}
+/** A doorway's stone jamb reaches this far beyond its aperture (labels.ts keeps the same number). */
+const DOOR_JAMB_M = 0.5;
 export function runsAlongX(room: Room, mansion: Mansion | null): boolean {
   return areaRoom(room, mansion) && room.bounds.max[0] - room.bounds.min[0] > room.bounds.max[2] - room.bounds.min[2];
 }
 
 class Builder {
   readonly group = new Group();
-  readonly batches = new Map<string, { kind: Primitive; finish: Finish; transforms: Matrix4[] }>();
+  readonly batches = new Map<string, { kind: Primitive; finish: Finish; as: string; transforms: Matrix4[] }>();
   /** Every luminous element placed, as the light it gives (lightfield.ts). */
   readonly emitters: Emitter[] = [];
   readonly area: boolean;
@@ -270,21 +327,27 @@ class Builder {
     this.area = areaRoom(room, mansion);
     this.turned = runsAlongX(room, mansion);
   }
-  add(kind: Primitive, finish: Finish, x: number, y: number, z: number, sx: number, sy: number, sz: number, rotation = new Quaternion()): void {
+  /**
+   * `as` names the room whose finish the element wears (a cellar's cladding
+   * wears the room above it); `lit` the room whose light region its lamp
+   * belongs to (a lamp on the outside of a cellar lights the grounds beside
+   * it, not the cellar). Both default to this room.
+   */
+  add(kind: Primitive, finish: Finish, x: number, y: number, z: number, sx: number, sy: number, sz: number, rotation = new Quaternion(), as = this.room.id, lit = this.room.id): void {
     if (Math.min(sx, sy, sz) <= 0) return;
-    const key = `${kind}-${finish}`;
+    const key = as === this.room.id ? `${kind}-${finish}` : `${kind}-${finish}@${as}`;
     let batch = this.batches.get(key);
-    if (!batch) { batch = { kind, finish, transforms: [] }; this.batches.set(key, batch); }
+    if (!batch) { batch = { kind, finish, as, transforms: [] }; this.batches.set(key, batch); }
     batch.transforms.push(new Matrix4().compose(new Vector3(x, y, z), rotation, new Vector3(sx, sy, sz)));
-    if (finish === "light" || finish === "blue") this.emit(kind, finish, x, y, z, sx, sy, sz, rotation);
+    if (finish === "light" || finish === "blue") this.emit(kind, finish, x, y, z, sx, sy, sz, rotation, as, lit);
   }
   /**
    * A luminous element as an emitter: its power from its size, its reach a
    * few metres beyond, its colour the room's. A long strip is a row of
    * points, so a cornice lights the whole wall it runs along.
    */
-  private emit(kind: Primitive, finish: Finish, x: number, y: number, z: number, sx: number, sy: number, sz: number, rotation: Quaternion): void {
-    const colour = new Color(finishOf(this.room.id)?.[finish] ?? OBSERVATORY_PALETTE[finish]);
+  private emit(kind: Primitive, finish: Finish, x: number, y: number, z: number, sx: number, sy: number, sz: number, rotation: Quaternion, as = this.room.id, lit = this.room.id): void {
+    const colour = new Color(finishOf(as)?.[finish] ?? OBSERVATORY_PALETTE[finish]);
     const dim = finish === "blue" ? 0.45 : 1;
     let power: number, reach: number;
     if (kind === "box") {
@@ -302,7 +365,7 @@ class Builder {
       reach = 11;
     }
     power *= dim;
-    const base = { r: colour.r, g: colour.g, b: colour.b, reach, room: this.room.id };
+    const base = { r: colour.r, g: colour.g, b: colour.b, reach, room: lit };
     const long = kind === "box" ? Math.max(sx, sz) : 0;
     if (long > 3) {
       const along = sx >= sz ? new Vector3(1, 0, 0) : new Vector3(0, 0, 1);
@@ -339,7 +402,7 @@ class Builder {
   }
   finish(): Group {
     for (const [key, batch] of this.batches) {
-      const mesh = new InstancedMesh(geometry(batch.kind), material(batch.finish, this.room.id), batch.transforms.length);
+      const mesh = new InstancedMesh(geometry(batch.kind), material(batch.finish, batch.as), batch.transforms.length);
       mesh.name = `observatory-${key}`;
       batch.transforms.forEach((transform, index) => mesh.setMatrixAt(index, transform));
       mesh.computeBoundingBox(); mesh.computeBoundingSphere();
@@ -573,8 +636,13 @@ function vault(b: Builder): void {
     const [x, z] = at(cu + side * width * 0.078, (v0 + v1) / 2);
     b.box("blue", x, y1 - 0.11, z, turned ? depth - 0.3 : 0.04, 0.035, turned ? 0.04 : depth - 0.3);
   }
-  // A room under another room closes its crown with a dark lid: what stands above it is a floor, not the sky.
-  if (covered(room, b.mansion)) b.box("inset", cx, y1 + 0.03, (z0 + z1) / 2, x1 - x0, 0.06, z1 - z0);
+  // A room under another room closes its crown with a lid that fills the whole
+  // void up to that room's floor: what stands above it is a floor, not the
+  // sky, and a void between the two would show from outside as a slot into the
+  // underground. Inset a little, so its faces stand inside the walls and never
+  // on the face of the slab above.
+  const cover = coverFloor(room, b.mansion);
+  if (cover !== null) b.box("wall", cx, (y1 + cover) / 2 + 0.01, (z0 + z1) / 2, x1 - x0 - 0.08, cover - y1 + 0.02, z1 - z0 - 0.08);
   // Oculi distinguish the quieter chambers. They hang above the exhibit envelope.
   if (["hall", "phototroph", "spectre", "greenhouse", "belvedere"].includes(room.id)) {
     const radius = room.id === "hall" ? 2.6 : 1.65;
@@ -878,7 +946,7 @@ function obelisk(b: Builder, x: number, z: number): void {
 function plan(room: Room, mansion: Mansion | null): Builder {
   const b = new Builder(room, mansion);
   if (room.fallback.kind === "ground") grounds(b);
-  else { chamberFloor(b); chamberWalls(b); vault(b); statuary(b); gameTables(b); venue(b); }
+  else { chamberFloor(b); chamberWalls(b); cladding(b); vault(b); statuary(b); gameTables(b); venue(b); }
   flights(b);
   return b;
 }
@@ -1004,15 +1072,15 @@ function stageFittings(b: Builder): void {
   }
 }
 
-/** The foyer: a cloakroom counter along the south wall, and lanterns either side of the club's door. */
+/** The foyer, the undercroft under the terrace: a lantern either side of each of the club's doors. */
 function foyerFittings(b: Builder): void {
-  const room = b.room, [x0, y0, z0] = room.bounds.min, [x1] = room.bounds.max;
-  const cx = (x0 + x1) / 2;
-  b.box("stone", cx, y0 + 0.55, z0 + 1.0, 8, 1.1, 0.7);
-  b.box("brass", cx, y0 + 1.12, z0 + 1.0, 8.1, 0.04, 0.85);
-  // Close beside the door's surround: further out stands the north wall on one side and the stair's cheek on the other.
-  const door = room.doorways.find(d => d.to === "club");
-  if (door) for (const side of [-1, 1]) lantern(b, x0 + 0.6, door.center + side * (door.width / 2 + 0.6));
+  const room = b.room, [, , z0] = room.bounds.min, [x1, , z1] = room.bounds.max;
+  for (const door of room.doorways.filter(d => d.to === "club")) {
+    for (const side of [-1, 1]) {
+      const z = door.center + side * (door.width / 2 + 0.6);
+      if (z > z0 + 0.6 && z < z1 - 0.6) lantern(b, x1 - 0.6, z);
+    }
+  }
 }
 
 /**

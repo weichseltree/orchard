@@ -208,11 +208,23 @@
       "lookFor": "Párese sobre el marco de respuesta y mire hacia arriba a través de las capas cuando pase el cursor; la ventana nítida lo sigue.",
       "limit": "Este es el episodio del profesor, no el de un agente entrenado, y la escala es un recurso para mirar; el agente nunca ve el lienzo como un lugar."
     },
+    "stair-north": {
+      "title": "escalera",
+      "kicker": "¿Qué hay bajo la terraza?",
+      "intro": "Un pabellón de jardín en el extremo norte de la terraza, al que se entra desde la arboleda oeste. Dentro, un tramo de escalones baja bajo tierra hasta el sótano, desde el que se abre el club. Una segunda escalera del mismo tipo se alza en el extremo sur de la terraza, junto a la arboleda este.",
+      "lookFor": "La barandilla de la escalera y la lámpara a su pie; la luz del día termina donde empieza la bóveda."
+    },
+    "stair-south": {
+      "title": "escalera",
+      "kicker": "¿Qué hay bajo la terraza?",
+      "intro": "Un pabellón de jardín en el extremo sur de la terraza, al que se entra desde la arboleda este. Dentro, un tramo de escalones baja bajo tierra hasta el sótano, desde el que se abre el club. Una segunda escalera del mismo tipo se alza en el extremo norte de la terraza, junto a la arboleda oeste.",
+      "lookFor": "La barandilla de la escalera y la lámpara a su pie; la luz del día termina donde empieza la bóveda."
+    },
     "foyer": {
       "title": "foyer",
-      "kicker": "¿Quién pasa la puerta?",
-      "intro": "La escalera de la sala de world-engine baja hasta el foyer del sótano. Dos puertas siguen adelante: el club, que solo se abre al visitante que tiene el micrófono y el sonido encendidos, y más allá un escenario reservado a los visores. Las propuestas en su pantalla encienden ambos.",
-      "lookFor": "La barandilla de latón de la larga escalera y los faroles junto a la puerta del club: arden cálidos, mientras que los colores del club son fríos."
+      "kicker": "¿Por dónde se baja?",
+      "intro": "El sótano recorre toda la longitud de la terraza, una bóveda baja bajo sus losas. Dos escaleras bajan hasta él desde los jardines, una en cada extremo de la terraza, y dos puertas siguen adelante hacia el club, que solo se abre al visitante que tiene el micrófono y el sonido encendidos.",
+      "lookFor": "Los faroles en las dos puertas del club, y la luz que entra por ellas: el sótano es cálido, el club es frío."
     },
     "club": {
       "title": "club",
