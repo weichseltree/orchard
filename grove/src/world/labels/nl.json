@@ -222,7 +222,7 @@
     "quantumflow/bowl": {
       "title": "De kom",
       "kicker": "Hoe vindt u het laagste punt van een landschap dat u niet kunt zien?",
-      "intro": "Twee oppervlakken staan naast elkaar. Het ene is een kom: waar u ook begint, leidt de weg omlaag naar het enige laagste punt. Het andere is hobbelig, en de weg naar beneden kan u laten stranden in een kuil die niet het laagste punt is.",
+      "intro": "Twee oppervlakken staan naast elkaar. Het ene is een kom: waar u ook begint, leidt de weg omlaag naar het enige laagste punt. Het andere is hobbelig, en de weg naar beneden kan u laten stranden in een kuil die niet de bodem is. Slechts één is te vertrouwen.",
       "lookFor": "De kuilen in het tweede oppervlak die niet het laagste punt zijn."
     },
     "quantumflow/inversion": {

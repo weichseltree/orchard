@@ -222,7 +222,7 @@
     "quantumflow/bowl": {
       "title": "Die Schüssel",
       "kicker": "Wie findet man den tiefsten Punkt einer Landschaft, die man nicht sieht?",
-      "intro": "Zwei Flächen stehen nebeneinander. Die eine ist eine Schüssel: Wo immer Sie beginnen, führt der Weg bergab zum einzigen tiefsten Punkt. Die andere ist bucklig, und der Weg bergab kann Sie in einer Mulde stranden lassen, die nicht der tiefste Punkt ist.",
+      "intro": "Zwei Flächen stehen nebeneinander. Die eine ist eine Schüssel: Wo immer Sie beginnen, führt der Weg bergab zum einzigen tiefsten Punkt. Die andere ist bucklig, und bergab stranden Sie vielleicht in einer Mulde, die nicht der tiefste Punkt ist. Nur der einen ist zu trauen.",
       "lookFor": "Die Mulden der zweiten Fläche, die nicht ihr tiefster Punkt sind."
     },
     "quantumflow/inversion": {

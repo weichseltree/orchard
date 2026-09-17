@@ -233,7 +233,7 @@
     },
     "quantumflow/flow": {
       "title": "O escoamento",
-      "kicker": "O que aconteceu quando o projeto acrescentou uma regra de que tinha a certeza de que ajudaria?",
+      "kicker": "O que aconteceu quando o projeto acrescentou uma regra que tinha a certeza de que ajudaria?",
       "intro": "Uma nuvem de partículas é levada de onde parte para onde tem de terminar. O projeto acrescentou uma restrição em que acreditava por boas razões, e mediu que ela piorava a viagem em todas as intensidades tentadas. A curva ao lado do escoamento é esse resultado.",
       "lookFor": "A curva na parede, que sobe onde deveria descer."
     },

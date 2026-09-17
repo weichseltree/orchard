@@ -234,7 +234,7 @@
     "quantumflow/flow": {
       "title": "L'écoulement",
       "kicker": "Qu'est-il arrivé quand le projet a ajouté une règle dont il était sûr qu'elle aiderait ?",
-      "intro": "Un nuage de particules est porté de son départ vers son arrivée. Le projet a ajouté une contrainte à laquelle il croyait pour de bonnes raisons, et il a mesuré qu'elle dégradait le trajet à toutes les intensités essayées. La courbe à côté est ce résultat.",
+      "intro": "Un nuage de particules est porté de son départ vers son arrivée. Le projet a ajouté une contrainte à laquelle il croyait pour de bonnes raisons, et il a mesuré qu'elle dégradait le trajet à toutes les intensités essayées. La courbe à côté de l'écoulement est ce résultat.",
       "lookFor": "La courbe sur le mur, qui monte là où elle devrait descendre."
     },
     "quantumflow/inside": {
