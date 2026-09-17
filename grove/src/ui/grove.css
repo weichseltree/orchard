@@ -708,6 +708,7 @@ noscript a { color: var(--accent); }
   gap: 8px;
 }
 #hud:not(.phone-layout) .notice {
+  overflow-wrap: anywhere;
   padding: 12px 14px;
   color: #bec5cf;
   font-size: 12.5px;
@@ -772,6 +773,10 @@ noscript a { color: var(--accent); }
   #hud[data-panel]:not(.phone-layout) .notices {
     left: var(--beside); right: var(--margin); width: auto; max-width: none;
     top: var(--col-top);
+    /* Newest kept, oldest clipped, clear of the game offer at the strip's foot. */
+    max-height: calc(100dvh - var(--col-top) - var(--col-bottom) - 80px);
+    overflow: hidden;
+    justify-content: flex-end;
   }
   #hud[data-panel]:not(.phone-layout) .game-offer {
     left: var(--beside); right: var(--margin); bottom: var(--col-bottom);
@@ -779,6 +784,18 @@ noscript a { color: var(--accent); }
     flex-wrap: wrap;
   }
   #hud[data-panel]:not(.phone-layout) .hint { display: none; }
+  /* Cloudflare's box is 300 px wide and must be clicked: over the column, not under it. */
+  #hud[data-panel]:not(.phone-layout) .human-check { z-index: 3; }
+}
+/* Narrower still, the strip beside the column is too thin to read: notices
+   and the offer lie over the column's foot instead. */
+@media (max-width: 699px) {
+  #hud[data-panel]:not(.phone-layout) .notices {
+    left: var(--col-left); top: auto; bottom: calc(var(--col-bottom) + 72px);
+    max-height: 40dvh;
+    z-index: 3;
+  }
+  #hud[data-panel]:not(.phone-layout) .game-offer { left: var(--col-left); bottom: calc(var(--col-bottom) + 8px); z-index: 3; }
 }
 #hud:not(.phone-layout) .hint { bottom: 104px; max-width: calc(100vw - var(--content-left) - 32px); border-radius: 0; }
 #hud:not(.phone-layout) .game-offer { bottom: 160px; border-radius: 0; }
