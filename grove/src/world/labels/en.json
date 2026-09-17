@@ -206,6 +206,42 @@
       "intro": "Here you are the size of a cell. The teacher's episode plays around you: the source grid stands to one side, the answer frame fills in under your feet cell by cell, the palette is a row of lit stones, and the cursor is a column of light that comes and goes. Overhead, the layers of the agent's view hang like glass floors, the lowest one sharp and small, each one above it twice as wide and twice as vague, until the top layer covers everything and says almost nothing. Scrub time to watch the colour travel from the palette to the cell.",
       "lookFor": "Stand on the answer frame and look up through the layers as the cursor passes; the sharp window follows it.",
       "limit": "This is the teacher's episode, not a learned agent's, and the scale is a device for looking; the agent never sees the canvas as a place."
+    },
+    "quantumflow": {
+      "title": "The Shooting Gallery",
+      "kicker": "Why does an electron take only certain energies?",
+      "intro": "Turn the dial and a wave sets off from the near wall, feeling its way along the room. At almost every setting it flies apart before it reaches the far end. At a few, it lies flat. Nobody chose those few.",
+      "lookFor": "The handful of settings where the wave lies flat instead of blowing up."
+    },
+    "quantumflow/cloud": {
+      "title": "The Cloud",
+      "kicker": "Six waves go in and one cloud comes out: what is lost?",
+      "intro": "Each orbital arrives with its own colour and its own shape. They are added together, and the colours wash out into a single pale cloud. Everything the six of them knew is still in here, and the wall behind will prove it.",
+      "lookFor": "The moment the colours vanish, and the well that re-forms on the wall afterwards."
+    },
+    "quantumflow/bowl": {
+      "title": "The Bowl",
+      "kicker": "How do you find the lowest point of a landscape you cannot see?",
+      "intro": "Two surfaces stand side by side. One is a bowl: wherever you start, sliding downhill finds the single lowest point. The other is lumpy, and downhill can strand you in a hollow that is not the bottom. Only one can be trusted.",
+      "lookFor": "The hollows in the second surface that are not its lowest point."
+    },
+    "quantumflow/inversion": {
+      "title": "The Inversion",
+      "kicker": "Can the cloud alone tell you the forces that shaped it?",
+      "intro": "Here the argument is put to the test. On one wall, the well an electron truly sat in. On the other, the well rebuilt from the cloud alone. Between them hangs the difference, at full size, however large it turns out to be.",
+      "lookFor": "The gap between the two wells, which is the whole measure of the claim."
+    },
+    "quantumflow/flow": {
+      "title": "The Flow",
+      "kicker": "What happened when we added a rule we were sure would help?",
+      "intro": "A cloud of particles is carried from where it starts to where it must end. We added a constraint we had good reason to believe in, and measured it making the journey worse at every strength we tried. The curve beside the flow is that result.",
+      "lookFor": "The curve on the wall, which rises where we expected it to fall."
+    },
+    "quantumflow/inside": {
+      "title": "Inside the Cloud",
+      "kicker": "What does a single orbital look like from within?",
+      "intro": "You have shrunk to the scale of the cloud. The haze around you is one orbital, drawn where its wave is strongest. Somewhere near the middle is a surface you cannot cross, because there the wave is exactly nothing.",
+      "lookFor": "The surface you cannot walk through, where the wave falls to nothing."
     }
   },
   "exhibits": {

@@ -206,6 +206,42 @@
       "intro": "Aqui tem o tamanho de uma célula. O episódio do professor decorre à sua volta: a grelha fonte está de um lado, a moldura de resposta preenche-se sob os seus pés célula a célula, a paleta é uma fila de pedras acesas, e o cursor é uma coluna de luz que vem e vai. Por cima, as camadas da visão do agente pendem como chãos de vidro, a mais baixa nítida e pequena, cada uma acima duas vezes mais larga e duas vezes mais vaga, até que a de cima cobre tudo e quase nada diz. Percorra o tempo para ver a cor viajar da paleta à célula.",
       "lookFor": "Fique sobre a moldura de resposta e olhe para cima através das camadas quando o cursor passar; a janela nítida segue-o.",
       "limit": "Este é o episódio do professor, não o de um agente treinado, e a escala é um recurso para olhar; o agente nunca vê a tela como um lugar."
+    },
+    "quantumflow": {
+      "title": "A Carreira de Tiro",
+      "kicker": "Porque é que um eletrão só assume certas energias?",
+      "intro": "Gira o seletor e uma onda parte da parede próxima, tateando a sala. Em quase todos os ajustes ela dispersa-se antes de alcançar a parede do fundo. Nuns poucos, deita-se plana. Esses poucos ninguém os escolheu: são os níveis permitidos.",
+      "lookFor": "Os poucos ajustes em que a onda fica plana em vez de se dispersar."
+    },
+    "quantumflow/cloud": {
+      "title": "A Nuvem",
+      "kicker": "Entram seis ondas e sai uma nuvem: o que se perde?",
+      "intro": "Cada orbital chega com a sua própria cor e a sua própria forma. São somados, e as cores desbotam numa única nuvem pálida. Tudo o que aqueles seis sabiam continua aqui dentro, e a parede atrás há de prová-lo sem acrescentar mais nada.",
+      "lookFor": "O instante em que as cores desaparecem, e o poço que depois se refaz na parede."
+    },
+    "quantumflow/bowl": {
+      "title": "A Tigela",
+      "kicker": "Como se acha o ponto mais baixo de uma paisagem que não se vê?",
+      "intro": "Duas superfícies estão lado a lado. Uma é uma tigela: comeces onde começares, descer leva ao único ponto mais baixo. A outra é irregular, e descer pode deixar-te preso numa cova que não é o fundo. Só numa se pode confiar.",
+      "lookFor": "As covas da segunda superfície que não são o seu ponto mais baixo."
+    },
+    "quantumflow/inversion": {
+      "title": "A Inversão",
+      "kicker": "Bastará a nuvem para revelar as forças que a moldaram?",
+      "intro": "Aqui a tese é posta à prova. Numa parede, o poço em que o eletrão esteve de facto. Na outra, o poço reconstruído apenas a partir da nuvem. Entre ambos pende a diferença, em tamanho real, por maior que venha a ser.",
+      "lookFor": "A distância entre os dois poços, que é toda a medida da tese."
+    },
+    "quantumflow/flow": {
+      "title": "O Escoamento",
+      "kicker": "O que aconteceu quando acrescentámos uma regra que de certeza ajudaria?",
+      "intro": "Uma nuvem de partículas é levada de onde parte para onde tem de terminar. Acrescentámos uma restrição em que acreditávamos por boas razões, e medimos que ela piorava a viagem em todas as intensidades tentadas. A curva ao lado é esse resultado.",
+      "lookFor": "A curva na parede, que sobe onde esperávamos que descesse."
+    },
+    "quantumflow/inside": {
+      "title": "Dentro da Nuvem",
+      "kicker": "Que aspeto tem um único orbital visto por dentro?",
+      "intro": "Encolheste até à escala da nuvem. A bruma à tua volta é um orbital, desenhado onde a sua onda é mais forte. Perto do centro há uma superfície que não podes atravessar, porque ali a onda vale exatamente nada.",
+      "lookFor": "A superfície que não podes atravessar, onde a onda cai a nada."
     }
   },
   "exhibits": {

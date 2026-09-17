@@ -206,6 +206,42 @@
       "intro": "Hier haben Sie die Größe einer Zelle. Die Episode des Lehrers läuft um Sie herum: Das Vorlagegitter steht zur Seite, der Antwortrahmen füllt sich unter Ihren Füßen Zelle für Zelle, die Palette ist eine Reihe leuchtender Steine, und der Cursor ist eine Lichtsäule, die kommt und geht. Über Ihnen hängen die Schichten der Sicht des Agenten wie Glasböden, die unterste scharf und klein, jede darüber doppelt so breit und doppelt so vage, bis die oberste alles bedeckt und fast nichts sagt. Spulen Sie die Zeit, um zu sehen, wie die Farbe von der Palette zur Zelle wandert.",
       "lookFor": "Stellen Sie sich auf den Antwortrahmen und blicken Sie durch die Schichten nach oben, während der Cursor vorbeizieht; das scharfe Fenster folgt ihm.",
       "limit": "Dies ist die Episode des Lehrers, nicht die eines gelernten Agenten, und der Maßstab ist ein Mittel zum Sehen; der Agent sieht die Leinwand nie als Ort."
+    },
+    "quantumflow": {
+      "title": "Der Schießstand",
+      "kicker": "Warum nimmt ein Elektron nur bestimmte Energien an?",
+      "intro": "Dreh am Regler, und eine Welle läuft von der nahen Wand aus tastend durch den Raum. Bei fast jeder Einstellung zerfliegt sie, bevor sie die ferne Wand erreicht. Bei wenigen legt sie sich flach. Diese wenigen hat niemand ausgewählt.",
+      "lookFor": "Die wenigen Einstellungen, bei denen die Welle flach liegt statt zu zerfliegen."
+    },
+    "quantumflow/cloud": {
+      "title": "Die Wolke",
+      "kicker": "Sechs Wellen hinein, eine Wolke heraus: was geht verloren?",
+      "intro": "Jedes Orbital kommt mit eigener Farbe und eigener Gestalt. Sie werden addiert, und die Farben verwaschen zu einer einzigen blassen Wolke. Alles, was die sechs wussten, steckt noch hier drin, und die Wand dahinter wird es beweisen.",
+      "lookFor": "Der Augenblick, in dem die Farben verschwinden, und der Topf, der danach an der Wand entsteht."
+    },
+    "quantumflow/bowl": {
+      "title": "Die Schale",
+      "kicker": "Wie findet man den tiefsten Punkt einer Landschaft, die man nicht sieht?",
+      "intro": "Zwei Flächen stehen nebeneinander. Die eine ist eine Schale: wo immer du beginnst, bergab führt zum einzigen tiefsten Punkt. Die andere ist bucklig, und bergab kann dich in einer Mulde stranden lassen, die nicht der Grund ist. Nur einer ist zu trauen.",
+      "lookFor": "Die Mulden der zweiten Fläche, die nicht ihr tiefster Punkt sind."
+    },
+    "quantumflow/inversion": {
+      "title": "Die Umkehrung",
+      "kicker": "Verrät die Wolke allein die Kräfte, die sie geformt haben?",
+      "intro": "Hier wird die Behauptung geprüft. An der einen Wand der Topf, in dem ein Elektron wirklich saß. An der anderen der Topf, allein aus der Wolke rekonstruiert. Dazwischen hängt die Differenz, in voller Größe, so groß sie auch ausfällt.",
+      "lookFor": "Der Abstand zwischen beiden Töpfen, das ganze Maß der Behauptung."
+    },
+    "quantumflow/flow": {
+      "title": "Der Fluss",
+      "kicker": "Was geschah, als wir eine Regel hinzufügten, die sicher helfen sollte?",
+      "intro": "Eine Wolke aus Teilchen wird von ihrem Anfang an ihr Ziel getragen. Wir fügten eine Nebenbedingung hinzu, an die wir aus guten Gründen glaubten, und maßen, wie sie den Weg bei jeder Stärke verschlechterte. Die Kurve daneben ist dieses Ergebnis.",
+      "lookFor": "Die Kurve an der Wand, die steigt, wo wir ein Fallen erwarteten."
+    },
+    "quantumflow/inside": {
+      "title": "In der Wolke",
+      "kicker": "Wie sieht ein einzelnes Orbital von innen aus?",
+      "intro": "Du bist auf die Größe der Wolke geschrumpft. Der Dunst um dich herum ist ein Orbital, dort gezeichnet, wo seine Welle am stärksten ist. Nahe der Mitte liegt eine Fläche, die du nicht durchqueren kannst, denn dort ist die Welle genau null.",
+      "lookFor": "Die Fläche, durch die du nicht gehen kannst, wo die Welle auf null fällt."
     }
   },
   "exhibits": {

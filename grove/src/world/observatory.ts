@@ -42,6 +42,9 @@ const ROOM_FINISH: Record<string, Partial<Record<Finish, string>>> = {
   belvedere: { wall: "#1b2c3c", inset: "#121f2b", stone: "#5c6b77", roof: "#172838" },
   // arcedit's area: slate walls and the editor's yellow in the lamps, one finish for all its rooms.
   arcedit: { wall: "#141b26", floor: "#0f1620", inset: "#0c121a", stone: "#4c5766", brass: "#a8905c", light: "#ffe4ad", blue: "#d1a94b", roof: "#111a26" },
+  // quantumflow's east wing: indigo stone under cold white lamps, so the
+  // orbitals and the density carry the only warm colour in the rooms.
+  quantumflow: { wall: "#141a2e", floor: "#0e1322", inset: "#0a0e1a", stone: "#4a5470", brass: "#8f7fb8", light: "#cfd9ff", blue: "#7fb0ff", roof: "#111629" },
   // The cellar venue (docs/specs/CLUB.md): the foyer warm, the club in its
   // own cold pair, magenta lamps and cyan lines, over near-black stone. The
   // club's luminous finishes are its own materials so the pulse can tint them.

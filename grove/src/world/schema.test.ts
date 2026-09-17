@@ -16,7 +16,11 @@ describe("mansion.json", () => {
     const palace = ["hall", "einstruct", "world-engine", "orangery", "stair-north", "stair-south", "foyer", "club", "stage", "phototroph", "gallery", "belvedere", "greenhouse", "terrace", "parterre", "orchard-west", "orchard-south", "orchard-east", "orrery"];
     // arcedit's area (results/grove/area.json in that tree): five rooms walked as a loop, and the canvas at a tenth of the scale.
     const arcedit = ["arcedit", "arcedit/agent", "arcedit/reward", "arcedit/record", "arcedit/workshop", "arcedit/inside"];
-    expect(mansion.rooms.map((room) => room.id)).toEqual([...palace, ...arcedit]);
+    // quantumflow's east wing (2026-09-17): the Shooting Gallery is the hall the
+    // big door off the orangery opens into, and a hub; the derivation is walked
+    // as a circuit around it and the Flow returns to the orangery.
+    const quantumflow = ["quantumflow", "quantumflow/cloud", "quantumflow/bowl", "quantumflow/inversion", "quantumflow/flow", "quantumflow/inside"];
+    expect(mansion.rooms.map((room) => room.id)).toEqual([...palace, ...arcedit, ...quantumflow]);
     expect(mansion.start).toBe("hall");
   });
 

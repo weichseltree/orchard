@@ -11,8 +11,8 @@ for (const { shell } of shells) shell.group.updateMatrixWorld(true);
 
 describe("the designed observatory", () => {
   it("builds every footprint with explicit architectural provenance, no textures or lights", () => {
-    // The palace's thirteen chambers and cells (coarsen's chamber went on 2026-09-16), the cellar venue's five, and arcedit's area of six (redesigned 2026-09-17).
-    expect(shells).toHaveLength(24);
+    // The palace's thirteen chambers and cells (coarsen's chamber went on 2026-09-16), the cellar venue's five, arcedit's area of six (redesigned 2026-09-17), and quantumflow's east wing of six.
+    expect(shells).toHaveLength(30);
     for (const { room, shell } of shells) {
       expect(shell.group.name).toBe(`${room.id}-shell`);
       expect(shell.group.userData.architecture).toBe("observatory");
@@ -54,8 +54,9 @@ describe("the designed observatory", () => {
     expect(triangles).toBeLessThan(shells.length * 14_000);
     // Six primitives, one vault per chamber, one height field per cell.
     expect(geometries.size).toBeLessThanOrEqual(6 + shells.length);
-    // Fifteen finishes, a few of them per-room variants; an area's rooms share their tree's.
-    expect(materials.size).toBeLessThanOrEqual(56);
+    // Fifteen finishes, a few of them per-room variants; an area's rooms share
+    // their tree's. quantumflow's indigo wing brought six more on 2026-09-17.
+    expect(materials.size).toBeLessThanOrEqual(62);
   });
 
   it("leaves every open doorway clear at walking height across its aperture", () => {

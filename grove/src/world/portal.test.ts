@@ -60,8 +60,9 @@ function at(end: PortalEnd, fraction: number, dir = new Vector3(1, 0, 0)): Vecto
 
 describe("portalEnds", () => {
   it("makes two ends of the armillary, twins of each other, with inverse ratios", () => {
-    // Four ends in the document: the armillary's two, and arcedit's portal into its canvas.
-    expect(ends).toHaveLength(4);
+    // Six ends in the document: the armillary's two, arcedit's portal into its
+    // canvas, and quantumflow's from the Cloud into it.
+    expect(ends).toHaveLength(6);
     expect(ends.filter((end) => end.portal.id === "armillary")).toHaveLength(2);
     expect(garden.twin).toBe(orrery);
     expect(orrery.twin).toBe(garden);
@@ -812,8 +813,9 @@ describe("the Orrery in the document", () => {
     expect(room.doorways).toEqual([]);
     // Not a cell of the grounds: the hall's neighbourhood must not pull it in with the gardens.
     expect(room.fallback.kind).toBe("box");
-    // The only other room at another scale is arcedit's canvas, a tenth of the palace's metre.
-    expect(mansion.rooms.filter((r) => r.scale !== 1).map((r) => [r.id, r.scale])).toEqual([["orrery", 0.02], ["arcedit/inside", 0.1]]);
+    // The other rooms at another scale are arcedit's canvas and the inside of
+    // quantumflow's cloud, each a tenth of the palace's metre.
+    expect(mansion.rooms.filter((r) => r.scale !== 1).map((r) => [r.id, r.scale])).toEqual([["orrery", 0.02], ["arcedit/inside", 0.1], ["quantumflow/inside", 0.1]]);
     const planet = room.hangings[0]!;
     expect(planet.kind).toBe("planet");
     if (planet.kind !== "planet") return;
