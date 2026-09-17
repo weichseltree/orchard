@@ -1632,8 +1632,10 @@
           "bundle": {
             "exhibit": {
               "tree": "arcedit",
-              "kind": "still"
-            }
+              "kind": "still",
+              "bundle": "dec91c1f0260f323"
+            },
+            "id": "dec91c1f0260f323"
           },
           "heightMeters": 1.184
         },
@@ -1840,8 +1842,10 @@
           "bundle": {
             "exhibit": {
               "tree": "arcedit",
-              "kind": "still"
-            }
+              "kind": "still",
+              "bundle": "42299a802a086df0"
+            },
+            "id": "42299a802a086df0"
           },
           "heightMeters": 3.25
         },
@@ -1965,8 +1969,10 @@
           "bundle": {
             "exhibit": {
               "tree": "arcedit",
-              "kind": "still"
-            }
+              "kind": "still",
+              "bundle": "1f3621a6968adbd2"
+            },
+            "id": "1f3621a6968adbd2"
           },
           "heightMeters": 3.75
         },
@@ -1988,8 +1994,10 @@
           "bundle": {
             "exhibit": {
               "tree": "arcedit",
-              "kind": "still"
-            }
+              "kind": "still",
+              "bundle": "2a07fc5541753ffb"
+            },
+            "id": "2a07fc5541753ffb"
           },
           "heightMeters": 3.75
         }
@@ -2063,8 +2071,10 @@
           "bundle": {
             "exhibit": {
               "tree": "arcedit",
-              "kind": "still"
-            }
+              "kind": "still",
+              "bundle": "941802a1c5cdd910"
+            },
+            "id": "941802a1c5cdd910"
           },
           "heightMeters": 3.25
         },
@@ -2086,8 +2096,10 @@
           "bundle": {
             "exhibit": {
               "tree": "arcedit",
-              "kind": "still"
-            }
+              "kind": "still",
+              "bundle": "c888f5c37cff4348"
+            },
+            "id": "c888f5c37cff4348"
           },
           "heightMeters": 3.25
         }
