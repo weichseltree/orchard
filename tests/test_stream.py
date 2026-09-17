@@ -109,7 +109,8 @@ def test_a_publisher_failure_is_logged_and_the_loop_goes_on(tmp_path):
 def test_an_outage_of_the_host_is_waited_out_without_the_watchdog_restarting_the_encoder(tmp_path, monkeypatch):
     if shutil.which("ffmpeg") is None:
         pytest.skip("ffmpeg is not installed")
-    # Half-second segments make the stall threshold four seconds; the backoff between tries grows past it.
+    # Half-second segments make the stall threshold four seconds; the backoff between tries (2, 4, 8 s) grows
+    # past it within a fourteen-second outage even when the first playlist takes a few seconds to appear.
     monkeypatch.setattr(stream, "SEGMENT_S", 0.5)
     lines = []
     out = tmp_path / "public"
@@ -117,7 +118,7 @@ def test_an_outage_of_the_host_is_waited_out_without_the_watchdog_restarting_the
 
     class Down(stream.LocalPublisher):
         def put(self, rel, data, ctype, cache):
-            if rel.endswith(".m4s") and time.time() - t0 < 10:
+            if rel.endswith(".m4s") and time.time() - t0 < 14:
                 raise ConnectionError("the host is away")
             super().put(rel, data, ctype, cache)
 

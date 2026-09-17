@@ -540,6 +540,7 @@ class StreamRun:
                 self.log("stream: stopped; idle playlist left in place")
             elif uploaded:
                 # Stopped while waiting to restart a dead encoder: its segments are still on the host.
+                self._account(time.monotonic() - usage_since, self.publisher.operations - usage_ops)
                 self._write_sequence(next_seq)
                 self._publish("the idle playlist", lambda: self.publisher.put(PLAYLIST, empty_playlist(next_seq).encode(), CONTENT_TYPES[".m3u8"], CACHE_PLAYLIST))
                 for name in sorted(uploaded, key=segment_number):
