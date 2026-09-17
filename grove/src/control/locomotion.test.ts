@@ -95,3 +95,16 @@ describe("a teleport goes only where a walk could", () => {
     expect(teleport(body, mansion, ...middle(room(far)))).toBe(true);
   });
 });
+
+describe("a teleport named into a room", () => {
+  const mansion = parseMansion(mansionDocument);
+  it("lands in that room even where another room's floor lies over the same spot", () => {
+    const body = createBody(0, -14, 0, "world-engine", 1, 1.5);
+    const club = mansion.rooms.find((r) => r.id === "club")!;
+    const moved = teleport(body, mansion, club.spawn.position[0], club.spawn.position[2], undefined, { into: "club", walls: false });
+    expect(moved).toBe(true);
+    expect(body.room).toBe("club");
+    expect(body.y).toBeCloseTo(club.bounds.min[1]);
+  });
+});
+

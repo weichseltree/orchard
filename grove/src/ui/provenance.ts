@@ -30,6 +30,8 @@ export interface ProvenanceTarget {
    * meant; the room it hangs in is the answer only when nothing is in view.
    */
   rank?: number;
+  /** The mansion.json hanging this shows, when it is one (or its plaque): what a click frames. */
+  hanging?: string;
   read(): Record<string, unknown>;
 }
 
@@ -82,7 +84,13 @@ export class Provenance {
   pick(camera: PerspectiveCamera): ProvenanceTarget | null {
     camera.getWorldPosition(this.#origin);
     camera.getWorldDirection(this.#direction);
-    this.#ray.set(this.#origin, this.#direction);
+    return this.pickRay(this.#origin, this.#direction)?.target ?? null;
+  }
+
+  /** The nearest target along any ray (a click under the cursor), and how far along it. */
+  pickRay(origin: Vector3, direction: Vector3): { target: ProvenanceTarget; distance: number } | null {
+    this.#origin.copy(origin);
+    this.#ray.set(this.#origin, direction);
     let best: ProvenanceTarget | null = null;
     let bestDistance = Number.POSITIVE_INFINITY;
     let bestRank = Number.POSITIVE_INFINITY;
@@ -104,7 +112,13 @@ export class Provenance {
         best = target;
       }
     }
-    return best ?? containing;
+    if (best) return { target: best, distance: bestDistance };
+    return containing && { target: containing, distance: 0 };
+  }
+
+  /** The target that shows a hanging's own bundle, not its plaque. */
+  forHanging(id: string): ProvenanceTarget | null {
+    return this.#targets.find((t) => t.hanging === id && !t.id.startsWith("plaque:")) ?? null;
   }
 
   toggle(camera: PerspectiveCamera): void {
@@ -114,10 +128,14 @@ export class Provenance {
 
   show(camera: PerspectiveCamera): void {
     const target = this.pick(camera);
+    this.showRecord(target?.title ?? "About this view", target ? target.read() : { "": "nothing in view" }, target);
+  }
+
+  /** Opens the panel on a record the caller chose (a framed exhibit) rather than on the view ray. */
+  showRecord(title: string, record: Record<string, unknown>, target: ProvenanceTarget | null = null): void {
     this.#current = target;
     this.open = true;
-    const entries = target ? flatten(target.read()) : [["", "nothing in view"] as const];
-    const title = target?.title ?? "About this view";
+    const entries = flatten(record);
     this.#renderDom(title, entries);
     this.#renderCanvas(title, entries);
     this.#dom.hidden = false;

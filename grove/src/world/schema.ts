@@ -36,6 +36,54 @@ export const GameSurfaceSchema = z.looseObject({
 });
 
 /**
+ * A repository as a tabletop model (repo-model.ts, ruled 2026-09-17): an
+ * area's directories stop being rooms and stand instead as districts of a
+ * small city on a table, so the tree's shape stays visible while the rooms
+ * are kept for what there is to see. The visitor reads a district by looking
+ * at it; one with `room` set glows, because that directory has a room.
+ */
+export const RepoModelSchema = z.looseObject({
+  id: z.string().min(1),
+  title: z.string().default(""),
+  /** The table's centre on the floor, room metres. */
+  position: Vec3,
+  yawDeg: z.number().default(0),
+  /** The model's footprint on the table top: across, then along. */
+  size: z.tuple([z.number().positive(), z.number().positive()]).default([2.4, 1.6]),
+  tableHeight: z.number().positive().default(0.85),
+  /**
+   * Whose folders stand on the table: repos/<repo>.json beside this file, a
+   * list of {path, bytes, sentence, room}. Kept out of mansion.json because
+   * this document loads at startup and the table's sentences need not.
+   */
+  repo: z.string().min(1),
+});
+
+export const RepoEntrySchema = z.looseObject({
+  /** Relative to the repository root, "/"-separated; parents the list does not name are implied. */
+  path: z.string().min(1),
+  bytes: z.number().nonnegative().default(0),
+  sentence: z.string().default(""),
+  /** The room that shows this directory's content, when it has one. */
+  room: z.string().default(""),
+});
+
+/**
+ * A short record on a wall: one line of what an experiment asked and what
+ * came back (arcedit's record room). Where it hangs lives here; its words
+ * live in the labels, `rooms[<room>].lines[<key>]`, in every language.
+ */
+export const WallLineSchema = z.looseObject({
+  id: z.string().min(1),
+  key: z.string().min(1),
+  /** The plate's centre, room metres, on the wall's face. */
+  position: Vec3,
+  rotationDeg: Vec3.default([0, 0, 0]),
+  /** The stretch of wall the line owns; the plate is centred in it. */
+  widthMeters: z.number().positive().default(3.6),
+});
+
+/**
  * A plain opening in a shared wall (M0; portals are M5). `axis` is the axis the
  * wall is perpendicular to, `at` the wall's coordinate on that axis, `center`
  * the opening's centre on the other horizontal axis.
@@ -271,6 +319,8 @@ export const RoomSchema = z.looseObject({
   doorways: z.array(DoorwaySchema).default([]),
   hangings: z.array(HangingSchema).default([]),
   gameSurfaces: z.array(GameSurfaceSchema).default([]),
+  repoModels: z.array(RepoModelSchema).default([]),
+  wallLines: z.array(WallLineSchema).default([]),
   /**
    * Tone-mapping exposure while the visitor is in this room; the eye adapts
    * over about a second on crossing. The bakes are one sun for the whole
@@ -373,6 +423,15 @@ export const MansionSchema = z
           ctx.addIssue({ code: "custom", message: `game surface "${surface.id}" stands outside "${room.id}"` });
         }
       }
+      for (const model of room.repoModels) {
+        const [w, d] = model.size;
+        const reach = Math.hypot(w, d) / 2 + 0.2;
+        // The whole table, turned any way, must stand inside the room's walls.
+        const corners = [[-reach, -reach], [reach, reach]].map(([dx, dz]) => [model.position[0] + dx!, model.position[1], model.position[2] + dz!] as [number, number, number]);
+        if (!corners.every((corner) => withinFootprint(room, corner))) {
+          ctx.addIssue({ code: "custom", message: `repo model "${model.id}" stands outside "${room.id}"` });
+        }
+      }
       for (const door of room.doorways) {
         if (door.closed) continue;
         const other = doc.rooms.find((r) => r.id === door.to);
@@ -421,6 +480,9 @@ function withinFootprint(room: { bounds: { min: [number, number, number]; max: [
 export type Bounds = z.infer<typeof BoundsSchema>;
 export type Spawn = z.infer<typeof SpawnSchema>;
 export type GameSurface = z.infer<typeof GameSurfaceSchema>;
+export type RepoModel = z.infer<typeof RepoModelSchema>;
+export type RepoEntry = z.infer<typeof RepoEntrySchema>;
+export type WallLine = z.infer<typeof WallLineSchema>;
 export type Doorway = z.infer<typeof DoorwaySchema>;
 export type BundleRef = z.infer<typeof BundleRefSchema>;
 export type ExhibitRef = z.infer<typeof ExhibitRefSchema>;
