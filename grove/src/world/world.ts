@@ -54,6 +54,8 @@ export interface BuildWorldOptions {
   audioContext?: () => Promise<AudioContext>;
   /** False leaves live audio exhibits unloaded: the demo has no network, and a stream is nothing but one. */
   liveExhibits?: boolean;
+  /** A live exhibit's notices, with the room they belong to; the caller says them only there. Falls back to `onNotice`. */
+  audioNotice?: (roomId: string, message: string) => void;
   /** The room the visitor starts in; `mansion.start` when absent. */
   startRoom?: string;
   scheduler?: ChunkScheduler;
@@ -377,8 +379,11 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
         }
         pending.push(
           Promise.all([import("./audio-exhibit"), options.audioContext?.()]).then(([{ AudioExhibit }, context]) => AudioExhibit.load({
-            hanging, archivedBase: archived, tier: device.tier, onNotice,
+            hanging, archivedBase: archived, tier: device.tier,
+            onNotice: options.audioNotice ? (text: string) => options.audioNotice!(room.id, text) : onNotice,
             ...(context ? { context } : {}),
+            // A live stream is fetched only while the visitor is in its room (main.ts wakes it).
+            ...(hanging.live ? { dormant: true } : {}),
           }))
             .then((audio) => {
               world.audios.push(audio);

@@ -48,6 +48,64 @@ def test_plan_sync_puts_new_files_in_playlist_order_and_deletes_stale_ones_beyon
     assert to_delete == ["seg000008.m4s", "seg000009.m4s"]
 
 
+def test_segments_order_by_their_number_not_their_spelling():
+    assert stream.segment_number("seg000042.m4s") == 42
+    assert stream.segment_number("seg1000000.m4s") == 1000000
+    assert stream.segment_number("init.mp4") == -1
+    listed = ["init.mp4", "seg1000001.m4s"]
+    uploaded = {"init.mp4", "seg0999998.m4s", "seg0999999.m4s", "seg1000000.m4s"}
+    _, to_delete = stream.plan_sync(listed, uploaded, keep=2)
+    assert to_delete == ["seg0999998.m4s"]
+
+
+def test_a_publisher_failure_is_logged_and_the_loop_goes_on(tmp_path):
+    if shutil.which("ffmpeg") is None:
+        pytest.skip("ffmpeg is not installed")
+    lines = []
+
+    class Flaky(stream.LocalPublisher):
+        def __init__(self, d):
+            super().__init__(d)
+            self.fail = 0
+
+        def put(self, rel, data, ctype, cache):
+            if rel.endswith(".m4s") and self.fail < 3:
+                self.fail += 1
+                raise ConnectionError("the host went away")
+            super().put(rel, data, ctype, cache)
+
+    out = tmp_path / "public"
+    publisher = Flaky(out)
+    real = stream.Encoder.__init__
+
+    def quick(self, *args, **kwargs):
+        kwargs["realtime"] = False
+        real(self, *args, **kwargs)
+
+    stream.Encoder.__init__ = quick
+    run = stream.StreamRun("club", "floor", publisher, tmp_path / "work", poll_s=0.5, idle_s=5, always=True,
+                           ledger=tmp_path / "u.jsonl", log=lines.append)
+    stop = threading.Event()
+    try:
+        worker = threading.Thread(target=run.run, args=(stop,), daemon=True)
+        worker.start()
+        deadline = time.time() + 40
+        while time.time() < deadline:
+            text = (out / stream.PLAYLIST).read_text() if (out / stream.PLAYLIST).exists() else ""
+            if len(stream.playlist_media(text)) > 3:
+                break
+            time.sleep(0.25)
+        assert len(stream.playlist_media((out / stream.PLAYLIST).read_text())) > 3, lines
+    finally:
+        stop.set()
+        worker.join(timeout=15)
+        stream.Encoder.__init__ = real
+    assert any("failed" in line for line in lines), lines
+    assert worker.is_alive() is False
+    # The sequence survives for the next run, and it is where the last run left off.
+    assert int((tmp_path / "work" / "sequence.txt").read_text()) > 0
+
+
 def test_the_idle_rule_starts_on_the_first_listener_and_stops_a_minute_after_the_last_leaves():
     rule = stream.IdleRule(stop_after_s=60)
     assert rule.update(0, 0) is None

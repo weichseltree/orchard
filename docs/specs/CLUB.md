@@ -8,8 +8,7 @@ streaming but work on the design and map integration first."* And his
 question: *"are we baking the light and sound maps or is that feature not
 ready?"* — answered in §6.
 
-§1 to §4 are built and live. §5 is the audio streaming as prepared: the
-client's side is wired and the pipeline is designed, but no stream exists yet.
+§1 to §5 are built; §5's stream is the first of the three ruled follow-ups.
 §7 lists the rulings that are Manuel's. Numbers marked **budget** are
 proposals, not measurements.
 
@@ -161,7 +160,11 @@ itself never changes.
 ## 5. The audio: the floor's stream, built
 
 **The club's music is a live exhibit** (AUDIO-STREAM.md §1–§3): a name with
-no bytes behind it, never cached, LL-HLS Opus. It is hung in the club:
+no bytes behind it, never cached, Opus in fMP4 over HLS. This cut publishes
+plain two-second segments and no LL-HLS parts, so a listener sits about five
+to seven seconds behind the encoder and visitors hear the beat within a few
+seconds of one another; §3's two-second budget is not met by it and waits
+for a packager that writes parts. It is hung in the club:
 
 ```json
 { "id": "club-floor", "kind": "audio", "title": "The floor",
@@ -190,18 +193,27 @@ writes it to listen to.
 
 **The encoder runs only while someone is in the club.** It counts the rows
 of the live `whereabouts` table in the venue's presence room every five
-seconds and stops a minute after the last visitor leaves (AUDIO-STREAM.md
-§6). While idle it leaves an **empty live playlist** published, so a player
-that arrives waits rather than fails; when someone comes the encoder starts
-within a poll and the playlist fills. The client's stream, which hls.js
-would otherwise give up on after a few empty reloads, now watches its
-playlist every eight seconds while silent and comes back the moment a
-segment appears (`audio/exhibit.ts`, `playlistHasMedia`), unmuting again if
-it had been unmuted. A live exhibit joins the venue's shared `AudioContext`
-so the same **Sound on** that opens the door is what makes the stream
-audible, and the beat follower reads its bed for the lights; a floor that is
-on but silent breathes like no stream at all. The demo loads no live
-exhibit, having no network.
+seconds, on a thread of its own so a slow database never holds the players
+up, and stops a minute after the last visitor leaves (AUDIO-STREAM.md §6).
+While idle it leaves an **empty live playlist** published, so a player that
+arrives waits rather than fails; when someone comes the encoder starts
+within a poll and the playlist fills. The sequence and the set's position
+survive a restart (`sequence.txt` in the workdir); a failed upload is logged
+and retried with a backoff of up to half a minute while the encoder runs on;
+an encoder that dies or stalls is restarted with a backoff; on stop the
+retire is bounded. **The client's player is awake only in its room**: the
+club's floor is fetched by the club's visitors, not by everyone in the
+palace. Waking, it looks at the playlist first: a live one is attached, an
+empty one is waited on quietly (a notice once), and it looks again every
+eight seconds (`audio/exhibit.ts`). A playlist whose newest segment is more
+than half a minute old is a leftover of an encoder that died, not a stream
+(`playlistIsFresh`). Playback holds the live edge two segments back and
+jumps back to it when it drifts by more than four seconds; §3's silence
+applies when jumping does not help. A live exhibit joins the venue's shared
+`AudioContext` so the same **Sound on** that opens the door is what makes
+the stream audible, and the beat follower reads its bed for the lights; a
+floor that is on but silent breathes like no stream at all. The demo loads
+no live exhibit, having no network.
 
 **Dev**: `orchard stream run --local results/bundles/audio/live/club/floor
 --always` publishes into the directory Vite serves as `/local-bundles/`, so

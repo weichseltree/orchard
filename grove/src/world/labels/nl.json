@@ -117,7 +117,7 @@
     "club": {
       "title": "club",
       "kicker": "Hoe luid is een gewelfde kelder?",
-      "intro": "Een club onder de noordvleugel: een laag gewelf, een dansvloer van verlichte tegels, een bar langs de oostmuur, zitjes langs de westmuur, een podium aan het einde. Wat speelt is de eigen stream van de vloer, een set die op de machine van het paleis wordt berekend en live wordt doorgegeven, zodat elke bezoeker dezelfde slag op hetzelfde moment hoort. De lichten volgen de bas; als de vloer stil is, ademen ze uit zichzelf. De deur vraagt om een microfoon en geluid, zodat praten en zingen hier kunnen werken zodra de spraakverbinding bestaat.",
+      "intro": "Een club onder de noordvleugel: een laag gewelf, een dansvloer van verlichte tegels, een bar langs de oostmuur, zitjes langs de westmuur, een podium aan het einde. Wat speelt is de eigen stream van de vloer, een set die op de machine van het paleis wordt berekend en live wordt doorgegeven, zodat alle bezoekers dezelfde slag binnen enkele seconden van elkaar horen. De lichten volgen de bas; als de vloer stil is, ademen ze uit zichzelf. De deur vraagt om een microfoon en geluid, zodat praten en zingen hier kunnen werken zodra de spraakverbinding bestaat.",
       "lookFor": "De spiegelbol boven de vloer en de twee kleurlijnen langs het gewelf; ze pulseren mee met de muziek, als er muziek is.",
       "limit": "De set wordt gecomponeerd door een programma met een vaste startwaarde, niet door een mens; niets hier is een uitspraak over muziek, en de encoder stopt als de club leeg is."
     },

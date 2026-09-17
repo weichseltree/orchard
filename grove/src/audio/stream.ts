@@ -30,6 +30,38 @@ export function playlistHasMedia(text: string): boolean {
   });
 }
 
+/** A playlist whose newest segment is older than this is a leftover of an encoder that died, not a stream. */
+export const STALE_PLAYLIST_MS = 30_000;
+
+/**
+ * Whether a playlist is live NOW: it has media, and its newest segment's
+ * programme date plus its duration is within `STALE_PLAYLIST_MS` of `nowMs`.
+ * An encoder killed without its retire leaves its last window on the host;
+ * without this a silent player would replay those sixteen seconds forever.
+ * A playlist with no programme dates is taken at its word.
+ */
+export function playlistIsFresh(text: string, nowMs: number, staleMs = STALE_PLAYLIST_MS): boolean {
+  if (!playlistHasMedia(text)) return false;
+  let lastDate: number | null = null;
+  let lastDuration = 0;
+  let pendingDate: number | null = null;
+  for (const raw of text.split("\n")) {
+    const line = raw.trim();
+    if (line.startsWith("#EXT-X-PROGRAM-DATE-TIME:")) {
+      const t = Date.parse(line.slice("#EXT-X-PROGRAM-DATE-TIME:".length));
+      pendingDate = Number.isFinite(t) ? t : null;
+    } else if (line.startsWith("#EXTINF:")) {
+      const d = Number.parseFloat(line.slice("#EXTINF:".length));
+      if (Number.isFinite(d)) lastDuration = d;
+    } else if (line.length > 0 && !line.startsWith("#")) {
+      if (pendingDate !== null) lastDate = pendingDate;
+      pendingDate = null;
+    }
+  }
+  if (lastDate === null) return true;
+  return nowMs - (lastDate + lastDuration * 1000) < staleMs;
+}
+
 /** How often a silent stream looks for its playlist to fill again, in ms. */
 export const RETRY_MS = 8000;
 /** Behind the live edge by more than this, playback jumps back to it (budget: two segments). */

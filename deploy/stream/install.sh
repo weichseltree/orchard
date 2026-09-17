@@ -22,7 +22,11 @@ home_dir="${HOME}/.local/share/orchard-stream"
 tree="${home_dir}/repo"
 uv_bin="$(command -v uv)"
 
-[[ -f "${HOME}/.config/orchard/secrets.env" ]] || { echo "no ~/.config/orchard/secrets.env: the uploader needs the R2 token" >&2; exit 2; }
+secrets="${HOME}/.config/orchard/secrets.env"
+[[ -f "$secrets" ]] || { echo "no $secrets: the uploader needs the R2 token" >&2; exit 2; }
+[[ "$(stat -c %a "$secrets")" == "600" ]] || { echo "$secrets must be mode 600" >&2; exit 2; }
+grep -q '^CLOUDFLARE_ACCOUNT_ID=' "$secrets" || { echo "$secrets has no CLOUDFLARE_ACCOUNT_ID" >&2; exit 2; }
+grep -Eq '^CLOUDFLARE_(R2_|API_)TOKEN=' "$secrets" || { echo "$secrets has no CLOUDFLARE_R2_TOKEN or CLOUDFLARE_API_TOKEN" >&2; exit 2; }
 command -v ffmpeg >/dev/null || { echo "ffmpeg is not installed" >&2; exit 2; }
 command -v spacetime >/dev/null || { echo "the spacetime CLI is not installed" >&2; exit 2; }
 

@@ -166,7 +166,7 @@ describe("AudioExhibit.load", () => {
     exhibit.dispose();
   });
 
-  it("plays the bed alone when there is no topology, and says so rather than failing", async () => {
+  it("plays the bed alone when there is no topology, quietly for a provider that publishes none and said for one whose is unreachable", async () => {
     stubBrowser();
     const notices: string[] = [];
     const exhibit = await AudioExhibit.load({
@@ -176,7 +176,17 @@ describe("AudioExhibit.load", () => {
       fetch: (async () => new Response("", { status: 404 })) as unknown as typeof fetch,
     });
     expect(exhibit.nodes).toEqual([]);
+    // A bed with no nodes (the club's floor) is the §5 fallback, not news for the visitor.
+    expect(notices.some((m) => m.includes("no topology"))).toBe(false);
+    const unreachable = await AudioExhibit.load({
+      hanging: hanging(),
+      tier: "desktop",
+      onNotice: (m) => notices.push(m),
+      fetch: (async () => new Response("", { status: 503 })) as unknown as typeof fetch,
+    });
+    expect(unreachable.nodes).toEqual([]);
     expect(notices.some((m) => m.includes("no topology"))).toBe(true);
+    unreachable.dispose();
     // Not an error dialog, and not a thrown load: the room stays enterable (§3).
     expect(exhibit.state).toBe("silent");
     exhibit.dispose();

@@ -658,7 +658,15 @@ function boot(): void {
     exhibits: demo ? undefined : () => presence.whenExhibits(EXHIBIT_WAIT_MS),
     audioContext: () => loadGear().then((g) => g.gate.context),
     liveExhibits: !demo,
-    onAudio: () => syncVenueSound(),
+    // A stream's news is the room's: said where it is heard, logged elsewhere.
+    audioNotice: (roomId, text) => {
+      if (roomId === body.room) notice(text);
+      else console.info(`[grove] ${roomId}: ${text}`);
+    },
+    onAudio: (audio) => {
+      audio.setActive(exhibitRoom(audio) === body.room);
+      syncVenueSound();
+    },
     onRoomReady: (room, shell) => {
       // The sealed lenses over this room's closed doors may show now that their recesses stand.
       portals.roomReady(room.id);
@@ -1125,6 +1133,8 @@ view.start((dt, time, rawDt) => {
     notice(roomTitle(labelsLoaded(locale), body.crossedInto) ?? roomById(mansion, body.crossedInto)?.title ?? body.crossedInto);
     // Arriving in the foyer is when the club's door is worth explaining.
     offerVenue();
+    // A live stream is awake in its own room only: the club's floor is fetched by its visitors, not the palace's.
+    for (const audio of world?.audios ?? []) audio.setActive(exhibitRoom(audio) === body.crossedInto);
     syncVenueSound();
     // Acted on: cleared here, once, rather than at the start of `step`, so a
     // teleport earlier in the frame is not erased before it is seen.

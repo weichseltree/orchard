@@ -117,7 +117,7 @@
     "club": {
       "title": "Club",
       "kicker": "Wie laut ist ein Gewölbekeller?",
-      "intro": "Ein Club unter dem Nordflügel: ein niedriges Gewölbe, eine Tanzfläche aus leuchtenden Platten, eine Bar an der Ostwand, Nischen im Westen, am Ende eine Bühne. Es spielt der Stream der Tanzfläche, ein Set, das die Maschine des Palastes berechnet und live überträgt, sodass jeder Besucher denselben Schlag im selben Moment hört. Die Lichter folgen seinem Bass; ist es still, atmen sie von selbst. Die Tür verlangt Mikrofon und Ton, damit Reden und Singen hier funktionieren, sobald die Sprachverbindung besteht.",
+      "intro": "Ein Club unter dem Nordflügel: ein niedriges Gewölbe, eine Tanzfläche aus leuchtenden Platten, eine Bar an der Ostwand, Nischen im Westen, am Ende eine Bühne. Es spielt der Stream der Tanzfläche, ein Set, das die Maschine des Palastes berechnet und live überträgt, sodass alle Besucher denselben Schlag bis auf wenige Sekunden gleichzeitig hören. Die Lichter folgen seinem Bass; ist es still, atmen sie von selbst. Die Tür verlangt Mikrofon und Ton, damit Reden und Singen hier funktionieren, sobald die Sprachverbindung besteht.",
       "lookFor": "Die Spiegelkugel über der Tanzfläche und die beiden Farblinien entlang des Gewölbes; sie pulsieren mit der Musik, wenn es Musik gibt.",
       "limit": "Das Set komponiert ein Programm mit festem Startwert, kein Mensch; nichts hier ist eine Aussage über Musik, und der Encoder hält an, wenn der Club leer ist."
     },

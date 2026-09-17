@@ -117,7 +117,7 @@
     "club": {
       "title": "club",
       "kicker": "Quanto suona una cantina a volta?",
-      "intro": "Un club sotto l'ala nord: una volta bassa, una pista da ballo di piastrelle luminose, un bancone lungo la parete est, séparé lungo quella ovest, un palco in fondo. Ciò che suona è la diretta della pista stessa, un set calcolato sulla macchina del palazzo e trasmesso dal vivo, così che ogni visitatore sente lo stesso battito nello stesso istante. Le luci seguono i suoi bassi; quando la pista tace, respirano da sole. La porta chiede microfono e audio, perché parlare e cantare possano funzionare qui non appena esisterà il collegamento vocale.",
+      "intro": "Un club sotto l'ala nord: una volta bassa, una pista da ballo di piastrelle luminose, un bancone lungo la parete est, séparé lungo quella ovest, un palco in fondo. Ciò che suona è la diretta della pista stessa, un set calcolato sulla macchina del palazzo e trasmesso dal vivo, così che tutti i visitatori sentono lo stesso battito a pochi secondi l'uno dall'altro. Le luci seguono i suoi bassi; quando la pista tace, respirano da sole. La porta chiede microfono e audio, perché parlare e cantare possano funzionare qui non appena esisterà il collegamento vocale.",
       "lookFor": "La sfera a specchi sopra la pista e le due linee di colore lungo la volta; pulsano con la musica, quando c'è musica.",
       "limit": "Il set lo compone un programma a seme fisso, non una persona; nulla qui è un'affermazione sulla musica, e l'encoder si ferma quando il club è vuoto."
     },

@@ -18,7 +18,8 @@ Environment=PYTHONUNBUFFERED=1
 ExecStart=@UV@ run --project @STREAM@ orchard stream run --provider club --stream floor
 # SIGINT, not SIGTERM: the loop leaves an empty playlist and removes its segments on the way out.
 KillSignal=SIGINT
-TimeoutStopSec=20
+# A retire is bounded but talks to the host up to a dozen times; give it time to leave the playlist empty.
+TimeoutStopSec=60
 Restart=always
 RestartSec=5
 StandardOutput=journal
