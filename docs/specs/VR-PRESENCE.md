@@ -286,9 +286,31 @@ already reads (`ANNOUNCE-FEED.md` there), so `readFeed`, `accumulate` and
 `--feed-url` is repeatable. The token is read from a mode-600 file and sent as
 a header: a URL ends up in `ps`, in logs and in a `Referer`.
 
-**expdash stays the primary feed** (Manuel, 2026-09-17). It is the one that
-places a run on a box and reports the mirror, so an announcement feed runs
-beside it rather than replacing it, and:
+**One feed at a time, and the announcement feed is the one she is heading for**
+(Manuel, 2026-09-17, after the code landed). expdash's raw stream is mostly
+queue churn and reprioritisations — "the previous feed was garbage anyway" —
+and that noise is exactly why LogSwarm re-publishes it through a filter a
+person can read and edit in the graph. So:
+
+- **Today she reads expdash, because it is the only feed that exists off the
+  emulator.** That is the default and the deployed unit passes nothing.
+- **When the announcement feed is deployed behind the `no-store` Worker she
+  reads that one instead**, as her only feed: `--status-url ""` with one
+  `--feed-url`. Nothing in the code needs to change for that — both feeds are
+  the same document shape, so it is a URL.
+- **What she can say then follows from what that document carries.** A feed of
+  run declarations has no `experiments[]` and no mirror, so "what is running"
+  becomes "I hear what the runs say about themselves, but I cannot see the
+  lanes from here" and the peer answer becomes "I cannot see a peer from
+  here" — two of the four wrist-menu asks. Getting them back means LogSwarm's
+  graph carrying the lane facts, not Faye reading two feeds.
+
+The rules below therefore describe a configuration she is not in: **the
+two-feed path stays, unused** (ruled 2026-09-17, rather than deleted), because
+it is what makes reading a second feed safe on the day one is wanted, and with
+one feed the merge simply never runs. Its rule was that **expdash is the
+primary feed** — it is the one that places a run on a box and reports the
+mirror, so an announcement feed would run beside it rather than replacing it:
 
 - **A cursor and a baseline per feed.** Both number their events `ev_<n>` from
   their own counter, and the counters have nothing to do with each other: one
