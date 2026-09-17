@@ -281,7 +281,9 @@ export class Hud {
     for (const [id, label, onClick] of tabs) {
       const tab = button("", `dock-tab dock-${id}`, onClick);
       tab.setAttribute("aria-label", label);
-      tab.setAttribute("aria-pressed", "false");
+      // The guide is a modal dialog: it pops up rather than toggling.
+      if (id === "guide") tab.setAttribute("aria-haspopup", "dialog");
+      else tab.setAttribute("aria-pressed", "false");
       tab.innerHTML = dockFace(id, label);
       this.#dock.set(id, tab);
       dock.append(tab);
@@ -293,13 +295,30 @@ export class Hud {
     leave.innerHTML = dockFace("leave", "Leave");
     dock.append(leave);
     root.append(dock);
+
+    // The phone layouts stack the stick and chat on whatever tape or planet
+    // controls are showing, and those change height (a planet's modes wrap,
+    // its legend loads), so the CSS reads the height from here.
+    if (typeof ResizeObserver !== "undefined") {
+      const transport = new ResizeObserver(() => {
+        const height = Math.max(this.#scrubber.offsetHeight, this.#atlas.offsetHeight);
+        root.style.setProperty("--tape", `${height}px`);
+      });
+      transport.observe(this.#scrubber);
+      transport.observe(this.#atlas);
+    }
   }
 
   /** Marks a dock tab as showing its panel. Cheap to call every frame. */
   setDockOpen(tab: DockTab, open: boolean): void {
     const element = this.#dock.get(tab);
+    if (!element) return;
+    if (tab === "guide") {
+      if (element.hasAttribute("data-open") !== open) element.toggleAttribute("data-open", open);
+      return;
+    }
     const value = String(open);
-    if (element && element.getAttribute("aria-pressed") !== value) element.setAttribute("aria-pressed", value);
+    if (element.getAttribute("aria-pressed") !== value) element.setAttribute("aria-pressed", value);
   }
 
   setHere(count: number): void {

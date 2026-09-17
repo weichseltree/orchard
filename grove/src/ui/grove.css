@@ -413,7 +413,6 @@ noscript a { color: var(--accent); }
    right, so nothing lies on top of the stick. Tablets and desktops keep the
    top bar; the dock's tabs duplicate its buttons there and stay hidden. */
 .dock, .guide-close, .location-kicker, .location-question { display: none; }
-.chat.chat-folded { display: none; }
 /* A tablet has the stick bottom-left too: the chat moves out of its way. */
 .touch .chat { left: auto; right: 14px; bottom: 96px; }
 
@@ -431,7 +430,7 @@ noscript a { color: var(--accent); }
   -webkit-tap-highlight-color: transparent;
 }
 .dock-tab:hover { color: var(--text); }
-.dock-tab[aria-pressed="true"] { background: rgba(225, 189, 130, 0.12); border-top-color: var(--accent); color: var(--accent); }
+.dock-tab[aria-pressed="true"], .dock-tab[data-open] { background: rgba(225, 189, 130, 0.12); border-top-color: var(--accent); color: var(--accent); }
 .dock-tab:focus-visible { outline: 2px solid var(--accent); outline-offset: -4px; }
 .dock-label { font-size: 10px; letter-spacing: .06em; }
 .guide-close {
@@ -537,13 +536,28 @@ noscript a { color: var(--accent); }
   }
   .touch .visitor-guide.observatory-guide { border-radius: 0; }
   .touch .guide-close { display: grid; }
+  /* Folded from the dock; a wider layout has no dock to unfold it from, so it shows there. */
+  .touch .chat.chat-folded { display: none; }
+  /* The chat grows up to a cap and scrolls its log inside it. */
+  .touch .chat { max-height: var(--chat); }
+  .touch .chat-log { flex: 1 1 auto; min-height: 0; }
+  /* The column under the room card ends above the stick and chat: notices
+     fill the space between, oldest clipped first, and the game offer keeps
+     its place at the bottom of that column. */
+  #hud.touch { grid-template-rows: auto auto minmax(0, 1fr) auto; }
+  .touch .notices { grid-row: 3; align-self: stretch; min-height: 0; overflow: hidden; justify-content: flex-end; }
+  .touch .game-offer { grid-row: 4; }
 }
 
-/* Portrait: the dock along the bottom edge. */
-@media (max-width: 640px) {
-  #hud.touch { --dock: calc(78px + env(safe-area-inset-bottom)); --tape: 104px; }
-  /* No tape and no planet modes in this room: the stick and chat sit on the dock. */
-  #hud.touch:not(:has(> .scrubber:not([hidden]), > .atlas:not([hidden]))) { --tape: 0px; }
+/* Portrait: the dock along the bottom edge. `--tape` is the height of the
+   tape or planet controls showing, measured by hud.ts; 0 without either. */
+@media (max-width: 640px) and (min-height: 501px) {
+  #hud.touch {
+    --dock: calc(78px + env(safe-area-inset-bottom));
+    --lift: calc(var(--dock) + var(--tape, 0px) + 24px);
+    --chat: 236px;
+    padding-bottom: calc(var(--lift) + var(--chat) + 12px);
+  }
   .touch .dock {
     left: 0; right: 0; bottom: 0;
     grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -553,11 +567,10 @@ noscript a { color: var(--accent); }
   .touch .dock-tab { height: 78px; }
   .touch .scrubber { left: var(--gutter-l); right: var(--gutter-r); bottom: calc(var(--dock) + 12px); width: auto; }
   .touch .atlas { bottom: calc(var(--dock) + 12px); }
-  .touch .stick { left: var(--gutter-l); bottom: calc(var(--dock) + var(--tape) + 12px); }
-  .touch .chat { left: calc(var(--gutter-l) + 124px); right: var(--gutter-r); bottom: calc(var(--dock) + var(--tape) + 12px); }
-  .touch .chat-log { max-height: 14dvh; }
-  .touch .human-check { bottom: calc(var(--dock) + var(--tape) + 136px); }
-  .touch .perf { right: var(--gutter-r); bottom: calc(var(--dock) + var(--tape) + 136px); max-width: calc(100vw - 24px); }
+  .touch .stick { left: var(--gutter-l); bottom: var(--lift); }
+  .touch .chat { left: calc(var(--gutter-l) + 124px); right: var(--gutter-r); bottom: var(--lift); }
+  .touch .human-check { bottom: calc(var(--lift) + 124px); }
+  .touch .perf { right: var(--gutter-r); bottom: calc(var(--lift) + 124px); max-width: calc(100vw - 24px); }
   .touch .people, .touch .provenance {
     left: 0; right: 0; top: auto; bottom: var(--dock);
     max-height: calc(100dvh - var(--dock) - 120px);
@@ -573,9 +586,20 @@ noscript a { color: var(--accent); }
   }
 }
 
-/* Landscape: the dock returns as a rail down the left edge. */
-@media (min-width: 641px) and (max-height: 500px) {
-  #hud.touch { --rail: 62px; padding-left: calc(var(--gutter-l) + var(--rail)); }
+/* Landscape (and any phone too short for a bottom dock): a rail down the
+   left edge; the stick bottom-left, the tape or planet controls bottom-right
+   and the chat above them in a right-hand column. */
+@media (max-height: 500px) {
+  #hud.touch {
+    --rail: 62px;
+    --side: min(300px, 40vw);
+    --chat: calc(100dvh - var(--tape, 0px) - 48px - max(12px, env(safe-area-inset-top)));
+    padding-left: calc(var(--gutter-l) + var(--rail));
+    /* The column under the card stops above the stick. */
+    padding-bottom: 128px;
+    /* ...and left of the chat. */
+    padding-right: calc(var(--gutter-r) + var(--side) + 12px);
+  }
   .touch .dock {
     display: flex; flex-direction: column;
     top: max(12px, env(safe-area-inset-top)); bottom: max(12px, env(safe-area-inset-bottom)); left: var(--gutter-l);
@@ -586,14 +610,14 @@ noscript a { color: var(--accent); }
   .touch .dock-tab { flex: none; height: 50px; border-top: 0; border-bottom: 1px solid rgba(225, 189, 130, 0.14); }
   .touch .dock-leave { margin-top: auto; border-bottom: 0; border-top: 1px solid rgba(225, 189, 130, 0.14); }
   .touch .dock-label { display: none; }
-  .touch .top-left { max-width: min(420px, calc(100vw - var(--rail) - 360px)); }
-  .touch .notices { max-width: min(34rem, calc(100vw - var(--rail) - 360px)); }
+  .touch .top-left { max-width: 420px; }
+  .touch .top-right { justify-self: start; }
   .touch .stick { left: calc(var(--gutter-l) + var(--rail)); bottom: 12px; width: 104px; height: 104px; }
   .touch .stick-knob { width: 48px; height: 48px; margin: -24px 0 0 -24px; }
   .touch .scrubber { left: auto; right: var(--gutter-r); bottom: 12px; width: min(480px, calc(100vw - var(--rail) - 150px)); }
-  .touch .atlas { left: auto; right: var(--gutter-r); bottom: 12px; transform: none; }
-  .touch .chat { left: auto; right: var(--gutter-r); bottom: 120px; width: min(320px, calc(100vw - var(--rail) - 150px)); }
-  .touch .chat-log { max-height: 18dvh; }
+  .touch .atlas { left: auto; right: var(--gutter-r); bottom: 12px; transform: none; max-width: min(480px, calc(100vw - var(--rail) - 150px)); }
+  .touch .chat { left: auto; right: var(--gutter-r); bottom: calc(var(--tape, 0px) + 24px); width: var(--side); }
+  .touch .human-check { bottom: calc(var(--tape, 0px) + 24px); }
   .touch .people, .touch .provenance {
     left: calc(var(--gutter-l) + var(--rail)); top: max(12px, env(safe-area-inset-top)); bottom: 12px; right: auto;
     width: min(396px, calc(100vw - var(--rail) - 36px)); max-height: none;

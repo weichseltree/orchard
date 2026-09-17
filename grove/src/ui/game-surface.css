@@ -23,7 +23,8 @@
 }
 .game-surface-title { margin: 0; font: 400 21px/1.2 Georgia, "Times New Roman", serif; }
 .game-surface-status { margin: 4px 0 0; color: #a1afbd; font-size: 12px; }
-.game-surface-frame { display: block; width: 100%; height: calc(100% - 61px); border: 0; background: #05080d; }
+.game-surface[open] { display: flex; flex-direction: column; }
+.game-surface-frame { display: block; flex: 1 1 auto; min-height: 0; width: 100%; border: 0; background: #05080d; }
 .game-surface-close { flex: none; min-width: 44px; min-height: 44px; }
 
 .visitor-guide.observatory-guide .guide-games { padding: 18px 0; border-top: 1px solid #e1bd823d; }
@@ -32,6 +33,7 @@
 /* A phone gives the game the whole screen. */
 @media (max-width: 640px), (max-height: 500px) {
   .touch .game-surface { width: 100vw; height: 100dvh; max-width: 100vw; max-height: 100dvh; border: 0; border-radius: 0; }
-  .touch .game-surface-header { padding-top: max(10px, env(safe-area-inset-top)); }
-  .touch .game-surface-frame { height: calc(100% - 61px - max(0px, env(safe-area-inset-top) - 10px)); }
+  .touch .game-surface-header {
+    padding: max(10px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) 10px max(20px, env(safe-area-inset-left));
+  }
 }
