@@ -79,20 +79,43 @@ export function step(
     dx /= length;
     dz /= length;
   }
-  const result = resolveMove(
-    mansion,
-    body.room,
-    { x: body.x, z: body.z },
-    { x: body.x + dx * speed, z: body.z + dz * speed },
-    BODY_RADIUS,
-    locked,
-  );
-  body.x = result.x;
-  body.z = result.z;
-  body.lockedOut = result.locked;
-  if (result.crossed) {
-    body.room = result.room;
-    body.crossedInto = result.room;
+  moveTo(body, body.x + dx * speed, body.z + dz * speed, mansion, locked);
+}
+
+/** The longest single clamp a move takes; a longer one is cut into strides so no doorway is jumped. */
+export const STRIDE = 0.4;
+
+/**
+ * Walks the body in a straight line toward (x, z) through the same clamp as
+ * a step, in strides: a glide is a walk the visitor did not have to steer, so
+ * it stops at every wall and locked door a walk would.
+ */
+export function moveTo(
+  body: Body,
+  x: number,
+  z: number,
+  mansion: Mansion,
+  locked?: (roomId: string) => boolean,
+): void {
+  const x0 = body.x;
+  const z0 = body.z;
+  const strides = Math.max(1, Math.ceil(Math.hypot(x - x0, z - z0) / STRIDE));
+  for (let i = 1; i <= strides; i++) {
+    const result = resolveMove(
+      mansion,
+      body.room,
+      { x: body.x, z: body.z },
+      { x: x0 + ((x - x0) * i) / strides, z: z0 + ((z - z0) * i) / strides },
+      BODY_RADIUS,
+      locked,
+    );
+    body.x = result.x;
+    body.z = result.z;
+    body.lockedOut ??= result.locked;
+    if (result.crossed) {
+      body.room = result.room;
+      body.crossedInto = result.room;
+    }
   }
   settle(body, mansion);
 }

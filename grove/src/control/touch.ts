@@ -2,10 +2,14 @@ import type { InputState } from "./input";
 
 // Phone: drag anywhere on the right to look, an on-screen stick bottom-left to
 // walk. The stick is a DOM element rather than a 3D widget so it stays crisp
-// and costs the renderer nothing.
+// and costs the renderer nothing. A tap that did not drag points: the floor
+// to go there, an exhibit to frame it.
 
 const LOOK_SENSITIVITY = 0.005;
 const STICK_RADIUS = 52;
+/** A touch that moved less than this and lifted this soon is a tap, not a look. */
+const TAP_PX = 12;
+const TAP_MS = 350;
 
 export interface TouchControls {
   element: HTMLElement;
@@ -16,6 +20,7 @@ export function attachTouchControls(
   container: HTMLElement,
   surface: HTMLElement,
   input: InputState,
+  onTap: (clientX: number, clientY: number) => void = () => undefined,
 ): TouchControls {
   const stick = document.createElement("div");
   stick.className = "stick";
@@ -30,6 +35,9 @@ export function attachTouchControls(
   let lastY = 0;
   let originX = 0;
   let originY = 0;
+  let downX = 0;
+  let downY = 0;
+  let downAt = 0;
 
   const onStickDown = (event: PointerEvent): void => {
     if (stickPointer !== null) return;
@@ -67,8 +75,9 @@ export function attachTouchControls(
     if (event.pointerType === "mouse") return;
     if (lookPointer !== null) return;
     lookPointer = event.pointerId;
-    lastX = event.clientX;
-    lastY = event.clientY;
+    lastX = downX = event.clientX;
+    lastY = downY = event.clientY;
+    downAt = event.timeStamp;
   };
 
   const onLookMove = (event: PointerEvent): void => {
@@ -83,6 +92,8 @@ export function attachTouchControls(
   const releaseLook = (event: PointerEvent): void => {
     if (event.pointerId !== lookPointer) return;
     lookPointer = null;
+    const still = Math.hypot(event.clientX - downX, event.clientY - downY) < TAP_PX;
+    if (event.type === "pointerup" && still && event.timeStamp - downAt < TAP_MS) onTap(event.clientX, event.clientY);
   };
 
   stick.addEventListener("pointerdown", onStickDown);

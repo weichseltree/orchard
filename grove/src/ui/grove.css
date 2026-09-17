@@ -164,6 +164,23 @@ html, body {
   touch-action: pan-y;
 }
 .provenance[hidden] { display: none; }
+
+/* Which exhibit is framed, and the way on (control/go.ts). */
+.exhibit-index {
+  position: absolute;
+  left: 50%; top: max(66px, env(safe-area-inset-top));
+  transform: translateX(-50%);
+  max-width: calc(100vw - 28px);
+  padding: 6px 12px;
+  color: var(--dim); font-size: 12.5px; font-variant-numeric: tabular-nums;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+/* The crosshair a locked pointer points with. */
+#hud.locked::after {
+  content: ""; position: absolute; left: 50%; top: 50%;
+  width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%;
+  background: var(--text); box-shadow: 0 0 0 1.5px #0009; opacity: .7;
+}
 .provenance h2 { margin: 0 0 8px; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--dim); font-weight: 600; }
 .provenance dl { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; }
 .provenance dt { color: var(--dim); }

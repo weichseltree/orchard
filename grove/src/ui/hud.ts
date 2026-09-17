@@ -36,6 +36,8 @@ export interface HudCallbacks {
   onAtlas(mode: string): void;
   onUnmute(): void;
   onProvenance(): void;
+  /** The plan of this area's rooms. */
+  onMap(): void;
   /** The game whose table the visitor stands at. */
   onOpenGame(): void;
   /** Resolves when the server took the report; rejects with its reason. */
@@ -164,7 +166,9 @@ export class Hud {
     home.className = "btn";
     home.href = "/";
     home.textContent = "Leave";
-    topRight.append(this.#vrButton, this.#unmuteButton, provenanceButton, home);
+    const mapButton = button("Map", "btn", callbacks.onMap);
+    mapButton.title = "Plan of the rooms (L)";
+    topRight.append(this.#vrButton, this.#unmuteButton, mapButton, provenanceButton, home);
     root.append(topRight);
 
     this.#notices = div("notices");

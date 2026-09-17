@@ -30,6 +30,7 @@ beforeEach(() => {
     togglePlay: vi.fn(), nudgeFrames: vi.fn(), cycleSpeed: vi.fn(),
     cycleAtlas: vi.fn(),
     toggleProvenance: vi.fn(), togglePerf: vi.fn(), toggleUnmute: vi.fn(), openGame: vi.fn(),
+    point: vi.fn().mockReturnValue("nothing"), nextExhibit: vi.fn(), toggleMap: vi.fn(), release: vi.fn(),
   };
   vi.stubGlobal("HTMLElement", ElementStub);
   vi.stubGlobal("document", doc);
@@ -98,6 +99,47 @@ describe("desktop controls and the visitor interface", () => {
     expect(input.strafe).toBe(1);
     win.dispatchEvent(new Event("blur"));
     expect(input.strafe).toBe(0);
+    controls.dispose();
+  });
+
+  it("steps through exhibits with N and Shift+N, opens the plan with L and walks on with Escape", () => {
+    const input = createInput();
+    const controls = attachDesktopControls(canvas as unknown as HTMLCanvasElement, input, commands, vi.fn());
+    key("KeyN");
+    key("KeyN", canvas, { shiftKey: true });
+    expect(commands.nextExhibit).toHaveBeenNthCalledWith(1, 1);
+    expect(commands.nextExhibit).toHaveBeenNthCalledWith(2, -1);
+    key("KeyL");
+    expect(commands.toggleMap).toHaveBeenCalledOnce();
+    key("KeyM");
+    expect(commands.toggleUnmute).toHaveBeenCalledOnce();
+    key("Escape");
+    expect(commands.release).toHaveBeenCalledOnce();
+    // Neither N nor L is a walking key.
+    expect(input.forward).toBe(0);
+    key("KeyL", new ElementStub("dialog"));
+    expect(commands.toggleMap).toHaveBeenCalledOnce();
+    controls.dispose();
+  });
+
+  it("points under the cursor when free, under the crosshair when locked, and still takes the pointer", () => {
+    Object.assign(canvas, { getBoundingClientRect: () => ({ left: 0, top: 0, width: 200, height: 100 }) });
+    const controls = attachDesktopControls(canvas as unknown as HTMLCanvasElement, createInput(), commands, vi.fn());
+    const click = (x: number, y: number): void => {
+      canvas.dispatchEvent(Object.assign(new Event("click"), { clientX: x, clientY: y }));
+    };
+    click(150, 25);
+    expect(commands.point).toHaveBeenLastCalledWith({ x: 0.5, y: 0.5 });
+    expect(canvas.requestPointerLock).toHaveBeenCalledOnce();
+    // An exhibit framed from a free pointer keeps the pointer free, to read its panel.
+    vi.mocked(commands.point).mockReturnValueOnce("exhibit");
+    click(100, 50);
+    expect(canvas.requestPointerLock).toHaveBeenCalledOnce();
+    doc.pointerLockElement = canvas;
+    doc.dispatchEvent(new Event("pointerlockchange"));
+    click(10, 10);
+    expect(commands.point).toHaveBeenLastCalledWith(null);
+    expect(canvas.requestPointerLock).toHaveBeenCalledOnce();
     controls.dispose();
   });
 

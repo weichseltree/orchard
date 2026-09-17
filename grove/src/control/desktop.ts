@@ -1,7 +1,8 @@
 import type { Commands, InputState } from "./input";
 
 // Desktop: click to take the pointer, WASD to walk, mouse to look, and the
-// scrubber on the keyboard so a hand never has to leave the keys.
+// scrubber on the keyboard so a hand never has to leave the keys. A click also
+// points: at the floor it goes there, at an exhibit it frames it.
 
 const LOOK_SENSITIVITY = 0.0022;
 
@@ -69,6 +70,16 @@ export function attachDesktopControls(
       case "KeyG":
         commands.openGame();
         return;
+      case "KeyN":
+        commands.nextExhibit(event.shiftKey ? -1 : 1);
+        return;
+      // L for the plan (Lageplan): M is the wall's sound, and Tab belongs to the buttons.
+      case "KeyL":
+        commands.toggleMap();
+        return;
+      case "Escape":
+        commands.release();
+        return;
       default:
         held.add(event.code);
         applyMotion();
@@ -102,8 +113,18 @@ export function attachDesktopControls(
     } catch { onLockError(); }
   };
 
-  const onClick = (): void => {
-    if (!locked) requestLock();
+  const onClick = (event: MouseEvent): void => {
+    if (locked) {
+      commands.point(null);
+      return;
+    }
+    const rect = canvas.getBoundingClientRect();
+    const pointed = commands.point({
+      x: ((event.clientX - rect.left) / rect.width) * 2 - 1,
+      y: 1 - ((event.clientY - rect.top) / rect.height) * 2,
+    });
+    // A framed exhibit leaves the pointer free to read its panel; any other click still looks around.
+    if (pointed !== "exhibit") requestLock();
   };
 
   const clearMotion = (): void => {
