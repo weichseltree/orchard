@@ -12,6 +12,7 @@
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 
 html, body {
   margin: 0;
@@ -610,7 +611,8 @@ noscript a { color: var(--accent); }
   --rail-size: 54px;
   --col-left: calc(var(--margin) + var(--rail-size) + 16px);
   --col-width: 396px;
-  --col-top: 84px;
+  /* Under the room card as tall as it really is (hud.ts measures it). */
+  --col-top: calc(var(--margin) + var(--card-h, 62px) + 6px);
   --col-bottom: 104px;
   --content-left: var(--col-left);
   --glass: rgba(9, 17, 28, 0.92);
@@ -620,7 +622,6 @@ noscript a { color: var(--accent); }
 #hud.touch:not(.phone-layout) {
   --rail-size: 60px;
   --col-width: 420px;
-  --col-top: 92px;
   /* Above the stick (26 px up, 132 px tall). */
   --col-bottom: 174px;
   --content-left: max(var(--col-left), 174px);
@@ -687,6 +688,7 @@ noscript a { color: var(--accent); }
   border-radius: 0;
   backdrop-filter: blur(8px);
 }
+#hud:not(.phone-layout) .status { white-space: nowrap; }
 #hud:not(.phone-layout) .status .here { display: block; text-align: left; text-decoration: none; }
 #hud:not(.phone-layout) .status .here:hover { color: var(--text); }
 #hud:not(.phone-layout) .status .link { display: block; margin-top: 4px; color: #7e8b9b; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
@@ -759,6 +761,14 @@ noscript a { color: var(--accent); }
 #hud:not(.phone-layout) .game-offer,
 #hud:not(.phone-layout) .human-check {
   left: calc(var(--content-left) + (100vw - var(--content-left) - var(--margin)) / 2);
+}
+/* Notices, the game offer and the hint stay readable over an open column in a narrow window. */
+#hud:not(.phone-layout) .notices,
+#hud:not(.phone-layout) .game-offer,
+#hud:not(.phone-layout) .hint { z-index: 3; }
+/* The walking hint is a reminder: it gives way to an open panel it would cover. */
+@media (max-width: 899px) {
+  #hud[data-panel]:not(.phone-layout) .hint { display: none; }
 }
 #hud:not(.phone-layout) .hint { bottom: 104px; max-width: calc(100vw - var(--content-left) - 32px); border-radius: 0; }
 #hud:not(.phone-layout) .game-offer { bottom: 160px; border-radius: 0; }

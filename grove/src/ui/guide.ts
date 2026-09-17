@@ -67,10 +67,14 @@ export class VisitorGuide {
     this.#location.addEventListener("click", () => this.show());
     this.#location.setAttribute("aria-controls", "panel-column");
     this.#location.title = "Open the guide";
+    this.#location.setAttribute("aria-expanded", "false");
     // The room card: which room, over the question it asks.
     this.#locationKicker.className = "location-kicker";
     this.#locationQuestion.className = "location-question";
-    this.#location.append(this.#locationKicker, this.#locationQuestion);
+    const hint = document.createElement("span");
+    hint.className = "sr-only";
+    hint.textContent = " · Open the guide";
+    this.#location.append(this.#locationKicker, this.#locationQuestion, hint);
     root.querySelector(".top-left")?.prepend(this.#location);
 
     this.element.className = "visitor-guide observatory-guide";
@@ -104,7 +108,7 @@ export class VisitorGuide {
         : "Click the view to look around. Use W A S D to walk.";
     actions.append(explore, home, quickControl);
 
-    const lookHeading = document.createElement("h2");
+    const lookHeading = document.createElement("h3");
     lookHeading.textContent = "Look for";
     this.#look.className = "guide-looking";
     this.#look.append(lookHeading, this.#observations);
@@ -122,7 +126,7 @@ export class VisitorGuide {
     this.#roomLinks.className = "guide-room-links";
     this.#rooms.append(roomSummary, directHint, this.#roomLinks);
 
-    const doorHeading = document.createElement("h2");
+    const doorHeading = document.createElement("h3");
     doorHeading.textContent = "Open doorways from here";
     const doorHint = document.createElement("p");
     doorHint.className = "guide-note";
@@ -132,7 +136,7 @@ export class VisitorGuide {
     this.#doorSection.className = "guide-door-section";
     this.#doorSection.append(doorHeading, doorHint, this.#doors);
 
-    const gameHeading = document.createElement("h2");
+    const gameHeading = document.createElement("h3");
     gameHeading.textContent = "Play here";
     const gameHint = document.createElement("p");
     gameHint.className = "guide-note";

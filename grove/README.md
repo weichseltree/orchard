@@ -39,7 +39,7 @@ has no effect in a production build.
 | Look | Click the view, then move the mouse | Drag the view | Turn your head |
 | Pause or play | Space or play button | Play button | Trigger |
 | Scrub time | `[` / `]` or time slider | Time slider | Right stick |
-| Inspect sources | P or About this view | About this view | Menu button |
+| Inspect sources | P or Sources | Sources | Menu button |
 | Teleport | — | — | Hold squeeze, aim at floor, release |
 | Release pointer | Esc | — | — |
 

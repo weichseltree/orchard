@@ -373,6 +373,9 @@ export class Hud {
       });
       transport.observe(this.#scrubber);
       transport.observe(this.#atlas);
+      // The panel column starts under the room card, whose question wraps in a narrow window.
+      const card = new ResizeObserver(() => root.style.setProperty("--card-h", `${topLeft.offsetHeight}px`));
+      card.observe(topLeft);
     }
 
     this.#phone = typeof matchMedia === "function" ? matchMedia(PHONE_LAYOUT) : null;
@@ -381,6 +384,7 @@ export class Hud {
       // The chat is a panel in one layout and floats in the other: a rotation
       // or a resize across the line puts it back where it lives.
       if (this.#panel === "chat") this.closePanel();
+      if (this.#phoneLayout() && this.#chatShown) this.#chatUnread = false;
       this.#syncTabs();
     };
     this.#phone?.addEventListener("change", layout);
@@ -388,6 +392,10 @@ export class Hud {
 
     document.addEventListener("keydown", (event) => {
       if (event.key !== "Escape" || event.defaultPrevented || this.#panel === null) return;
+      // A game over the world takes its own Escape (its dialog's cancel).
+      if (document.querySelector("dialog[open]")) return;
+      // Never pull a half-typed report or ban out from under the visitor.
+      if (this.#form !== null && event.target instanceof Node && this.#people.contains(event.target)) return;
       this.closePanel();
     });
   }
@@ -416,7 +424,8 @@ export class Hud {
     const active = document.activeElement;
     const inside = active instanceof HTMLElement && this.#column.contains(active);
     if (this.#panel !== null) this.#hidePanel();
-    else if (!inside && active instanceof HTMLElement && active !== document.body) this.#returnFocus = active;
+    // The latest trigger outside the column: switching panels from the rail moves it along.
+    if (!inside && active instanceof HTMLElement && active !== document.body) this.#returnFocus = active;
     this.#panel = id;
     if (spec.adopt) spec.element.append(spec.adopt);
     spec.element.hidden = false;
@@ -435,12 +444,18 @@ export class Hud {
     if (this.#panel === null) return;
     const active = document.activeElement;
     const hadFocus = active === document.body || (active instanceof HTMLElement && this.#column.contains(active));
+    const closing = this.#panel;
     this.#hidePanel();
     this.#panel = null;
     this.#column.hidden = true;
     delete this.#column.dataset.panel;
     delete this.root.dataset.panel;
-    if (hadFocus && this.#returnFocus?.isConnected) this.#returnFocus.focus({ preventScroll: true });
+    // Back to what opened it; if that is gone or hidden (the guide opened
+    // itself on arrival, say), to the panel's own tab.
+    const back = this.#returnFocus?.isConnected && this.#returnFocus.getClientRects().length > 0
+      ? this.#returnFocus
+      : this.#dock.get(closing);
+    if (hadFocus && back && back.getClientRects().length > 0) back.focus({ preventScroll: true });
     this.#returnFocus = null;
     this.#syncTabs();
   }
@@ -497,7 +512,11 @@ export class Hud {
       chat.classList.toggle("dock-unread", this.#chatUnread);
       chat.setAttribute("aria-label", this.#chatUnread ? "Room chat, new lines" : "Room chat");
     }
+    const chatTab = this.#dock.get("chat");
+    // On a phone the Chat tab folds the floating chat rather than opening the column.
+    chatTab?.setAttribute("aria-controls", this.#phoneLayout() ? "room-chat" : "panel-column");
     this.#here.setAttribute("aria-expanded", String(this.#panel === "people"));
+    this.root.querySelector(".location")?.setAttribute("aria-expanded", String(this.#panel === "guide"));
   }
 
   setHere(count: number): void {

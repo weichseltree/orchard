@@ -146,5 +146,7 @@ export function attachDesktopControls(
 
 export function ownsKeyboard(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
-  return target.isContentEditable || target.closest("input, textarea, select, button, a, dialog, .perf, [contenteditable]") !== null;
+  // The HUD's panel column counts too: reading the guide with the arrow keys
+  // or opening one of its disclosures with Space is not walking.
+  return target.isContentEditable || target.closest("input, textarea, select, button, a, summary, dialog, .perf, .panel-column, [contenteditable]") !== null;
 }

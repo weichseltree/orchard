@@ -59,6 +59,8 @@ const report = {
 };
 const profiles = [
   { name: 'desktop', width: 1440, height: 1000, touch: false },
+  // Half a laptop screen: the room card wraps and the column must start under it.
+  { name: 'desktop-narrow', width: 700, height: 600, touch: false },
   { name: 'phone', width: 390, height: 844, touch: true },
   { name: 'small-phone', width: 320, height: 780, touch: true },
   { name: 'tablet', width: 1024, height: 768, touch: true },
@@ -290,6 +292,9 @@ async function appAudit(profile) {
       mic.className = 'chat-mic';
       mic.textContent = 'Hold to talk';
       chat?.querySelector('.chat-form')?.append(mic);
+      // The demo has no sound or headset: show Sound on so the far-end buttons are measured too.
+      const sound = [...document.querySelectorAll('.top-right .btn')].find((button) => button.hidden);
+      if (sound) sound.hidden = false;
       const rect = (selector) => {
         const el = document.querySelector(selector);
         if (!el || !el.getClientRects().length) return null;
@@ -300,6 +305,7 @@ async function appAudit(profile) {
       measured.chatLogHeight = chat?.querySelector('.chat-log')?.clientHeight ?? null;
       for (const line of lines) line.remove();
       mic.remove();
+      if (sound) sound.hidden = true;
       if (chat) chat.hidden = chatHidden;
       return measured;
     });
@@ -330,7 +336,7 @@ async function appAudit(profile) {
           return { column: rect(document.querySelector('#panel-column')), transport: rect(document.querySelector('.scrubber')) };
         });
         check(`${name}: the ${panel} panel stays in viewport`, column.column && column.column.x >= 0 && column.column.y >= 0 && column.column.right <= layout.width + 1 && column.column.bottom <= layout.height + 1, column.column);
-        check(`${name}: the ${panel} panel clears the rail, the card, the tape and the stick`, overlapArea(column.column, layout.dock) === 0 && overlapArea(column.column, layout.location) === 0 && overlapArea(column.column, column.transport) === 0 && overlapArea(column.column, layout.stick) === 0, column);
+        check(`${name}: the ${panel} panel clears the rail, the card, the tape and the stick`, overlapArea(column.column, layout.dock) === 0 && overlapArea(column.column, layout.location) === 0 && overlapArea(column.column, layout.status) === 0 && overlapArea(column.column, column.transport) === 0 && overlapArea(column.column, layout.stick) === 0, column);
         if (panel === 'chat') check(`${name}: the chat panel says it needs a link`, await page.locator('#panel-column .chat-offline').isVisible());
         await page.getByRole('button', { name: label, exact: true }).click();
         await page.locator('#panel-column').waitFor({ state: 'hidden' });
@@ -366,7 +372,12 @@ async function appAudit(profile) {
         return { x: rect.x, y: rect.y, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height };
       });
       report.measurements.push({ kind: 'performance-overlay-layout', profile: profile.name, ...overlay });
-      check(`${name}: timing overlay clears tape controls`, overlapArea(overlay, layout.transport) === 0);
+      // Measured again: on a wide screen the tape moves beside an open column.
+      const transportNow = await page.locator('.scrubber').evaluate((el) => {
+        const rect = el.getBoundingClientRect();
+        return { x: rect.x, y: rect.y, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height };
+      });
+      check(`${name}: timing overlay clears tape controls`, overlapArea(overlay, transportNow) === 0);
       check(`${name}: timing overlay stays in viewport`, overlay.x >= 0 && overlay.y >= 0 && overlay.right <= profile.width && overlay.bottom <= profile.height);
       if (!args['allow-missing-metrics']) {
         const region = page.getByRole('region', { name: 'Rendering performance', exact: true });

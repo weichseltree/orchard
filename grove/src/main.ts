@@ -299,16 +299,22 @@ const chatOffline = document.createElement("p");
 chatOffline.className = "chat-offline";
 chatOffline.textContent = "Chat opens once you are connected to the room.";
 chatSlot.append(chatOffline);
+chat.root.id = "room-chat";
 hud.definePanel("chat", {
   element: chatSlot,
   adopt: chat.root,
   heading: () => ["Room chat", roomTitle(labelsLoaded(locale), body.room) ?? roomById(mansion, body.room)?.title ?? body.room],
   onOpen: () => {
+    // The column is already labelled "Room chat".
+    chat.root.removeAttribute("aria-label");
     if (!chat.open) return false;
     chat.show(true);
     return true;
   },
-  onClose: () => chat.close(),
+  onClose: () => {
+    chat.root.setAttribute("aria-label", "Room chat");
+    chat.close();
+  },
 });
 
 /**

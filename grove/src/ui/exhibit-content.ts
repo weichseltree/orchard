@@ -6,7 +6,7 @@ export interface ExhibitContent {
    * The tree as a visitor reads it, which is not the tree's identity. The
    * repository spectre was renamed coarsen on 2026-09-16 and its tree keeps
    * the old name, because that name is inside the bytes every bundle id
-   * hashes (docs/specs/NAMING.md). "About this view" still prints the real
+   * hashes (docs/specs/NAMING.md). the Sources panel still prints the real
    * tree from the bundle, so provenance stays honest.
    */
   source?: string;
@@ -28,7 +28,7 @@ const content: Readonly<Record<string, ExhibitContent>> = {
     question: "Which question draws you in?",
     introduction: "Welcome to the Mind Palace. Walk among particle tapes, compare a model with its control, or look closely at how a room is reconstructed. Each room is named after the repository whose research it holds, and begins with a question.",
     lookFor: [],
-    limitation: "The architecture sets the scene. The tapes and stills carry the research; About this view identifies what you are looking at.",
+    limitation: "The architecture sets the scene. The tapes and stills carry the research; Sources identifies what you are looking at.",
   },
   einstruct: {
     source: "einstruct",
