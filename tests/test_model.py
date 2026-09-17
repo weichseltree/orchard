@@ -249,3 +249,18 @@ def test_a_refused_model_is_recorded_and_the_rest_of_the_harvest_goes_on(tmp_pat
     assert rows[1]["status"] == "bundled"
     arts = load(trees / "fake.yaml").artefacts
     assert arts[0].bundle == "" and arts[1].bundle == rows[1]["bundle"], "the good id was saved"
+
+
+def test_the_harvest_command_prints_its_table_then_exits_2_on_a_refusal(tmp_path, monkeypatch, capsys):
+    from orchard import cli
+    monkeypatch.setattr(harvest, "harvest", lambda *a, **k: [
+        {"kind": "model", "path": "results/draco.glb", "status": "refused: uses KHR_draco_mesh_compression"},
+        {"kind": "model", "path": "results/good.glb", "status": "bundled", "bundle": "0123456789abcdef"}])
+    with pytest.raises(SystemExit) as out:
+        cli.main(["harvest", "fake", "--out", str(tmp_path)])
+    assert out.value.code == 2
+    printed = capsys.readouterr().out
+    assert "refused: uses KHR_draco_mesh_compression" in printed and "0123456789abcdef" in printed
+    monkeypatch.setattr(harvest, "harvest", lambda *a, **k: [
+        {"kind": "model", "path": "results/good.glb", "status": "bundled", "bundle": "0123456789abcdef"}])
+    cli.main(["harvest", "fake", "--out", str(tmp_path)])

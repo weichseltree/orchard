@@ -23,7 +23,7 @@ import type { Renderer } from "../render/types";
 // three chunk every visitor loads at startup (+123 B gzip, with 85 B left
 // under the cap); everything used here is already in that chunk.
 
-export type BuildEnvironment = (renderer: Renderer) => Texture | null;
+export type BuildEnvironment = (renderer: Renderer) => Environment | null;
 
 /** RoomEnvironment's area lights: position, scale, radiance. */
 const PANELS: ReadonlyArray<readonly [[number, number, number], [number, number, number], number]> = [
@@ -54,13 +54,24 @@ export function environmentScene(): Scene {
   return scene;
 }
 
+/**
+ * An environment map and what owns its memory. `fromScene` hands back a
+ * render target; in three r186 disposing only its `.texture` frees nothing on
+ * the GPU, so the target is kept and disposed.
+ */
+export interface Environment {
+  texture: Texture;
+  dispose(): void;
+}
+
 /** A prefiltered room for a WebGL renderer; null for any other backend (WebGPU wants its own generator). */
 export const buildRoomEnvironment: BuildEnvironment = (renderer) => {
   if (!(renderer as { isWebGLRenderer?: boolean }).isWebGLRenderer) return null;
   const pmrem = new PMREMGenerator(renderer as unknown as WebGLRenderer);
   const scene = environmentScene();
   try {
-    return pmrem.fromScene(scene, 0.04).texture;
+    const target = pmrem.fromScene(scene, 0.04);
+    return { texture: target.texture, dispose: () => target.dispose() };
   } finally {
     const meshes = scene.children as Mesh<BoxGeometry, MeshBasicMaterial>[];
     meshes[0]?.geometry.dispose();
@@ -69,24 +80,28 @@ export const buildRoomEnvironment: BuildEnvironment = (renderer) => {
   }
 };
 
-let shared: { renderer: Renderer; texture: Texture | null; holders: number } | null = null;
+let shared: { renderer: Renderer; environment: Environment | null; holders: number } | null = null;
 
 /** Take a hold on the shared environment map; every call is matched by one `releaseEnvironment`. */
 export function acquireEnvironment(renderer: Renderer, build: BuildEnvironment = buildRoomEnvironment): Texture | null {
   if (!shared || shared.renderer !== renderer) {
-    // A new renderer (the page rebuilt its view): the old one's map is of no use to anyone.
-    shared?.texture?.dispose();
-    shared = { renderer, texture: build(renderer), holders: 0 };
+    // A new renderer (the page rebuilt its view): the old one's map is of no
+    // use to anyone. The new entry is in place before the old map goes, so a
+    // dispose that throws cannot leave the stale entry shared.
+    const old = shared;
+    shared = { renderer, environment: build(renderer), holders: 0 };
+    old?.environment?.dispose();
   }
   shared.holders += 1;
-  return shared.texture;
+  return shared.environment?.texture ?? null;
 }
 
-/** Let go of a hold; the map is disposed with the last. */
+/** Let go of a hold; the map's render target is disposed with the last. */
 export function releaseEnvironment(texture: Texture | null): void {
-  if (!shared || shared.texture !== texture) return;
+  if (!shared || (shared.environment?.texture ?? null) !== texture) return;
   shared.holders -= 1;
   if (shared.holders > 0) return;
-  shared.texture?.dispose();
+  const last = shared;
   shared = null;
+  last.environment?.dispose();
 }

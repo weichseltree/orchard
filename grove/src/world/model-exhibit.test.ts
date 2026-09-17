@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { Mesh, MeshStandardMaterial, Texture, type BufferGeometry } from "three";
+import { BufferGeometry, Mesh, MeshStandardMaterial, Texture } from "three";
 import type { Renderer } from "../render/types";
 import { ModelExhibit } from "./model-exhibit";
 import { ModelHangingSchema } from "./schema";
@@ -7,7 +7,7 @@ import { ModelHangingSchema } from "./schema";
 // The exhibit itself, on a real glb parsed by three's GLTFLoader: a unit
 // triangle built here byte by byte, the same shape tests/test_model.py builds.
 
-function triangleGlb({ scenes = true } = {}): ArrayBuffer {
+function triangleGlb({ scenes = 1 } = {}): ArrayBuffer {
   const positions = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
   const json = {
     asset: { version: "2.0" },
@@ -16,7 +16,7 @@ function triangleGlb({ scenes = true } = {}): ArrayBuffer {
     accessors: [{ bufferView: 0, componentType: 5126, count: 3, type: "VEC3", min: [0, 0, 0], max: [1, 1, 0] }],
     meshes: [{ primitives: [{ attributes: { POSITION: 0 } }] }],
     nodes: [{ mesh: 0 }],
-    ...(scenes ? { scenes: [{ nodes: [0] }], scene: 0 } : {}),
+    ...(scenes ? { scenes: Array.from({ length: scenes }, () => ({ nodes: [0] })), scene: 0 } : {}),
   };
   let text = new TextEncoder().encode(JSON.stringify(json));
   const padded = new Uint8Array(Math.ceil(text.length / 4) * 4).fill(0x20);
@@ -112,8 +112,7 @@ describe("ModelExhibit, review fixes", () => {
     stubBundle();
     const env = new Texture();
     const disposedEnv = vi.fn();
-    env.addEventListener("dispose", disposedEnv);
-    const build = vi.fn(() => env);
+    const build = vi.fn(() => ({ texture: env, dispose: disposedEnv }));
     // Its own renderer: the shared map is per renderer, and the tests above hold the other one's.
     const own = {} as Renderer;
     const load = () => ModelExhibit.load({ hanging, baseUrl: base, renderer: own, tier: "desktop", bytes: async () => triangleGlb(), environment: build });
@@ -132,11 +131,27 @@ describe("ModelExhibit, review fixes", () => {
 
   it("fails with a reason when the glb has no scene, or does not download", async () => {
     stubBundle();
-    await expect(ModelExhibit.load({ hanging, baseUrl: base, renderer, tier: "desktop", bytes: async () => triangleGlb({ scenes: false }) }))
+    await expect(ModelExhibit.load({ hanging, baseUrl: base, renderer, tier: "desktop", bytes: async () => triangleGlb({ scenes: 0 }) }))
       .rejects.toThrow("model.glb has no scene to show");
     stubBundle();
     await expect(ModelExhibit.load({ hanging, baseUrl: base, renderer, tier: "desktop", bytes: async () => { throw new Error("HTTP 404"); } }))
       .rejects.toThrow("model.glb could not load (HTTP 404)");
+  });
+
+  it("frees what the loader parsed when the exhibit cannot be built, and keeps what a shown scene shares", async () => {
+    const disposed = vi.spyOn(BufferGeometry.prototype, "dispose");
+    stubBundle();
+    const broken = () => { throw new Error("no GL"); };
+    await expect(ModelExhibit.load({ hanging, baseUrl: base, renderer: {} as Renderer, tier: "desktop", bytes: async () => triangleGlb(), environment: broken }))
+      .rejects.toThrow("no GL");
+    expect(disposed).toHaveBeenCalled();
+    disposed.mockClear();
+    stubBundle();
+    const model = await ModelExhibit.load({ hanging, baseUrl: base, renderer, tier: "desktop", bytes: async () => triangleGlb({ scenes: 2 }) });
+    // The second scene places the same mesh: its geometry is the shown one's and stays.
+    expect(disposed).not.toHaveBeenCalled();
+    disposed.mockRestore();
+    model.dispose();
   });
 
   it("frames a loaded model by its own box, not the plinth under it", async () => {

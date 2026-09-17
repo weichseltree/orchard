@@ -136,10 +136,24 @@ export class ModelExhibit {
     }
     // A glb with no default scene: the bundler refuses one, but a bundle made
     // before it did, or by hand, fails here with a reason and not in a render.
-    const scene = (gltf.scene as Group | undefined) ?? gltf.scenes?.[0];
-    if (!scene) throw new Error(`${bundle.model} has no scene to show`);
-    if (gltf.animations.length) options.onNotice?.(`${hanging.id}: the model's ${gltf.animations.length} animation(s) are not played`);
-    return new ModelExhibit(hanging, bundle, scene, baseUrl, tier, acquireEnvironment(renderer, environment));
+    const scenes = gltf.scenes ?? [];
+    let environmentHeld: Texture | null | undefined;
+    try {
+      const scene = (gltf.scene as Group | undefined) ?? scenes[0];
+      if (!scene) throw new Error(`${bundle.model} has no scene to show`);
+      if (gltf.animations.length) options.onNotice?.(`${hanging.id}: the model's ${gltf.animations.length} animation(s) are not played`);
+      environmentHeld = acquireEnvironment(renderer, environment);
+      const exhibit = new ModelExhibit(hanging, bundle, scene, baseUrl, tier, environmentHeld);
+      // Scenes the exhibit does not show are the loader's allocations all the same.
+      const shown = resourcesOf(scene);
+      for (const other of scenes) if (other !== scene) disposeTree(other, environmentHeld, shown);
+      return exhibit;
+    } catch (error) {
+      // Parsed but never shown: free what the loader made, and the hold on the map.
+      for (const each of new Set([gltf.scene, ...scenes])) if (each) disposeTree(each, environmentHeld ?? null);
+      if (environmentHeld !== undefined) releaseEnvironment(environmentHeld);
+      throw error;
+    }
   }
 
   /** Turn the turntable; a still model (or any on a phone) costs nothing. */
@@ -187,21 +201,37 @@ export class ModelExhibit {
     if (this.#disposed) return;
     this.#disposed = true;
     this.group.removeFromParent();
-    const materials = new Set<Material>();
-    this.#model.traverse((node) => {
-      (node as Partial<Mesh>).geometry?.dispose();
-      for (const material of materialsOf(node)) materials.add(material);
-    });
-    for (const material of materials) {
-      // The environment map is shared: released below, never disposed here.
-      for (const value of Object.values(material)) if (value instanceof Texture && value !== this.#environment) value.dispose();
-      material.dispose();
-    }
+    disposeTree(this.#model, this.#environment);
     releaseEnvironment(this.#environment);
     if (this.#plinth) {
       this.#plinth.geometry.dispose();
       this.#plinth.material.dispose();
     }
+  }
+}
+
+/** Every geometry, material and texture under `root`. */
+function resourcesOf(root: Object3D): Set<{ dispose(): void }> {
+  const out = new Set<{ dispose(): void }>();
+  root.traverse((node) => {
+    const geometry = (node as Partial<Mesh>).geometry;
+    if (geometry) out.add(geometry);
+    for (const material of materialsOf(node)) {
+      out.add(material);
+      for (const value of Object.values(material)) if (value instanceof Texture) out.add(value);
+    }
+  });
+  return out;
+}
+
+/**
+ * Dispose what `root` holds, except the shared environment map and anything
+ * in `keep` (a scene still shown may share a mesh's geometry or material with
+ * one that is not).
+ */
+function disposeTree(root: Object3D, environment: Texture | null, keep: ReadonlySet<object> = new Set()): void {
+  for (const resource of resourcesOf(root)) {
+    if (resource !== environment && !keep.has(resource)) resource.dispose();
   }
 }
 

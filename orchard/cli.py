@@ -234,6 +234,10 @@ def cmd_harvest(a):
     if refused:
         print("\n" + dirty_message(get(a.tree), refused["dirty"]), file=sys.stderr)
         sys.exit(1)
+    # A refused artefact (a glb the grove will not show, a tape still being
+    # written) did not stop the rest, but a script must still see it.
+    if any(r["status"].startswith("refused") for r in rows):
+        sys.exit(2)
 
 
 def cmd_exhibit_hang(a):
