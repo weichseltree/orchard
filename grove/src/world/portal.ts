@@ -73,7 +73,7 @@ export { PORTAL_MELD } from "./portal-shader";
 /** How long the room the visitor left lingers after a crossing, seconds. */
 export const AFTERGLOW_SECONDS = 0.7;
 /** The far view is rendered only within this many radii of an end. */
-const LIVE_WITHIN_RADII = 12;
+export const LIVE_WITHIN_RADII = 12;
 /** The far view's least resolution, as a fraction of the drawing buffer. */
 const VIEW_SCALE_MIN = 0.5;
 /** An end the visitor arrived through, or stands in by any other road, arms once they are this far out. */
@@ -175,6 +175,12 @@ export function farEye(end: PortalEnd, eye: Vector3, t: number, out = new Vector
  * Orrery seen through the armillary from more than nine metres away. Never
  * shorter than this room's range: looking back from the Orrery the far room
  * is the larger one, and the garden must still be seen to its horizon.
+ *
+ * It assumes what the document holds to: a room's content stands within the
+ * eye camera's own range of the exit it is entered by — six hundred metres
+ * here, against the Orrery's star dome of five hundred and sixty. A room
+ * drawn wider than that clips at the crossing, where the scale is one, and
+ * no scale factor can help it.
  */
 export function farDepthScale(end: Pick<PortalEnd, "ratio">, t: number): number {
   return Math.max(Math.pow(end.ratio, 1 - t), 1);
@@ -593,26 +599,31 @@ export class PortalSystem {
     farEye(end, eye, t, _far);
     far.position.copy(_far);
     camera.getWorldQuaternion(far.quaternion);
-    // The same lens, so the far view lines up with the near one pixel for
-    // pixel and the lens keeps no edge: fov, aspect and zoom are the eye's,
-    // and only the depth range is the far room's (`farDepthScale`). A
-    // projection differs from the eye's in its z terms alone, which the
-    // shader never reads, and the slide to one at the crossing is smooth.
+    // The eye's own lens, reaching the far room's distances: multiplying
+    // both planes by `s` scales exactly one element of a perspective
+    // projection, -2fn/(f-n), by `s`, and leaves every term that shapes the
+    // frustum alone — an off-centre eye, a film or view offset and either
+    // coordinate system included. So the far view stays the same window,
+    // lined up with the near one pixel for pixel, and only its depth range
+    // is the far room's (`farDepthScale`); the shader reads colour, never
+    // depth, and the slide to one at the crossing stays smooth. The fields
+    // are set to match, for a backend that rebuilds a camera's projection
+    // itself (the WebGPU one does, on its first sight of a camera).
     const source = camera as PerspectiveCamera;
+    const depth = farDepthScale(end, t);
     if (source.isPerspectiveCamera) {
-      const depth = farDepthScale(end, t);
       far.fov = source.fov;
       far.aspect = source.aspect;
       far.zoom = source.zoom;
       far.filmGauge = source.filmGauge;
       far.filmOffset = source.filmOffset;
+      far.view = source.view ? { ...source.view } : null;
       far.near = source.near * depth;
       far.far = source.far * depth;
-      far.updateProjectionMatrix();
-    } else {
-      far.projectionMatrix.copy(source.projectionMatrix);
-      far.projectionMatrixInverse.copy(source.projectionMatrixInverse);
     }
+    far.projectionMatrix.copy(source.projectionMatrix);
+    far.projectionMatrix.elements[14]! *= depth;
+    far.projectionMatrixInverse.copy(far.projectionMatrix).invert();
     far.updateMatrixWorld(true);
 
     // Only the world, and only the far room's scale; never the portals

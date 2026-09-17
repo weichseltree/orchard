@@ -1,6 +1,6 @@
 import {
   BackSide, CircleGeometry, Color, DoubleSide, Group, Mesh, MeshBasicMaterial,
-  ShaderMaterial, SphereGeometry, TorusGeometry,
+  ShaderMaterial, SphereGeometry, TorusGeometry, Vector3,
 } from "three";
 import type { Room } from "./schema";
 import type { RoomShell } from "./rooms";
@@ -11,8 +11,21 @@ import type { RoomShell } from "./rooms";
 // thing that says where the way back is. The stars are a hash, not a
 // catalogue: a backdrop, never an astronomical claim (provenance says so).
 
-/** The dome's radius, metres; the room is drawn inside it and the far plane is beyond it. */
-export const STAR_DOME_RADIUS = 560;
+/**
+ * The dome's radius, metres. It stands over the middle of the room and has
+ * to satisfy both ends: wide enough that everything hung in the room is
+ * inside it (the worlds reach 198 m from the centre), and narrow enough that
+ * its far wall stays within the eye's own range — 600 m — from the furthest
+ * corner a visitor can walk to, 228 m out. At the 560 m it was, looking back
+ * across the room cut a starless hole out of the sky where the far wall
+ * passed the far plane, which `portal.test.ts` now measures.
+ */
+export const STAR_DOME_RADIUS = 320;
+
+/** Where that dome stands: over the middle of the room's footprint, at the height of the walk. */
+export function starDomeCentre(room: Room): Vector3 {
+  return new Vector3((room.bounds.min[0] + room.bounds.max[0]) / 2, 0, (room.bounds.min[2] + room.bounds.max[2]) / 2);
+}
 
 const STAR_VERTEX = /* glsl */ `
 varying vec3 vDir;
@@ -61,10 +74,8 @@ void main() {
 export function buildSpace(room: Room): RoomShell {
   const group = new Group();
   group.name = `${room.id}-shell`;
-  const [x0, y0, z0] = room.bounds.min;
-  const [x1, , z1] = room.bounds.max;
-  const cx = (x0 + x1) / 2;
-  const cz = (z0 + z1) / 2;
+  const [, y0] = room.bounds.min;
+  const centre = starDomeCentre(room);
 
   const stars = new Mesh(
     new SphereGeometry(STAR_DOME_RADIUS, 32, 16),
@@ -78,7 +89,7 @@ export function buildSpace(room: Room): RoomShell {
     }),
   );
   stars.name = "space-stars";
-  stars.position.set(cx, 0, cz);
+  stars.position.copy(centre);
   stars.renderOrder = -1000;
   stars.frustumCulled = false;
   group.add(stars);
