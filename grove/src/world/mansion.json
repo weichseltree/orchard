@@ -721,7 +721,7 @@
           ],
           "sizeMeters": 2.5,
           "plinth": {
-            "heightMeters": 0.6
+            "heightMeters": 0.3
           }
         },
         {
@@ -748,7 +748,7 @@
           ],
           "sizeMeters": 3.2,
           "plinth": {
-            "heightMeters": 0.7
+            "heightMeters": 0.3
           }
         },
         {
