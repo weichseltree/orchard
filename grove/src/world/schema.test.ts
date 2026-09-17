@@ -154,7 +154,7 @@ describe("MansionSchema", () => {
     const good = doc();
     (good.rooms as Array<{ hangings: unknown[] }>)[1]!.hangings = [tape("lit"), tape("dark", "lit")];
     expect(() => MansionSchema.parse(good)).not.toThrow();
-    for (const hangings of [[tape("dark", "lit")], [tape("lit", "dark"), tape("dark", "lit")]]) {
+    for (const hangings of [[tape("dark", "lit")], [tape("lit", "dark"), tape("dark", "lit")], [tape("lit", "lit")]]) {
       const broken = doc();
       (broken.rooms as Array<{ hangings: unknown[] }>)[1]!.hangings = hangings;
       expect(() => MansionSchema.parse(broken)).toThrow(/not a leading tape/);
