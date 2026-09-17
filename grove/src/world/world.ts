@@ -140,6 +140,21 @@ export function neighbourhood(mansion: Mansion, roomId: string, depth = 2): stri
       if (room.fallback.kind === "ground" && !dist.has(room.id)) out.push(room.id);
     }
   }
+  // A room standing over or under one of these is seen from it even when it
+  // is far by doorways: the club under the wing is the wing's underside, the
+  // undercroft is the terrace's edge. Without them the void shows.
+  const have = new Set(out);
+  for (const id of [...out]) {
+    const room = mansion.rooms.find((r) => r.id === id);
+    if (!room) continue;
+    for (const other of mansion.rooms) {
+      if (have.has(other.id) || (other.scale ?? 1) !== (room.scale ?? 1)) continue;
+      if (other.bounds.min[0] >= room.bounds.max[0] || other.bounds.max[0] <= room.bounds.min[0]) continue;
+      if (other.bounds.min[2] >= room.bounds.max[2] || other.bounds.max[2] <= room.bounds.min[2]) continue;
+      have.add(other.id);
+      out.push(other.id);
+    }
+  }
   return out;
 }
 

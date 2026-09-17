@@ -14,12 +14,13 @@ function glideAll(body: ReturnType<typeof createBody>, glide: Glide, locked?: (i
 }
 
 describe("a glide target is checked the way a walk would be", () => {
-  it("takes the room it is told, from low on a stair under another room's floor", () => {
-    const body = createBody(17, -27, 0, "foyer");
+  it("takes the room it is told, from a floor under another room's", () => {
+    // The undercroft lies under the terrace: a point under both is the undercroft's for a body down there.
+    const body = createBody(-15, -60, 0, "foyer");
     settle(body, mansion);
-    const engine = mansion.rooms.find((r) => r.id === "world-engine")!;
-    expect(roomUnder(mansion, body, 5, -27)?.id).not.toBe("world-engine");
-    const glide = planGlide(mansion, body, 5, -27, undefined, undefined, engine);
+    const stair = mansion.rooms.find((r) => r.id === "stair-north")!;
+    expect(roomUnder(mansion, body, -15, -50)?.id).not.toBe("terrace");
+    const glide = planGlide(mansion, body, -15, -78, undefined, undefined, stair);
     expect(typeof glide === "string" ? glide : "planned").toBe("planned");
   });
 

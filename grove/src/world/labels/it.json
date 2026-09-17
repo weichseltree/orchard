@@ -96,11 +96,23 @@
       "lookFor": "Cammini verso un mondo e osservi la sua faccia tagliata; il bagliore segna la materia più calda, una codifica della temperatura, non luce.",
       "limit": "Una sola simulazione registrata per mondo, nulla di interpolato. Un centro pesante non basta da solo a separare la smiscelazione dal raffreddamento comune come causa."
     },
+    "stair-north": {
+      "title": "scala",
+      "kicker": "Che cosa c'è sotto la terrazza?",
+      "intro": "Un padiglione da giardino all'estremità nord della terrazza, in cui si entra dal boschetto ovest. Dentro, una rampa di gradini scende sotto terra fino al sotterraneo, da cui si apre il club. Una seconda scala dello stesso genere sta all'estremità sud della terrazza, presso il boschetto est.",
+      "lookFor": "Il corrimano della scala e la lampada ai suoi piedi; la luce del giorno finisce dove comincia la volta."
+    },
+    "stair-south": {
+      "title": "scala",
+      "kicker": "Che cosa c'è sotto la terrazza?",
+      "intro": "Un padiglione da giardino all'estremità sud della terrazza, in cui si entra dal boschetto est. Dentro, una rampa di gradini scende sotto terra fino al sotterraneo, da cui si apre il club. Una seconda scala dello stesso genere sta all'estremità nord della terrazza, presso il boschetto ovest.",
+      "lookFor": "Il corrimano della scala e la lampada ai suoi piedi; la luce del giorno finisce dove comincia la volta."
+    },
     "foyer": {
       "title": "foyer",
-      "kicker": "Chi passa la porta?",
-      "intro": "La scala dalla sala di world-engine scende nel foyer della cantina. Due porte proseguono: il club, che si apre solo al visitatore con microfono e audio accesi, e oltre un palco riservato ai visori. Le proposte sullo schermo accendono entrambi.",
-      "lookFor": "Il corrimano d'ottone della lunga scala e le lanterne accanto alla porta del club: ardono calde, mentre i colori del club sono freddi."
+      "kicker": "Da che parte si scende?",
+      "intro": "Il sotterraneo corre per tutta la lunghezza della terrazza, una volta bassa sotto le sue lastre. Due scale vi scendono dai giardini, una a ciascuna estremità della terrazza, e due porte proseguono nel club, che si apre solo al visitatore con microfono e audio accesi.",
+      "lookFor": "Le lanterne alle due porte del club, e la luce che ne viene: il sotterraneo è caldo, il club è freddo."
     },
     "club": {
       "title": "club",
