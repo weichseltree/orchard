@@ -1,4 +1,4 @@
-import type { Group } from "three";
+import { LineBasicMaterial, type Group, type Object3D } from "three";
 import type { Room } from "./schema";
 import { roomArena } from "./room-arena";
 import { CATS, CatWorld } from "../vendor/cat-proxy/src/index";
@@ -33,8 +33,44 @@ export const CAT_ROOM = "hall";
  */
 const CAT_SEEDS: Record<string, number> = { blue: 0x5eed, seal: 0xb };
 
+/**
+ * How the whiskers sit in this room. The package draws them as LineSegments in near-white
+ * (#f6f2ea) with `toneMapped: false`, which is right in its own dark viewer: they bypass tone
+ * mapping and stay legible whatever the exposure. In the hall they are the brightest thing on
+ * the cat -- eight lines that read as wire against a #17212b floor, at a fixed exposure of 1
+ * the room cannot be darkened to fix.
+ *
+ * So the grove dims them where it presents them: tone-mapped like everything else in the room,
+ * carried to a fraction of their brightness, and half transparent. That is a presentation
+ * choice, not a correction -- it belongs here and not in the vendored copy, where an edit is
+ * lost at the next sync and shows up as drift (PACKAGES.md section 2).
+ */
+const WHISKER = { opacity: 0.38, tint: 0x6f6a61 } as const;
+
+/**
+ * Dims each cat's whiskers in place. Returns how many it found, so a caller can say so when
+ * the answer is none: the part is matched by name, and an upstream rename would otherwise
+ * leave this silently doing nothing while claiming to have done it.
+ */
+export function softenWhiskers(group: Group): number {
+  let found = 0;
+  group.traverse((child: Object3D) => {
+    if (child.name !== "whiskers") return;
+    const material = (child as { material?: unknown }).material;
+    if (!(material instanceof LineBasicMaterial)) return;
+    material.toneMapped = true;
+    material.color.setHex(WHISKER.tint);
+    material.transparent = true;
+    material.opacity = WHISKER.opacity;
+    material.depthWrite = false;
+    material.needsUpdate = true;
+    found += 1;
+  });
+  return found;
+}
+
 /** Two cats, started apart and not on the spawn point, facing roughly into the room. */
-export function buildCats(room: Room): CatWorld | null {
+export function buildCats(room: Room, onNotice?: (message: string) => void): CatWorld | null {
   if (room.id !== CAT_ROOM) return null;
   const cats = new CatWorld({
     arena: roomArena(room),
@@ -44,6 +80,8 @@ export function buildCats(room: Room): CatWorld | null {
     ],
   });
   cats.group.position.y = room.bounds.min[1];
+  const whiskers = softenWhiskers(cats.group);
+  if (whiskers === 0) onNotice?.("cats: no whiskers found to dim; the part may have been renamed upstream");
   return cats;
 }
 

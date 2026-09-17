@@ -289,7 +289,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
     // tapes behind two cats. Tracked, not awaited, exactly as a reading stand is.
     if (!world.cats) {
       void track(import("./cats").then(({ buildCats, attachCats }) => {
-        const cats = buildCats(room);
+        const cats = buildCats(room, onNotice);
         // The world went while the module was loading, or another room got there first.
         if (!cats || disposed || world.cats) return cats?.dispose();
         world.cats = cats;

@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
 import mansionDoc from "./mansion.json";
 import { MansionSchema } from "./schema";
-import { CAT_ROOM } from "./cats";
+import { CAT_ROOM, softenWhiskers } from "./cats";
 import { roomArena } from "./room-arena";
 import { COLUMN_FOOT_M, columnFootprints } from "./observatory";
-import { CATS, runHeadless } from "../vendor/cat-proxy/src/index";
+import { CATS, buildCat, runHeadless } from "../vendor/cat-proxy/src/index";
+import { Group, LineBasicMaterial } from "three";
 
 // The package has its own tests for the brain and the body; these are about the seam.
 // What the grove owes is the room: that the arena it hands over really is the hall, and
@@ -49,6 +50,35 @@ describe("the hall's cats", () => {
       const clear = { x: x - (COLUMN_FOOT_M + 0.3) * Math.sign(x), z };
       expect(arena.canStand(clear.x, clear.z, 0.12)).toBe(true);
     }
+  });
+
+  it("dims the whiskers the package draws for a darker viewer", () => {
+    // A real cat's face, not a stand-in: the part is matched by name, so this fails if the
+    // package renames it -- which is the whole reason softenWhiskers reports a count.
+    const group = new Group();
+    group.add(buildCat(CATS.blue).group);
+    const before: LineBasicMaterial[] = [];
+    group.traverse((child) => {
+      if (child.name === "whiskers" && (child as { material?: unknown }).material instanceof LineBasicMaterial) {
+        before.push((child as unknown as { material: LineBasicMaterial }).material);
+      }
+    });
+    expect(before.length, "no whiskers on the cat").toBeGreaterThan(0);
+    // As the package leaves them: full brightness, outside tone mapping.
+    expect(before.every((m) => m.toneMapped === false)).toBe(true);
+    expect(before.every((m) => m.opacity === 1)).toBe(true);
+
+    expect(softenWhiskers(group)).toBe(before.length);
+    for (const material of before) {
+      expect(material.toneMapped, "whiskers must sit in the room's exposure").toBe(true);
+      expect(material.transparent).toBe(true);
+      expect(material.opacity).toBeLessThan(0.5);
+      expect(material.color.getHex()).toBeLessThan(0xf6f2ea);
+    }
+  });
+
+  it("says so when there are no whiskers to dim", () => {
+    expect(softenWhiskers(new Group())).toBe(0);
   });
 
   it("greets a visitor who stands in the hall, and does not mob them", () => {
