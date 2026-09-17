@@ -906,6 +906,11 @@ function grounds(b: Builder): void {
     // wherever there is no opening. The lanterns stand off the walk, not on
     // it, so the door is what a visitor sees from the gate (2026-09-17).
     path(b, cx, cz, 5.2, depth);
+    // ...and a cross walk out to the gate in the side wall, so the paving
+    // starts at the grove's edge rather than 2.4 m inside the lawn.
+    for (const gate of room.doorways.filter(d => d.axis === "x")) {
+      path(b, (gate.at + cx) / 2, gate.center, Math.abs(cx - gate.at), 5.2);
+    }
     for (const wall of walls(room)) {
       const gaps = room.doorways
         .filter(d => d.axis === wall.axis && Math.abs(d.at - wall.at) < 0.001)

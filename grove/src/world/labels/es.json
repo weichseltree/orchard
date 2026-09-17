@@ -37,7 +37,7 @@
     "court-north": {
       "title": "patio norte",
       "kicker": "¿Dónde empieza el sótano?",
-      "intro": "Un patio cerrado al borde de la arboleda oeste, en el extremo norte de la terraza. Es la puerta de entrada del club: en el pabellón, un solo tramo ancho baja recto bajo el césped hasta el subterráneo, del que se abre el club.",
+      "intro": "Un patio cercado por una balaustrada de piedra, al borde de la arboleda oeste, en el extremo norte de la terraza. Es la puerta de entrada del club: en el pabellón, un solo tramo ancho baja recto bajo el césped hasta el subterráneo, del que se abre el club.",
       "lookFor": "Sobre la puerta del pabellón se lee la sala al final del camino, no la escalera; las lámparas del tramo brillan bajo el arco."
     },
     "stair-north": {
@@ -55,7 +55,7 @@
     "court-south": {
       "title": "patio sur",
       "kicker": "¿Dónde empieza el sótano?",
-      "intro": "Un patio cerrado al borde de la arboleda este, en el extremo sur de la terraza. Es la puerta de entrada del club: en el pabellón, un solo tramo ancho baja recto bajo el césped hasta el subterráneo, del que se abre el club.",
+      "intro": "Un patio cercado por una balaustrada de piedra, al borde de la arboleda este, en el extremo sur de la terraza. Es la puerta de entrada del club: en el pabellón, un solo tramo ancho baja recto bajo el césped hasta el subterráneo, del que se abre el club.",
       "lookFor": "Sobre la puerta del pabellón se lee la sala al final del camino, no la escalera; las lámparas del tramo brillan bajo el arco."
     },
     "foyer": {

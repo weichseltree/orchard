@@ -37,7 +37,7 @@
     "court-north": {
       "title": "corte nord",
       "kicker": "Dove comincia la cantina?",
-      "intro": "Una corte cinta al margine del bosco ovest, all'estremità nord della terrazza. È la porta d'ingresso del club: nel padiglione una sola rampa larga scende diritta sotto il prato fino al sotterraneo, da cui si apre il club.",
+      "intro": "Una corte chiusa da una balaustra di pietra, al margine del bosco ovest, all'estremità nord della terrazza. È la porta d'ingresso del club: nel padiglione una sola rampa larga scende diritta sotto il prato fino al sotterraneo, da cui si apre il club.",
       "lookFor": "Sopra la porta del padiglione si legge la sala in fondo al cammino, non la scala; le lampade della rampa brillano sotto l'arco."
     },
     "stair-north": {
@@ -55,7 +55,7 @@
     "court-south": {
       "title": "corte sud",
       "kicker": "Dove comincia la cantina?",
-      "intro": "Una corte cinta al margine del bosco est, all'estremità sud della terrazza. È la porta d'ingresso del club: nel padiglione una sola rampa larga scende diritta sotto il prato fino al sotterraneo, da cui si apre il club.",
+      "intro": "Una corte chiusa da una balaustra di pietra, al margine del bosco est, all'estremità sud della terrazza. È la porta d'ingresso del club: nel padiglione una sola rampa larga scende diritta sotto il prato fino al sotterraneo, da cui si apre il club.",
       "lookFor": "Sopra la porta del padiglione si legge la sala in fondo al cammino, non la scala; le lampade della rampa brillano sotto l'arco."
     },
     "foyer": {

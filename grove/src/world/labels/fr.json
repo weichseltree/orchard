@@ -37,7 +37,7 @@
     "court-north": {
       "title": "cour nord",
       "kicker": "Où commence la cave ?",
-      "intro": "Une cour close au bord du bosquet ouest, à l'extrémité nord de la terrasse. C'est la porte d'entrée du club : dans le pavillon, une seule volée large descend tout droit sous la pelouse jusqu'au souterrain, d'où s'ouvre le club.",
+      "intro": "Une cour bordée d'une balustrade de pierre, au bord du bosquet ouest, à l'extrémité nord de la terrasse. C'est la porte d'entrée du club : dans le pavillon, une seule volée large descend tout droit sous la pelouse jusqu'au souterrain, d'où s'ouvre le club.",
       "lookFor": "Au-dessus de la porte du pavillon se lit la salle au bout du chemin, non l'escalier ; les lampes de la volée brillent sous l'arc."
     },
     "stair-north": {
@@ -55,7 +55,7 @@
     "court-south": {
       "title": "cour sud",
       "kicker": "Où commence la cave ?",
-      "intro": "Une cour close au bord du bosquet est, à l'extrémité sud de la terrasse. C'est la porte d'entrée du club : dans le pavillon, une seule volée large descend tout droit sous la pelouse jusqu'au souterrain, d'où s'ouvre le club.",
+      "intro": "Une cour bordée d'une balustrade de pierre, au bord du bosquet est, à l'extrémité sud de la terrasse. C'est la porte d'entrée du club : dans le pavillon, une seule volée large descend tout droit sous la pelouse jusqu'au souterrain, d'où s'ouvre le club.",
       "lookFor": "Au-dessus de la porte du pavillon se lit la salle au bout du chemin, non l'escalier ; les lampes de la volée brillent sous l'arc."
     },
     "foyer": {

@@ -37,7 +37,7 @@
     "court-north": {
       "title": "Nordhof",
       "kicker": "Wo beginnt der Keller?",
-      "intro": "Ein ummauerter Hof am Rand des Westhains, am Nordende der Terrasse. Er ist die Haustür des Clubs: Im Pavillon davor führt ein einziger breiter Lauf geradewegs unter den Rasen hinab zum Untergeschoss, von dem der Club abgeht.",
+      "intro": "Ein von einer steinernen Balustrade umschlossener Hof am Rand des Westhains, am Nordende der Terrasse. Er ist die Haustür des Clubs: Im Pavillon davor führt ein einziger breiter Lauf geradewegs unter den Rasen hinab zum Untergeschoss, von dem der Club abgeht.",
       "lookFor": "Über der Tür des Pavillons steht der Raum am Ende des Weges, nicht die Treppe; die Lampen des Laufs schimmern unter dem Bogen."
     },
     "stair-north": {
@@ -55,7 +55,7 @@
     "court-south": {
       "title": "Südhof",
       "kicker": "Wo beginnt der Keller?",
-      "intro": "Ein ummauerter Hof am Rand des Osthains, am Südende der Terrasse. Er ist die Haustür des Clubs: Im Pavillon davor führt ein einziger breiter Lauf geradewegs unter den Rasen hinab zum Untergeschoss, von dem der Club abgeht.",
+      "intro": "Ein von einer steinernen Balustrade umschlossener Hof am Rand des Osthains, am Südende der Terrasse. Er ist die Haustür des Clubs: Im Pavillon davor führt ein einziger breiter Lauf geradewegs unter den Rasen hinab zum Untergeschoss, von dem der Club abgeht.",
       "lookFor": "Über der Tür des Pavillons steht der Raum am Ende des Weges, nicht die Treppe; die Lampen des Laufs schimmern unter dem Bogen."
     },
     "foyer": {

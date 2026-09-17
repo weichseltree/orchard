@@ -37,7 +37,7 @@
     "court-north": {
       "title": "north court",
       "kicker": "Where does the cellar begin?",
-      "intro": "A walled court on the edge of the west grove, at the north end of the terrace. This is the club's own front door: the pavilion ahead holds one broad flight that runs straight down under the lawn to the undercroft, and the club opens off that.",
+      "intro": "A court on the edge of the west grove, closed by a stone balustrade, at the north end of the terrace. This is the club's front door: the pavilion ahead holds one broad flight that runs straight down under the lawn to the undercroft, and the club opens off that.",
       "lookFor": "The name over the pavilion's door is the room at the end of the walk, not the stair; the lamps of the flight show under its arch."
     },
     "stair-north": {
@@ -55,7 +55,7 @@
     "court-south": {
       "title": "south court",
       "kicker": "Where does the cellar begin?",
-      "intro": "A walled court on the edge of the east grove, at the south end of the terrace. This is the club's own front door: the pavilion ahead holds one broad flight that runs straight down under the lawn to the undercroft, and the club opens off that.",
+      "intro": "A court on the edge of the east grove, closed by a stone balustrade, at the south end of the terrace. This is the club's front door: the pavilion ahead holds one broad flight that runs straight down under the lawn to the undercroft, and the club opens off that.",
       "lookFor": "The name over the pavilion's door is the room at the end of the walk, not the stair; the lamps of the flight show under its arch."
     },
     "foyer": {

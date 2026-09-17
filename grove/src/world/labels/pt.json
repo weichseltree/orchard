@@ -37,7 +37,7 @@
     "court-north": {
       "title": "pátio norte",
       "kicker": "Onde começa a cave?",
-      "intro": "Um pátio murado à beira do bosque oeste, no extremo norte do terraço. É a porta de entrada do clube: no pavilhão, um único lanço largo desce a direito sob o relvado até a cave, de onde o clube se abre.",
+      "intro": "Um pátio fechado por uma balaustrada de pedra, à beira do bosque oeste, no extremo norte do terraço. É a porta de entrada do clube: no pavilhão, um único lanço largo desce a direito sob o relvado até a cave, de onde o clube se abre.",
       "lookFor": "Sobre a porta do pavilhão lê-se a sala no fim do caminho, não a escada; as lâmpadas do lanço brilham sob o arco."
     },
     "stair-north": {
@@ -55,7 +55,7 @@
     "court-south": {
       "title": "pátio sul",
       "kicker": "Onde começa a cave?",
-      "intro": "Um pátio murado à beira do bosque este, no extremo sul do terraço. É a porta de entrada do clube: no pavilhão, um único lanço largo desce a direito sob o relvado até a cave, de onde o clube se abre.",
+      "intro": "Um pátio fechado por uma balaustrada de pedra, à beira do bosque este, no extremo sul do terraço. É a porta de entrada do clube: no pavilhão, um único lanço largo desce a direito sob o relvado até a cave, de onde o clube se abre.",
       "lookFor": "Sobre a porta do pavilhão lê-se a sala no fim do caminho, não a escada; as lâmpadas do lanço brilham sob o arco."
     },
     "foyer": {

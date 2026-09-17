@@ -37,7 +37,7 @@
     "court-north": {
       "title": "noordhof",
       "kicker": "Waar begint de kelder?",
-      "intro": "Een ommuurde hof aan de rand van het westelijke bosje, aan het noordeinde van het terras. Dit is de voordeur van de club: in het paviljoen daalt één brede trap recht onder het gazon naar de onderbouw, waaraan de club ligt.",
+      "intro": "Een door een stenen balustrade omsloten hof aan de rand van het westelijke bosje, aan het noordeinde van het terras. Dit is de voordeur van de club: in het paviljoen daalt één brede trap recht onder het gazon naar de onderbouw, waaraan de club ligt.",
       "lookFor": "Boven de deur van het paviljoen staat de zaal aan het eind van de weg, niet de trap; de lampen van de trap schijnen onder de boog."
     },
     "stair-north": {
@@ -55,7 +55,7 @@
     "court-south": {
       "title": "zuidhof",
       "kicker": "Waar begint de kelder?",
-      "intro": "Een ommuurde hof aan de rand van het oostelijke bosje, aan het zuideinde van het terras. Dit is de voordeur van de club: in het paviljoen daalt één brede trap recht onder het gazon naar de onderbouw, waaraan de club ligt.",
+      "intro": "Een door een stenen balustrade omsloten hof aan de rand van het oostelijke bosje, aan het zuideinde van het terras. Dit is de voordeur van de club: in het paviljoen daalt één brede trap recht onder het gazon naar de onderbouw, waaraan de club ligt.",
       "lookFor": "Boven de deur van het paviljoen staat de zaal aan het eind van de weg, niet de trap; de lampen van de trap schijnen onder de boog."
     },
     "foyer": {
