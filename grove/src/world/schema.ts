@@ -62,6 +62,21 @@ export const RepoModelSchema = z.looseObject({
 });
 
 /**
+ * A short record on a wall: one line of what an experiment asked and what
+ * came back (arcedit's record room). Where it hangs lives here; its words
+ * live in the labels, `rooms[<room>].lines[<key>]`, in every language.
+ */
+export const WallLineSchema = z.looseObject({
+  id: z.string().min(1),
+  key: z.string().min(1),
+  /** The plate's centre, room metres, on the wall's face. */
+  position: Vec3,
+  rotationDeg: Vec3.default([0, 0, 0]),
+  /** The stretch of wall the line owns; the plate is centred in it. */
+  widthMeters: z.number().positive().default(3.6),
+});
+
+/**
  * A plain opening in a shared wall (M0; portals are M5). `axis` is the axis the
  * wall is perpendicular to, `at` the wall's coordinate on that axis, `center`
  * the opening's centre on the other horizontal axis.
@@ -296,6 +311,7 @@ export const RoomSchema = z.looseObject({
   hangings: z.array(HangingSchema).default([]),
   gameSurfaces: z.array(GameSurfaceSchema).default([]),
   repoModels: z.array(RepoModelSchema).default([]),
+  wallLines: z.array(WallLineSchema).default([]),
   /**
    * Tone-mapping exposure while the visitor is in this room; the eye adapts
    * over about a second on crossing. The bakes are one sun for the whole
@@ -440,6 +456,7 @@ export type Bounds = z.infer<typeof BoundsSchema>;
 export type Spawn = z.infer<typeof SpawnSchema>;
 export type GameSurface = z.infer<typeof GameSurfaceSchema>;
 export type RepoModel = z.infer<typeof RepoModelSchema>;
+export type WallLine = z.infer<typeof WallLineSchema>;
 export type Doorway = z.infer<typeof DoorwaySchema>;
 export type BundleRef = z.infer<typeof BundleRefSchema>;
 export type ExhibitRef = z.infer<typeof ExhibitRefSchema>;

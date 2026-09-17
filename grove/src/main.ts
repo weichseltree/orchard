@@ -676,8 +676,8 @@ function offerGameTable(): void {
 // A repository's tabletop model (repo-model.ts): standing at the table, the
 // district under the gaze reads out below the crosshair. The layout is pure
 // and cached per model; the gaze is the camera's own ray, a few times a second.
-/** How near the table's centre counts as reading it: the model's reach plus an arm. */
-const REPO_TABLE_REACH_M = 3.2;
+/** How far beyond the model's own half-diagonal counts as standing at it: an arm and a step. */
+const REPO_TABLE_REACH_M = 1.6;
 const repoLayouts = new WeakMap<RepoModel, RepoBlock[]>();
 let readBlock: RepoBlock | null = null;
 let nextModelCheck = 0;
@@ -687,7 +687,8 @@ function readRepoModel(): void {
   nextModelCheck = now + 150;
   let found: RepoBlock | null = null;
   for (const model of roomById(mansion, body.room)?.repoModels ?? []) {
-    if (Math.hypot(model.position[0] - body.x, model.position[2] - body.z) > REPO_TABLE_REACH_M) continue;
+    const reach = Math.hypot(model.size[0], model.size[1]) / 2 + REPO_TABLE_REACH_M;
+    if (Math.hypot(model.position[0] - body.x, model.position[2] - body.z) > reach) continue;
     let blocks = repoLayouts.get(model);
     if (!blocks) repoLayouts.set(model, blocks = layoutRepoModel(model));
     view.camera.getWorldPosition(headWorld);

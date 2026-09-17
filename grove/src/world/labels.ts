@@ -47,6 +47,8 @@ const CORNER_MARGIN_M = 0.3;
 
 export const PANEL = { width: 1.8, height: 1.35, top: 2.25, texture: [1024, 768] as const };
 export const LABEL = { width: 0.7, height: 0.525, centre: 1.45, texture: [768, 576] as const };
+/** A record line on a wall: a label's proportions, a little larger, at reading height. */
+export const LINE = { width: 1.2, height: 0.9, centre: 1.55, texture: [1024, 768] as const };
 /** An exhibit's reading stand: a plate tilted 30° from horizontal, its top edge a metre up. */
 export const LECTERN = { width: 0.85, height: 0.6375, top: 1.05, tiltDeg: 30, texture: [1024, 768] as const };
 /** A room's reading stand, for the grounds and the Orrery, which have no wall to hang a panel on. */
@@ -65,7 +67,8 @@ const REPOSITORY_NAME: Readonly<Record<string, string>> = { spectre: "coarsen" }
  */
 const TREE_OF_ROOM: Readonly<Record<string, string>> = { orrery: "spectre" };
 
-export type PlaqueKind = "entrance" | "label";
+/** An entrance panel, an exhibit's label, or a record line on a wall. */
+export type PlaqueKind = "entrance" | "label" | "line";
 export type PlaqueMount = "wall" | "lectern" | "stand";
 /** What a plaque faces: the room's centre from its wall, the spawn, or the way its tape's stand faces. */
 export type PlaqueFacing = "room" | "spawn" | "stand";
@@ -518,6 +521,20 @@ export function planRoomLabels(room: Room, labels: Labels, mansion: Mansion): Pl
     }
     foot.y = floor;
     plans.push(lecternPlaque(foot, facing, LECTERN, { kind: "label", facing: "spawn", hangingId: hanging.id, text }));
+  }
+
+  // The room's record lines: each where the plan puts it, facing the way it is turned.
+  const lines = labels.rooms[room.id]?.lines ?? {};
+  for (const line of room.wallLines) {
+    const copy = lines[line.key];
+    if (!copy) continue;
+    const q = hangingQuaternion(line);
+    const position = new Vector3(line.position[0], floor + LINE.centre, line.position[2]);
+    plans.push({
+      kind: "line", mount: "wall", facing: "room", hangingId: line.id, position, quaternion: q,
+      width: Math.min(LINE.width, line.widthMeters), height: LINE.height, texture: LINE.texture,
+      text: { heading: labels.rooms[room.id]!.title, title: copy.title, body: copy.text },
+    });
   }
   return plans;
 }

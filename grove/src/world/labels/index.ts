@@ -19,6 +19,8 @@ export const RoomLabelSchema = z.object({
   intro: z.string().min(1),
   lookFor: z.string().optional(),
   limit: z.string().optional(),
+  /** The short records a room hangs along its walls (`wallLines` in mansion.json), by key. */
+  lines: z.record(z.string(), z.object({ title: z.string().min(1), text: z.string().min(1) })).optional(),
 });
 
 export const ExhibitLabelSchema = z.object({

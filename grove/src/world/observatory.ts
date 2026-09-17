@@ -883,10 +883,14 @@ function repoTables(b: Builder): void {
       const finish: Finish = block.leaf ? (block.room ? "light" : "stone") : block.level % 2 === 0 ? "inset" : "joint";
       b.add("box", finish, at.x, top + 0.006 + (bottom + block.height) / 2, at.z, block.width, block.height - bottom, block.depth, turn);
     }
-    // A lamp over the model, low enough to read by.
-    b.add("halo", "brass", x, top + 1.5, z, 0.7, 0.7, 0.7, FLAT);
-    b.add("halo", "light", x, top + 1.45, z, 0.68, 0.68, 0.25, FLAT);
-    b.bar("brass", new Vector3(x, top + 1.55, z), new Vector3(x, b.room.bounds.max[1] - 0.05, z), 0.015);
+    // A ring of light over the model, as wide as the model, high enough to walk under.
+    const ring = Math.max(0.7, Math.min(width, depth) * 0.4);
+    const lamp = Math.min(top + 2.2, b.room.bounds.max[1] - 0.6);
+    b.add("halo", "brass", x, lamp + 0.05, z, ring + 0.02, ring + 0.02, 0.7, FLAT);
+    b.add("halo", "light", x, lamp, z, ring, ring, 0.25, FLAT);
+    for (const side of [-1, 1]) {
+      b.bar("brass", new Vector3(x + side * ring, lamp + 0.05, z), new Vector3(x + side * ring, b.room.bounds.max[1] - 0.05, z), 0.015);
+    }
   }
 }
 
