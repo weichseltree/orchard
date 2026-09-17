@@ -110,7 +110,7 @@ describe("the designed observatory", () => {
 
   it("keeps the venue's fittings inside their rooms", () => {
     // The foyer's lanterns once stood in the north wall and inside the stair's cheek; every placed element's centre stays in its room's box.
-    const margin = 0.4;
+    const margin = 0.12;
     for (const { room, shell } of shells.filter(s => ["foyer", "club", "stage"].includes(s.room.id))) {
       const [x0, y0, z0] = room.bounds.min, [x1, y1, z1] = room.bounds.max;
       const outside: string[] = [];
