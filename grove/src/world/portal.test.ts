@@ -1,15 +1,18 @@
-import { BackSide, FrontSide, Group, PerspectiveCamera, Scene, ShaderMaterial, Vector2, Vector3, type WebGLRenderTarget } from "three";
+import { BackSide, FrontSide, Frustum, Group, Matrix4, PerspectiveCamera, Scene, ShaderMaterial, Sphere, Vector2, Vector3, type Camera, type WebGLRenderTarget } from "three";
 import { describe, expect, it } from "vitest";
+import { VIEW_FAR } from "../render/view";
 import type { Renderer } from "../render/types";
 import mansionDocument from "./mansion.json";
 import { parseMansion } from "./schema";
 import {
   AFTERGLOW_SECONDS,
+  LIVE_WITHIN_RADII,
   PORTAL_CORE,
   PORTAL_MELD,
   PortalSystem,
   blendAt,
   crossPortal,
+  farDepthScale,
   farEye,
   portalEnds,
   type PortalEnd,
@@ -34,6 +37,7 @@ import {
   type IntentState,
 } from "./portal-intent";
 import { PORTAL_FRAGMENT, PORTAL_VERTEX } from "./portal-shader";
+import { STAR_DOME_RADIUS, starDomeCentre } from "./space";
 import { neighbourhood } from "./world";
 
 // A portal is a blend between two scales, entered only from the room and the
@@ -141,6 +145,19 @@ describe("farEye", () => {
     const eye = orrery.center.clone().add(new Vector3(2, 0, 0));
     expect(farEye(orrery, eye, 0).x).toBeCloseTo(garden.center.x + 2 * orrery.ratio);
     expect(farEye(orrery, eye, 0).z).toBeCloseTo(garden.center.z);
+  });
+});
+
+describe("farDepthScale", () => {
+  it("stretches the frustum by the same fifty the far camera's offset is stretched by, and slides to one at the core", () => {
+    expect(farDepthScale(garden, 0)).toBeCloseTo(garden.ratio);
+    expect(farDepthScale(garden, 0.5)).toBeCloseTo(Math.sqrt(garden.ratio));
+    expect(farDepthScale(garden, 1)).toBe(1);
+  });
+
+  it("never shortens it: from the Orrery the garden is the larger room and keeps this room's range", () => {
+    expect(farDepthScale(orrery, 0)).toBe(1);
+    expect(farDepthScale(orrery, 1)).toBe(1);
   });
 });
 
@@ -377,6 +394,8 @@ interface StubRenderer {
   target: WebGLRenderTarget | null;
   targets: Set<WebGLRenderTarget>;
   live: boolean;
+  /** The camera of the last render, which for this system is always a far view. */
+  farCamera: Camera | null;
 }
 
 function stubRenderer(live: boolean): Renderer & StubRenderer {
@@ -385,6 +404,7 @@ function stubRenderer(live: boolean): Renderer & StubRenderer {
     target: null as WebGLRenderTarget | null,
     targets: new Set<WebGLRenderTarget>(),
     live,
+    farCamera: null as Camera | null,
     toneMapping: 0,
     toneMappingExposure: 1,
     xr: {} as Renderer["xr"],
@@ -392,8 +412,9 @@ function stubRenderer(live: boolean): Renderer & StubRenderer {
     setPixelRatio() {},
     setSize() {},
     setAnimationLoop() {},
-    render() {
+    render(_scene: Scene, camera: Camera) {
       stub.renders += 1;
+      stub.farCamera = camera;
     },
     getPixelRatio: () => 1,
     dispose() {},
@@ -619,6 +640,52 @@ describe("PortalSystem", () => {
     expect(rig.portals.group.visible).toBe(true);
   });
 
+  it("gives the far view the far room's depth range, so the worlds and their stars are in it from across the garden", () => {
+    const rig = new Rig();
+    // Where the garden sets a visitor down, facing the armillary. The walk
+    // is what this test rests on, so it says what it needs of the document:
+    // far enough out that the eye's own range falls short of the furthest
+    // world over there, near enough that a far view is rendered at all.
+    const worlds = orreryRoom.hangings[0]!;
+    if (worlds.kind !== "planet") throw new Error("the Orrery's hanging is the planet");
+    const deepest = Math.max(...worlds.worlds.map((w) => new Vector3(...w.position).distanceTo(garden.exit)));
+    const spawn = new Vector3(gardenRoom.spawn.position[0], gardenRoom.spawn.position[1] + 1.6, gardenRoom.spawn.position[2]);
+    const walk = spawn.distanceTo(garden.center);
+    expect(walk).toBeGreaterThan((rig.camera.far + deepest) / garden.ratio);
+    expect(walk).toBeLessThan(garden.radius * LIVE_WITHIN_RADII);
+
+    rig.place(spawn, new Vector3(-1, 0, 0));
+    rig.frame();
+    expect(rig.renderer.renders).toBe(1);
+    const far = rig.renderer.farCamera as PerspectiveCamera;
+    expect(far.far).toBeCloseTo(rig.camera.far * garden.ratio);
+    expect(far.near).toBeCloseTo(rig.camera.near * garden.ratio);
+    // The same lens: the depth range scales one term of the projection and
+    // leaves every term that shapes the frustum alone, so the far view lines
+    // up with the near one and the portal keeps no edge.
+    const eye = rig.camera.projectionMatrix.elements;
+    far.projectionMatrix.elements.forEach((value, index) => {
+      if (index === 14) expect(value).toBeCloseTo(eye[14]! * garden.ratio);
+      else expect(value).toBeCloseTo(eye[index]!);
+    });
+
+    far.updateMatrixWorld(true);
+    const frustum = new Frustum().setFromProjectionMatrix(
+      new Matrix4().multiplyMatrices(far.projectionMatrix, far.matrixWorldInverse),
+    );
+    const planet = worlds;
+    // A thousand seven hundred Orrery metres out: with the garden's own six
+    // hundred the frustum stopped short of every one of them and the
+    // armillary was a black dome (the Orrery empty through the portal).
+    for (const world of planet.worlds) {
+      const centre = new Vector3(...world.position);
+      expect(far.position.distanceTo(centre)).toBeGreaterThan(rig.camera.far);
+      expect(frustum.intersectsSphere(new Sphere(centre, planet.radiusMeters))).toBe(true);
+    }
+    // And the star field behind them, on the dome the room is drawn inside.
+    expect(far.position.distanceTo(starDomeCentre(orreryRoom)) + STAR_DOME_RADIUS).toBeLessThan(far.far);
+  });
+
   it("blends by the eased, intent-shaped depth once armed", () => {
     const rig = new Rig();
     rig.place(at(garden, 1.3), new Vector3(-1, 0, 0));
@@ -754,10 +821,38 @@ describe("the Orrery in the document", () => {
     expect(planet.worlds.map((w) => w.world)).toEqual(["adiabat-chi0", "adiabat-chi6", "adiabat-chi12"]);
     for (const world of planet.worlds) {
       expect(world.cutToward).toEqual(armillary.exit.position);
-      // Each world clears the walking plane and stays inside the star dome.
+      // Each world clears the walking plane; the star dome that holds them
+      // is the next test's, which measures it against the dome itself.
       expect(world.position[1] - planet.radiusMeters).toBeGreaterThan(5);
-      expect(Math.hypot(world.position[0] - orrery.center.x, world.position[2] - orrery.center.z)).toBeLessThan(200);
     }
+  });
+
+  it("stands inside a star dome that holds its worlds and still fits the eye's range from the furthest corner", () => {
+    const centre = starDomeCentre(orreryRoom);
+    const planet = orreryRoom.hangings[0]!;
+    if (planet.kind !== "planet") throw new Error("the Orrery's hanging is the planet");
+    // Wide enough: every world, to its far side, is inside the dome.
+    for (const world of planet.worlds) {
+      const out = new Vector3(...world.position).distanceTo(centre) + planet.radiusMeters;
+      expect(out).toBeLessThan(STAR_DOME_RADIUS);
+    }
+    // Narrow enough: from the corner a visitor can walk to, the dome's far
+    // wall is still within the eye's range. Beyond it the sky is cut away —
+    // a starless hole opens where the stars should be.
+    let corner = 0;
+    for (const x of [orreryRoom.bounds.min[0]!, orreryRoom.bounds.max[0]!]) {
+      for (const y of [orreryRoom.bounds.min[1]!, orreryRoom.bounds.max[1]!]) {
+        for (const z of [orreryRoom.bounds.min[2]!, orreryRoom.bounds.max[2]!]) {
+          corner = Math.max(corner, new Vector3(x, y, z).distanceTo(centre));
+        }
+      }
+    }
+    expect(corner + STAR_DOME_RADIUS).toBeLessThan(VIEW_FAR);
+    // And wide enough for the armillary: seen from the garden the dome is
+    // shrunk by the scale ratio, and below the lens's own radius it would
+    // stop covering it — stars would give way to the page's background in
+    // the middle of the portal.
+    expect(STAR_DOME_RADIUS / garden.ratio).toBeGreaterThan(garden.radius);
   });
 
   it("is a neighbour of the garden through the portal, both ways, and the garden's cells come with it", () => {

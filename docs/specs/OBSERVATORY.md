@@ -54,7 +54,14 @@ A portal is a blending of two spacetimes, not a plane with a frame
 outside it is an edgeless window: the far room is rendered live from a
 camera standing where the visitor's eye would stand over there, its offset
 from the far end multiplied by the scale ratio, so the Orrery's worlds show
-as globes a metre and a half across inside the armillary. Walking in, the
+as globes a metre and a half across inside the armillary. Its near and far
+planes carry that same ratio, never less than this room's range: a far
+camera a thousand metres out behind the palace's own six hundred sees
+nothing at all, which is what left the Orrery an empty universe through the
+armillary until 2026-09-17. The Orrery's star dome was shortened to 320 m
+the same day, for the other half of that sum: at 560 m its far wall passed
+the eye's range and a starless hole opened in the sky whenever the visitor
+looked back across the room. Walking in, the
 far view fades over the near one while that camera's scale slides from the
 ratio to one; at the sphere's core the body steps through, keeping its
 offset, and the far end stays quiet until the visitor has walked clear of
