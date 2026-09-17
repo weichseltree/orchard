@@ -102,7 +102,7 @@ export class Go {
     if (!this.#go(pose.x, pose.z, pose, room.id === body.room, room)) {
       if (room.id !== body.room) return;
       // No straight way to the viewing spot (a stair's cheek, say): turn to it from here.
-      this.#go(body.x, body.z, lookFrom(body.x, body.z, face.centre, body.y + eyeHeight));
+      this.#go(body.x, body.z, lookFrom(body.x, body.z, face.centre, body.y + eyeHeight), false, room);
     }
     const target = provenance.forHanging(hanging.id);
     const title = hanging.title || target?.title || hanging.id;
