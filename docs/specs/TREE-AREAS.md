@@ -181,9 +181,9 @@ commits presentable to an admin as *"these four rooms changed."*
 **Artefacts hang by path.** A declared artefact at `results/m04_planet/tape`
 hangs in the chamber generated for `results/m04_planet/`. Its kind picks the
 hanging kind the schema already has (`tape`, `video`, `still`, `planet`,
-`audio`). Position within the room: on the wall clockwise from the door, in
-declaration order, at 1.6 m eye height; a `tape` or `planet` takes the room's
-centre instead. No hand placement anywhere.
+`model`, `audio`). Position within the room: on the wall clockwise from the
+door, in declaration order, at 1.6 m eye height; a `tape`, `planet` or
+`model` takes the room's centre instead. No hand placement anywhere.
 
 **Prose is readable surface.** A directory's `README.md` renders on its
 gallery's end wall — the existing guide surface (`grove/src/ui/guide.ts`)
