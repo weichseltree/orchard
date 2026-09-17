@@ -403,7 +403,7 @@ export class Hud {
     document.addEventListener("keydown", (event) => {
       if (event.key !== "Escape" || event.defaultPrevented || this.#panel === null) return;
       // With the view focused, Escape is the world's: it walks on from a framed exhibit (control/go.ts).
-      if (!(event.target instanceof Node) || !this.root.contains(event.target)) return;
+      if (event.target !== document.body && (!(event.target instanceof Node) || !this.root.contains(event.target))) return;
       // A game over the world takes its own Escape (its dialog's cancel).
       if (document.querySelector("dialog[open]")) return;
       // Never pull a half-typed report or ban out from under the visitor.

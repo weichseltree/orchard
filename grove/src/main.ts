@@ -212,8 +212,16 @@ hud.definePanel("sources", {
   onOpen: () => {
     if (!provenance.open) provenance.show(view.camera);
   },
-  onClose: () => provenance.close(),
+  onClose: () => {
+    // Closing a framed exhibit's record is walking on from it.
+    if (!go?.release()) provenance.close();
+  },
 });
+// A framed exhibit shows its record: in the Sources panel, without taking the view's focus.
+provenance.onShow = () => {
+  if (hud.panel === "sources") hud.refreshPanelHeading();
+  else hud.openPanel("sources", { focus: false });
+};
 
 /** A browser game over the world: from the Guide anywhere in its room, or at its table (G, or the offer). */
 function openGameSurface(surface: GameSurfaceConfig): void {
@@ -503,7 +511,11 @@ const commands: Commands = {
     }
   },
   toggleMap: () => void toggleMap(),
-  release: () => go?.release(),
+  // Escape in the view: walks on from a glide or a framed exhibit, and
+  // otherwise shuts the panel beside the view (one opened with P or F).
+  release: () => {
+    if (!go?.release() && hud.panel !== null) hud.closePanel();
+  },
   // In a headset the offers are not on any screen: the trigger takes them.
   // A microphone cannot be allowed inside the session; sound can.
   confirm: () => {

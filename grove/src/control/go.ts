@@ -111,13 +111,16 @@ export class Go {
   }
 
   /** Back to free walking. */
-  release(): void {
+  /** Ends a glide or a framed exhibit. True if there was one to end. */
+  release(): boolean {
+    const active = this.#glide !== null || this.#framed !== null;
     this.#glide = null;
     this.marker.visible = false;
-    if (!this.#framed) return;
+    if (!this.#framed) return active;
     this.#framed = null;
     this.#readout.hidden = true;
     this.#options.provenance.close();
+    return active;
   }
 
   /** One frame. Walking ends it all; looking around gives the head back but keeps the glide. True while gliding. */

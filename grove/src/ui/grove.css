@@ -168,8 +168,8 @@ html, body {
 }
 
 .provenance h2 { display: none; } /* the column's header carries the title */
-.provenance dl { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 9px 16px; font-size: 12.5px; }
-.provenance dt { color: #7e8b9b; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; align-self: center; }
+.provenance dl { margin: 0; display: grid; grid-template-columns: fit-content(9rem) minmax(0, 1fr); gap: 9px 16px; font-size: 12.5px; }
+.provenance dt { overflow-wrap: anywhere; color: #7e8b9b; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; align-self: center; }
 .provenance dd { margin: 0; color: var(--text); word-break: break-word; }
 
 /* Which exhibit is framed, and the way on (control/go.ts). */
@@ -501,6 +501,12 @@ noscript a { color: var(--accent); }
     text-align: left;
   }
   .touch .top-left > .location:hover { color: inherit; }
+  /* A framed exhibit's readout under the room card, clear of Sound on at the right. */
+  .touch .exhibit-index {
+    top: calc(max(12px, env(safe-area-inset-top)) + var(--card-h, 90px) + 8px);
+    left: var(--gutter-l); right: calc(var(--gutter-r) + 110px);
+    transform: none; max-width: none; z-index: 3; border-radius: 0;
+  }
   .touch .top-left > .status {
     padding: 4px 14px 10px;
     background: transparent; border: 0; border-radius: 0; backdrop-filter: none;
@@ -833,6 +839,16 @@ noscript a { color: var(--accent); }
 #hud:not(.phone-layout) .hint { bottom: 104px; max-width: calc(100vw - var(--content-left) - 32px); border-radius: 0; }
 #hud:not(.phone-layout) .game-offer { bottom: 160px; border-radius: 0; }
 #hud:not(.phone-layout) .human-check { bottom: 104px; }
+/* A framed exhibit's readout takes the hint's place over the tape; its keys are in it. */
+#hud:not(.phone-layout) .exhibit-index {
+  top: auto; bottom: 104px; z-index: 3;
+  left: calc(var(--content-left) + (100vw - var(--content-left) - var(--margin)) / 2);
+  max-width: calc(100vw - var(--content-left) - 32px);
+  border-radius: 0;
+}
+#hud:has(> .exhibit-index:not([hidden])) .hint { display: none; }
+/* The crosshair stays in sight over an open column. */
+#hud.locked::after { z-index: 3; }
 
 /* The panels' own content, as the design lays it out. */
 .people .you-form { margin: 0 0 20px; }

@@ -363,6 +363,13 @@ async function appAudit(profile) {
       const timeBefore = Number(await slider.inputValue());
       await page.keyboard.press('ArrowRight');
       check(`${name}: arrow key scrubs instead of walking`, Number(await slider.inputValue()) > timeBefore && JSON.stringify(await page.evaluate(() => ({ x: window.grove.body.x, z: window.grove.body.z }))) === JSON.stringify(bodyBefore));
+      // N frames the room's next exhibit: its record opens in Sources, beside the view.
+      await page.locator('#stage').focus();
+      await page.keyboard.press('n');
+      const framed = await page.locator('#panel-column[data-panel=sources]').waitFor({ timeout: 15000 }).then(() => true, () => false);
+      check(`${name}: framing an exhibit opens its record in Sources`, framed && await page.locator('#stage').evaluate((el) => document.activeElement === el));
+      await page.keyboard.press('Escape');
+      check(`${name}: Escape in the view walks on and closes the record`, await page.locator('#panel-column').waitFor({ state: 'hidden', timeout: 10000 }).then(() => true, () => false));
       await page.locator('#stage').focus();
       await page.keyboard.press('f');
       await page.locator('.perf:not([hidden])').waitFor();
