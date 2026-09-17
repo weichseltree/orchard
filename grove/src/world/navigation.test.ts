@@ -131,6 +131,16 @@ describe("apertures and rooms", () => {
     expect(roomAt(mansion, 40, 0)).toBeUndefined();
     expect(insideRoom(hall, 9.9, 0, BODY_RADIUS)).toBe(false);
   });
+
+  it("tells rooms that stand over one another apart by the body's room, then by its feet", () => {
+    // The club is under the wing: the same footprint, five metres down.
+    expect(roomAt(mansion, 0, -40, 0, 1.5)?.id).toBe("orangery");
+    expect(roomAt(mansion, 0, -40, 0, -5)?.id).toBe("club");
+    expect(roomAt(mansion, 0, -40, 0, -5, "orangery")?.id).toBe("orangery");
+    expect(roomAt(mansion, 0, -40, 0, 1.5, "club")?.id).toBe("club");
+    // A preference for a room that does not hold the point is ignored.
+    expect(roomAt(mansion, 0, -40, 0, -5, "hall")?.id).toBe("club");
+  });
 });
 
 describe("wallPieces", () => {

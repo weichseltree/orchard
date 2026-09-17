@@ -96,6 +96,24 @@
       "lookFor": "Camine hacia un mundo y observe su cara cortada; el brillo marca la materia más caliente, una codificación de la temperatura, no luz.",
       "limit": "Una sola simulación grabada por mundo, nada interpolado. Un centro pesado no basta por sí solo para separar la desmezcla del enfriamiento común como causa."
     },
+    "foyer": {
+      "title": "foyer",
+      "kicker": "¿Quién pasa la puerta?",
+      "intro": "La escalera de la sala de world-engine baja hasta el foyer del sótano. Dos puertas siguen adelante: el club, que solo se abre al visitante que tiene el micrófono y el sonido encendidos, y más allá un escenario reservado a los visores. Las propuestas en su pantalla encienden ambos.",
+      "lookFor": "La barandilla de latón de la larga escalera y los faroles junto a la puerta del club: arden cálidos, mientras que los colores del club son fríos."
+    },
+    "club": {
+      "title": "club",
+      "kicker": "¿Cuánto suena un sótano abovedado?",
+      "intro": "Un club bajo el ala norte: una bóveda baja, una pista de baile de baldosas iluminadas, una barra a lo largo del muro este, reservados a lo largo del oeste, un escenario al fondo. La música será una emisión en directo; hasta que suene, las luces respiran por su cuenta.",
+      "lookFor": "La bola de espejos sobre la pista y las dos líneas de color a lo largo de la bóveda; laten con la música cuando hay música."
+    },
+    "stage": {
+      "title": "escenario",
+      "kicker": "¿Quién canta?",
+      "intro": "Un peldaño por encima de la pista, enmarcado por el proscenio e iluminado de frente. El escenario es para cantantes con visor: solo se abre a una sesión inmersiva, y salir de ella le devuelve a la pista. El karaoke funcionará desde aquí en cuanto exista el enlace de voz.",
+      "lookFor": "El pie de micrófono en el centro y las candilejas a lo largo del borde: el cantante se sitúa donde se encuentran las dos líneas del suelo."
+    },
     "arcedit": {
       "title": "arcedit",
       "kicker": "¿Puede una máquina aprender a resolver rompecabezas ARC como una persona frente a una pantalla?",

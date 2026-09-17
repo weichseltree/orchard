@@ -19,6 +19,9 @@ export function destinations(mansion: Mansion, room: Room): Room[] {
 export class VisitorGuide {
   #dialog = document.createElement("dialog");
   #location = document.createElement("button");
+  #locationLine = document.createElement("span");
+  #locationKicker = document.createElement("span");
+  #locationQuestion = document.createElement("span");
   #title = document.createElement("h1");
   #kicker = document.createElement("p");
   #intro = document.createElement("p");
@@ -42,6 +45,8 @@ export class VisitorGuide {
   #onGameSurface: (surface: GameSurface) => void;
   #onExplore: () => void;
   #onGo: (roomId: string) => boolean;
+  /** Told when the dialog opens or closes, so the phone dock can show it. */
+  onOpenChange: (open: boolean) => void = () => undefined;
 
   constructor(
     root: HTMLElement,
@@ -62,11 +67,18 @@ export class VisitorGuide {
     this.#location.type = "button";
     this.#location.addEventListener("click", () => this.show());
     this.#location.setAttribute("aria-haspopup", "dialog");
+    // One sentence on a wide screen; on a phone the same button is the room
+    // card, kicker over question. The CSS shows one form or the other, and a
+    // hidden span is not part of the button's accessible name.
+    this.#locationLine.className = "location-line";
+    this.#locationKicker.className = "location-kicker";
+    this.#locationQuestion.className = "location-question";
+    this.#location.append(this.#locationLine, this.#locationKicker, this.#locationQuestion);
     root.querySelector(".top-left")?.prepend(this.#location);
 
     const help = document.createElement("button");
     help.type = "button";
-    help.className = "btn";
+    help.className = "btn guide-open";
     help.textContent = "Guide";
     help.setAttribute("aria-haspopup", "dialog");
     help.addEventListener("click", () => this.show());
@@ -185,7 +197,16 @@ export class VisitorGuide {
     controls.append(controlSummary, controlList);
     this.#dialog.append(this.#kicker, this.#title, mode, this.#intro, actions, this.#look,
       this.#limitation, this.#evidence, this.#rooms, this.#doorSection, this.#games, controls);
+    // A phone has no Escape key: the sheet gets a close button of its own.
+    const close = document.createElement("button");
+    close.type = "button";
+    close.className = "guide-close";
+    close.setAttribute("aria-label", "Close the guide");
+    close.innerHTML = '<svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15"></path></svg>';
+    close.addEventListener("click", () => this.#dialog.close());
+    this.#dialog.prepend(close);
     this.#dialog.addEventListener("close", () => {
+      this.onOpenChange(false);
       try { localStorage.setItem(SEEN_KEY, "1"); } catch { /* Visiting does not need storage. */ }
     });
     root.append(this.#dialog);
@@ -196,7 +217,10 @@ export class VisitorGuide {
     if (!room) return;
     const title = room.title || room.id;
     const exhibit = exhibitContent(room, this.#demo);
-    this.#location.textContent = `You are in ${title.replace(/^The /, "the ")} · Guide`;
+    this.#locationLine.textContent = `You are in ${title.replace(/^The /, "the ")} · Guide`;
+    const ordinal = RESEARCH_ORDER.findIndex((stop) => stop === id);
+    this.#locationKicker.textContent = ordinal >= 0 ? `Room ${String(ordinal + 1).padStart(2, "0")} · ${title}` : title;
+    this.#locationQuestion.textContent = exhibit.question;
     this.#kicker.textContent = exhibit.source ? `${title} / ${exhibit.source}` : title;
     this.#title.textContent = exhibit.question;
     this.#intro.textContent = exhibit.introduction;
@@ -274,7 +298,9 @@ export class VisitorGuide {
 
   show(): void {
     if (document.pointerLockElement) document.exitPointerLock();
-    if (!this.#dialog.open) this.#dialog.showModal();
+    if (this.#dialog.open) return;
+    this.#dialog.showModal();
+    this.onOpenChange(true);
   }
 
   welcome(): void {

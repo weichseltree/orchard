@@ -96,6 +96,24 @@
       "lookFor": "Cammini verso un mondo e osservi la sua faccia tagliata; il bagliore segna la materia più calda, una codifica della temperatura, non luce.",
       "limit": "Una sola simulazione registrata per mondo, nulla di interpolato. Un centro pesante non basta da solo a separare la smiscelazione dal raffreddamento comune come causa."
     },
+    "foyer": {
+      "title": "foyer",
+      "kicker": "Chi passa la porta?",
+      "intro": "La scala dalla sala di world-engine scende nel foyer della cantina. Due porte proseguono: il club, che si apre solo al visitatore con microfono e audio accesi, e oltre un palco riservato ai visori. Le proposte sullo schermo accendono entrambi.",
+      "lookFor": "Il corrimano d'ottone della lunga scala e le lanterne accanto alla porta del club: ardono calde, mentre i colori del club sono freddi."
+    },
+    "club": {
+      "title": "club",
+      "kicker": "Quanto suona una cantina a volta?",
+      "intro": "Un club sotto l'ala nord: una volta bassa, una pista da ballo di piastrelle luminose, un bancone lungo la parete est, séparé lungo quella ovest, un palco in fondo. La musica sarà una diretta; finché non suona, le luci respirano da sole.",
+      "lookFor": "La sfera a specchi sopra la pista e le due linee di colore lungo la volta; pulsano con la musica, quando c'è musica."
+    },
+    "stage": {
+      "title": "palco",
+      "kicker": "Chi canta?",
+      "intro": "Un gradino sopra la pista, incorniciato dal proscenio e illuminato di fronte. Il palco è per chi canta con il visore: si apre solo a una sessione immersiva, e lasciarla riporta in pista. Il karaoke partirà da qui appena esisterà il collegamento vocale.",
+      "lookFor": "L'asta del microfono al centro e le luci di ribalta lungo il bordo: chi canta sta dove le due linee del pavimento si incontrano."
+    },
     "arcedit": {
       "title": "arcedit",
       "kicker": "Una macchina può imparare a risolvere i rompicapi ARC come una persona davanti a uno schermo?",

@@ -159,6 +159,16 @@ export class ChatPanel {
     this.root.hidden = true;
   }
 
+  /** Folded away by the visitor (the phone dock's Chat tab); lines still arrive. */
+  get folded(): boolean {
+    return this.root.classList.contains("chat-folded");
+  }
+
+  setFolded(folded: boolean): void {
+    if (folded) this.close();
+    this.root.classList.toggle("chat-folded", folded);
+  }
+
   /** Close the line and hand the world back; the panel itself stays readable. */
   close(): void {
     this.#input.blur();

@@ -62,6 +62,10 @@ const profiles = [
   { name: 'phone', width: 390, height: 844, touch: true },
   { name: 'small-phone', width: 320, height: 780, touch: true },
   { name: 'phone-landscape', width: 844, height: 390, touch: true },
+  // Older 16:9 phones turned sideways: 640 wide, so only the height says landscape.
+  { name: 'small-landscape', width: 640, height: 360, touch: true },
+  // An iPhone SE in Safari once its bars are counted.
+  { name: 'short-phone', width: 375, height: 553, touch: true },
 ];
 const android = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/153.0.0.0 Mobile Safari/537.36';
 const tags = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
@@ -266,19 +270,50 @@ async function appAudit(profile) {
     await page.keyboard.press('Escape');
     await page.locator('.scrubber:not([hidden])').waitFor({ timeout: 30000 });
     const layout = await page.evaluate(() => {
+      // The demo has no link, so the chat stays hidden; show it to measure where it would sit.
+      const chat = document.querySelector('.chat');
+      const chatHidden = chat?.hidden;
+      if (chat) chat.hidden = false;
+      // A room that has been talking: fill the log so the chat is measured at its cap.
+      const lines = [];
+      for (let i = 0; i < 12; i++) {
+        const line = document.createElement('li');
+        line.textContent = `line ${i} of a conversation that has been going on for a while`;
+        lines.push(line);
+      }
+      chat?.querySelector('.chat-log')?.append(...lines);
+      // The demo has no voice; a stand-in Hold to talk button measures the chat with its second row.
+      const mic = document.createElement('button');
+      mic.type = 'button';
+      mic.className = 'chat-mic';
+      mic.textContent = 'Hold to talk';
+      chat?.querySelector('.chat-form')?.append(mic);
       const rect = (selector) => {
         const el = document.querySelector(selector);
         if (!el || !el.getClientRects().length) return null;
         const r = el.getBoundingClientRect();
         return { x: r.x, y: r.y, right: r.right, bottom: r.bottom, width: r.width, height: r.height };
       };
-      return { width: innerWidth, height: innerHeight, transport: rect('.scrubber'), stick: rect('.stick'), top: rect('.top-right'), location: rect('.location'), notices: rect('.notices') };
+      const measured = { width: innerWidth, height: innerHeight, transport: rect('.scrubber'), stick: rect('.stick'), top: rect('.top-right'), location: rect('.location'), notices: rect('.notices'), chat: rect('.chat'), dock: rect('.dock') };
+      measured.chatLogHeight = chat?.querySelector('.chat-log')?.clientHeight ?? null;
+      for (const line of lines) line.remove();
+      mic.remove();
+      if (chat) chat.hidden = chatHidden;
+      return measured;
     });
     report.measurements.push({ kind: 'app-layout', profile: profile.name, ...layout });
     for (const [part, rect] of Object.entries(layout).filter(([, value]) => value && typeof value === 'object')) {
       check(`${name}: ${part} stays in viewport`, rect.x >= -1 && rect.y >= -1 && rect.right <= layout.width + 1 && rect.bottom <= layout.height + 1, rect);
     }
-    if (profile.touch) check(`${name}: tape controls clear the joystick`, overlapArea(layout.transport, layout.stick) === 0);
+    if (profile.touch) {
+      check(`${name}: tape controls clear the joystick`, overlapArea(layout.transport, layout.stick) === 0);
+      check(`${name}: the dock is shown`, layout.dock !== null);
+      check(`${name}: the room card clears the joystick`, overlapArea(layout.location, layout.stick) === 0);
+      check(`${name}: the dock clears the joystick and tape controls`, overlapArea(layout.dock, layout.stick) === 0 && overlapArea(layout.dock, layout.transport) === 0);
+      if (layout.chat) check(`${name}: chat clears the joystick, tape controls and top buttons`, overlapArea(layout.chat, layout.stick) === 0 && overlapArea(layout.chat, layout.transport) === 0 && overlapArea(layout.chat, layout.top) === 0 && overlapArea(layout.chat, layout.location) === 0);
+      if (layout.chat) check(`${name}: a full chat still shows lines`, layout.chatLogHeight >= 50, layout.chatLogHeight);
+      check(`${name}: notices have room under the room card`, layout.notices !== null && layout.notices.height >= 40, layout.notices);
+    }
     await page.getByRole('button', { name: 'Guide', exact: true }).focus();
     const playingBefore = await page.evaluate(() => window.grove.world.tape.playing);
     await page.keyboard.press('Space');
@@ -464,8 +499,10 @@ async function recoveryAudit() {
   } finally { await context.close(); }
 }
 
-async function gameSurfaceAudit() {
-  const { context, page, events } = await newPage(profiles[0], { gameFixture: true });
+async function gameSurfaceAudit(profile) {
+  const { context, page, events } = await newPage(profile, { gameFixture: true });
+  // The desktop run keeps the check names it has always had.
+  const label = profile.touch ? `game surface ${profile.name}` : 'game surface';
   try {
     await ready(page, '/mind/?demo&room=orangery');
     await page.getByRole('button', { name: 'Open FTL Chess' }).click();
@@ -473,10 +510,12 @@ async function gameSurfaceAudit() {
     await surface.waitFor();
     await page.getByText('Game ready', { exact: true }).waitFor();
     const frame = page.frameLocator('.game-surface-frame');
-    await frame.getByRole('button', { name: 'Start game' }).evaluate((button) => button.click());
+    // A real click, not element.click(): the overlay once inherited
+    // pointer-events: none from #hud, and only a hit-tested click sees that.
+    await frame.getByRole('button', { name: 'Start game' }).click({ timeout: 10000 });
     await page.getByText('Game ended', { exact: true }).waitFor();
-    check('game surface: lifecycle events reach the exact parent', (await page.evaluate(() => window.grove.metrics().gameSurface.lastEvent)) === 'game-ended');
-    await axeAudit(page, 'FTL Chess game surface');
+    check(`${label}: lifecycle events reach the exact parent`, (await page.evaluate(() => window.grove.metrics().gameSurface.lastEvent)) === 'game-ended');
+    await axeAudit(page, profile.touch ? `FTL Chess game surface ${profile.name}` : 'FTL Chess game surface');
     await page.getByRole('button', { name: 'Close', exact: true }).click();
     // `dialog.close()` fires its close event as a QUEUED TASK, and the handler
     // that removes the iframe and restores focus runs there (ui/game-surface.ts
@@ -488,8 +527,8 @@ async function gameSurfaceAudit() {
     // name rather than as an error with a stack.
     await page.locator('.game-surface-frame').waitFor({ state: 'detached', timeout: 10000 }).catch(() => undefined);
     await page.waitForFunction(() => document.activeElement === document.getElementById('stage'), null, { timeout: 10000 }).catch(() => undefined);
-    check('game surface: close tears down the iframe and restores the view', await page.locator('.game-surface-frame').count() === 0 && await page.locator('#stage').evaluate((el) => document.activeElement === el));
-    check('game surface: no script or console errors', events.pageErrors.length + events.consoleErrors.length === 0, events);
+    check(`${label}: close tears down the iframe and restores the view`, await page.locator('.game-surface-frame').count() === 0 && await page.locator('#stage').evaluate((el) => document.activeElement === el));
+    check(`${label}: no script or console errors`, events.pageErrors.length + events.consoleErrors.length === 0, events);
   } finally { await context.close(); }
 }
 
@@ -527,7 +566,8 @@ try {
   if (['all', 'landing'].includes(args.scope)) for (const profile of profiles.slice(0, 3)) await landingAudit(profile);
   if (!args.dist && ['all', 'app'].includes(args.scope)) {
     for (const profile of profiles) await appAudit(profile);
-    await gameSurfaceAudit();
+    await gameSurfaceAudit(profiles[0]);
+    await gameSurfaceAudit(profiles[1]);
     await recoveryAudit();
   }
   if (!args.dist && ['all', 'app', 'memory'].includes(args.scope)) await roomTourAudit();

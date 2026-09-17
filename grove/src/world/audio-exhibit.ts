@@ -59,6 +59,8 @@ export interface AudioExhibitOptions {
   /** The resolved bundle base for an archived hanging; ignored for a live one. */
   archivedBase?: string | null;
   tier: DeviceTier;
+  /** An AudioContext to join, so one "Sound on" runs every graph (audio/gate.ts); the field makes its own when absent. */
+  context?: AudioContext;
   /** Supplies the sound of one node. None ships (`audio/field.ts` says why). */
   voice?: VoiceFactory;
   onNotice?: (message: string) => void;
@@ -114,7 +116,7 @@ export class AudioExhibit {
       }
     }
     const voice = options.voice ?? voices?.factory;
-    const field = new AudioField({ tier: options.tier, nodes, ...(voice ? { voice } : {}), ...(onNotice ? { onNotice } : {}) });
+    const field = new AudioField({ tier: options.tier, nodes, ...(options.context ? { context: options.context } : {}), ...(voice ? { voice } : {}), ...(onNotice ? { onNotice } : {}) });
 
     // The stream is allowed to fail on its own: a room with a dead exhibit is
     // a quiet room, not a broken one.

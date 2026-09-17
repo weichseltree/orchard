@@ -289,7 +289,7 @@ export class XrControls {
 
     if (this.#edge("trigger", pressed(right, BUTTON_TRIGGER) || pressed(left, BUTTON_TRIGGER))) {
       if (askMenu?.isOpen()) askMenu.onEvent("choose");
-      else this.#commands.togglePlay();
+      else if (!this.#commands.confirm?.()) this.#commands.togglePlay();
     }
     if (this.#edge("menu", pressed(right, BUTTON_MENU) || pressed(left, BUTTON_MENU))) {
       this.#commands.toggleProvenance();
@@ -348,7 +348,12 @@ export class XrControls {
     }
   }
 
-  /** Where a straight ray out of the controller meets the floor plane. */
+  /**
+   * Where a straight ray out of the controller meets the floor plane: the
+   * plane of the rig's own feet, since rooms stand at different heights and
+   * the club is five metres under the wing. A ray to world y = 0 would find
+   * nothing from any floor below it.
+   */
   #aim(controller: Group | undefined): void {
     if (!controller) return;
     for (let i = 0; i < this.#rays.length; i++) {
@@ -363,12 +368,13 @@ export class XrControls {
       this.#hasTarget = false;
       return;
     }
-    const distance = -this.#origin.y / this.#direction.y;
+    const floorY = this.#rig.position.y;
+    const distance = (floorY - this.#origin.y) / this.#direction.y;
     this.#target.copy(this.#origin).addScaledVector(this.#direction, distance);
-    this.#target.y = 0;
+    this.#target.y = floorY;
     this.#hasTarget = distance > 0.3 && distance < 20;
     this.marker.visible = this.#hasTarget;
-    if (this.#hasTarget) this.marker.position.copy(this.#target).setY(0.02);
+    if (this.#hasTarget) this.marker.position.copy(this.#target).setY(floorY + 0.02);
   }
 
   #edge(key: string, down: boolean): boolean {
