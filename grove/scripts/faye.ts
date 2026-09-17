@@ -37,7 +37,7 @@ import { parseArgs } from "node:util";
 import type { Identity } from "spacetimedb";
 import { DbConnection } from "../src/module_bindings";
 import { connectionPolicy } from "../src/faye/local";
-import { readFeed, type TreeTitles } from "../src/faye/events";
+import { fitToRoom, readFeed, type TreeTitles } from "../src/faye/events";
 import {
   NEW_WATCH, feedRequest, feedTimeoutMs, planFeeds, takeReadings,
   type FeedSource, type Watch,
@@ -246,7 +246,11 @@ async function main(): Promise<void> {
   let watch: Watch = NEW_WATCH;
 
   // Everything she says goes through one queue (src/faye/listen.ts).
-  const speaker = new Speaker((text) => conn.reducers.say({ text }), {
+  // Every line she says goes through the room's length, not just the ones
+  // `announce` built: her replies and the peer notices are written here and
+  // can run long too, and the module would clip any of them at 280 silently
+  // and mid-word (src/faye/events.ts, `fitToRoom`).
+  const speaker = new Speaker((text) => conn.reducers.say({ text: fitToRoom(text) }), {
     gapMs: CHAT_MIN_GAP_MS + 200,
     // Monotonic: a wall clock stepped forward by NTP would end a gap early.
     now: () => performance.now(),

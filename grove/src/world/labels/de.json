@@ -31,8 +31,9 @@
     "orangery": {
       "title": "Orangerie",
       "kicker": "Lassen Sie den Blick wandern.",
-      "intro": "Die Orangerie verbindet die Kammer von world-engine mit der Terrasse. Sie ist ein Ort zwischen den Exponaten: Folgen Sie den offenen Türen, blicken Sie zu den Kammern zurück oder treten Sie hinaus unter den Himmel. Hinten steht ein Schachtisch: Treten Sie heran, oder öffnen Sie es über den Guide.",
-      "lookFor": "Die drei Türen zur Gartenseite führen alle auf die Terrasse."
+      "intro": "Die Orangerie verbindet die Kammer von world-engine mit der Terrasse. Sie ist ein Ort zwischen den Exponaten: Folgen Sie den offenen Türen, blicken Sie zu den Kammern zurück oder treten Sie hinaus unter den Himmel. Hinten steht ein Schachtisch: Treten Sie heran, oder öffnen Sie es über den Guide. Sechs Orbitale stehen der Länge nach im Raum, jedes auf einem Sockel, dessen Höhe seine eigene Energie ist, zu neun Zehnteln eines Meters je Hartree. Das zweite und das dritte stehen gleich hoch, weil sie dieselbe Energie haben.",
+      "lookFor": "Die drei Türen zur Gartenseite führen alle auf die Terrasse.",
+      "limit": "Dies sind wechselwirkungsfreie Elektronen in einem von uns gewählten Topf, kein gemessenes Molekül; die Farben sind Bewegungsenergiedichte und nichts, was eine Kamera aufnehmen könnte."
     },
     "court-north": {
       "title": "Nordhof",
@@ -240,38 +241,44 @@
     "quantumflow": {
       "title": "quantumflow",
       "kicker": "Warum nimmt ein Elektron nur bestimmte Energien an?",
-      "intro": "Dies ist der Schießstand. Drehen Sie am Regler, und eine Welle läuft von der nahen Wand aus tastend durch den Raum. Bei fast jeder Einstellung fliegt sie auseinander, bevor sie die ferne Wand erreicht. Bei wenigen legt sie sich flach. Diese wenigen hat niemand ausgewählt.",
-      "lookFor": "Die wenigen Einstellungen, bei denen die Welle flach liegt, statt auseinanderzufliegen."
+      "intro": "Dies ist der Schießstand. Drehen Sie am Regler, und eine Welle läuft von der nahen Wand aus tastend durch den Raum. Bei fast jeder Einstellung fliegt sie auseinander, bevor sie die ferne Wand erreicht. Bei wenigen legt sie sich flach. Diese wenigen hat niemand ausgewählt. Das Band auf seinem Ständer ist der Versuch selbst. Ziehen Sie am Regler, und Sie gehen der Reihe nach durch Probeenergien; am fernen Ende reißt die Welle bei fast jeder von ihnen nach oben weg.",
+      "lookFor": "Die wenigen Einstellungen, bei denen die Welle flach liegt, statt auseinanderzufliegen.",
+      "limit": "Der Regler ist Probeenergie, keine Zeit. Nichts in diesem Band bewegt sich; jedes Bild ist eine eigene Vermutung, in aufsteigender Folge gezeigt."
     },
     "quantumflow/cloud": {
       "title": "Die Wolke",
       "kicker": "Sechs Wellen hinein, eine Wolke heraus: Was geht verloren?",
-      "intro": "Die Orbitale kommen, jedes mit eigener Farbe und eigener Gestalt. Man addiert sie, und die Farben verblassen zu einer einzigen fahlen Wolke. Alles, was die sechs wussten, steckt noch hier drin, und die Wand dahinter wird es beweisen.",
-      "lookFor": "Der Augenblick, in dem die Farben verschwinden, und der Potentialtopf, der danach an der Wand entsteht."
+      "intro": "Die Orbitale kommen, jedes mit eigener Farbe und eigener Gestalt. Man addiert sie, und die Farben verblassen zu einer einzigen fahlen Wolke. Alles, was die sechs wussten, steckt noch hier drin, und die Wand dahinter wird es beweisen. Die Dichte liegt hier als Relief, in den Tälern des Topfes, der sie gemacht hat. Durch das Portal können Sie in derselben Wolke stehen, bei einem Zehntel dieses Maßstabs.",
+      "lookFor": "Der Augenblick, in dem die Farben verschwinden, und der Potentialtopf, der danach an der Wand entsteht.",
+      "limit": "Jede Schale fasst einen angegebenen Anteil der Elektronen, am gelösten Gitter gemessen. Die besetzte Menge ist eine ganze Schale, und darum hängt die Wolke von keiner Wahl ab."
     },
     "quantumflow/bowl": {
       "title": "Die Schüssel",
       "kicker": "Wie findet man den tiefsten Punkt einer Landschaft, die man nicht sieht?",
-      "intro": "Zwei Flächen stehen nebeneinander. Die eine ist eine Schüssel: Wo immer Sie beginnen, führt der Weg bergab zum einzigen tiefsten Punkt. Die andere ist bucklig, und bergab stranden Sie vielleicht in einer Mulde, die nicht der tiefste Punkt ist. Nur der einen ist zu trauen.",
-      "lookFor": "Die Mulden der zweiten Fläche, die nicht ihr tiefster Punkt sind."
+      "intro": "Zwei Flächen stehen nebeneinander. Die eine ist eine Schüssel: Wo immer Sie beginnen, führt der Weg bergab zum einzigen tiefsten Punkt. Die andere ist bucklig, und bergab stranden Sie vielleicht in einer Mulde, die nicht der tiefste Punkt ist. Nur der einen ist zu trauen. Zwei Flächen stehen nebeneinander, dasselbe Netz und derselbe Startwert, nur eine Bedingung weggenommen. Grüne Bänder zeigen die Sehnen, die halten, rote die, die versagen, und Sie können sie von Ihrem Platz aus zählen.",
+      "lookFor": "Die Mulden der zweiten Fläche, die nicht ihr tiefster Punkt sind.",
+      "limit": "Der Schnitt durch den Dichteraum ist ein gerader, und genau das lässt das Bild als Beweis gelten. Keines der beiden Netze ist trainiert; die Zusicherung steckt im Bau des einen."
     },
     "quantumflow/inversion": {
       "title": "Die Umkehrung",
       "kicker": "Verrät die Wolke für sich allein die Kräfte, die sie geformt haben?",
-      "intro": "Hier wird die Behauptung geprüft. An der einen Wand der Potentialtopf, in dem ein Elektron wirklich saß. An der anderen der Topf, allein aus der Wolke rekonstruiert, ohne je die Wellen zu sehen. Dazwischen hängt die Differenz, in voller Größe, so groß sie auch ausfällt.",
-      "lookFor": "Der Abstand zwischen beiden Töpfen, das ganze Maß der Behauptung."
+      "intro": "Hier wird die Behauptung geprüft. An der einen Wand der Potentialtopf, in dem ein Elektron wirklich saß. An der anderen der Topf, allein aus der Wolke rekonstruiert, ohne je die Wellen zu sehen. Dazwischen hängt die Differenz, in voller Größe, so groß sie auch ausfällt. Hier hängt noch nichts außer der Gleichung. Die Zahl, für die dieser Raum gebaut ist, wurde noch nicht gemessen: das Funktional ist umgesetzt und geprüft, aber noch nicht gegen den Vergleichssatz trainiert.",
+      "lookFor": "Der Abstand zwischen beiden Töpfen, das ganze Maß der Behauptung.",
+      "limit": "Dieser Raum stellt eine Behauptung auf, die er noch nicht mit einer Zahl stützen kann. Scheitert die Rekonstruktion, hängt das Ergebnis hier als negatives, mit seiner Zahl auf der Tafel."
     },
     "quantumflow/flow": {
       "title": "Der Fluss",
       "kicker": "Was geschah, als das Projekt eine Regel hinzufügte, die sicher helfen sollte?",
-      "intro": "Eine Wolke aus Teilchen wird von ihrem Ausgangspunkt zu ihrem Ziel getragen. Das Projekt fügte eine Nebenbedingung hinzu, an die es aus guten Gründen glaubte, und maß, wie sie den Weg bei jeder Stärke verschlechterte. Die Kurve daneben ist dieses Ergebnis.",
-      "lookFor": "Die Kurve an der Wand: Sie steigt, wo sie fallen sollte."
+      "intro": "Eine Wolke aus Teilchen wird von ihrem Ausgangspunkt zu ihrem Ziel getragen. Das Projekt fügte eine Nebenbedingung hinzu, an die es aus guten Gründen glaubte, und maß, wie sie den Weg bei jeder Stärke verschlechterte. Die Kurve daneben ist dieses Ergebnis. Das Band trägt viertausend Teilchen von ihrem Anfang zu ihrem Ziel, unter der Grundeinstellung, über die nichts befördert wurde. Die Gleichung daneben nennt die Auflage, die sich nicht ausgezahlt hat.",
+      "lookFor": "Die Kurve an der Wand: Sie steigt, wo sie fallen sollte.",
+      "limit": "Die Höhe dieses Flusses ist ein Potential, das nur bis auf eine Verschiebung festliegt; zwei Flüsse aus verschiedenen Läufen lassen sich darum nicht über die Höhe vergleichen. Darum hängt hier nur einer."
     },
     "quantumflow/inside": {
       "title": "In der Wolke",
       "kicker": "Wie sieht ein einzelnes Elektronenorbital von innen aus?",
-      "intro": "Sie sind auf die Größe der Wolke geschrumpft. Der Dunst um Sie herum ist ein Orbital, dort gezeichnet, wo seine Welle am stärksten ist. Nahe der Mitte liegt eine Fläche, die Sie nicht durchqueren können, denn dort ist die Welle genau null.",
-      "lookFor": "Die Fläche, durch die Sie nicht gehen können, wo die Welle auf null fällt."
+      "intro": "Sie sind auf die Größe der Wolke geschrumpft. Der Dunst um Sie herum ist ein Orbital, dort gezeichnet, wo seine Welle am stärksten ist. Nahe der Mitte liegt eine Fläche, die Sie nicht durchqueren können, denn dort ist die Welle genau null. Sie sind durch das Portal gekommen, bei einem Zehntel des Maßstabs des Palastes. Die Gleichung an der Wand ist alles, wofür dieser Raum da ist: eine Welle kann dort verschwinden, wo ihre eigene Wolke es nicht tut.",
+      "lookFor": "Die Fläche, durch die Sie nicht gehen können, wo die Welle auf null fällt.",
+      "limit": "Die Wolke selbst ist hier noch nicht modelliert; was hier steht, ist der Satz, auf dem sie ruht. Eine Summe von Wellen, die jede irgendwo verschwinden, muss nirgends verschwinden."
     }
   },
   "exhibits": {
@@ -398,6 +405,86 @@
     "arcedit.inside.canvas": {
       "title": "Die Leinwand im Maßstab einer Zelle",
       "caption": "Der geskriptete Lehrer kopiert ein vielfarbiges Fünf-mal-fünf-Gitter in 114 Klicks: zur Palette, zur Zelle, zurück zur Palette. Das zeigt die Aufgabe durch das Programm, das sie definiert; kein gelernter Agent löst die vielfarbige Kopie bisher."
+    },
+    "quantumflow.orbital.0": {
+      "title": "Der Grundzustand",
+      "caption": "Der niedrigste Zustand, den eine Welle in diesem Topf annehmen kann. Eine Keule, nirgends ein Knoten, die geringste Krümmung: golden, wo die Welle positiv ist, und ihre Höhe hier ist ihre Energie. Gelöst auf achtundvierzig Punkten je Achse, die Farbe ist die Bewegungsenergiedichte."
+    },
+    "quantumflow.orbital.1": {
+      "title": "Der erste angeregte Zustand",
+      "caption": "Eine Knotenfläche, wo die Welle durch genau nichts hindurchgeht und die beiden Farben aufeinandertreffen. Diese Fläche kostet Energie, und darum steht dieser Zustand höher als der vorige. Gelöst auf achtundvierzig Punkten je Achse, die Farbe ist die Bewegungsenergiedichte."
+    },
+    "quantumflow.orbital.2": {
+      "title": "Der zweite Zustand",
+      "caption": "Einer eines entarteten Paares: er teilt seine Energie genau mit dem Nachbarn, und darum stehen die beiden gleich hoch. Seine Gestalt ist gemessen; wohin er zeigt, ist eine Wahl. Gelöst auf achtundvierzig Punkten je Achse, die Farbe ist die Bewegungsenergiedichte."
+    },
+    "quantumflow.orbital.3": {
+      "title": "Der dritte Zustand",
+      "caption": "Der Zwilling des Nachbarn, auf zwölf Stellen bei derselben Energie. Dieselbe Gestalt, gedreht. Wohin die beiden jeweils zeigen, entscheidet dieser Topf nicht. Gelöst auf achtundvierzig Punkten je Achse, die Farbe ist die Bewegungsenergiedichte."
+    },
+    "quantumflow.orbital.4": {
+      "title": "Der vierte Zustand",
+      "caption": "Mehr Knoten als die Zustände darunter, und mit ihnen mehr Krümmung. Die hellen Bänder schmiegen sich an die Knotenflächen, denn dort biegt sich eine Welle am stärksten und dort sammelt sich Bewegungsenergie. Gelöst auf achtundvierzig Punkten je Achse, die Farbe ist die Bewegungsenergiedichte."
+    },
+    "quantumflow.orbital.5": {
+      "title": "Der fünfte Zustand",
+      "caption": "Der höchste der sechs besetzten Zustände, mit den meisten Knoten und der größten Krümmung. Jeder Knoten darunter ist mit Energie bezahlt worden, und dies hier ist die laufende Summe. Gelöst auf achtundvierzig Punkten je Achse, die Farbe ist die Bewegungsenergiedichte."
+    },
+    "quantumflow.density.shells": {
+      "title": "Die Dichte",
+      "caption": "Alle sechs Wellen, quadriert und addiert. Die drei Flächen fassen die Hälfte, vier Fünftel und neunzehn Zwanzigstel der Elektronen; jede wurde am gelösten Gitter gemessen, keine nach Aussehen gewählt. Jede Zahl hier stammt vom gelösten Gitter, nicht vom Augenmaß."
+    },
+    "quantumflow.potential.relief": {
+      "title": "Der Topf",
+      "caption": "Der Topf selbst, ausgelegt als Boden, um den Sie herumgehen können. Mehr ging in diesen Raum nicht ein: jede Gestalt, die hier steht, wurde aus dieser einen Fläche gelöst und aus sonst nichts. Jede Zahl hier stammt vom gelösten Gitter, nicht vom Augenmaß."
+    },
+    "quantumflow.density.relief": {
+      "title": "Die Wolke in den Tälern",
+      "caption": "Dieselbe Wolke noch einmal, wie sie in den Tälern des Topfes liegt, der sie gemacht hat. Wo der Boden abfällt, sammeln sich die Elektronen, und wo er ansteigt, werden sie dünn. Jede Zahl hier stammt vom gelösten Gitter, nicht vom Augenmaß."
+    },
+    "quantumflow.bowl.convex": {
+      "title": "Die Schüssel, die nicht versagen kann",
+      "caption": "So gebaut, dass es nicht schiefgehen kann: jede Sehne zwischen zwei Punkten der Fläche liegt über ihr. Viertausend zufällige Sehnen wurden in doppelter Genauigkeit geprüft, und nicht eine fiel negativ aus. Viertausend Sehnen, doppelte Genauigkeit, für beide Flächen derselbe Startwert."
+    },
+    "quantumflow.bowl.unconstrained": {
+      "title": "Dasselbe Netz, ohne die Bedingung",
+      "caption": "Dasselbe Netz, derselbe Startwert, eine Bedingung entfernt. Dreiundneunzig derselben Sehnen schneiden nun unter die Fläche, und die Mulden, in die sie fallen, sehen Sie quer durch den Raum. Viertausend Sehnen, doppelte Genauigkeit, für beide Flächen derselbe Startwert."
+    },
+    "quantumflow.tape.shooting": {
+      "title": "Quantelung, von Hand gefunden",
+      "caption": "Wer hier spult, dreht an einem Energieregler, nicht an einer Uhr: jedes Einzelbild ist eine Vermutung über die Energie, der Reihe nach. Bei fast jeder läuft die Welle an der fernen Wand davon. Was der Regler bewegt, steht im Nachweis des Bandes selbst."
+    },
+    "quantumflow.tape.flow": {
+      "title": "Der Fluss und seine Eichung",
+      "caption": "Viertausend Teilchen, getragen von ihrem Ausgangspunkt zu ihrem Ziel. Die Höhe ist ein Potential, das nur bis auf eine Verschiebung festliegt; zwei Flüsse lassen sich darum nicht über die Höhe vergleichen. Was der Regler bewegt, steht im Nachweis des Bandes selbst."
+    },
+    "quantumflow.equation.orbitary": {
+      "title": "Ein Topf, eine Welle, eine Energie",
+      "caption": "Ein Topf, eine Welle, eine Energie. Jede Gestalt in diesem Raum ist eine Lösung dieser einen Gleichung, und jede schwebt auf der Energie, für die sie gelöst wurde, in einem angegebenen Maßstab. Der Raum davor ist genau das, wovon die Gleichung handelt."
+    },
+    "quantumflow.equation.gallery": {
+      "title": "Sie muss an beiden Wänden landen",
+      "caption": "Die Welle muss an beiden Wänden zugleich landen, und fast keine Energie lässt das zu. Die wenigen, die es tun, hat niemand gewählt; sie sind das, was der Topf zulässt. Der Raum davor ist genau das, wovon die Gleichung handelt."
+    },
+    "quantumflow.equation.cloud": {
+      "title": "Jede Welle, quadriert und addiert",
+      "caption": "Jede Welle, quadriert und addiert, einmal. Diese Summe ist alles, was dieser Flügel für ausreichend hält: trägt die Wolke alles, muss man die Wellen nie wieder ansehen. Der Raum davor ist genau das, wovon die Gleichung handelt."
+    },
+    "quantumflow.equation.bowl": {
+      "title": "Nie über den eigenen Sehnen",
+      "caption": "Eine Fläche steigt nie über ihre eigenen Sehnen. Das ist die ganze Konvexität, und sie ist die eine Eigenschaft hier, die Sie mit dem Auge prüfen können, statt sie zu glauben. Der Raum davor ist genau das, wovon die Gleichung handelt."
+    },
+    "quantumflow.equation.inversion": {
+      "title": "Die Wolke gibt den Topf preis",
+      "caption": "Führt man die Überlegung rückwärts, gibt die Wolke den Topf preis, der sie geformt hat. Auf diese Behauptung ist der ganze Flügel gebaut, und die Zahl dazu ist noch nicht gemessen. Der Raum davor ist genau das, wovon die Gleichung handelt."
+    },
+    "quantumflow.equation.flow": {
+      "title": "Ein Gefälle und eine Auflage darauf",
+      "caption": "Masse folgt einem Gefälle, und die Auflage rechts verlangt, dass dieses Gefälle sich überall gleichmäßig krümmt. Das Projekt hatte guten Grund zu glauben, es würde helfen. Es half nicht. Der Raum davor ist genau das, wovon die Gleichung handelt."
+    },
+    "quantumflow.equation.inside": {
+      "title": "Nichts, wo die Wolke nicht nichts ist",
+      "caption": "Eine einzelne Welle kann an einer Stelle genau null sein, an der die Wolke, zu der sie gehört, es nicht ist. Die Summe behält das Ganze und vergisst, welche Welle dafür aufkam. Der Raum davor ist genau das, wovon die Gleichung handelt."
     }
   }
 }

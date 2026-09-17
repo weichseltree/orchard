@@ -201,8 +201,96 @@ export interface Announcement {
   ids: string[];
 }
 
+/**
+ * The longest thing she says in one line.
+ *
+ * Not the module's limit, which is 280 and is applied silently and mid-word
+ * (`CHAT_MAX` and `clip` in spacetime/spacetimedb/src/index.ts), but what a
+ * person can take in from a room. Read off the live emulator feed on
+ * 2026-09-17: a run's own feed writes much longer titles than expdash ever
+ * did -- the planet watcher's plateau alert is 178 characters, 83 of them the
+ * thresholds it fired on, and its slowdown alert 174 -- while its cap, finish
+ * and "no longer watched" lines are 68, 66 and 127. So 140 leaves every
+ * sentence that says something untouched and takes the arithmetic off the two
+ * that carry it.
+ */
+export const SPOKEN_MAX = 140;
+
+/**
+ * One line, short enough to be heard in a room and to survive the module
+ * uncut.
+ *
+ * The evidence goes before the sentence does. A producer puts the thresholds
+ * an alert fired on in a parenthesis -- and not always at the end: the
+ * slowdown alert reads "…so far (load 25.1 on 16 cores; top: chrome 310%, node
+ * 180%). Box load, not the code", where the clause after the bracket is the
+ * one ANNOUNCE-FEED.md §3 requires it to keep. So every parenthetical goes,
+ * wherever it sits, and only then is the sentence cut.
+ *
+ * Counted in code points, the way the module counts them, so a cut can never
+ * split a surrogate pair; a bracket she would not have closed is dropped, and
+ * a line that was nothing but evidence is cut instead of emptied.
+ */
+export function fitToRoom(text: string): string {
+  if (Array.from(text).length <= SPOKEN_MAX) return text;
+  const withoutEvidence = text
+    .replace(/\.{3,}/g, "…")
+    .replace(/\s*\([^()]*\)/g, "")
+    // What the evidence leaves behind: a space before punctuation, a separator
+    // that now introduces nothing, and two terminators where the sentence
+    // ended before the bracket did.
+    .replace(/\s+([.,;:!?])/g, "$1")
+    .replace(/\s*([:;,])\s*([.!?…])/g, "$2")
+    .replace(/([.!?…])\s*[.,;:!?…]+/g, "$1")
+    .trim();
+  // Unless the evidence WAS the message: a line of punctuation says nothing,
+  // and saying nothing is not the same as saying it shortly.
+  const shortened = says(withoutEvidence) ? withoutEvidence : text;
+  if (Array.from(shortened).length <= SPOKEN_MAX) return shortened;
+
+  let cut = Array.from(shortened).slice(0, SPOKEN_MAX - 1).join("");
+  // A clause boundary if there is one past the halfway mark -- her own answers
+  // are lists of clauses, and ending on one reads as shortened rather than as
+  // interrupted -- and a word boundary otherwise.
+  //
+  // "; " only, never ". ": a producer's sentence boundary is not a list
+  // boundary, and preferring it dropped the whole second sentence of the
+  // slowdown alert -- the "Box load, not the code" clause ANNOUNCE-FEED.md §3
+  // requires -- leaving the numbers that invite the reading it forbids.
+  const clause = cut.lastIndexOf("; ");
+  const space = cut.lastIndexOf(" ");
+  if (clause > SPOKEN_MAX / 2) cut = cut.slice(0, clause);
+  else if (space > SPOKEN_MAX / 2) cut = cut.slice(0, space);
+  const open = cut.lastIndexOf("(");
+  if (open >= 0 && !cut.slice(open).includes(")")) {
+    const before = cut.slice(0, open).trimEnd();
+    // Cut back to before the bracket -- unless that is everything she had, in
+    // which case the bracket itself goes and the words stay.
+    cut = says(before) ? before : `${cut.slice(0, open)}${cut.slice(open + 1)}`;
+  }
+  // Never an ellipsis hanging off a separator that now introduces nothing.
+  return `${cut.replace(/[\s:;,—–-]+$/u, "")}…`;
+}
+
+/** Whether a line has anything in it a person would read. */
+function says(text: string): boolean {
+  return /[\p{L}\p{N}]/u.test(text);
+}
+
+/**
+ * A line finished with a full stop -- unless it is already finished. None of
+ * the planet watcher's titles end in one (checked against the live feed,
+ * 2026-09-17: they end in ")", "60", "W/m²", "code"), so this is a guard
+ * rather than a fix; the "…ice spreads.." seen in development came from the
+ * trim above synthesising a stop of its own, which it no longer does.
+ */
+function asSentence(body: string): string {
+  return /[.!?…]$/.test(body) ? body : `${body}.`;
+}
+
 /** At most this many announcements from one poll, however much happened. */
 export const ANNOUNCE_BUDGET = 3;
+
 /** A run of this many of one kind in one repo is summarised, not listed. */
 export const COLLAPSE_AT = 2;
 
@@ -257,15 +345,22 @@ export function announce(fresh: readonly ComputeEvent[], titles?: TreeTitles): A
     const first = events[0]!;
     const priority = Math.min(...events.map((e) => e.priority));
     const where = first.repo ? ` in ${treeLabel(first.repo, titles)}` : "";
-    let text: string;
+    let body: string;
     if (events.length >= COLLAPSE_AT) {
-      text = `${events.length} ${plural(first.type, events.length)}${where}.`;
+      body = `${events.length} ${plural(first.type, events.length)}${where}`;
     } else {
-      // One event keeps its own title, which expdash already wrote for a
-      // reader; the detail is added only when it says something short.
+      // One event keeps its own title, which its producer already wrote for a
+      // reader; the detail is added only when it says something short. A feed
+      // that sent no title at all leaves nothing to keep, so she falls back to
+      // saying what kind of thing happened rather than reading out a dash.
       const detail = first.detail && first.detail.length <= 40 ? ` - ${first.detail}` : "";
-      text = `${first.title}${detail}.`;
+      body = says(first.title)
+        ? `${first.title}${detail}`
+        : first.type
+          ? `1 ${plural(first.type, 1)}${where}`
+          : `1 event${where}`;
     }
+    const text = fitToRoom(asSentence(body));
     out.push({ text, priority, count: events.length, ids: events.map((e) => e.id) });
   }
 
@@ -326,9 +421,32 @@ const COLLAPSED_PHRASES: Readonly<Record<string, string>> = {
   slowdown: "flagged the box slowing them",
 };
 
+/**
+ * A condition ending, and a condition stopping being watched. LogSwarm's
+ * metric engine builds these as `<condition>-cleared` and
+ * `<condition>-expired` from whatever a person named the condition in the
+ * editor (its `metric-engine.ts`), so no fixed list can keep up with them --
+ * and the two mean very different things. `cleared` is the condition genuinely
+ * over; `expired` is the group dropped because the samples stopped, which the
+ * producer itself words as "no longer watched (no samples)". Calling that
+ * "cleared" would announce a resolution to a run that merely went quiet, which
+ * is the `completed`-is-not-success mistake in another coat.
+ */
+const CLEARED = /^(.+)-cleared$/;
+const EXPIRED = /^(.+)-expired$/;
+
 /** What a type is said as, whoever spelled it: the phrase above, or the type. */
 export function saidAs(type: string): string {
-  return COLLAPSED_PHRASES[type] ?? (type || "events");
+  // The map first: its own names are hyphenated (`live-stalled`,
+  // `hit-cap-unbalanced`), and one ending in -cleared would otherwise be
+  // shadowed by the pattern below.
+  const phrase = COLLAPSED_PHRASES[type];
+  if (phrase) return phrase;
+  const cleared = CLEARED.exec(type);
+  if (cleared) return `cleared the ${cleared[1]}`;
+  const expired = EXPIRED.exec(type);
+  if (expired) return `no longer watched for the ${expired[1]}`;
+  return type || "events";
 }
 
 function plural(type: string, n: number): string {
