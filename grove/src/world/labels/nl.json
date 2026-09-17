@@ -62,8 +62,8 @@
     "foyer": {
       "title": "foyer",
       "kicker": "Welke kant naar beneden?",
-      "intro": "De kelder loopt over de hele lengte van het terras, een laag gewelf onder zijn stenen. Twee trappen komen erin uit vanaf de gronden, één aan elk eind van het terras, en twee deuren leiden verder de club in, die alleen opengaat voor een bezoeker met microfoon en geluid aan.",
-      "lookFor": "De lantaarns bij de twee clubdeuren, en het licht erdoorheen: de kelder is warm, de club is koud."
+      "intro": "De kelder loopt over de noordelijke helft van het terras, een laag gewelf onder zijn stenen. Aan het verre eind komt een trap vanaf de gronden naar beneden, aan het andere opent de verdiepte hof, en één deur leidt de club in, die alleen opengaat met microfoon en geluid aan.",
+      "lookFor": "De lantaarns aan weerszijden van de clubdeur, en het licht erdoorheen: de kelder is warm, de club is koud."
     },
     "stair-court": {
       "title": "verdiepte hof",
@@ -124,8 +124,8 @@
     "terrace": {
       "title": "terras",
       "kicker": "Stap naar buiten onder de hemel.",
-      "intro": "Het terras loopt langs de hele tuinkant van het gebouw. Deuren leiden terug naar de hal, de oranjerie en de galerij; vóór u ligt de tuin, en daarachter de bosjes. De hemel is een ontworpen schemering, geen astronomische.",
-      "lookFor": "Volg het terras in een van beide richtingen naar een deur naar binnen, of steek over naar de tuin."
+      "intro": "De zuidelijke arm van het terras, van de verdiepte hof tot het verre eind van de galerij. Deuren leiden terug naar de hal en de galerij; vóór u ligt de tuin, en daarachter de bosjes. De hemel is een ontworpen schemering, geen astronomische.",
+      "lookFor": "Volg het terras naar het zuiden voor een deur naar binnen, naar het noorden voor de verdiepte hof, of steek over naar de tuin."
     },
     "parterre": {
       "title": "tuin",

@@ -190,3 +190,49 @@ describe("the designed observatory", () => {
     fetch.mockRestore();
   });
 });
+
+describe("the terrace's two arms and the court between them", () => {
+  const shellOf = (id: string) => shells.find(s => s.room.id === id)!.shell;
+  const court = mansion.rooms.find(r => r.id === "stair-court")!;
+
+  // openToSky promised a parapet and built none: an arm ends at the court's
+  // rim, which is level with its own paving, so a walker met a five-metre drop
+  // guarded by nothing but the room bound (reviewed 2026-09-18).
+  it("rings the sunken court with a parapet, open where the flight goes down", () => {
+    for (const [id, rim] of [["terrace", court.bounds.max[2]], ["terrace-north", court.bounds.min[2]]] as const) {
+      const arm = mansion.rooms.find(r => r.id === id)!;
+      const door = arm.doorways.find(d => d.to === "stair-court")!;
+      const stones: Vector3[] = [];
+      shellOf(id).group.traverse(node => {
+        if (!(node instanceof InstancedMesh)) return;
+        const matrix = new Matrix4(), at = new Vector3();
+        for (let i = 0; i < node.count; i++) {
+          node.getMatrixAt(i, matrix);
+          at.setFromMatrixPosition(matrix);
+          // The parapet's own height band: a door's surround stands above it.
+          const over = at.y - arm.bounds.min[1];
+          if (Math.abs(at.z - rim) < 0.6 && over > 0.2 && over < 2) stones.push(at.clone());
+        }
+      });
+      // Piers, balusters and the rail between them.
+      expect(stones.length, `${id} parapet`).toBeGreaterThan(10);
+      // ...and nothing standing in the opening the steps come up through.
+      expect(stones.filter(p => Math.abs(p.x - door.center) < door.width / 2), `${id} gap`).toHaveLength(0);
+    }
+  });
+
+  it("paves the north arm as a promenade, not as open grove", () => {
+    // The arm was drawn by the grounds' default branch until 2026-09-18: lawn,
+    // scattered trees and no stone at all where the south arm has a walk.
+    const counts = new Map<string, number>();
+    for (const id of ["terrace", "terrace-north"]) {
+      let arches = 0;
+      shellOf(id).group.traverse(node => {
+        if (node instanceof InstancedMesh && node.name.includes("arch")) arches += node.count;
+      });
+      counts.set(id, arches);
+    }
+    expect(counts.get("terrace-north")).toBeGreaterThan(0);
+    expect(counts.get("terrace")).toBeGreaterThan(0);
+  });
+});

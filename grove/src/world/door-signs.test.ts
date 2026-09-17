@@ -7,7 +7,7 @@ import de from "./labels/de.json";
 import ja from "./labels/ja.json";
 import { parseLabels } from "./labels/index";
 import { parseMansion } from "./schema";
-import { SIGN, buildDoorSigns, canSet, extrudeText, glyphContours, letterGeometry, planDoorSigns, signed, type Typeface } from "./door-signs";
+import { SIGN, buildDoorSigns, canSet, extrudeText, glyphContours, letterGeometry, planDoorSigns, signSize, signed, type Typeface } from "./door-signs";
 
 const mansion = parseMansion(mansionDocument);
 const font = cinzel as unknown as Typeface;
@@ -156,5 +156,45 @@ describe("buildDoorSigns", () => {
     console.info(`door signs: ${meshes} meshes, ${Math.round(triangles)} triangles`);
     // The palace's fifteen rooms set some 45,000; arcedit's area adds forty signed doorways (TREE-AREAS.md).
     expect(triangles).toBeLessThan(200_000);
+  });
+});
+
+describe("signed, room by room", () => {
+  // The gate asks whether the letters fit over the opening. It used to ask
+  // with the FULL cap height, and a low room cuts them smaller: the cellar's
+  // undercrofts (3.6 m, doors 3.2 m) failed a test for room their letters
+  // were never going to take, so every door down there lost its name while
+  // the suite stayed green — it derives its expectation from this function
+  // (reviewed 2026-09-18).
+  for (const id of ["foyer", "foyer-south"]) {
+    it(`letters every door of ${id}, low as its vault is`, () => {
+      const r = room(id);
+      const headroom = r.bounds.max[1] - (r.bounds.min[1] + 3.2);
+      // The room is low enough that the letters ARE cut down: this is the case
+      // the gate got wrong, so the test is worthless if it stops being true.
+      expect(signSize(headroom)).toBeLessThan(SIGN.size);
+      for (const door of r.doorways) {
+        expect(signed(r, door, mansion), `${id} -> ${door.to}`).toBe(true);
+      }
+      expect(planDoorSigns(r, labels, mansion).length).toBe(r.doorways.length);
+    });
+  }
+
+  it("letters no door of the sunken court that opens at the court's own rim", () => {
+    const court = room("stair-court");
+    for (const door of court.doorways.filter((d) => d.to.startsWith("terrace"))) {
+      expect(signed(court, door, mansion), `court -> ${door.to}`).toBe(false);
+    }
+    // The doors on the level — the undercrofts and the club — keep theirs.
+    for (const door of court.doorways.filter((d) => !d.to.startsWith("terrace") && d.to !== "parterre")) {
+      expect(signed(court, door, mansion), `court -> ${door.to}`).toBe(true);
+    }
+  });
+
+  it("sets the letters inside the lintel's stone band, feet clear of the fillet", () => {
+    // surrounds() lays a 0.44 m band centred 0.28 m over the opening.
+    const bandLow = 0.28 - 0.22, bandHigh = 0.28 + 0.22;
+    expect(SIGN.band - SIGN.size / 2).toBeGreaterThan(bandLow);
+    expect(SIGN.band + SIGN.size / 2).toBeLessThan(bandHigh);
   });
 });

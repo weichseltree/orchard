@@ -62,8 +62,8 @@
     "foyer": {
       "title": "foyer",
       "kicker": "Por onde se desce?",
-      "intro": "A cave corre por todo o comprimento do terraço, uma abóbada baixa sob as suas lajes. Duas escadas descem até ela a partir dos jardins, uma em cada extremo do terraço, e duas portas seguem em frente para o clube, que só se abre ao visitante com o microfone e o som ligados.",
-      "lookFor": "As lanternas nas duas portas do clube, e a luz que entra por elas: a cave é quente, o clube é frio."
+      "intro": "A cave corre pela metade norte do terraço, uma abóbada baixa sob as suas lajes. No extremo distante desce uma escada a partir dos jardins, no outro abre-se o pátio encaixado, e uma porta segue para o clube, que só se abre com o microfone e o som ligados.",
+      "lookFor": "As lanternas de ambos os lados da porta do clube, e a luz que entra por ela: a cave é quente, o clube é frio."
     },
     "stair-court": {
       "title": "pátio encaixado",
@@ -124,8 +124,8 @@
     "terrace": {
       "title": "terraço",
       "kicker": "Saia para debaixo do céu.",
-      "intro": "O terraço percorre todo o lado do jardim do edifício. Portas levam de volta ao hall, ao laranjal e à galeria; à frente estende-se o jardim, e mais além os bosques. O céu é um crepúsculo desenhado, não astronómico.",
-      "lookFor": "Siga o terraço em qualquer direcção até uma porta para dentro, ou atravesse para o jardim."
+      "intro": "O braço sul do terraço, do pátio encaixado até ao extremo distante da galeria. Portas levam de volta ao hall e à galeria; à frente estende-se o jardim, e mais além os bosques. O céu é um crepúsculo desenhado, não astronómico.",
+      "lookFor": "Siga o terraço para sul até uma porta para dentro, para norte até ao pátio encaixado, ou atravesse para o jardim."
     },
     "parterre": {
       "title": "jardim",

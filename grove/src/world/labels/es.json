@@ -62,8 +62,8 @@
     "foyer": {
       "title": "foyer",
       "kicker": "¿Por dónde se baja?",
-      "intro": "El sótano recorre toda la longitud de la terraza, una bóveda baja bajo sus losas. Dos escaleras bajan hasta él desde los jardines, una en cada extremo de la terraza, y dos puertas siguen adelante hacia el club, que solo se abre al visitante que tiene el micrófono y el sonido encendidos.",
-      "lookFor": "Los faroles en las dos puertas del club, y la luz que entra por ellas: el sótano es cálido, el club es frío."
+      "intro": "El sótano recorre la mitad norte de la terraza, una bóveda baja bajo sus losas. En el extremo lejano baja una escalera desde los jardines, en el otro se abre el patio hundido, y una puerta sigue hacia el club, que solo se abre con el micrófono y el sonido encendidos.",
+      "lookFor": "Los faroles a ambos lados de la puerta del club, y la luz que entra por ella: el sótano es cálido, el club es frío."
     },
     "stair-court": {
       "title": "patio hundido",
@@ -124,8 +124,8 @@
     "terrace": {
       "title": "terraza",
       "kicker": "Salga bajo el cielo.",
-      "intro": "La terraza recorre todo el lado del jardín del edificio. Las puertas devuelven al hall, la orangerie y la galería; delante se extiende el jardín, y más allá las arboledas. El cielo es un crepúsculo diseñado, no uno astronómico.",
-      "lookFor": "Siga la terraza en cualquier dirección hasta una puerta de vuelta al interior, o cruce al jardín."
+      "intro": "El brazo sur de la terraza, desde el patio hundido hasta el extremo lejano de la galería. Las puertas devuelven al hall y a la galería; delante se extiende el jardín, y más allá las arboledas. El cielo es un crepúsculo diseñado, no uno astronómico.",
+      "lookFor": "Siga la terraza hacia el sur hasta una puerta de vuelta al interior, hacia el norte hasta el patio hundido, o cruce al jardín."
     },
     "parterre": {
       "title": "jardín",

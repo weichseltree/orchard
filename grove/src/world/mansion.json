@@ -996,7 +996,7 @@
         "max": [
           -10,
           -1.4,
-          -35
+          -38
         ]
       },
       "spawn": {
@@ -1028,7 +1028,7 @@
         {
           "to": "stair-court",
           "axis": "z",
-          "at": -35,
+          "at": -38,
           "center": -11.8,
           "width": 3.2,
           "height": 3.2
@@ -1049,7 +1049,7 @@
         "min": [
           -20,
           -5,
-          -35
+          -38
         ],
         "max": [
           -10,
@@ -1069,7 +1069,7 @@
         {
           "to": "terrace-north",
           "axis": "z",
-          "at": -35,
+          "at": -38,
           "center": -16,
           "width": 5,
           "height": 3.2
@@ -1077,7 +1077,7 @@
         {
           "to": "foyer",
           "axis": "z",
-          "at": -35,
+          "at": -38,
           "center": -11.8,
           "width": 3.2,
           "height": 3.2,
@@ -1103,7 +1103,7 @@
           "to": "parterre",
           "axis": "x",
           "at": -20,
-          "center": -23,
+          "center": -24.5,
           "width": 5,
           "height": 3.6,
           "treadMeters": 0.35
@@ -1734,7 +1734,7 @@
         "max": [
           -10,
           8,
-          -35
+          -38
         ]
       },
       "spawn": {
@@ -1766,14 +1766,14 @@
           "to": "parterre",
           "axis": "x",
           "at": -20,
-          "center": -38,
+          "center": -42,
           "width": 5,
           "height": 8
         },
         {
           "to": "stair-court",
           "axis": "z",
-          "at": -35,
+          "at": -38,
           "center": -16,
           "width": 5,
           "height": 3.2,
@@ -1916,7 +1916,7 @@
           "to": "terrace-north",
           "axis": "x",
           "at": -20,
-          "center": -38,
+          "center": -42,
           "width": 5,
           "height": 8
         },
@@ -1956,7 +1956,7 @@
           "to": "stair-court",
           "axis": "x",
           "at": -20,
-          "center": -23,
+          "center": -24.5,
           "width": 5,
           "height": 3.6,
           "signRoom": "club"

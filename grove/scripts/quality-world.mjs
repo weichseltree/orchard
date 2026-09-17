@@ -35,7 +35,15 @@ const stations = [
   ['belvedere', 0, 70, 0, -3],
   ['greenhouse', 11.5, 8, -90, 8],
   ['terrace', -15, 10, 90, 5],
-  ['stair-court', -15.5, -23, 90, 2],
+  // The north arm, looking along the promenade past the orangery's doors: it
+  // was drawn as open grove until 2026-09-18, which no station would have seen.
+  ['terrace-north', -15, -50, 0, 5],
+  // On the court's east walk, the way round the garden flight, looking north
+  // to the club's door and the north flight beyond: standing in the middle of
+  // the court (the old station, z = -23) put the camera inside the garden
+  // flight's own steps, and a metre short of its cheek wall shows only stone.
+  ['stair-court', -11.6, -19.5, 0, 2],
+  ['foyer-south', -15, -8, 180, 3],
   ['parterre', -26, 0, 90, 4],
   ['orchard-west', -45, -60, 0, 5],
   ['orchard-south', -80, 0, 90, 5],

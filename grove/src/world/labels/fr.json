@@ -62,8 +62,8 @@
     "foyer": {
       "title": "foyer",
       "kicker": "Par où descendre ?",
-      "intro": "Le sous-sol court sur toute la longueur de la terrasse, une voûte basse sous ses dalles. Deux escaliers y descendent depuis le domaine, un à chaque extrémité de la terrasse, et deux portes mènent plus loin dans le club, qui ne s'ouvre qu'au visiteur dont le micro et le son sont allumés.",
-      "lookFor": "Les lanternes aux deux portes du club, et la lumière qui en vient : le sous-sol est chaud, le club est froid."
+      "intro": "Le sous-sol court sur la moitié nord de la terrasse, une voûte basse sous ses dalles. À l'extrémité lointaine, un escalier y descend depuis le domaine ; à l'autre s'ouvre la cour en contrebas, et une porte mène dans le club, qui ne s'ouvre qu'avec le micro et le son allumés.",
+      "lookFor": "Les lanternes de part et d'autre de la porte du club, et la lumière qui en vient : le sous-sol est chaud, le club est froid."
     },
     "stair-court": {
       "title": "cour en contrebas",
@@ -124,8 +124,8 @@
     "terrace": {
       "title": "terrasse",
       "kicker": "Sortez sous le ciel.",
-      "intro": "La terrasse longe tout le côté jardin du bâtiment. Des portes ramènent dans le hall, l'orangerie et la galerie ; devant s'étend le jardin, et au-delà les bosquets. Le ciel est un crépuscule dessiné, non un ciel astronomique.",
-      "lookFor": "Suivez la terrasse dans un sens ou l'autre pour trouver une porte vers l'intérieur, ou traversez vers le jardin."
+      "intro": "Le bras sud de la terrasse, de la cour en contrebas à l'extrémité lointaine de la galerie. Des portes ramènent dans le hall et la galerie ; devant s'étend le jardin, et au-delà les bosquets. Le ciel est un crépuscule dessiné, non un ciel astronomique.",
+      "lookFor": "Suivez la terrasse vers le sud pour une porte vers l'intérieur, vers le nord pour la cour en contrebas, ou traversez vers le jardin."
     },
     "parterre": {
       "title": "jardin",

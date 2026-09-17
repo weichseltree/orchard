@@ -62,8 +62,8 @@
     "foyer": {
       "title": "foyer",
       "kicker": "Da che parte si scende?",
-      "intro": "Il sotterraneo corre per tutta la lunghezza della terrazza, una volta bassa sotto le sue lastre. Due scale vi scendono dai giardini, una a ciascuna estremità della terrazza, e due porte proseguono nel club, che si apre solo al visitatore con microfono e audio accesi.",
-      "lookFor": "Le lanterne alle due porte del club, e la luce che ne viene: il sotterraneo è caldo, il club è freddo."
+      "intro": "Il sotterraneo corre lungo la metà settentrionale della terrazza, una volta bassa sotto le sue lastre. All'estremità lontana una scala scende dai giardini, all'altra si apre la corte incassata, e una porta prosegue nel club, che si apre solo con microfono e audio accesi.",
+      "lookFor": "Le lanterne ai due lati della porta del club, e la luce che ne viene: il sotterraneo è caldo, il club è freddo."
     },
     "stair-court": {
       "title": "corte incassata",
@@ -124,8 +124,8 @@
     "terrace": {
       "title": "terrazza",
       "kicker": "Esca sotto il cielo.",
-      "intro": "La terrazza corre lungo tutto il lato del giardino dell'edificio. Le porte riportano nell'hall, nell'orangerie e nella galleria; davanti si stende il giardino, e oltre i boschetti. Il cielo è un crepuscolo disegnato, non astronomico.",
-      "lookFor": "Segua la terrazza in una direzione o nell'altra fino a una porta verso l'interno, o attraversi verso il giardino."
+      "intro": "Il braccio meridionale della terrazza, dalla corte incassata all'estremità lontana della galleria. Le porte riportano nell'hall e nella galleria; davanti si stende il giardino, e oltre i boschetti. Il cielo è un crepuscolo disegnato, non astronomico.",
+      "lookFor": "Segua la terrazza verso sud fino a una porta verso l'interno, verso nord fino alla corte incassata, o attraversi verso il giardino."
     },
     "parterre": {
       "title": "giardino",

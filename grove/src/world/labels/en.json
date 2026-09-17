@@ -62,8 +62,8 @@
     "foyer": {
       "title": "foyer",
       "kicker": "Which way down?",
-      "intro": "The undercroft runs the length of the terrace, a low vault under its flagstones. Two stairs come down into it from the grounds, one at each end of the terrace, and two doors lead on into the club, which opens only to a visitor whose microphone and sound are on.",
-      "lookFor": "The lanterns at the club's two doors, and the light through them: the undercroft is warm, the club is cold."
+      "intro": "The undercroft runs the northern half of the terrace, a low vault under its flagstones. A stair comes down from the grounds at its far end, the sunken court opens at the other, and one door leads into the club, which opens only with microphone and sound on.",
+      "lookFor": "The lanterns either side of the club's door, and the light through it: the undercroft is warm, the club is cold."
     },
     "stair-court": {
       "title": "sunken court",
@@ -124,8 +124,8 @@
     "terrace": {
       "title": "terrace",
       "kicker": "Step out under the sky.",
-      "intro": "The terrace runs the whole garden side of the building. Doors lead back into the hall, the orangery and the gallery; ahead lies the garden, and beyond it the groves. The sky is a designed twilight, not an astronomical one.",
-      "lookFor": "Follow the terrace either way for a door back inside, or cross into the garden."
+      "intro": "The southern arm of the terrace, from the sunken court to the gallery's far end. Doors lead back into the hall and the gallery; ahead lies the garden, and beyond it the groves. The sky is a designed twilight, not an astronomical one.",
+      "lookFor": "Follow the terrace south for a door back inside, north for the sunken court, or cross into the garden."
     },
     "parterre": {
       "title": "garden",
