@@ -368,9 +368,16 @@ export class RoomMap {
         if (floor.y > state.y + 0.5) continue;
         if (!best || floor.y > best.y) best = floor;
       }
-      // Their feet have to be nearer the other storey's floor than their own,
-      // or a visitor high on a terrain mound in the grounds would be told they
-      // are upstairs. `max[1]` is a ceiling, so a room's height decides nothing.
+      // Their feet have to be nearer the other storey's floor than their own.
+      // `max[1]` is a ceiling, so a room's height decides nothing here. This
+      // clause cannot currently bind: a band two metres clear of this room's
+      // floor puts its left side at 1.5 or more and its right at 0.5 or less.
+      // The case it is written against — someone high on a terrain mound in a
+      // walled garden being told they are upstairs — needs a mound above about
+      // five metres beside an upper storey, and bounds alone cannot tell that
+      // hill from a balcony in an atrium. Closing it properly wants a "standing
+      // on terrain" flag in MapState, or a test for a generated stair flight
+      // (terrain.ts `flightsOf`), which is what a stairwell actually is.
       if (best && best.level !== own && reaches(here, best)
           && state.y - here.bounds.min[1] >= best.y - state.y) return best.level;
     }
@@ -438,21 +445,32 @@ export class RoomMap {
     this.#plan.addEventListener("pointermove", (event) => {
       const drag = this.#drag;
       if (!drag || drag.pointer !== event.pointerId) return;
-      // A mouse moving with no button down is a hover, not a drag. Without
+      // A pointer moving with nothing held down is a hover, not a drag. Without
       // this a press released off the plan — onto the zoom button overlaid six
       // pixels away, say — leaves the drag standing, and the plan then slides
-      // under an idle cursor for the rest of the session.
-      if (event.pointerType === "mouse" && event.buttons === 0) {
+      // under an idle cursor for the rest of the session. Not named by pointer
+      // type on purpose: a pen hovers exactly as a mouse does, and a finger
+      // reports a button throughout a drag, so this is right for all three.
+      if (event.buttons === 0) {
         this.#drag = null;
         return;
       }
       if (!drag.panning) {
+        const slop = event.pointerType === "touch" ? TOUCH_SLOP_PX : DRAG_SLOP_PX;
+        const travel = Math.hypot(event.clientX - drag.fromX, event.clientY - drag.fromY);
+        // Whether a drag pans and whether it was a drag are two questions, and
+        // asking only the first left the plan's own opening view broken: it
+        // always opens fitted, where there is nothing to pan, so a visitor who
+        // read "drag to pan", pressed in the west orchard and pulled across it
+        // got no pan — rightly — and was walked into the orchard on release.
+        // Three times the slop, so the tremor the next line forgives stays a
+        // click.
+        if (travel >= slop * 3) this.#panned = true;
         // Zoomed out there is nothing to pan, so a slip would cost the visitor
         // their click and buy nothing. Re-checked per move, so panning begins
         // as soon as a zoom makes it mean something.
         if (this.#view.w >= SIZE && this.#view.h >= SIZE) return;
-        const slop = event.pointerType === "touch" ? TOUCH_SLOP_PX : DRAG_SLOP_PX;
-        if (Math.hypot(event.clientX - drag.fromX, event.clientY - drag.fromY) < slop) return;
+        if (travel < slop) return;
         // Captured only once the press is a drag. Capturing on pointerdown
         // retargets the compatibility `click` to the SVG, so the room's own
         // click never fires and the plan is dead to a mouse (2026-09-17).
