@@ -481,9 +481,9 @@ const commands: Commands = {
     const next = screen.atlases[(screen.atlases.indexOf(screen.atlas) + 1) % screen.atlases.length]!;
     void chooseAtlas(next);
   },
-  toggleProvenance: () => hud.togglePanel("sources"),
+  toggleProvenance: () => hud.togglePanel("sources", { focus: false }),
   togglePerf: () => {
-    hud.togglePanel("timing");
+    hud.togglePanel("timing", { focus: false });
   },
   toggleUnmute: () => void toggleAudio(),
   // In a headset the offers are not on any screen: the trigger takes them.

@@ -412,12 +412,17 @@ export class Hud {
     return this.#panel;
   }
 
-  togglePanel(id: PanelId): void {
+  togglePanel(id: PanelId, options: { focus?: boolean } = {}): void {
     if (this.#panel === id) this.closePanel();
-    else this.openPanel(id);
+    else this.openPanel(id, options);
   }
 
-  openPanel(id: PanelId): void {
+  /**
+   * Shows a panel. `focus: false` leaves focus where it is: a keyboard
+   * shortcut (P, F) opens its panel beside the view and the same key closes
+   * it, which it could not if focus moved into the column.
+   */
+  openPanel(id: PanelId, { focus = true }: { focus?: boolean } = {}): void {
     const spec = this.#panels.get(id);
     if (!spec) return;
     if (this.#panel === id) return;
@@ -436,7 +441,7 @@ export class Hud {
     const tookFocus = spec.onOpen?.() === true;
     this.#refreshHeading();
     this.#columnBody.scrollTop = 0;
-    if (!tookFocus) this.#columnTitle.focus({ preventScroll: true });
+    if (focus && !tookFocus) this.#columnTitle.focus({ preventScroll: true });
     this.#syncTabs();
   }
 

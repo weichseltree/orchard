@@ -762,12 +762,22 @@ noscript a { color: var(--accent); }
 #hud:not(.phone-layout) .human-check {
   left: calc(var(--content-left) + (100vw - var(--content-left) - var(--margin)) / 2);
 }
-/* Notices, the game offer and the hint stay readable over an open column in a narrow window. */
-#hud:not(.phone-layout) .notices,
-#hud:not(.phone-layout) .game-offer,
-#hud:not(.phone-layout) .hint { z-index: 3; }
-/* The walking hint is a reminder: it gives way to an open panel it would cover. */
+/* A narrow window has no room beside an open column for everything: the
+   notices and the game offer move into the strip right of it, and the
+   walking hint, only a reminder, gives way. */
 @media (max-width: 899px) {
+  #hud[data-panel]:not(.phone-layout) {
+    --beside: calc(var(--col-left) + min(var(--col-width), 100vw - var(--col-left) - 16px) + 16px);
+  }
+  #hud[data-panel]:not(.phone-layout) .notices {
+    left: var(--beside); right: var(--margin); width: auto; max-width: none;
+    top: var(--col-top);
+  }
+  #hud[data-panel]:not(.phone-layout) .game-offer {
+    left: var(--beside); right: var(--margin); bottom: var(--col-bottom);
+    transform: none;
+    flex-wrap: wrap;
+  }
   #hud[data-panel]:not(.phone-layout) .hint { display: none; }
 }
 #hud:not(.phone-layout) .hint { bottom: 104px; max-width: calc(100vw - var(--content-left) - 32px); border-radius: 0; }

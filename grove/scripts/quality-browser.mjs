@@ -333,8 +333,9 @@ async function appAudit(profile) {
             const r = el.getBoundingClientRect();
             return { x: r.x, y: r.y, right: r.right, bottom: r.bottom, width: r.width, height: r.height };
           };
-          return { column: rect(document.querySelector('#panel-column')), transport: rect(document.querySelector('.scrubber')) };
+          return { column: rect(document.querySelector('#panel-column')), transport: rect(document.querySelector('.scrubber')), notices: rect(document.querySelector('.notices')) };
         });
+        check(`${name}: the ${panel} panel clears the notices`, overlapArea(column.column, column.notices) === 0, column);
         check(`${name}: the ${panel} panel stays in viewport`, column.column && column.column.x >= 0 && column.column.y >= 0 && column.column.right <= layout.width + 1 && column.column.bottom <= layout.height + 1, column.column);
         check(`${name}: the ${panel} panel clears the rail, the card, the tape and the stick`, overlapArea(column.column, layout.dock) === 0 && overlapArea(column.column, layout.location) === 0 && overlapArea(column.column, layout.status) === 0 && overlapArea(column.column, column.transport) === 0 && overlapArea(column.column, layout.stick) === 0, column);
         if (panel === 'chat') check(`${name}: the chat panel says it needs a link`, await page.locator('#panel-column .chat-offline').isVisible());
@@ -365,7 +366,8 @@ async function appAudit(profile) {
       await page.locator('#stage').focus();
       await page.keyboard.press('f');
       await page.locator('.perf:not([hidden])').waitFor();
-      await screenshot(page, 'performance-desktop');
+      await screenshot(page, `performance-${profile.name}`);
+      check(`${name}: F opens timing without taking focus from the view`, await page.locator('#stage').evaluate((el) => document.activeElement === el));
       check(`${name}: timing overlay opens from keyboard`, await page.locator('.perf').isVisible());
       const overlay = await page.locator('.perf').evaluate((el) => {
         const rect = el.getBoundingClientRect();
