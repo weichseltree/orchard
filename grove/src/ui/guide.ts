@@ -40,6 +40,8 @@ export class VisitorGuide {
   #demo: boolean;
   #device: DeviceProfile;
   #onGameSurface: (surface: GameSurface) => void;
+  #onExplore: () => void;
+  #onGo: (roomId: string) => boolean;
 
   constructor(
     root: HTMLElement,
@@ -47,12 +49,15 @@ export class VisitorGuide {
     device: DeviceProfile,
     onExplore: () => void,
     onGameSurface: (surface: GameSurface) => void = () => undefined,
+    onGo: (roomId: string) => boolean = () => false,
   ) {
     this.#mansion = mansion;
     this.#search = location.search;
     this.#demo = demoEnabled(import.meta.env.DEV, this.#search);
     this.#device = device;
     this.#onGameSurface = onGameSurface;
+    this.#onExplore = onExplore;
+    this.#onGo = onGo;
     this.#location.className = "location btn panel";
     this.#location.type = "button";
     this.#location.addEventListener("click", () => this.show());
@@ -157,13 +162,15 @@ export class VisitorGuide {
       : device.touch
         ? [
             ["Look around", "Drag across the view."],
-            ["Walk", "Move the round stick at the bottom left."],
+            ["Walk", "Move the round stick at the bottom left, or tap the floor to go there."],
+            ["Exhibits", "Tap a picture, tape or plaque to see it up close. Map shows the plan of rooms."],
             ["Follow a tape", "In a room with a tape, use Play or Pause and drag the time slider below."],
             ["Read or listen", "About this view shows where it came from. Sound on lets you hear the room's video."],
           ]
         : [
             ["Look around", "Click the view, then move your mouse. Press Escape to release the pointer and use the buttons."],
-            ["Walk", "Use W A S D or the arrow keys. Hold Shift to walk faster."],
+            ["Walk", "Use W A S D or the arrow keys. Hold Shift to walk faster. Click the floor to go there."],
+            ["Exhibits", "Click a picture, tape or plaque to see it up close. N and Shift+N step through the room; Escape walks on. L shows the plan of rooms."],
             ["Follow a tape", "Space plays or pauses; [ and ] move one frame. You can also use the time slider below."],
             ["Read or listen", "P shows where the view came from. M turns the room's video sound on or off. X changes tape speed."],
           ];
@@ -219,6 +226,7 @@ export class VisitorGuide {
       const link = document.createElement("a");
       link.className = "guide-room-link";
       link.href = roomHref(this.#search, destination.id);
+      this.#goInPlace(link, destination.id);
       const ordinal = document.createElement("span");
       ordinal.className = "guide-route-number";
       ordinal.textContent = String(RESEARCH_ORDER.findIndex((stop) => stop === destination.id) + 1).padStart(2, "0");
@@ -235,6 +243,7 @@ export class VisitorGuide {
       const link = document.createElement("a");
       link.className = "btn";
       link.href = roomHref(this.#search, destination.id);
+      this.#goInPlace(link, destination.id);
       link.textContent = destination.title || destination.id;
       return link;
     }));
@@ -251,6 +260,16 @@ export class VisitorGuide {
       });
       return button;
     }));
+  }
+
+  /** A room a walk reaches is gone to without a reload; the link stays for the rest, and for a new tab. */
+  #goInPlace(link: HTMLAnchorElement, id: string): void {
+    link.addEventListener("click", (event) => {
+      if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || !this.#onGo(id)) return;
+      event.preventDefault();
+      this.#dialog.close();
+      this.#onExplore();
+    });
   }
 
   show(): void {

@@ -37,6 +37,18 @@ export interface Commands {
   toggleUnmute(): void;
   /** The game whose table the visitor stands at, when the room has one (G). */
   openGame(): void;
+  /**
+   * Point and go (INTERACTION.md §1.2): frame the exhibit or glide to the floor
+   * under a screen point (-1..1 each way, y up), or under the crosshair for
+   * null. Says what it found; "nothing" also while the code is still loading.
+   */
+  point(at: { x: number; y: number } | null): "exhibit" | "floor" | "nothing";
+  /** Frame the next (1) or previous (-1) exhibit of the room (N, Shift+N). */
+  nextExhibit(delta: 1 | -1): void;
+  /** The plan of this area's rooms (L). */
+  toggleMap(): void;
+  /** Back to free walking: no glide, no framed exhibit (Escape). */
+  release(): void;
 }
 
 /** A stick reading with its dead zone removed and its edge rescaled. */
