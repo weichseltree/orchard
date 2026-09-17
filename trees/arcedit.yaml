@@ -183,6 +183,7 @@ artefacts:
     --no-render
   commit: 699c1eb
   sha256: d10c20cada1c4c90d77982f66297046c75c4572050b81d03e717ae5c465097e6
+  approved: true
   bundle: 84ee7ea2f6d5cb36
 producers:
   tape: CUDA_VISIBLE_DEVICES="" exp run grove-exhibit --prio 10 --lane cpu -- .venv/bin/python scripts/grove_exhibit.py
