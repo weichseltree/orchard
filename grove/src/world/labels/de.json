@@ -31,7 +31,7 @@
     "orangery": {
       "title": "Orangerie",
       "kicker": "Lassen Sie den Blick wandern.",
-      "intro": "Die Orangerie verbindet die Kammer von world-engine mit der Terrasse. Sie ist ein Ort zwischen den Exponaten: Folgen Sie den offenen Türen, blicken Sie zu den Kammern zurück oder treten Sie hinaus unter den Himmel. Hinten steht ein Schachtisch: Treten Sie heran, oder öffnen Sie es über den Guide. Sechs Orbitale stehen der Länge nach im Raum, jedes auf einem Sockel, dessen Höhe seine eigene Energie ist, zu neun Zehnteln eines Meters je Hartree. Das zweite und das dritte stehen gleich hoch, weil sie dieselbe Energie haben.",
+      "intro": "Die Orangerie verbindet die Kammer von world-engine mit der Terrasse. Sie ist ein Ort zwischen den Exponaten: Folgen Sie den offenen Türen, blicken Sie zu den Kammern zurück oder treten Sie hinaus unter den Himmel. Hinten steht ein Schachtisch: Treten Sie heran, oder öffnen Sie es über den Guide. Sechs Orbitale stehen der Länge nach im Raum, jedes auf einem Sockel, dessen Höhe seine eigene Energie ist, zu einem Fünftel eines Meters je Hartree. Das zweite und das dritte stehen gleich hoch, weil sie dieselbe Energie haben.",
       "lookFor": "Die drei Türen zur Gartenseite führen alle auf die Terrasse.",
       "limit": "Dies sind wechselwirkungsfreie Elektronen in einem von uns gewählten Topf, kein gemessenes Molekül; die Farben sind Bewegungsenergiedichte und nichts, was eine Kamera aufnehmen könnte."
     },

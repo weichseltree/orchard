@@ -31,7 +31,7 @@
     "orangery": {
       "title": "orangerie",
       "kicker": "Laissez vos yeux voyager.",
-      "intro": "L'orangerie relie la salle de world-engine à la terrasse. C'est un lieu entre les expositions : suivez les portes ouvertes, regardez vers les salles, ou sortez sous le ciel. Au fond se trouve une table d'échecs : approchez-vous pour jouer, ou ouvrez la partie depuis le Guide. Six orbitales se tiennent dans la longueur de la salle, chacune sur un socle dont la hauteur est sa propre énergie, à neuf dixièmes de mètre par Hartree. La deuxième et la troisième sont à la même hauteur parce qu'elles ont la même énergie, et la densité qu'elles composent toutes ensemble se tient un peu plus loin.",
+      "intro": "L'orangerie relie la salle de world-engine à la terrasse. C'est un lieu entre les expositions : suivez les portes ouvertes, regardez vers les salles, ou sortez sous le ciel. Au fond se trouve une table d'échecs : approchez-vous pour jouer, ou ouvrez la partie depuis le Guide. Six orbitales se tiennent dans la longueur de la salle, chacune sur un socle dont la hauteur est sa propre énergie, à un cinquième de mètre par Hartree. La deuxième et la troisième sont à la même hauteur parce qu'elles ont la même énergie, et la densité qu'elles composent toutes ensemble se tient un peu plus loin.",
       "lookFor": "Les trois portes côté jardin donnent toutes sur la terrasse.",
       "limit": "Ce sont des électrons sans interaction dans un puits que nous avons choisi, non une molécule mesurée ; les couleurs sont une densité d'énergie cinétique et non quelque chose qu'un appareil photographique pourrait enregistrer."
     },

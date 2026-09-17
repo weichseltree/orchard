@@ -1,0 +1,266 @@
+{
+  "schema": "someotherlife/cat/1",
+  "asset": "cat_seal_point",
+  "generated_by": "apps/spike-e/tools/bundle.mjs",
+  "script_sha256": "98749698b9057f91436ff63e07d8428b361bd4fdd1501bcfa4c847c5bc788874",
+  "page": "apps/spike-e/src/bundle-page.ts",
+  "page_sha256": "4555e7598d55d8ad8ce19d5635c286ee75c243c436b129581d7678e56bd60903",
+  "source_package": "@someother/cat-proxy",
+  "three": "^0.185.1",
+  "git": {
+    "commit": "8e51014e3bf3ec632ad78e873737045c8f6f27cd",
+    "dirty": true
+  },
+  "generated_at_utc": "2026-09-17T22:09:57Z",
+  "license": "AGPL-3.0-or-later",
+  "license_note": "The asset is generated in code by this repo's @someother/cat-proxy, so it carries that package's licence: AGPL-3.0-or-later. Every vertex, colour and keyframe is made by the script above; nothing was downloaded, and there are no textures. The rest of someotherlife is not licensed, and the owner's cat photographs are not part of this package and are not licensed by it.",
+  "provenance": {
+    "provider": "generated",
+    "id": "@someother/cat-proxy seal",
+    "author": "packages/cat-proxy (someotherlife), generated in code",
+    "query": "the owner's two Ragdolls, modelled from his photographs and clips in results/spike-e (sheet_stills.jpg, sheet_clips.jpg, frames_425_6fps, ethogram/frames_061130); the blue point's body scale is from its measured weight",
+    "reference_photographs": "private, not shipped and not licensed by this package: ~/data/20260916_cats_3d_models",
+    "measurement": "seal point never weighed; 1.05 inferred from the photographs, to be replaced by cbrt(kg / 4.25)",
+    "modifications": "none — built from source each run"
+  },
+  "cat": {
+    "name": "seal",
+    "triangles": 2674,
+    "draw_calls": 8,
+    "bones": 36,
+    "detail": 1,
+    "metres": {
+      "rig_unit_in_metres": 1.05,
+      "note": "the rig is authored at domestic-cat size; every rig number times `size` is metres",
+      "bounding_box": {
+        "width_x": 0.25929627775503694,
+        "height_y": 0.38673690808992556,
+        "length_z": 0.8726525488282589
+      },
+      "shoulder_height": 0.24150000000000002,
+      "nose_to_tail_base": 0.5061,
+      "tail_length": 0.34335
+    },
+    "clips": [
+      {
+        "name": "idle",
+        "duration_s": 12,
+        "loop": true,
+        "from": "stand",
+        "to": "stand",
+        "head_free": true
+      },
+      {
+        "name": "walk",
+        "duration_s": 0.74,
+        "loop": true,
+        "from": "stand",
+        "to": "stand",
+        "head_free": true
+      },
+      {
+        "name": "trot",
+        "duration_s": 0.44,
+        "loop": true,
+        "from": "stand",
+        "to": "stand",
+        "head_free": true
+      },
+      {
+        "name": "sit-idle",
+        "duration_s": 4,
+        "loop": true,
+        "from": "sit",
+        "to": "sit",
+        "head_free": true
+      },
+      {
+        "name": "lie-idle",
+        "duration_s": 4,
+        "loop": true,
+        "from": "lie",
+        "to": "lie",
+        "head_free": true
+      },
+      {
+        "name": "sleep",
+        "duration_s": 4,
+        "loop": true,
+        "from": "loaf",
+        "to": "loaf",
+        "head_free": false
+      },
+      {
+        "name": "groom",
+        "duration_s": 3.6,
+        "loop": true,
+        "from": "sit",
+        "to": "sit",
+        "head_free": false
+      },
+      {
+        "name": "eat",
+        "duration_s": 3.6,
+        "loop": true,
+        "from": "stand",
+        "to": "stand",
+        "head_free": false
+      },
+      {
+        "name": "look-around",
+        "duration_s": 4.4,
+        "loop": true,
+        "from": "any",
+        "to": "stand",
+        "head_free": false
+      },
+      {
+        "name": "look-around-sit",
+        "duration_s": 4.4,
+        "loop": true,
+        "from": "sit",
+        "to": "sit",
+        "head_free": false
+      },
+      {
+        "name": "sit-down",
+        "duration_s": 1,
+        "loop": false,
+        "from": "stand",
+        "to": "sit",
+        "head_free": true
+      },
+      {
+        "name": "stand-up",
+        "duration_s": 0.8,
+        "loop": false,
+        "from": "sit",
+        "to": "stand",
+        "head_free": true
+      },
+      {
+        "name": "lie-down",
+        "duration_s": 1.2,
+        "loop": false,
+        "from": "sit",
+        "to": "lie",
+        "head_free": true
+      },
+      {
+        "name": "get-up",
+        "duration_s": 1,
+        "loop": false,
+        "from": "lie",
+        "to": "sit",
+        "head_free": true
+      },
+      {
+        "name": "tuck",
+        "duration_s": 1.6,
+        "loop": false,
+        "from": "lie",
+        "to": "loaf",
+        "head_free": false
+      },
+      {
+        "name": "untuck",
+        "duration_s": 1.3,
+        "loop": false,
+        "from": "loaf",
+        "to": "lie",
+        "head_free": false
+      },
+      {
+        "name": "stretch",
+        "duration_s": 2.8,
+        "loop": false,
+        "from": "stand",
+        "to": "stand",
+        "head_free": false
+      },
+      {
+        "name": "startle",
+        "duration_s": 1.1,
+        "loop": false,
+        "from": "any",
+        "to": "stand",
+        "head_free": false
+      },
+      {
+        "name": "rub",
+        "duration_s": 2.6,
+        "loop": false,
+        "from": "stand",
+        "to": "stand",
+        "head_free": false
+      }
+    ],
+    "posture_graph": {
+      "line": [
+        "stand",
+        "sit",
+        "lie",
+        "loaf"
+      ],
+      "down": {
+        "stand": "sit-down",
+        "sit": "lie-down",
+        "lie": "tuck"
+      },
+      "up": {
+        "loaf": "untuck",
+        "lie": "get-up",
+        "sit": "stand-up"
+      },
+      "note": "every transition clip moves one step along the line; startle stands the cat up from anywhere"
+    },
+    "gaits_m_per_s": {
+      "walk": 0.41,
+      "trot": 0.97,
+      "authored_at_size": 1.1
+    },
+    "root_convention": "+z forward, y up, feet on y=0; the root node is the cat's position on the floor"
+  },
+  "verification": {
+    "clips": [
+      "eat",
+      "get-up",
+      "groom",
+      "idle",
+      "lie-down",
+      "lie-idle",
+      "look-around",
+      "look-around-sit",
+      "rub",
+      "sit-down",
+      "sit-idle",
+      "sleep",
+      "stand-up",
+      "startle",
+      "stretch",
+      "trot",
+      "tuck",
+      "untuck",
+      "walk"
+    ],
+    "played": 19,
+    "bones": 36,
+    "vertexColours": true,
+    "images": 0,
+    "box": {
+      "x": 0.25929627775503694,
+      "y": 0.3867368948232291,
+      "z": 0.872652551583466
+    }
+  },
+  "files": {
+    "seal.glb": {
+      "bytes": 1854388,
+      "sha256": "96d40b2c568fa7335c7b866fbbccf77c4dd421f609aee10fd1cf70c4a3a02621"
+    },
+    "seal-preview.png": {
+      "bytes": 93026,
+      "sha256": "5b911a112fd00d8bf5821f9cde1403edc0550af0c0b598142370a0b0efd3db1d"
+    }
+  }
+}
