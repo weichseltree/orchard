@@ -519,9 +519,11 @@ noscript a { color: var(--accent); }
   .touch .scrubber .time { grid-column: 1 / 4; grid-row: 2; min-width: 0; color: #7e8b9b; font-size: 11px; }
 
   .touch .chat { width: auto; border-radius: 0; border-color: var(--hairline); padding: 8px; }
+  /* The line and Say share a row; Hold to talk takes its own under them. */
   .touch .chat-form { flex-wrap: wrap; }
-  .touch .chat-input { flex: 1 1 100%; min-height: 44px; border-radius: 0; background: #070c12; }
-  .touch .chat-send, .touch .chat-mic { flex: 1 1 auto; min-height: 44px; border-radius: 0; }
+  .touch .chat-input { flex: 1 1 0; min-width: 0; min-height: 44px; border-radius: 0; background: #070c12; }
+  .touch .chat-send { flex: none; min-height: 44px; border-radius: 0; }
+  .touch .chat-mic { flex: 1 1 100%; min-height: 44px; border-radius: 0; }
 
   /* Who is here and About this view open as sheets from the dock. */
   .touch .people, .touch .provenance {
@@ -555,8 +557,12 @@ noscript a { color: var(--accent); }
   #hud.touch {
     --dock: calc(78px + env(safe-area-inset-bottom));
     --lift: calc(var(--dock) + var(--tape, 0px) + 24px);
-    /* Up to 236 px, less on a short phone so the card column keeps its room. */
-    --chat: clamp(118px, calc(100dvh - var(--lift) - 240px), 236px);
+    /* Up to 236 px, less on a short phone so the card column (240 px, more
+       with the game offer) keeps its room; never so little that the log
+       shows no lines (the floor is the form plus about three lines). */
+    --chat-floor: 124px;
+    --column: 240px;
+    --chat: clamp(var(--chat-floor), calc(100dvh - var(--lift) - var(--column)), 236px);
     padding-bottom: calc(var(--lift) + var(--chat) + 12px);
   }
   .touch .dock {
@@ -569,6 +575,8 @@ noscript a { color: var(--accent); }
   .touch .scrubber { left: var(--gutter-l); right: var(--gutter-r); bottom: calc(var(--dock) + 12px); width: auto; }
   .touch .atlas { bottom: calc(var(--dock) + 12px); }
   .touch .stick { left: var(--gutter-l); bottom: var(--lift); }
+  #hud.touch:has(.chat-mic) { --chat-floor: 174px; }
+  #hud.touch:has(> .game-offer:not([hidden])) { --column: 312px; }
   .touch .chat { left: calc(var(--gutter-l) + 124px); right: var(--gutter-r); bottom: var(--lift); }
   .touch .human-check { bottom: calc(var(--lift) + 124px); }
   .touch .perf { right: var(--gutter-r); bottom: calc(var(--lift) + 124px); max-width: calc(100vw - 24px); }

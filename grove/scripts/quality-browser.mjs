@@ -289,6 +289,7 @@ async function appAudit(profile) {
         return { x: r.x, y: r.y, right: r.right, bottom: r.bottom, width: r.width, height: r.height };
       };
       const measured = { width: innerWidth, height: innerHeight, transport: rect('.scrubber'), stick: rect('.stick'), top: rect('.top-right'), location: rect('.location'), notices: rect('.notices'), chat: rect('.chat'), dock: rect('.dock') };
+      measured.chatLogHeight = chat?.querySelector('.chat-log')?.clientHeight ?? null;
       for (const line of lines) line.remove();
       if (chat) chat.hidden = chatHidden;
       return measured;
@@ -303,6 +304,7 @@ async function appAudit(profile) {
       check(`${name}: the room card clears the joystick`, overlapArea(layout.location, layout.stick) === 0);
       check(`${name}: the dock clears the joystick and tape controls`, overlapArea(layout.dock, layout.stick) === 0 && overlapArea(layout.dock, layout.transport) === 0);
       if (layout.chat) check(`${name}: chat clears the joystick, tape controls and top buttons`, overlapArea(layout.chat, layout.stick) === 0 && overlapArea(layout.chat, layout.transport) === 0 && overlapArea(layout.chat, layout.top) === 0 && overlapArea(layout.chat, layout.location) === 0);
+      if (layout.chat) check(`${name}: a full chat still shows lines`, layout.chatLogHeight >= 50, layout.chatLogHeight);
       check(`${name}: notices have room under the room card`, layout.notices !== null && layout.notices.height >= 40, layout.notices);
     }
     await page.getByRole('button', { name: 'Guide', exact: true }).focus();
