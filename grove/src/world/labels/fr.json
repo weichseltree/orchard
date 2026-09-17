@@ -30,10 +30,10 @@
     },
     "phototroph": {
       "title": "phototroph",
-      "kicker": "Qu'est-ce qui permet à deux atomes de rester ensemble ?",
-      "intro": "phototroph est la recherche ouverte d'une seule personne sur la question de savoir si la matière, sous un faisceau constant de lumière d'une seule couleur, s'organise en structures qui absorbent cette couleur. Cette question reste ouverte. Ce qui est accroché ici est la seule chose honnête que le dépôt ait à montrer : une rencontre enregistrée entre trois atomes. Deux atomes qui tombent l'un vers l'autre ne peuvent pas se capturer ; ils repartent exactement aussi vite qu'ils sont venus. Ils ne restent que lorsqu'un troisième arrive et emporte le surplus de vitesse. La bande contient 801 images de huit atomes dans une petite boîte périodique, converties depuis l'enregistrement de la simulation sans rien ajouter.",
-      "lookFor": "Faites une pause autour de la capture, suivez l'atome qui s'éloigne, puis revenez en arrière et rejouez lentement la même rencontre ; c'est un seul événement enregistré, pas un nouveau à chaque lecture.",
-      "limit": "Une seule capture n'établit ni l'équilibre ni des taux de liaison, et ne teste pas la sélection par la lumière ; la lumière dont traite cette recherche n'est pas du tout dans la bande."
+      "kicker": "Que fait un faisceau de lumière constant à une soupe d'atomes ?",
+      "intro": "phototroph se demande si la matière, sous un faisceau constant d'une seule couleur, s'organise en structures qui absorbent cette couleur. Les deux plateaux au centre de la salle sont partis du même monde de 432 atomes de six espèces. L'un a été éclairé pendant 500 unités de temps ; l'autre est resté dans l'obscurité. Ils sont joués en parfaite synchronie. Les atomes auxquels le faisceau est accordé portent sa couleur sur les deux plateaux. Le graphique au mur mesure à quel point un amas capte rarement la moindre lumière, et la petite bande près de l'entrée montre comment deux atomes finissent par rester ensemble.",
+      "lookFor": "Comparez les plateaux : le plateau sombre s'est figé en îlots cristallins, tandis que sous le faisceau les atomes restent un gaz agité.",
+      "limit": "Le plateau éclairé diffère parce que le faisceau le chauffe, non parce que ses amas auraient appris à utiliser la lumière : selon notre mesure, ils sont moins accordés à la couleur du faisceau que les amas du plateau sombre, et le faisceau lui-même n'est pas représenté."
     },
     "orangery": {
       "title": "orangerie",
@@ -306,6 +306,22 @@
     "arcedit.inside.canvas": {
       "title": "La toile à l'échelle d'une cellule",
       "caption": "Le professeur scripté copie une grille multicolore de cinq sur cinq en 114 clics : vers la palette, vers la cellule, retour à la palette. C'est la tâche montrée par le programme qui la définit ; aucun agent entraîné ne résout encore la copie multicolore."
+    },
+    "phototroph-lit": {
+      "title": "Éclairé : le monde sous le faisceau",
+      "caption": "432 atomes après 500 unités de temps sous un faisceau constant accordé à une espèce, montrés pendant 60 de plus. Environ un tiers sont liés et la boîte reste chaude ; des amas se forment et se défont en quelques dizaines d'unités de temps."
+    },
+    "phototroph-dark": {
+      "title": "Sombre : le même monde sans le faisceau",
+      "caption": "Les mêmes 432 atomes, partis du même état initial, jamais éclairés, joués en synchronie avec le plateau éclairé. Quatre sur cinq sont liés, la boîte est à moins de la moitié de la température du plateau éclairé, et les amas se sont figés en îlots cristallins."
+    },
+    "phototroph-walkup": {
+      "title": "Le plateau éclairé et le plateau sombre",
+      "caption": "Un seul instant des deux mondes, dessinés tels qu'ils se tiennent sur leurs socles. Les atomes de l'espèce à laquelle le faisceau est accordé sont violets sur les deux plateaux ; le halo violet au-dessus du plateau éclairé est une mise en scène du faisceau, pas une grandeur mesurée."
+    },
+    "phototroph-starved": {
+      "title": "Baigné de lumière, n'en captant presque pas",
+      "caption": "Le nombre de photons qu'un amas absorbe pendant sa propre durée de vie, mesuré pour trois intensités de faisceau et trois taux de transfert internes. Pour que la lumière façonne les amas, ce nombre doit approcher un ; la meilleure des neuf simulations atteint 0,08, soit douze fois et demie trop peu."
     }
   }
 }

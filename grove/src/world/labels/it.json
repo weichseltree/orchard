@@ -30,10 +30,10 @@
     },
     "phototroph": {
       "title": "phototroph",
-      "kicker": "Cosa permette a due atomi di restare insieme?",
-      "intro": "phototroph è la ricerca aperta di una sola persona sul fatto che la materia, sotto un fascio costante di luce di un solo colore, si organizzi in strutture che assorbono quel colore. Quella domanda è ancora aperta. Ciò che è appeso qui è l'unica cosa onesta che il repository possa mostrare: un incontro registrato tra tre atomi. Due atomi che cadono l'uno verso l'altro non possono catturarsi; si allontanano esattamente alla velocità con cui sono arrivati. Restano solo quando un terzo arriva e porta via la velocità in eccesso. Il nastro contiene 801 fotogrammi di otto atomi in una piccola scatola periodica, convertiti dal registro della simulazione senza aggiungere nulla.",
-      "lookFor": "Metta in pausa attorno alla cattura, segua l'atomo che si allontana, poi torni indietro e riproduca lentamente lo stesso incontro; è un unico evento registrato, non uno nuovo a ogni riproduzione.",
-      "limit": "Una sola cattura non stabilisce né l'equilibrio né tassi di legame, e non verifica la selezione guidata dalla luce; la luce di cui tratta questa ricerca non è affatto nel nastro."
+      "kicker": "Che cosa fa un fascio di luce costante a una zuppa di atomi?",
+      "intro": "phototroph si chiede se la materia, sotto un fascio costante di un solo colore, si organizzi in strutture che assorbono quel colore. I due piani al centro della sala sono partiti dallo stesso mondo di 432 atomi di sei specie. Uno è stato illuminato per 500 unità di tempo; l'altro è rimasto al buio. Scorrono in perfetta sincronia. Gli atomi a cui il fascio è accordato portano il suo colore su entrambi i piani. Il grafico alla parete misura quanto raramente un aggregato catturi un po' di luce, e il piccolo nastro vicino all'ingresso mostra come due atomi arrivino a restare insieme.",
+      "lookFor": "Confronti i piani: quello buio si è congelato in chiazze cristalline, mentre sotto il fascio gli atomi restano un gas irrequieto.",
+      "limit": "Il piano illuminato è diverso perché il fascio lo riscalda, non perché i suoi aggregati abbiano imparato a usare la luce: secondo la nostra misura sono accordati al colore del fascio meno degli aggregati del piano buio, e il fascio stesso non è disegnato."
     },
     "orangery": {
       "title": "orangerie",
@@ -306,6 +306,22 @@
     "arcedit.inside.canvas": {
       "title": "La tela alla scala di una cella",
       "caption": "Il maestro programmato copia una griglia multicolore cinque per cinque in 114 clic: alla tavolozza, alla cella, di nuovo alla tavolozza. Mostra il compito tramite il programma che lo definisce; nessun agente addestrato risolve ancora la copia multicolore."
+    },
+    "phototroph-lit": {
+      "title": "Illuminato: il mondo sotto il fascio",
+      "caption": "432 atomi dopo 500 unità di tempo sotto un fascio costante accordato a una specie, mostrati per altre 60. Circa un terzo sono legati e la scatola resta calda; gli aggregati si formano e si disfano nel giro di decine di unità di tempo."
+    },
+    "phototroph-dark": {
+      "title": "Buio: lo stesso mondo senza il fascio",
+      "caption": "Gli stessi 432 atomi dallo stesso inizio, mai illuminati, in sincronia con il piano illuminato. Quattro su cinque sono legati, la scatola sta a meno della metà della temperatura del piano illuminato e gli aggregati si sono assestati in chiazze cristalline."
+    },
+    "phototroph-walkup": {
+      "title": "Il piano illuminato e il piano buio",
+      "caption": "Un istante di entrambi i mondi, disegnati come stanno sui loro piedistalli. Gli atomi della specie a cui il fascio è accordato sono viola su entrambi i piani; la foschia viola sopra il piano illuminato è una messa in scena del fascio, non una grandezza misurata."
+    },
+    "phototroph-starved": {
+      "title": "Immersi nella luce, non ne catturano quasi nulla",
+      "caption": "Quanti fotoni un aggregato assorbe durante la propria vita, misurato a tre intensità del fascio e tre tassi di trasferimento interno. Perché la luce plasmi gli aggregati, la risposta deve avvicinarsi a uno; la migliore di nove simulazioni arriva a 0,08, dodici volte e mezzo troppo poco."
     }
   }
 }

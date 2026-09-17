@@ -30,10 +30,10 @@
     },
     "phototroph": {
       "title": "phototroph",
-      "kicker": "Wat laat twee atomen bij elkaar blijven?",
-      "intro": "phototroph is het open onderzoek van één persoon naar de vraag of materie onder een gestage bundel licht van één kleur zich ordent tot structuren die die kleur absorberen. Die vraag staat nog open. Wat hier hangt is het enige eerlijke dat de repository te tonen heeft: een opgenomen ontmoeting tussen drie atomen. Twee atomen die naar elkaar vallen kunnen elkaar niet vangen; ze vliegen precies zo snel uiteen als ze kwamen. Ze blijven alleen als een derde komt en de overtollige snelheid meeneemt. De band bevat 801 beelden van acht atomen in een kleine periodieke doos, omgezet uit het eigen verslag van de simulatie zonder iets toe te voegen.",
-      "lookFor": "Pauzeer rond de vangst, volg het vertrekkende atoom, spoel dan terug en speel dezelfde ontmoeting langzaam opnieuw af; het is één opgenomen gebeurtenis, niet een nieuwe bij elke druk op afspelen.",
-      "limit": "Eén vangst bewijst evenwicht noch bindingssnelheden en toetst geen selectie door licht; het licht waar dit onderzoek over gaat zit helemaal niet in de band."
+      "kicker": "Wat doet een gestage lichtbundel met een soep van atomen?",
+      "intro": "phototroph vraagt of materie onder een gestage bundel van één kleur zich ordent tot structuren die die kleur absorberen. De twee vloeren midden in de zaal begonnen als dezelfde wereld van 432 atomen van zes soorten. De ene is 500 tijdseenheden belicht; de andere bleef donker. Ze spelen precies gelijk op. De atomen waarop de bundel is afgestemd dragen op beide vloeren zijn kleur. De grafiek aan de wand meet hoe zelden een klontje überhaupt licht vangt, en de kleine band bij de ingang laat zien hoe twee atomen bij elkaar komen te blijven.",
+      "lookFor": "Vergelijk de vloeren: de donkere is bevroren tot kristallijne plekken, terwijl de atomen onder de bundel een onrustig gas blijven.",
+      "limit": "De belichte vloer verschilt omdat de bundel hem verwarmt, niet omdat zijn klontjes hebben geleerd licht te gebruiken: volgens onze maat zijn ze minder op de kleur van de bundel afgestemd dan de klontjes van de donkere vloer, en de bundel zelf is niet getekend."
     },
     "orangery": {
       "title": "oranjerie",
@@ -306,6 +306,22 @@
     "arcedit.inside.canvas": {
       "title": "Het canvas op celschaal",
       "caption": "De gescripte leraar kopieert een veelkleurig raster van vijf bij vijf in 114 klikken: naar het palet, naar de cel, terug naar het palet. Dit toont de taak via het programma dat haar definieert; geen getrainde agent lost de veelkleurige kopie al op."
+    },
+    "phototroph-lit": {
+      "title": "Belicht: de wereld onder de bundel",
+      "caption": "432 atomen na 500 tijdseenheden onder een gestage bundel die op één soort is afgestemd, nog 60 verder getoond. Ongeveer een derde is gebonden en de doos blijft warm; klontjes vormen zich en vallen binnen enkele tientallen tijdseenheden weer uiteen."
+    },
+    "phototroph-dark": {
+      "title": "Donker: dezelfde wereld zonder de bundel",
+      "caption": "Dezelfde 432 atomen vanuit hetzelfde begin, nooit belicht, precies gelijk opspelend met de belichte vloer. Vier op de vijf zijn gebonden, de doos heeft minder dan de helft van de temperatuur van de belichte vloer, en de klontjes zijn neergeslagen in kristallijne plekken."
+    },
+    "phototroph-walkup": {
+      "title": "De belichte en de donkere vloer",
+      "caption": "Eén moment van beide werelden, getekend zoals ze op hun sokkels staan. Atomen van de soort waarop de bundel is afgestemd zijn op beide vloeren violet; de violette waas boven de belichte vloer is enscenering van de bundel, geen gemeten grootheid."
+    },
+    "phototroph-starved": {
+      "title": "Badend in licht, bijna niets gevangen",
+      "caption": "Hoeveel fotonen een klontje tijdens zijn eigen levensduur absorbeert, gemeten bij drie bundelsterktes en drie interne overdrachtssnelheden. Wil licht de klontjes vormen, dan moet het antwoord één naderen; de beste van negen runs haalt 0,08, twaalfenhalf keer te weinig."
     }
   }
 }

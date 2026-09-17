@@ -30,10 +30,10 @@
     },
     "phototroph": {
       "title": "phototroph",
-      "kicker": "¿Qué permite que dos átomos permanezcan juntos?",
-      "intro": "phototroph es la investigación abierta de una sola persona sobre si la materia, bajo un haz constante de luz de un solo color, se organiza en estructuras que absorben ese color. Esa pregunta sigue abierta. Lo que cuelga aquí es lo único honesto que el repositorio puede mostrar: un encuentro grabado entre tres átomos. Dos átomos que caen uno hacia el otro no pueden atraparse; salen despedidos exactamente tan rápido como llegaron. Solo permanecen cuando llega un tercero y se lleva la velocidad sobrante. La cinta contiene 801 fotogramas de ocho átomos en una pequeña caja periódica, convertidos desde el propio registro de la simulación sin añadir nada.",
-      "lookFor": "Pause en torno a la captura, siga al átomo que se aleja, y luego retroceda y reproduzca el mismo encuentro despacio; es un único evento grabado, no uno nuevo cada vez que pulsa reproducir.",
-      "limit": "Una sola captura no establece ni equilibrio ni tasas de enlace, y no prueba la selección por la luz; la luz de la que trata esta investigación no está en la cinta en absoluto."
+      "kicker": "¿Qué le hace un haz de luz constante a una sopa de átomos?",
+      "intro": "phototroph se pregunta si la materia, bajo un haz constante de un solo color, se organiza en estructuras que absorben ese color. Las dos plataformas del centro de la sala partieron del mismo mundo de 432 átomos de seis clases. Una ha estado iluminada durante 500 unidades de tiempo; la otra permaneció a oscuras. Se reproducen en perfecta sincronía. Los átomos a los que está sintonizado el haz llevan su color en ambas plataformas. El gráfico de la pared mide qué rara vez un cúmulo capta algo de luz, y la pequeña cinta junto a la entrada muestra cómo dos átomos llegan a quedarse juntos.",
+      "lookFor": "Compare las plataformas: la oscura se ha congelado en parches cristalinos, mientras que bajo el haz los átomos siguen siendo un gas inquieto.",
+      "limit": "La plataforma iluminada es distinta porque el haz la calienta, no porque sus cúmulos hayan aprendido a usar la luz: según nuestra medida, están menos sintonizados con el color del haz que los cúmulos de la plataforma oscura, y el haz en sí no está dibujado."
     },
     "orangery": {
       "title": "orangerie",
@@ -306,6 +306,22 @@
     "arcedit.inside.canvas": {
       "title": "El lienzo a escala de una celda",
       "caption": "El profesor programado copia una cuadrícula de cinco por cinco de muchos colores en 114 clics: a la paleta, a la celda, de vuelta a la paleta. Muestra la tarea mediante el programa que la define; ningún agente entrenado resuelve aún la copia multicolor."
+    },
+    "phototroph-lit": {
+      "title": "Iluminada: el mundo bajo el haz",
+      "caption": "432 átomos tras 500 unidades de tiempo bajo un haz constante sintonizado con una clase, mostrados durante 60 más. Cerca de un tercio están enlazados y la caja se mantiene caliente; los cúmulos se forman y se deshacen en unas decenas de unidades de tiempo."
+    },
+    "phototroph-dark": {
+      "title": "Oscura: el mismo mundo sin el haz",
+      "caption": "Los mismos 432 átomos desde el mismo inicio, nunca iluminados, reproducidos en sincronía con la plataforma iluminada. Cuatro de cada cinco están enlazados, la caja está a menos de la mitad de la temperatura de la plataforma iluminada y los cúmulos se han asentado en parches cristalinos."
+    },
+    "phototroph-walkup": {
+      "title": "La plataforma iluminada y la plataforma oscura",
+      "caption": "Un instante de ambos mundos, dibujados tal como están sobre sus pedestales. Los átomos de la clase con la que está sintonizado el haz son violetas en ambas plataformas; la neblina violeta sobre la plataforma iluminada es una puesta en escena del haz, no una magnitud medida."
+    },
+    "phototroph-starved": {
+      "title": "Bañados en luz, sin captar casi nada",
+      "caption": "Cuántos fotones absorbe un cúmulo durante su propia vida, medido con tres intensidades de haz y tres tasas de transferencia internas. Para que la luz dé forma a los cúmulos, la respuesta debe acercarse a uno; la mejor de nueve ejecuciones alcanza 0,08, doce veces y media por debajo."
     }
   }
 }

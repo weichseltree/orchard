@@ -30,10 +30,10 @@
     },
     "phototroph": {
       "title": "phototroph",
-      "kicker": "What lets two atoms stay together?",
-      "intro": "phototroph is one person's open research into whether matter under a steady beam of one colour of light organises itself into structures that absorb that colour. That question is still open. What hangs here is the one honest thing the repository has to show: a recorded encounter between three atoms. Two atoms falling together cannot catch each other; they fly apart exactly as fast as they came. They stay only when a third arrives and carries the surplus speed away. The tape holds 801 frames of eight atoms in a small periodic box, converted from the simulation's own record with nothing added.",
-      "lookFor": "Pause around the capture, follow the departing atom, then scrub back and replay the same encounter slowly; it is one recorded event, not a new one each time you press play.",
-      "limit": "One capture establishes neither equilibrium nor binding rates, and it does not test light-driven selection; the light this research is about is not in the tape at all."
+      "kicker": "What does a steady beam of light do to a soup of atoms?",
+      "intro": "phototroph asks whether matter under a steady beam of one colour organises itself into structures that absorb that colour. The two floors in the middle of the room began as the same world of 432 atoms of six kinds. One has been lit for 500 time units; the other stayed dark. They play in lockstep. The atoms the beam is tuned to wear its colour on both floors. The chart on the wall measures how rarely a clump catches any light at all, and the small tape by the entrance shows how two atoms come to stay together.",
+      "lookFor": "Compare the floors: the dark one has frozen into crystal patches, while under the beam the atoms stay a restless gas.",
+      "limit": "The lit floor differs because the beam heats it, not because its clumps have learned to use light: by our measure they are tuned less to the beam's colour than the dark floor's clumps, and the beam itself is not drawn."
     },
     "orangery": {
       "title": "orangery",
@@ -306,6 +306,22 @@
     "arcedit.inside.canvas": {
       "title": "The canvas at the scale of a cell",
       "caption": "The scripted teacher copies a five-by-five grid of many colours in 114 clicks: to the palette, to the cell, back to the palette. This shows the task by the program that defines it; no learned agent solves the many-coloured copy yet."
+    },
+    "phototroph-lit": {
+      "title": "Lit: the world under the beam",
+      "caption": "432 atoms after 500 time units under a steady beam tuned to one kind, shown for 60 more. About a third are bonded and the box runs warm; clumps form and break apart within tens of time units."
+    },
+    "phototroph-dark": {
+      "title": "Dark: the same world without the beam",
+      "caption": "The same 432 atoms from the same start, never lit, playing in lockstep with the lit floor. Four in five are bonded, the box runs at less than half the lit floor's temperature, and the clumps have settled into crystal patches."
+    },
+    "phototroph-walkup": {
+      "title": "The lit floor and the dark floor",
+      "caption": "One instant of both worlds drawn as they stand on their pedestals. Atoms of the kind the beam is tuned to are violet on both floors; the violet haze over the lit floor is staging for the beam, not a measured quantity."
+    },
+    "phototroph-starved": {
+      "title": "Bathed in light, catching almost none",
+      "caption": "How many photons a clump absorbs during its own lifetime, measured at three beam strengths and three internal transfer rates. For light to shape clumps the answer must approach one; the best of nine runs reaches 0.08, twelve and a half times short."
     }
   }
 }
