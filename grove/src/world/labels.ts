@@ -47,6 +47,8 @@ const CORNER_MARGIN_M = 0.3;
 
 export const PANEL = { width: 1.8, height: 1.35, top: 2.25, texture: [1024, 768] as const };
 export const LABEL = { width: 0.7, height: 0.525, centre: 1.45, texture: [768, 576] as const };
+/** A record line on a wall: a label's proportions, a little larger, at reading height. */
+export const LINE = { width: 1.2, height: 0.9, centre: 1.55, texture: [1024, 768] as const };
 /** An exhibit's reading stand: a plate tilted 30° from horizontal, its top edge a metre up. */
 export const LECTERN = { width: 0.85, height: 0.6375, top: 1.05, tiltDeg: 30, texture: [1024, 768] as const };
 /** A room's reading stand, for the grounds and the Orrery, which have no wall to hang a panel on. */
@@ -65,7 +67,8 @@ const REPOSITORY_NAME: Readonly<Record<string, string>> = { spectre: "coarsen" }
  */
 const TREE_OF_ROOM: Readonly<Record<string, string>> = { orrery: "spectre" };
 
-export type PlaqueKind = "entrance" | "label";
+/** An entrance panel, an exhibit's label, or a record line on a wall. */
+export type PlaqueKind = "entrance" | "label" | "line";
 export type PlaqueMount = "wall" | "lectern" | "stand";
 /** What a plaque faces: the room's centre from its wall, the spawn, or the way its tape's stand faces. */
 export type PlaqueFacing = "room" | "spawn" | "stand";
@@ -519,6 +522,28 @@ export function planRoomLabels(room: Room, labels: Labels, mansion: Mansion): Pl
     foot.y = floor;
     plans.push(lecternPlaque(foot, facing, LECTERN, { kind: "label", facing: "spawn", hangingId: hanging.id, text }));
   }
+
+  // The room's record lines: each on the wall its plan faces, brought out to
+  // the wall's reading face so the pilasters never cut through it, and moved
+  // along the wall only as far as a doorway or a hanging requires.
+  const lines = labels.rooms[room.id]?.lines ?? {};
+  for (const line of room.wallLines) {
+    const copy = lines[line.key];
+    if (!copy) continue;
+    const normal = new Vector3(0, 0, 1).applyQuaternion(hangingQuaternion(line));
+    const wall = walls(room).reduce((best, w) => (inwardNormal(w).dot(normal) > inwardNormal(best).dot(normal) ? w : best));
+    const width = Math.min(LINE.width, line.widthMeters);
+    const p = new Vector3(...line.position);
+    const obstacles = [...wallObstacles(room, wall), ...spansOn(wall)];
+    // placeAlongWall starts a plate at its near edge: half a width back puts the plan's point at its centre.
+    const c = placeAlongWall(wall, along(wall, p) - rightAlong(wall) * width / 2, width / 2, rightAlong(wall), obstacles);
+    spansOn(wall).push([c - width / 2, c + width / 2]);
+    const plan = wallPlaque(wall, room, c, floor + LINE.centre, { ...LINE, width }, {
+      kind: "line", hangingId: line.id,
+      text: { heading: labels.rooms[room.id]!.title, title: copy.title, body: copy.text },
+    });
+    plans.push(plan);
+  }
   return plans;
 }
 
@@ -691,7 +716,11 @@ function slabMaterial(): MeshBasicMaterial {
 function buildPlaque(plan: PlaquePlan, locale: string): Group {
   const group = new Group();
   group.name = `plaque-${plan.kind}${plan.hangingId ? `-${plan.hangingId}` : ""}`;
-  group.userData = { plaque: plan.kind, mount: plan.mount, facing: plan.facing, hangingId: plan.hangingId ?? null, locale };
+  group.userData = {
+    plaque: plan.kind, mount: plan.mount, facing: plan.facing, hangingId: plan.hangingId ?? null, locale,
+    // A record line is its own content: what it says travels with the plaque.
+    ...(plan.kind === "line" ? { line: { title: plan.text.title, text: plan.text.body } } : {}),
+  };
   const disposables: Array<{ dispose(): void }> = [];
 
   const normal = new Vector3(0, 0, 1).applyQuaternion(plan.quaternion);

@@ -32,9 +32,9 @@ phenomena:
   hero: false
 - id: reward_barrier
   title: Given only a score, it learns the small case and stalls at the next
-  hook: Take the teacher away and pay only for a correct answer. The same design learns the two-by-two
-    copy from nothing. At three by three it learns to read the colour and then does not press submit.
-    That is where the work is.
+  hook: Take the teacher away and pay only by a score, a little as the answer gets closer and more for
+    an exact copy handed in. The same design learns the two-by-two copy from nothing. At three by three
+    it learns to read the colour and then often does not press submit. That is where the work is.
   evidence: results/i15_perception_under_reward/BUILD.md
   hero: false
 - id: memory_makes_it_possible
@@ -118,13 +118,69 @@ artefacts:
   sha256: 40ad9da5de5b3b543b2791a609fe1f081729b4690a70de5d1528aac639cc8aa2
   approved: true
   bundle: 83d786cba7a501eb
+- kind: still
+  path: results/grove/oracle_side5/hero.png
+  title: The teacher mid-episode, painting a many-coloured grid with its view strip beneath
+  produced_by: CUDA_VISIBLE_DEVICES="" exprun -n grove-exhibit .venv/bin/python scripts/grove_exhibit.py
+  commit: 2b8bbb4
+  sha256: e8b861bf57f1fbaf0c1e6ad18f08a5dbe76c2941673e3fe065ad16f5a5a3ce1f
+  approved: true
+  bundle: dec91c1f0260f323
+- kind: still
+  path: results/grove/charts/agent_teacher_order/chart.png
+  title: 'Change only the teacher''s painting order: 76% or 98% per decision on solid grids, 0 or 124
+    of 128 copies, one seed each'
+  produced_by: CUDA_VISIBLE_DEVICES="" exprun -n grove-charts uv run --no-project --with matplotlib==3.10.9
+    --with numpy python scripts/grove_charts.py
+  commit: dad370a
+  sha256: bce1a0e96350ce24e5eb0097ca79a397b0989258f9d06f83147ce879083f453e
+  approved: true
+  bundle: 42299a802a086df0
+- kind: still
+  path: results/grove/charts/reward_breakout/chart.png
+  title: 'Learning from reward without a teacher: side 2 at 96, 116 and 121 of 128, side 3 at 10, 50 and
+    11'
+  produced_by: CUDA_VISIBLE_DEVICES="" exprun -n grove-charts uv run --no-project --with matplotlib==3.10.9
+    --with numpy python scripts/grove_charts.py
+  commit: dad370a
+  sha256: 024c302a1a39307248f353a5f4d75d83356b989c5abc1b68809ec66fa57104e5
+  approved: true
+  bundle: 1f3621a6968adbd2
+- kind: still
+  path: results/grove/charts/reward_side3_submit/chart.png
+  title: At side 3 it reads the colour, then often runs out of time instead of handing in
+  produced_by: CUDA_VISIBLE_DEVICES="" exprun -n grove-charts uv run --no-project --with matplotlib==3.10.9
+    --with numpy python scripts/grove_charts.py
+  commit: dad370a
+  sha256: 8630fda346d2148eee8e7c58b56ce80013010169d0eca5a5f606d98aad6c4416
+  approved: true
+  bundle: 2a07fc5541753ffb
+- kind: still
+  path: results/grove/charts/record_compounding/chart.png
+  title: 'Small mistakes compound: pooled per-click accuracy against whole copies, predicted and measured'
+  produced_by: CUDA_VISIBLE_DEVICES="" exprun -n grove-charts uv run --no-project --with matplotlib==3.10.9
+    --with numpy python scripts/grove_charts.py
+  commit: dad370a
+  sha256: 095c10b07a856ea896efefbb38fdccf9d32c6e175fd5bc1f3e366acde38f530d
+  approved: true
+  bundle: 941802a1c5cdd910
+- kind: still
+  path: results/grove/charts/record_action_arms/chart.png
+  title: 'Which vocabulary is better depends on how you ask: imitation favours raw clicks, random play
+    gets cells right only in semantic actions'
+  produced_by: CUDA_VISIBLE_DEVICES="" exprun -n grove-charts uv run --no-project --with matplotlib==3.10.9
+    --with numpy python scripts/grove_charts.py
+  commit: dad370a
+  sha256: ee45182ed0ec70c7f47cb0e44c37fe7c70e51e489942af0295a108d7b9abcdf8
+  approved: true
+  bundle: c888f5c37cff4348
 producers:
-  tape: CUDA_VISIBLE_DEVICES="" exprun -n grove-exhibit .venv/bin/python scripts/grove_exhibit.py --out
-    {out}
-  render: exprun -n grove-blender /home/manuel/tools/blender/blender --background --python scripts/grove_blender.py
-    -- --scene {scene} --out {out} --samples 96
-  figure: CUDA_VISIBLE_DEVICES="" exprun -n grove-exhibit .venv/bin/python scripts/grove_exhibit.py --out
-    {out}
+  tape: CUDA_VISIBLE_DEVICES="" exp run grove-exhibit --prio 10 --lane cpu -- .venv/bin/python scripts/grove_exhibit.py
+    --out {out}
+  render: exp run grove-blender --prio 10 --lane cpu -- /home/manuel/tools/blender/blender --background
+    --python scripts/grove_blender.py -- --scene {scene} --out {out} --samples 96
+  figure: CUDA_VISIBLE_DEVICES="" exp run grove-charts --prio 10 --lane cpu -- uv run --no-project --with
+    matplotlib==3.10.9 --with numpy python scripts/grove_charts.py
   lane: cpu
   env:
     CUDA_VISIBLE_DEVICES: ''
@@ -156,10 +212,12 @@ kill: 'G1 fails: if the three-by-three copy is not learned from reward alone (ex
   grids) by the end of the registered budget ladder and the population-based sweep that follows it (MILESTONES.md
   A-I15-9 and A-I15-10), the line has no path to real ARC tasks and is closed.'
 potential: 5
-notes: Exhibits are produced on the CPU lane by scripts/grove_exhibit.py (episodes, tapes, clips, stills)
-  and scripts/grove_blender.py (the 3D model env.glb and its render); results/grove/README.md explains
-  them and is the room they hang in. The tape writer is the orchard-tape package pinned to tape-v1.0.0.
-  The policy tape shows a learned agent (I13 behaviour cloning, greedy); the oracle tape shows the scripted
-  teacher, which is the task and not a result, and every caption says so. The area proposal for the grove
-  (rooms from this repository's directories, TREE-AREAS.md) is results/grove/area.json with plaques in
-  results/grove/plaques.json; placement is the orchard session's.
+notes: Exhibits are produced on the CPU lane by scripts/grove_exhibit.py (episodes, tapes, clips, stills),
+  scripts/grove_blender.py (the 3D model env.glb, merged to one draw call per material, and its render)
+  and scripts/grove_charts.py (charts as PNG stills, each with chart.json holding the exact series, sources
+  and caveats). The tape writer is the orchard-tape package pinned to tape-v1.0.0. The policy tape shows
+  a learned agent (I13 behaviour cloning, greedy); the oracle tape shows the scripted teacher, which is
+  the task and not a result, and every caption says so. The area proposal for the grove is results/grove/area.json
+  (scripts/grove_area.py v2, 2026-09-17; five content rooms walked as a loop, the scale room, and repo_model
+  for the tabletop model of the repository), with wall text in results/grove/labels.json and captions
+  in results/grove/plaques.json; placement is the orchard session's.

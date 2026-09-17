@@ -13,9 +13,9 @@ describe("mansion.json", () => {
   it("parses", () => {
     const mansion = parseMansion(mansionDocument);
     expect(mansion.schema).toBe("orchard/mansion/1");
-    const palace = ["hall", "einstruct", "world-engine", "orangery", "foyer", "club", "stage", "phototroph", "gallery", "belvedere", "greenhouse", "terrace", "parterre", "orchard-west", "orchard-south", "orchard-east", "orrery"];
-    // arcedit's area (results/grove/area.json in that tree): its entrance and seventeen chambers, the last at a tenth of the scale.
-    const arcedit = ["arcedit", "arcedit/arcedit", "arcedit/arcedit/serve", "arcedit/docs", "arcedit/mental", "arcedit/results", "arcedit/results/grove", "arcedit/results/grove/oracle_side5", "arcedit/results/grove/policy_side3", "arcedit/results/i15_perception_under_reward", "arcedit/results/i17_full_campaign", "arcedit/results/i2_encoder", "arcedit/results/i3_action", "arcedit/results/i9_restriction", "arcedit/results/interface_v1", "arcedit/scripts", "arcedit/tests", "arcedit/inside"];
+    const palace = ["hall", "einstruct", "world-engine", "orangery", "stair-north", "stair-south", "foyer", "club", "stage", "phototroph", "gallery", "belvedere", "greenhouse", "terrace", "parterre", "orchard-west", "orchard-south", "orchard-east", "orrery"];
+    // arcedit's area (results/grove/area.json in that tree): five rooms walked as a loop, and the canvas at a tenth of the scale.
+    const arcedit = ["arcedit", "arcedit/agent", "arcedit/reward", "arcedit/record", "arcedit/workshop", "arcedit/inside"];
     expect(mansion.rooms.map((room) => room.id)).toEqual([...palace, ...arcedit]);
     expect(mansion.start).toBe("hall");
   });

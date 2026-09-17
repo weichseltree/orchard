@@ -46,12 +46,13 @@ export interface PanelSpec {
 
 // Line icons from the overlay redesign (Claude Design handoff, "weichselmind
 // Overlays"). Static markup, never built from data.
-const ICONS: Record<PanelId | "leave", string> = {
+const ICONS: Record<PanelId | "map" | "leave", string> = {
   guide: '<circle cx="10" cy="10" r="7.2"></circle><path d="M10 6.4v.1M10 9v4.6"></path>',
   sources: '<rect x="3.2" y="3.2" width="13.6" height="13.6"></rect><path d="M6.4 7.6h7.2M6.4 10.4h7.2M6.4 13.2h4"></path>',
   people: '<circle cx="7.6" cy="8" r="3"></circle><circle cx="13.4" cy="9.4" r="2.2"></circle><path d="M2.8 16.4c.8-2.6 2.5-3.9 4.8-3.9s4 1.3 4.8 3.9"></path>',
   chat: '<path d="M3.2 4h13.6v9.2H8.4L4.6 16.4v-3.2H3.2z"></path>',
   timing: '<path d="M4 16V9M8 16V5M12 16v-5M16 16v-9"></path>',
+  map: '<path d="M3 5.2l4.6-1.8 4.8 1.8 4.6-1.8v11.4l-4.6 1.8-4.8-1.8L3 16.6z"></path><path d="M7.6 3.4v11.4M12.4 5.2v11.4"></path>',
   leave: '<path d="M8 4H4v12h4M9.6 10h7.2M14 7l3 3-3 3"></path>',
 };
 
@@ -72,6 +73,8 @@ export interface HudCallbacks {
   /** A planet's display mode was chosen. */
   onAtlas(mode: string): void;
   onUnmute(): void;
+  /** The plan of this area's rooms (L). */
+  onMap(): void;
   /** A phone's Chat tab: fold the floating chat away or bring it back. */
   onToggleChat(): void;
   /** The game whose table the visitor stands at. */
@@ -354,6 +357,13 @@ export class Hud {
       this.#dock.set(id, tab);
       dock.append(tab);
     }
+    // The plan of rooms is its own dialog (ui/map.ts), not a panel in the column.
+    const map = button("", "dock-tab dock-map", callbacks.onMap);
+    map.setAttribute("aria-label", "Map");
+    map.setAttribute("aria-haspopup", "dialog");
+    map.title = "Plan of the rooms (L)";
+    map.innerHTML = dockFace("map", "Map");
+    dock.insertBefore(map, this.#dock.get("timing") ?? null);
     const leave = document.createElement("a");
     leave.className = "dock-tab dock-leave";
     leave.href = "/";
@@ -392,6 +402,8 @@ export class Hud {
 
     document.addEventListener("keydown", (event) => {
       if (event.key !== "Escape" || event.defaultPrevented || this.#panel === null) return;
+      // With the view focused, Escape is the world's: it walks on from a framed exhibit (control/go.ts).
+      if (!(event.target instanceof Node) || !this.root.contains(event.target)) return;
       // A game over the world takes its own Escape (its dialog's cancel).
       if (document.querySelector("dialog[open]")) return;
       // Never pull a half-typed report or ban out from under the visitor.
@@ -784,7 +796,7 @@ export class Hud {
   }
 }
 
-function dockFace(icon: PanelId | "leave", label: string): string {
+function dockFace(icon: PanelId | "map" | "leave", label: string): string {
   return `<svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true">${ICONS[icon]}</svg><span class="dock-label" aria-hidden="true">${label}</span>`;
 }
 

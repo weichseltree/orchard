@@ -96,123 +96,23 @@
       "lookFor": "Loop naar een wereld toe en bekijk het snijvlak; de gloed markeert de heetste materie, een codering van temperatuur, geen licht.",
       "limit": "Eén opgenomen run per wereld, niets geïnterpoleerd. Een zwaar midden scheidt op zichzelf ontmenging niet van gedeelde afkoeling als oorzaak."
     },
-    "arcedit": {
-      "title": "arcedit",
-      "kicker": "Kan een machine leren ARC-puzzels op te lossen zoals een mens achter een scherm?",
-      "intro": "Dit is de ingang van arcedit, een onderzoeksproject over een agent die puzzels oplost door te bewerken: hij kijkt rond, kiest een kleur en klikt, en hij ziet alleen scherp wat dicht bij zijn cursor ligt. De gang leidt naar de motor, de instrumenten, de verslagen en de tentoongestelde stukken.",
-      "lookFor": "Volg eerst de gang naar de tentoongestelde stukken en kom dan terug voor de delen die ze hebben gemaakt."
+    "stair-north": {
+      "title": "trap",
+      "kicker": "Wat ligt er onder het terras?",
+      "intro": "Een tuinpaviljoen aan het noordeinde van het terras, te betreden vanuit het westelijke bosje. Binnen gaat een trap onder de grond naar de kelder, van waaruit de club opengaat. Een tweede trap van dezelfde soort staat aan het zuideinde van het terras, bij het oostelijke bosje.",
+      "lookFor": "De leuning van de trap en de lamp aan haar voet; het daglicht houdt op waar het gewelf begint."
     },
-    "arcedit/arcedit": {
-      "title": "arcedit",
-      "kicker": "Waar is de machine van gemaakt?",
-      "intro": "De motor: het eindeloze canvas, de exacte editor die elke klik uitvoert, het op de cursor gecentreerde zicht dat met elke ring twee keer zo grof wordt, en het netwerk dat leert ze te gebruiken. Alles wat een training nodig heeft, en niets dat beslist welk experiment draait.",
-      "lookFor": "De schappen noemen elk onderdeel; zicht en klik delen één geometrie, het ene vaste idee van het project."
-    },
-    "arcedit/arcedit/serve": {
-      "title": "serve",
-      "kicker": "Hoe is het om de agent te zijn?",
-      "intro": "Een kleine console waar een mens de editor met de hand bespeelt, op hetzelfde canvas en door hetzelfde smalle zicht als de agent, en de cursor aan een getraind netwerk kan geven om het te zien spelen.",
-      "lookFor": "De klikken van een mens en die van een netwerk op dezelfde taak kunnen naast elkaar worden gelegd."
-    },
-    "arcedit/docs": {
-      "title": "docs",
-      "kicker": "Wat moest het project bouwen?",
-      "intro": "De opdracht, bewaard zoals ze geschreven werd, met een tabel van elke plek waar de bouw ervan afwijkt en waarom, en de regel dat elk experiment wordt aangekondigd voordat zijn gegevens worden verzameld.",
-      "lookFor": "De tabel met afwijkingen is het eerlijke deel: het toetsenbord werd vervangen door klikken en het stappenbudget kromp tot een kwart."
-    },
-    "arcedit/mental": {
-      "title": "mental",
-      "kicker": "Hoe kan een agent die zo weinig ziet onthouden wat hij zag?",
-      "intro": "Een exact geheugen, bewaard uit een eerdere werklijn: een spiegel van de editor over wat de agent gelooft, stil waar een cel ongezien is, en een grootboek dat de agent voor elke ontdekte cel betaalt, één keer.",
-      "lookFor": "Het geheugen sprak de wereld in drie miljoen controles nooit tegen; de beloning voor ontdekking kan nooit twee keer worden verdiend."
-    },
-    "arcedit/results": {
-      "title": "results",
-      "kicker": "Wat hebben de experimenten werkelijk laten zien?",
-      "intro": "Het bewijs: één zaal per experiment, elk met zijn gedateerde verslag van wat gevraagd werd, wat gemeten werd en wat het getal niet zegt. De gang is lang omdat het project zijn mislukkingen naast zijn successen bewaart.",
-      "lookFor": "De grootste zalen zijn de campagnes; de kleinste gesloten schappen zijn lijnen die eindigden."
-    },
-    "arcedit/results/grove": {
-      "title": "grove",
-      "kicker": "Hoe ziet de editor er van binnenuit uit?",
-      "intro": "De tentoongestelde stukken van deze boom: twee opgenomen episodes van de editor, één gespeeld door een getrainde agent en één door de gescripte leraar wiens klikken hem leerden, elk getoond als een wolk van cellen waar een bezoeker in kan staan, als een korte film met het zicht van de agent onder het canvas, en als stilstaande beelden. Aan de muur de omgeving als model, met het zicht van de agent in glas boven de tegels. Niets hier is met de hand getekend; elke positie en kleur komt uit een opgenomen episode.",
-      "lookFor": "Vergelijk de twee wolken: de korte wandeling van de getrainde agent naar het palet tegenover de tocht van honderd klikken van de leraar over een veelkleurig raster.",
-      "limit": "Eén episode illustreert een beleid, het is niet de meting ervan; de episode van de leraar toont de taak, geen geleerd resultaat."
-    },
-    "arcedit/results/grove/oracle_side5": {
-      "title": "oracle_side5",
-      "kicker": "Wat vraagt de taak, klik voor klik?",
-      "intro": "De gescripte leraar kopieert een veelkleurig raster van vijf bij vijf: hij loopt naar het palet, kiest een kleur, loopt naar een cel, schildert die en terug, honderdveertien klikken in totaal. Dit is het programma waarvan de keuzes als lessen dienden voor de getrainde agent, getoond als een wolk van cellen om in te staan, als een film met het zicht van de agent eronder, en als de opstelling vóór de eerste klik. Boven het canvas is de stapel lagen wat de agent van hieruit zou zien: scherp onderaan, wazig bovenaan.",
-      "lookFor": "Let op hoe zelden het bronraster scherp is terwijl het antwoord wordt geschilderd; de kleur moet worden gehaald, onthouden en meegedragen.",
-      "limit": "Geen getrainde agent lost deze veelkleurige kopie al op; wat hier hangt is de taak, uitgevoerd door het programma dat haar definieert."
-    },
-    "arcedit/results/grove/policy_side3": {
-      "title": "policy_side3",
-      "kicker": "Wat doet een getrainde agent met zo'n smal zicht?",
-      "intro": "Een netwerk dat door nabootsing is getraind kopieert een effen geel vierkant dat het nooit zag: het loopt naar het palet, kiest de kleur van de bron, schildert het drie-bij-drie-antwoord en levert in, zestien klikken. Het ziet alleen de acht cellen rond zijn cursor scherp, dus de wandeling is ook een blik. De episode hangt als een wolk van cellen om in te staan, als een film met de negen niveaus van zijn zicht onder het canvas, en als twee stilstaande beelden: het moment van schilderen, en het zicht alleen, wat alles is wat het netwerk ontvangt.",
-      "lookFor": "Volg de route van de cursor: hij gaat één keer naar het palet en schildert dan zonder terug te keren, omdat de kleur nu op zijn kwast zit.",
-      "limit": "Eén episode uit een achtergehouden verzameling illustreert een beleid dat 124 van 128 zulke vierkanten haalt; het is niet de meting, en het veelkleurige geval is niet opgelost."
-    },
-    "arcedit/results/i15_perception_under_reward": {
-      "title": "i15_perception_under_reward",
-      "kicker": "Kan de agent leren zien als hij alleen voor antwoorden wordt betaald?",
-      "intro": "Een dag van tweeëntwintig proeven met de vraag of waarneming uit beloning alleen te leren is. De grote encoder uit de opdracht kwam nooit boven toeval uit; een kleine las de kleur van de bron uit beloning in enkele duizenden stappen en leerde de twee-bij-twee-kopie uit het niets, bij drie zaden.",
-      "lookFor": "De barrière verschoof: bij drie bij drie leest de agent de kleur en levert dan niet in."
-    },
-    "arcedit/results/i17_full_campaign": {
-      "title": "i17_full_campaign",
-      "kicker": "Wat gebeurt er als het hele ontwerp met vol budget draait?",
-      "intro": "Een campagne over twee machines: elke waarnemingsvariant en het volledige model op de kleinste kopieertaak, elk drie zaden. Ze eindigde toen de hostmachine crashte; de grote encoder had in geen van zijn vierentwintig cellen leren zien.",
-      "lookFor": "Een verslag van hoeveel rekentijd een nulresultaat kost, en van de dag dat de machine uitviel."
-    },
-    "arcedit/results/i2_encoder": {
-      "title": "i2_encoder",
-      "kicker": "Kan het smalle zicht de juiste klik überhaupt weergeven?",
-      "intro": "De eerste vraag aan de encoder: kan hij uit alleen het op de cursor gecentreerde zicht zeggen welke klik de leraar hierna zou doen? Dat kon hij, ruim boven toeval, zodra het trainingsschema was hersteld. Hier leerde het project dat het zicht niet de flessenhals was.",
-      "lookFor": "Hier werd een plafond gevonden dat latere zalen moesten verklaren."
-    },
-    "arcedit/results/i3_action": {
-      "title": "i3_action",
-      "kicker": "Hoe lekt een leraar het antwoord zonder het te willen?",
-      "intro": "Het eerste geleerde beleid scoorde per beslissing bijna perfect en loste niets op: de leraar had cellen altijd in één volgorde geschilderd, dus het netwerk leerde in te leveren zodra de cursor op de laatste cel stond. Een gelijkspel tussen even goede lessen was een aanwijzing geworden.",
-      "lookFor": "Alleen de cursor verplaatsen liet het netwerk van schilderen naar inleveren omslaan; de oplossing was de leraar te schudden."
-    },
-    "arcedit/results/i9_restriction": {
-      "title": "i9_restriction",
-      "kicker": "Hoe klein kan de editor worden en toch exact blijven?",
-      "intro": "De editor teruggebracht tot een wereld van zeventigduizend toestanden die volledig kan worden opgesomd, zodat elke bewering over welke handelingen het waard zijn uitgevonden te worden tegen de waarheid wordt getoetst in plaats van geschat.",
-      "lookFor": "Drie poorten werden hier gepasseerd; de grondwaarheid voor de vraag naar handelingsabstractie ligt op deze schappen."
-    },
-    "arcedit/results/interface_v1": {
-      "title": "interface_v1",
-      "kicker": "Is de kopieertaak überhaupt leerbaar, als de agent alles kon zien?",
-      "intro": "De controle waaraan elke latere zaal wordt gemeten: met het hele raster in zicht en een eenvoudige woordenschat van schilder-deze-cel-in-deze-kleur lost een netwerk de kopieertaak volledig op, bij drie zaden. De moeilijkheid zit in het smalle zicht en de rauwe klikken, niet in de taak.",
-      "lookFor": "De vloer van het hele project: wat mogelijk is als niets verborgen is."
-    },
-    "arcedit/scripts": {
-      "title": "scripts",
-      "kicker": "Hoe wordt elke vraag een meting?",
-      "intro": "De instrumenten: één script per experiment, elk verzamelt de vooraf beloofde getallen en schrijft ze naast een vingerafdruk van de code die ze maakte. Twee ervan maken de tentoongestelde stukken in dit gebouw.",
-      "lookFor": "De namen volgen de ladder van mijlpalen; de peilingen toetsen een aanname voordat een experiment wordt aangekondigd."
-    },
-    "arcedit/tests": {
-      "title": "tests",
-      "kicker": "Wat mag nooit verschuiven?",
-      "intro": "Elke regel waarop de motor steunt heeft een controle die faalt als hij wordt gebroken: de editor is exact, het zicht is een zuivere functie van de toestand, geen waarneming draagt een absolute coördinaat, en de standaard betaalde beloning is die waaronder elk vastgelegd getal werd gemeten.",
-      "lookFor": "Eén schap controleert dat lekken uit het verleden niet stilletjes terugkeren."
-    },
-    "arcedit/inside": {
-      "title": "Binnen in het canvas",
-      "kicker": "Hoe is het om op het canvas te staan?",
-      "intro": "Hier hebt u de grootte van een cel. De episode van de leraar speelt zich om u heen af: het bronraster staat aan één kant, het antwoordkader vult zich onder uw voeten cel voor cel, het palet is een rij verlichte stenen, en de cursor is een lichtzuil die komt en gaat. Boven u hangen de lagen van het zicht van de agent als glazen vloeren, de laagste scherp en klein, elke laag erboven twee keer zo breed en twee keer zo vaag, tot de bovenste alles bedekt en bijna niets zegt. Spoel de tijd om de kleur van het palet naar de cel te zien reizen.",
-      "lookFor": "Sta op het antwoordkader en kijk omhoog door de lagen terwijl de cursor passeert; het scherpe venster volgt hem.",
-      "limit": "Dit is de episode van de leraar, niet die van een getrainde agent, en de schaal is een middel om te kijken; de agent ziet het canvas nooit als een plaats."
+    "stair-south": {
+      "title": "trap",
+      "kicker": "Wat ligt er onder het terras?",
+      "intro": "Een tuinpaviljoen aan het zuideinde van het terras, te betreden vanuit het oostelijke bosje. Binnen gaat een trap onder de grond naar de kelder, van waaruit de club opengaat. Een tweede trap van dezelfde soort staat aan het noordeinde van het terras, bij het westelijke bosje.",
+      "lookFor": "De leuning van de trap en de lamp aan haar voet; het daglicht houdt op waar het gewelf begint."
     },
     "foyer": {
       "title": "foyer",
-      "kicker": "Wie komt de deur voorbij?",
-      "intro": "De trap uit de zaal van world-engine komt uit in de foyer van de kelder. Twee deuren leiden verder: de club, die alleen opengaat voor een bezoeker met microfoon en geluid aan, en daarachter een podium alleen voor VR-brillen. De aanbiedingen op uw scherm zetten beide aan.",
-      "lookFor": "De messing leuning van de lange trap en de lantaarns naast de clubdeur: ze branden warm, terwijl de kleuren van de club zelf koud zijn."
+      "kicker": "Welke kant naar beneden?",
+      "intro": "De kelder loopt over de hele lengte van het terras, een laag gewelf onder zijn stenen. Twee trappen komen erin uit vanaf de gronden, één aan elk eind van het terras, en twee deuren leiden verder de club in, die alleen opengaat voor een bezoeker met microfoon en geluid aan.",
+      "lookFor": "De lantaarns bij de twee clubdeuren, en het licht erdoorheen: de kelder is warm, de club is koud."
     },
     "club": {
       "title": "club",
@@ -225,6 +125,85 @@
       "kicker": "Wie zingt er?",
       "intro": "Een trede boven de vloer, omlijst door het proscenium en van voren belicht. Het podium is voor zangers met een VR-bril: het gaat alleen open voor een immersieve sessie, en wie die verlaat staat weer op de vloer. Karaoke zal van hieruit lopen zodra de spraakverbinding bestaat.",
       "lookFor": "De microfoonstandaard in het midden en het voetlicht langs de rand: de zanger staat waar de twee lijnen van de vloer samenkomen."
+    },
+    "arcedit": {
+      "title": "arcedit",
+      "kicker": "Kan een machine leren ARC-puzzels op te lossen zoals een mens achter een scherm?",
+      "intro": "arcedit vraagt of een agent puzzels kan oplossen door te bewerken: hij kijkt rond, kiest een kleur en klikt, en hij ziet alleen scherp wat dicht bij zijn cursor ligt. Deze eerste zaal toont de taak. Een gescripte leraar kopieert een veelkleurig raster van vijf bij vijf, cel voor cel, getoond als een wolk van cellen om doorheen te lopen, als een film met het zicht van de agent onder het canvas, en als stilstaande beelden. Aan de westmuur is de omgeving als model gebouwd, het zicht in glas boven de tegels gestapeld. De bol naast de wolk brengt u in het canvas.",
+      "lookFor": "Let op hoe zelden het bronraster scherp is terwijl het antwoord wordt geschilderd; de kleur moet worden gehaald en meegedragen.",
+      "limit": "Wat hier hangt is de taak, uitgevoerd door het programma dat haar definieert; geen getrainde agent lost deze veelkleurige kopie al op."
+    },
+    "arcedit/agent": {
+      "title": "De getrainde agent",
+      "kicker": "Wat doet een getraind netwerk met zo'n smal zicht?",
+      "intro": "Een netwerk dat door nabootsing is getraind kopieert een effen geel vierkant dat het nooit zag. Het kiest uit handelingen als 'schilder deze cel in deze kleur', die de editor als klikken uitvoert: naar het palet, de kleur van de bron, het drie-bij-drie-antwoord, inleveren, zestien klikken. De episode hangt als een wolk van cellen, een film en twee stilstaande beelden, waarvan één het zicht alleen. Aan de noordmuur, wat in één paar runs het verschil maakte: twee netwerken bootsten dezelfde leraar na, alleen zijn schildervolgorde verschilde. Op effen rasters had het ene drie op vier beslissingen goed, het andere bijna alle; alleen kopieerde het ene geen van 128 vierkanten, het andere 124.",
+      "lookFor": "Volg de cursor: één keer naar het palet, dan schilderen zonder terug te keren, want de kleur zit op de kwast.",
+      "limit": "Eén episode illustreert een beleid dat 124 van 128 ongeziene vierkanten kopieert; het is niet de meting. Het leerde van een leraar, niet uit beloning, zijn handelingen weten al waar de cellen van het antwoord zijn, en het levert in als geen cel leeg is, niet als de kopie klopt."
+    },
+    "arcedit/reward": {
+      "title": "Leren van beloning",
+      "kicker": "Kan de agent leren zonder leraar, alleen betaald met een score?",
+      "intro": "Haal de leraar weg. Een klein netwerk begint bij niets; het krijgt een beetje telkens als het antwoordraster dichter bij de bron komt, een bonus voor het inleveren van een exacte kopie, en elke stap kost wat. Miljoenen stappen lang kopieert het niets exact, dan breekt het door. Aan de zuidmuur eindigen drie runs met vierkanten van twee bij twee op 96, 116 en 121 van 128 ongeziene vierkanten; met vierkanten van drie bij drie eindigt hetzelfde budget op 10, 50 en 11. Aan de oostmuur het grotere vierkant: de agent leert de kleur van de bron te schilderen, maar met zijn zekerste zetten raakt hij vaak door zijn tijd heen in plaats van in te leveren.",
+      "lookFor": "Vergelijk de stippen met de lijnen: de eindtelling is een aparte test, en de curven schommelen daarvoor sterk.",
+      "limit": "Drie runs per grootte, niet allemaal met dezelfde versie van de code. De drie-bij-drie-run die op 10 eindigde gebruikte de oude code; herhaald met de herstelde code haalde hij 107 van 128 binnen hetzelfde budget, dus een deel van het stokken hoort mogelijk bij de oude code."
+    },
+    "arcedit/record": {
+      "title": "Wat mislukte en wat standhield",
+      "kicker": "Wat leerde het project door zich te vergissen?",
+      "intro": "Elk experiment hier werd aangekondigd vóór zijn gegevens, en zijn verslag zegt wat het getal niet laat zien. Langs de muren één regel per verslag: wat gevraagd werd en wat terugkwam, een succes, een nulresultaat of een correctie. Twee grafieken dragen de lessen die terugkeren. Kleine fouten per stap stapelen zich op over een hele kopie, zodat een netwerk dat de meeste klikken goed heeft toch bijna niets kopieert. En een woordenschat van handelingen kan er bij nabootsing slechter uitzien en toch de enige zijn waarin willekeurig spel ooit een cel goed krijgt.",
+      "lookFor": "Lees de regels op volgorde: de meeste wendingen van het project kwamen van een getal dat niet betekende wat het eerst leek.",
+      "limit": "Dit zijn korte samenvattingen van gedateerde verslagen; enkele werden later aangevuld, en de regels geven de aangevulde lezing.",
+      "lines": {
+        "interface_v1": {
+          "title": "De interface is leerbaar",
+          "text": "Met bron en antwoord volledig in beeld en een woordenschat van 'schilder deze cel in deze kleur' kopieert een op een leraar getraind netwerk elk raster: 128 van 128, effen en veelkleurig, bij drie zaden."
+        },
+        "i2_encoder": {
+          "title": "Meestal goed per klik, fout in de kopie",
+          "text": "Door het smalle zicht de leraar nabootsend haalde een netwerk 87 % per klik en kopieerde toch hooguit 4 van 128 vierkanten: kleine fouten stapelen zich op, en ze klonteren samen."
+        },
+        "i3_action": {
+          "title": "Een betere woordenschat, verkeerd gemeten",
+          "text": "Met 'schilder deze cel in deze kleur' in plaats van rauwe klikken scoorde nabootsing lager per stap. Haar 0 van 128 kopieën waren een kortere weg die de volgorde van de leraar leerde; een geschudde leraar haalde later 124."
+        },
+        "i4_source_access": {
+          "title": "Geheugen is niet genoeg",
+          "text": "Een exact geheugen van het bronraster, teruggevoerd door hetzelfde smalle zicht, middelt elke onthouden cel met zo'n veertig andere: de kleur is onthouden en toch niet gezien."
+        },
+        "snapshot": {
+          "title": "Eén onthouden blik",
+          "text": "Bewaar één eerder zicht ongewijzigd, en een leraar die moet kijken voordat hij schildert kopieert elk raster uit het geheugen, effen en veelkleurig: 128 van 128."
+        },
+        "aspace_measure": {
+          "title": "Willekeurig spel komt alleen verder met de juiste woorden",
+          "text": "Met willekeurig gekozen rauwe klikken eindigden 256 spellen zonder één goede cel; met willekeurig 'schilder deze cel in deze kleur' eindigden 152 van 256 met enkele goede. Geen enkel spel kopieerde een raster."
+        },
+        "i9_restriction": {
+          "title": "Een wereld klein genoeg om helemaal te kennen",
+          "text": "De editor teruggebracht tot 70.656 toestanden, elk opgesomd, zodat beweringen over welke handelingen het uitvinden waard zijn tegen de waarheid worden getoetst in plaats van geschat."
+        },
+        "i11_i12_levers": {
+          "title": "Twee hefbomen, vier proeven, alle 0 van 128",
+          "text": "Leren van beloning, waarbij het moment waarop de beloning komt en de grootte van het raster elk op twee manieren werden gevarieerd: alle vier proeven kopieerden 0 van 128 vierkanten. Later gevonden: de beloning vroeg nooit om het inleveren dat de score telde."
+        },
+        "i16_harness_revalidation": {
+          "title": "Het harnas had fouten die de tests misten",
+          "text": "De code die ervaring verzamelt en beleid beoordeelt had fouten terwijl alle 410 tests slaagden. Hersteld en opnieuw gevalideerd met 434 tests; hoe vaak hij evalueert verandert de training nu met geen enkele bit."
+        }
+      }
+    },
+    "arcedit/workshop": {
+      "title": "De werkplaats",
+      "kicker": "Waaruit bestaat de repository?",
+      "intro": "De repository als model op een tafel: elk blok een map, zo groot als de bytes die ze bevat. De motor, de instrumenten, de controles en de verslagen zijn er allemaal; een paar ervan hangen in de andere zalen.",
+      "lookFor": "De verslagen nemen het grootste deel van de tafel in; de motor zelf is klein."
+    },
+    "arcedit/inside": {
+      "title": "Binnen in het canvas",
+      "kicker": "Hoe is het om op het canvas te staan?",
+      "intro": "Hier hebt u de grootte van een cel. De episode van de leraar speelt zich om u heen af: het bronraster staat aan één kant, het antwoordkader vult zich onder uw voeten cel voor cel, het palet is een rij verlichte stenen, en de cursor is een lichtzuil die komt en gaat. Boven u hangen de lagen van het zicht van de agent als glazen vloeren, de laagste scherp en klein, elke laag erboven twee keer zo breed en twee keer zo vaag, tot de bovenste alles bedekt en bijna niets zegt. Spoel de tijd om de kleur van het palet naar de cel te zien reizen.",
+      "lookFor": "Sta op het antwoordkader en kijk omhoog door de lagen terwijl de cursor passeert; het scherpe venster volgt hem.",
+      "limit": "Dit is de episode van de leraar, niet die van een getrainde agent, en de schaal is een middel om te kijken; de agent ziet het canvas nooit als een plaats."
     }
   },
   "exhibits": {
@@ -268,37 +247,61 @@
       "title": "Het planetentrio op de schaal van de hemel",
       "caption": "Dezelfde drie opgenomen werelden als in de zaal van coarsen, elk tachtig meter breed: 508.744 deeltjes, 1.129 beelden over 96 dynamische tijden, één beginopstelling, drie sterktes van afstoting tussen de zware en de lichte soort. IJzerwarme gebieden bevatten meer zware deeltjes, bleke meer lichte; de gloed codeert temperatuur."
     },
-    "arcedit.results.grove#0": {
-      "title": "De editor als plaats",
-      "caption": "De editor als plaats: cellen als tegels, de cursor als lichtzuil, het zicht van de agent als glasplaten gestapeld boven het canvas, elke laag twee keer zo breed als die eronder. Posities en kleuren komen uit de episode; de verhoudingen zijn ontworpen."
-    },
-    "arcedit.results.grove.oracle_side5#0": {
+    "arcedit#0": {
       "title": "De leraar kopieert een veelkleurig raster",
       "caption": "De gescripte leraar kopieert een veelkleurig raster van vijf bij vijf in 114 klikken: naar het palet, naar de cel, terug naar het palet. Dit toont de taak via het programma dat haar definieert; geen getrainde agent lost de veelkleurige kopie al op."
     },
-    "arcedit.results.grove.oracle_side5#1": {
+    "arcedit#1": {
       "title": "De episode van de leraar als film",
       "caption": "De episode van de leraar als film, het canvas boven en het zicht van de agent onder. Let op hoe weinig van de bron ooit scherp is terwijl het antwoord wordt geschilderd; dat is de hele moeilijkheid."
     },
-    "arcedit.results.grove.oracle_side5#2": {
+    "arcedit#2": {
       "title": "De taak vóór de eerste klik",
       "caption": "De taak vóór de eerste klik: het bronraster, een pijl, het lege antwoordkader met zijn handvat, en een werkbalk van tien kleuren en zeven gereedschappen, in elke episode willekeurig geplaatst."
     },
-    "arcedit.results.grove.policy_side3#0": {
+    "arcedit#3": {
+      "title": "De leraar halverwege de episode, met zijn zicht",
+      "caption": "De gescripte leraar halverwege een veelkleurige kopie. Boven het canvas: het bronraster, het half geschilderde antwoordkader, het palet. Onder de negen niveaus van het zicht dat hij bij deze stap zou krijgen, van scherp tot grof."
+    },
+    "arcedit#4": {
+      "title": "De editor als plaats",
+      "caption": "De editor als plaats: cellen als tegels, de cursor als lichtzuil, het zicht van de agent als glasplaten gestapeld boven het canvas, elke laag twee keer zo breed als die eronder. Posities en kleuren komen uit de episode; de verhoudingen zijn ontworpen."
+    },
+    "arcedit.agent#0": {
       "title": "Een getrainde agent kopieert een geel vierkant",
       "caption": "Een getrainde agent kopieert een geel vierkant in 16 klikken en ziet alleen wat dicht bij zijn cursor is. De lagen boven het canvas zijn zijn zicht, scherp onderaan, wazig bovenaan. Eén episode die een beleid illustreert dat 124 van 128 ongeziene vierkanten haalt; het is niet de meting."
     },
-    "arcedit.results.grove.policy_side3#1": {
+    "arcedit.agent#1": {
       "title": "Dezelfde episode als film",
       "caption": "Dezelfde episode als film: het canvas boven, de negen niveaus van het zicht van de agent onder, drie klikken per seconde. Zie de cursor naar het palet gaan en met een kleur terugkomen."
     },
-    "arcedit.results.grove.policy_side3#2": {
+    "arcedit.agent#2": {
+      "title": "Alleen de volgorde van de leraar veranderen",
+      "caption": "Twee netwerken bootsten dezelfde leraar na; alleen zijn schildervolgorde verschilde. Op effen rasters heeft het ene 76 % van de achtergehouden beslissingen goed, het andere 98 %. Alleen kopieert het eerste geen van 128 vierkanten, het tweede 124."
+    },
+    "arcedit.agent#3": {
       "title": "Halverwege de episode, schilderend met de gekozen kleur",
       "caption": "Halverwege de episode: de getrainde agent heeft de kleur van de bron gekozen en schildert het antwoord. Het witte vierkant is zijn cursor; de blauwe kaders zijn zijn kijkvensters, elk twee keer zo groot als het vorige."
     },
-    "arcedit.results.grove.policy_side3#3": {
+    "arcedit.agent#4": {
       "title": "Wat de agent ziet, negen niveaus",
       "caption": "Wat de agent in één stap ziet: negen niveaus, elk twee keer zo grof als het vorige, de cursor altijd in het midden. Dit is de hele waarneming. Er is geen kaart en geen coördinaat."
+    },
+    "arcedit.reward#0": {
+      "title": "Leren van beloning, zonder leraar",
+      "caption": "Geen leraar: betaald als het antwoord dichterbij komt en voor een ingeleverde exacte kopie. Lijnen zijn tests tijdens de training op 128 ongeziene vierkanten; stippen de eindtest. Twee bij twee: 96, 116, 121 van 128. Drie bij drie, zelfde budget: 10, 50, 11."
+    },
+    "arcedit.reward#1": {
+      "title": "Het leest de kleur en levert dan vaak niet in",
+      "caption": "Drie bij drie, dezelfde drie runs. Links leert de agent de kleur van de bron te schilderen. Midden raakt hij met zijn zekerste zetten in veel spellen nog door zijn tijd heen. Rechts eindkopieën van 128, zeker spel tegenover gesampled spel, dat bijna altijd inlevert."
+    },
+    "arcedit.record#0": {
+      "title": "Kleine fouten stapelen zich op",
+      "caption": "Elke stip is een netwerk dat de leraar leerde nabootsen. De curve is wat onafhankelijke fouten per klik zouden voorspellen voor een kopie van vijftien klikken. Bij de 87 % van de beste run, over beide soorten rasters, voorspelt ze 17 van 128; het netwerk kopieerde er 4."
+    },
+    "arcedit.record#1": {
+      "title": "Welke woordenschat beter is hangt af van de vraag",
+      "caption": "Dezelfde editor, twee woordenschatten. Bij het stap voor stap nabootsen van een leraar scoren rauwe klikken veel hoger boven toeval. Bij willekeurige keuze eindigen rauwe klikken nooit een spel met een goede cel, 'schilder deze cel in deze kleur' wel, in 152 van 256 spellen."
     },
     "arcedit.inside.canvas": {
       "title": "Het canvas op celschaal",

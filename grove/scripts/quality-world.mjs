@@ -26,7 +26,8 @@ const stations = [
   ['phototroph', 0, 14, 180, -8],
   ['world-engine', 0, -14, 0, 5],
   ['orangery', 0, -36, 0, 12],
-  ['foyer', 21, -22.5, 90, 4],
+  ['stair-north', -13, -80, 90, 6],
+  ['foyer', -15, -41, -90, 3],
   ['club', 0, -20, 0, 4],
   ['stage', 2.2, -74.5, 180, 4],
   ['gallery', 0, 33, 180, 12],
@@ -104,8 +105,9 @@ try {
     return { rooms, batches, instances, tapes: app.world.tapes.filter(Boolean).length };
   });
   report.world = world;
-  check('All 35 rooms use runtime architecture (34 Observatory, the Orrery in space)', world.rooms.length === 35
-    && world.rooms.filter((room) => room.architecture === 'observatory').length === 34
+  // The palace's seventeen with the cellar venue, and arcedit's six since its redesign (2026-09-17).
+  check('All 25 rooms use runtime architecture (24 Observatory, the Orrery in space)', world.rooms.length === 25
+    && world.rooms.filter((room) => room.architecture === 'observatory').length === 24
     && world.rooms.filter((room) => room.architecture === 'space').length === 1, world.rooms);
   check('Architecture stays near fifteen draw batches a room across the whole world', world.batches < world.rooms.length * 16, world.batches);
   // Six tapes: einstruct's two sheets, phototroph's capture, and arcedit's three

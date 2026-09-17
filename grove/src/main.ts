@@ -4,6 +4,7 @@ import { detectDevice } from "./device";
 import { demoEnabled, demoMansion } from "./demo";
 import { attachDesktopControls, type DesktopControls } from "./control/desktop";
 import { consumeDeltas, createInput, type Commands } from "./control/input";
+import { reachableRooms } from "./world/navigation";
 import { clampHead, createBody, settle, step, teleport } from "./control/locomotion";
 import { attachTouchControls } from "./control/touch";
 import { XrControls, requestXrSession, watchXrSupport } from "./control/xr";
@@ -14,6 +15,8 @@ import { Turnstile } from "./world/turnstile";
 import { VOICE_URL } from "./config";
 import type { WorldChat } from "./ui/world-chat";
 import type { WristMenu } from "./ui/wrist-menu";
+import type { Go } from "./control/go";
+import type { RoomMap } from "./ui/map";
 import { CLOSED, stepAsk, type AskEvent } from "./ui/ask-menu";
 import { FAYE_ROOM, whereIsFaye } from "./faye/names";
 import type { ChatEntry } from "./ui/chat-log";
@@ -42,7 +45,7 @@ import type { VenueGear } from "./audio/venue-gear";
 import type { BeatFollower } from "./audio/beat";
 import { frameAt } from "./tape/time";
 import mansionDocument from "./world/mansion.json";
-import { parseMansion, roomById, type GameSurface as GameSurfaceConfig } from "./world/schema";
+import { parseMansion, roomById, type GameSurface as GameSurfaceConfig, type Room } from "./world/schema";
 import { buildWorld, exhibitRoom, neighbourhood, type BuiltWorld } from "./world/world";
 import { PortalSystem } from "./world/portal";
 import { pickLocale } from "./ui/locale";
@@ -140,6 +143,7 @@ const hud = new Hud(hudRoot, {
   },
   onUnmute: () => void toggleAudio(),
   onAtlas: (mode) => void chooseAtlas(mode),
+  onMap: () => commands.toggleMap(),
   onToggleChat: () => {
     if (!chat.open) {
       notice("Chat opens once you are connected to the room.");
@@ -196,7 +200,7 @@ const gameSurface = new GameSurface(hudRoot, {
 const guide = new VisitorGuide(hudRoot, mansion, device, () => {
   canvas.focus();
   if (!device.headset) desktopControls?.requestLock();
-}, (surface) => openGameSurface(surface));
+}, (surface) => openGameSurface(surface), (id) => goToRoom(id));
 guide.onShow = () => hud.openPanel("guide");
 guide.onHide = () => {
   if (hud.panel === "guide") hud.closePanel();
@@ -426,6 +430,7 @@ function onAskEvent(event: AskEvent): void {
 }
 
 view.renderer.xr.addEventListener("sessionstart", () => {
+  go?.release();
   worldChatLoad ??= Promise.all([import("./ui/world-chat"), import("./ui/wrist-menu")]).then(
     ([{ WorldChat: Panel }, { WristMenu: Menu }]) => {
       const panel = new Panel();
@@ -486,6 +491,19 @@ const commands: Commands = {
     hud.togglePanel("timing", { focus: false });
   },
   toggleUnmute: () => void toggleAudio(),
+  point: (at) => {
+    void loadGo();
+    return go && !view.renderer.xr.isPresenting ? go.point(at) : "nothing";
+  },
+  nextExhibit: (delta) => {
+    if (!view.renderer.xr.isPresenting) {
+      void loadGo().then((loaded) => {
+        if (!view.renderer.xr.isPresenting) loaded?.next(delta);
+      });
+    }
+  },
+  toggleMap: () => void toggleMap(),
+  release: () => go?.release(),
   // In a headset the offers are not on any screen: the trigger takes them.
   // A microphone cannot be allowed inside the session; sound can.
   confirm: () => {
@@ -496,6 +514,90 @@ const commands: Commands = {
     return false;
   },
 };
+
+/**
+ * Go and point load on demand, once (control/go.ts): the glide, the framing
+ * and the N key are code a visitor needs only after the first click, so the
+ * startup budget does not carry them. The page asks for them when idle, so
+ * the first click usually finds them already here.
+ */
+let go: Go | null = null;
+let goLoad: Promise<Go | null> | null = null;
+/** Null when the download failed; the next ask tries again. */
+function loadGo(): Promise<Go | null> {
+  goLoad ??= import("./control/go").then(({ Go: Pointing }) => (go = new Pointing({
+    mansion,
+    body,
+    camera: view.camera,
+    scene: view.scene,
+    provenance,
+    hud: hudRoot!,
+    eyeHeight: EYE_HEIGHT,
+    keys: !device.touch,
+    locked: lockedRoom,
+    notice,
+  }))).catch(() => {
+    goLoad = null;
+    return null;
+  });
+  return goLoad;
+}
+
+/**
+ * The one way to go to a room without walking, for the Guide's links and the
+ * plan: its spawn, through `teleport`, so only rooms a walk from here reaches
+ * and never a locked one. False leaves the visitor where they are.
+ */
+function goToRoom(id: string): boolean {
+  const room = roomById(mansion, id);
+  if (!room || view.renderer.xr.isPresenting) return false;
+  // `into`: rooms stand over one another, and the spawn's plan position alone could name the one above.
+  if (!teleport(body, mansion, room.spawn.position[0], room.spawn.position[2], lockedRoom, { into: id })) return false;
+  go?.release();
+  body.yaw = MathUtils.degToRad(room.spawn.yawDeg);
+  body.pitch = 0;
+  bodyPlaced = true;
+  return true;
+}
+
+let mapLoad: Promise<RoomMap | null> | null = null;
+let mapWaiting = false;
+async function toggleMap(): Promise<void> {
+  // A second press while the plan is still downloading is the same press.
+  if (view.renderer.xr.isPresenting || mapWaiting) return;
+  mapLoad ??= import("./ui/map").then(({ RoomMap: Plan }) => new Plan(hudRoot!, (id) => {
+    if (!goToRoom(id)) {
+      notice(`No open way leads to ${roomTitleOf(id)} from here.`);
+      return false;
+    }
+    canvas!.focus();
+    if (!device.touch) desktopControls?.requestLock();
+    return true;
+  })).catch(() => {
+    mapLoad = null;
+    notice("The plan could not load. Try again in a moment.");
+    return null;
+  });
+  mapWaiting = true;
+  const plan = await mapLoad.finally(() => { mapWaiting = false; });
+  if (!plan || view.renderer.xr.isPresenting) return;
+  if (plan.open) {
+    plan.close();
+    return;
+  }
+  plan.show({
+    mansion,
+    room: body.room,
+    x: body.x,
+    z: body.z,
+    reachable: reachableRooms(mansion, body.room, lockedRoom),
+    title: roomTitleOf,
+  });
+}
+
+function roomTitleOf(id: string): string {
+  return roomTitle(labelsLoaded(locale), id) ?? (roomById(mansion, id)?.title || id);
+}
 
 const xr = new XrControls({
   renderer: view.renderer,
@@ -544,12 +646,19 @@ const portals = new PortalSystem(mansion, view.renderer);
 portals.setScale(startRoom.scale);
 view.world.add(portals.group);
 
-const HINT = "Click the view to look around · W A S D to walk · Escape releases the pointer";
+const HINT = "Click the view to look around, the floor to go there, an exhibit to see it · W A S D to walk · L plan";
 if (device.touch) {
-  attachTouchControls(hudRoot, canvas, input);
+  attachTouchControls(hudRoot, canvas, input, (x, y) => {
+    commands.point({ x: (x / canvas.clientWidth) * 2 - 1, y: 1 - (y / canvas.clientHeight) * 2 });
+  });
 } else {
   desktopControls = attachDesktopControls(canvas, input, commands,
-    (locked) => hud.setHint(locked ? null : HINT),
+    (locked) => {
+      hud.setHint(locked ? null : HINT);
+      // No release here: the browser spends the first Escape on the pointer,
+      // which frees the mouse to read the framed panel; the second walks on.
+      hudRoot.classList.toggle("locked", locked);
+    },
     () => hud.notice("Your browser could not capture the pointer. Click the view to try again, or open Guide to choose a room."));
   hud.setHint(HINT);
 }
@@ -846,6 +955,20 @@ function offerGameTable(): void {
   hud.setGameOffer(surface ? { title: surface.title, key: device.touch ? null : "G" } : null);
 }
 
+// A repository's tabletop model: its reader (ui/model-reading.ts) loads the
+// first time the visitor enters a room that has one; most rooms never need it.
+let modelReader: ((room: Room | undefined) => void) | null = null;
+let modelReaderLoading = false;
+function readRepoModel(): void {
+  if (modelReader) return modelReader(roomById(mansion, body.room));
+  if (modelReaderLoading || !roomById(mansion, body.room)?.repoModels.length) return;
+  modelReaderLoading = true;
+  void import("./ui/model-reading").then(
+    ({ attachModelReader }) => { modelReader = attachModelReader(hud.root, mansion, body, view.camera); },
+    () => { modelReaderLoading = false; },
+  );
+}
+
 /** The mode buttons follow the screen that holds the decoder: a planet's modes, or nothing. */
 function syncAtlasHud(): void {
   const screen = activeScreen;
@@ -932,12 +1055,14 @@ view.start((dt, time, rawDt) => {
   const movingBefore = input.forward !== 0 || input.strafe !== 0;
   step(body, input, dt, mansion, heading, lockedRoom);
   if (movingBefore) bodyPlaced = true;
+  if (go && !presenting && go.update(dt, input)) bodyPlaced = true;
   consumeDeltas(input);
 
   view.rig.position.set(body.x, body.y, body.z);
   adaptExposure(dt);
   handOverVideo();
   offerGameTable();
+  readRepoModel();
   if (presenting) {
     // Room-scale walking can take the head through a wall the rig never met.
     view.camera.getWorldPosition(headWorld);
@@ -1202,6 +1327,8 @@ window.addEventListener("pagehide", (event) => {
 });
 
 boot();
+// After the first room, not with it: the first click should not wait on a download.
+setTimeout(() => void loadGo(), 2500);
 // The service worker (cache, offline hall, media integrity) and the reload
 // offer after a deploy; both off in `vite dev`.
 updates = startGroveUpdates({ tier: device.tier, hud, xr: view.renderer.xr });
