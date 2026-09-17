@@ -27,9 +27,11 @@ export interface RepoBlock {
 
 /** The plate a district stands on, the gap between siblings, and how tall a leaf tower may grow. */
 export const PLATE_M = 0.03;
-const GAP_M = 0.025;
-const TOWER_MIN_M = 0.04;
-const TOWER_MAX_M = 0.32;
+const GAP_M = 0.04;
+const TOWER_MIN_M = 0.03;
+const TOWER_MAX_M = 0.2;
+/** A leaf tower stands on its own footing, inset so the plate around it reads as a street. */
+const FOOTING_M = 0.03;
 
 interface Node {
   path: string;
@@ -133,6 +135,10 @@ export function layoutRepoModel(model: RepoModel): RepoBlock[] {
       const r = rects[i]!;
       const inner = { x: r.x + GAP_M / 2, z: r.z + GAP_M / 2, width: Math.max(0, r.width - GAP_M), depth: Math.max(0, r.depth - GAP_M) };
       const leaf = n.children.length === 0;
+      if (leaf) {
+        const inset = Math.min(FOOTING_M, inner.width / 4, inner.depth / 4);
+        inner.x += inset; inner.z += inset; inner.width -= 2 * inset; inner.depth -= 2 * inset;
+      }
       const rise = leaf
         ? TOWER_MIN_M + (TOWER_MAX_M - TOWER_MIN_M) * Math.min(1, Math.max(0, (Math.log10(n.bytes) - lo) / Math.max(1e-6, hi - lo)))
         : PLATE_M;

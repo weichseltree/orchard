@@ -875,12 +875,12 @@ function repoTables(b: Builder): void {
       b.add("box", "stone", leg.x, y + (model.tableHeight - 0.06) / 2, leg.z, 0.3, model.tableHeight - 0.06, depth * 0.55, turn);
     }
     b.add("box", "brass", x, top - 0.03, z, width + 0.16, 0.06, depth + 0.16, turn);
-    b.add("box", "inset", x, top + 0.002, z, width + 0.04, 0.008, depth + 0.04, turn);
+    b.add("box", "roof", x, top + 0.002, z, width + 0.04, 0.008, depth + 0.04, turn);
     for (const block of layoutRepoModel(model)) {
       if (block.width < 0.01 || block.depth < 0.01) continue;
       const at = fromTable(model, block.x, block.z);
       const bottom = block.level * PLATE_M;
-      const finish: Finish = block.leaf ? (block.room ? "light" : "stone") : block.level % 2 === 0 ? "joint" : "path";
+      const finish: Finish = block.leaf ? (block.room ? "light" : "stone") : block.level % 2 === 0 ? "inset" : "joint";
       b.add("box", finish, at.x, top + 0.006 + (bottom + block.height) / 2, at.z, block.width, block.height - bottom, block.depth, turn);
     }
     // A lamp over the model, low enough to read by.
