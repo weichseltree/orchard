@@ -7,14 +7,16 @@ import { ModelHangingSchema } from "./schema";
 // The exhibit itself, on a real glb parsed by three's GLTFLoader: a unit
 // triangle built here byte by byte, the same shape tests/test_model.py builds.
 
-function triangleGlb({ scenes = 1 } = {}): ArrayBuffer {
+function triangleGlb({ scenes = 1, metallic = true } = {}): ArrayBuffer {
   const positions = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
   const json = {
     asset: { version: "2.0" },
     buffers: [{ byteLength: positions.byteLength }],
     bufferViews: [{ buffer: 0, byteOffset: 0, byteLength: positions.byteLength }],
     accessors: [{ bufferView: 0, componentType: 5126, count: 3, type: "VEC3", min: [0, 0, 0], max: [1, 1, 0] }],
-    meshes: [{ primitives: [{ attributes: { POSITION: 0 } }] }],
+    // No material is glTF's default, metalness 1; a matte one says metallicFactor 0.
+    ...(metallic ? {} : { materials: [{ pbrMetallicRoughness: { metallicFactor: 0 } }] }),
+    meshes: [{ primitives: [{ attributes: { POSITION: 0 }, ...(metallic ? {} : { material: 0 }) }] }],
     nodes: [{ mesh: 0 }],
     ...(scenes ? { scenes: Array.from({ length: scenes }, () => ({ nodes: [0] })), scene: 0 } : {}),
   };
@@ -122,7 +124,15 @@ describe("ModelExhibit, review fixes", () => {
     const materials: MeshStandardMaterial[] = [];
     first.group.traverse((node) => { if (node instanceof Mesh && node.name !== "plinth") materials.push(node.material as MeshStandardMaterial); });
     expect(materials.length).toBeGreaterThan(0);
-    for (const material of materials) expect(material.envMap).toBe(env);
+    for (const material of materials) {
+      expect(material.envMap).toBe(env);
+      expect(material.envMapIntensity).toBe(1);
+    }
+    const matte = await ModelExhibit.load({ hanging, baseUrl: base, renderer: own, tier: "desktop", bytes: async () => triangleGlb({ metallic: false }), environment: build });
+    matte.group.traverse((node) => {
+      if (node instanceof Mesh && node.name !== "plinth") expect((node.material as MeshStandardMaterial).envMapIntensity).toBe(0.35);
+    });
+    matte.dispose();
     first.dispose();
     expect(disposedEnv).not.toHaveBeenCalled();
     second.dispose();

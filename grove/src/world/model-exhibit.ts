@@ -39,6 +39,16 @@ export interface ModelExhibitOptions {
 
 /** Extensions the grove cannot decode; the bundler refuses them too. */
 const UNDECODABLE = ["KHR_draco_mesh_compression"];
+/** Above this metalness a material is a metal and reflects the environment at full strength. */
+const METALLIC = 0.5;
+/**
+ * How much of the environment a matte material takes. At full strength
+ * arcedit's env.glb (metalness 0 throughout) came out washed: its palette
+ * pastel, its black cells grey, its bezels near white, against its own
+ * poster. With none, a metal is black. A third keeps the poster's saturated
+ * cells and mid-grey bezels (seen in Chromium, 2026-09-17).
+ */
+const MATTE_ENVIRONMENT = 0.35;
 /** The plinth: the Observatory's stone, a brass-toned cap would be a second draw. */
 const PLINTH_COLOUR = "#53616c";
 
@@ -73,12 +83,13 @@ export class ModelExhibit {
     this.#baseUrl = baseUrl;
     this.#environment = environment;
     if (environment) {
-      // Only materials that reflect, and only where the file brought no map of its own.
+      // Only PBR materials, and only where the file brought no map of its own.
       model.traverse((node) => {
         for (const material of materialsOf(node)) {
           const pbr = material as MeshStandardMaterial;
           if (!pbr.isMeshStandardMaterial || pbr.envMap) continue;
           pbr.envMap = environment;
+          pbr.envMapIntensity = pbr.metalness > METALLIC ? 1 : MATTE_ENVIRONMENT;
           pbr.needsUpdate = true;
         }
       });
