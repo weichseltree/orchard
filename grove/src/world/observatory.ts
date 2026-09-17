@@ -994,7 +994,12 @@ function obelisk(b: Builder, x: number, z: number): void {
 function plan(room: Room, mansion: Mansion | null): Builder {
   const b = new Builder(room, mansion);
   if (room.fallback.kind === "ground") grounds(b);
-  else { chamberFloor(b); chamberWalls(b); cladding(b); vault(b); statuary(b); gameTables(b); venue(b); repoTables(b); }
+  else {
+    chamberFloor(b); chamberWalls(b); cladding(b);
+    // A court sunk into the ground has no lid: the sky is its ceiling.
+    if (!room.openToSky) vault(b);
+    statuary(b); gameTables(b); venue(b); repoTables(b);
+  }
   flights(b);
   return b;
 }
@@ -1004,6 +1009,7 @@ function venue(b: Builder): void {
   if (b.room.id === "club") clubFittings(b);
   else if (b.room.id === "stage") stageFittings(b);
   else if (b.room.id === "foyer") foyerFittings(b);
+  else if (b.room.id === "stair-court") courtFittings(b);
 }
 
 /** A rotation about y: a box turned to run along z instead of x, a ring turned to face along x. */
@@ -1122,6 +1128,22 @@ function stageFittings(b: Builder): void {
 }
 
 /** The foyer, the undercroft under the terrace: a lantern either side of each of the club's doors. */
+/**
+ * The sunken court where the terrace's two arms, the garden and the club
+ * meet: a lantern either side of the club's door, as the undercroft has, and
+ * a paving of the same flags round the foot of the flights.
+ */
+function courtFittings(b: Builder): void {
+  const room = b.room, [x0, y0, z0] = room.bounds.min, [x1, , z1] = room.bounds.max;
+  for (const door of room.doorways.filter(d => d.to === "club")) {
+    for (const side of [-1, 1]) {
+      const z = door.center + side * (door.width / 2 + 0.6);
+      if (z > z0 + 0.6 && z < z1 - 0.6) lantern(b, x1 - 0.6, z);
+    }
+  }
+  b.box("path", (x0 + x1) / 2, y0 + 0.006, (z0 + z1) / 2, x1 - x0 - 1.2, 0.012, z1 - z0 - 1.2);
+}
+
 function foyerFittings(b: Builder): void {
   const room = b.room, [, , z0] = room.bounds.min, [x1, , z1] = room.bounds.max;
   for (const door of room.doorways.filter(d => d.to === "club")) {

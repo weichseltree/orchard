@@ -15,7 +15,6 @@ const mansion = parseMansion(mansionDocument);
 const hall = roomById(mansion, "hall")!;
 const wing = roomById(mansion, "world-engine")!;
 const parterre = roomById(mansion, "parterre")!;
-const terrace = roomById(mansion, "terrace")!;
 const west = roomById(mansion, "orchard-west")!;
 
 describe("stairs", () => {
@@ -50,8 +49,11 @@ describe("stairs", () => {
     expect(hallFlights[0]!.rise).toBeCloseTo(1.5);
     expect(hallFlights[0]!.direction).toBe(1);
     expect(flightsOf(mansion, wing).map((f) => f.door.to)).toEqual([]);
-    expect(flightsOf(mansion, parterre).map((f) => f.door.to)).toEqual(["terrace", "terrace", "terrace"]);
-    expect(flightsOf(mansion, terrace).filter((f) => f.door.to === "orangery")).toHaveLength(3);
+    // The garden climbs to both arms of the terrace and goes down into the court between them.
+    expect(flightsOf(mansion, parterre).map((f) => f.door.to)).toEqual(["terrace", "terrace-north", "terrace"]);
+    // The orangery's doors are on the terrace's north arm, and one of the three went with the court (2026-09-17).
+    const north = roomById(mansion, "terrace-north")!;
+    expect(flightsOf(mansion, north).filter((f) => f.door.to === "orangery")).toHaveLength(2);
   });
 
   it("ramps the floor from the foot of the flight to the doorway plane", () => {

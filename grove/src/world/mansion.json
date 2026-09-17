@@ -494,15 +494,7 @@
           "height": 4.6
         },
         {
-          "to": "terrace",
-          "axis": "x",
-          "at": -10,
-          "center": -42,
-          "width": 3,
-          "height": 5
-        },
-        {
-          "to": "terrace",
+          "to": "terrace-north",
           "axis": "x",
           "at": -10,
           "center": -55,
@@ -510,7 +502,7 @@
           "height": 5
         },
         {
-          "to": "terrace",
+          "to": "terrace-north",
           "axis": "x",
           "at": -10,
           "center": -68,
@@ -670,7 +662,7 @@
           "treadMeters": 0.42
         },
         {
-          "to": "foyer",
+          "to": "foyer-south",
           "axis": "z",
           "at": 72,
           "center": -15,
@@ -746,16 +738,16 @@
         "max": [
           -10,
           -1.4,
-          72
+          -35
         ]
       },
       "spawn": {
         "position": [
           -15,
           -5,
-          -41
+          -60
         ],
-        "yawDeg": -90
+        "yawDeg": 90
       },
       "doorways": [
         {
@@ -768,6 +760,135 @@
           "signRoom": "court-north"
         },
         {
+          "to": "club",
+          "axis": "x",
+          "at": -10,
+          "center": -55,
+          "width": 4,
+          "height": 3.2
+        },
+        {
+          "to": "stair-court",
+          "axis": "z",
+          "at": -35,
+          "center": -11.8,
+          "width": 3.2,
+          "height": 3.2
+        }
+      ],
+      "hangings": [],
+      "architecture": "observatory"
+    },
+    {
+      "id": "stair-court",
+      "title": "sunken court",
+      "presence": "club",
+      "fallback": {
+        "kind": "box",
+        "color": "#101c2b"
+      },
+      "bounds": {
+        "min": [
+          -20,
+          -5,
+          -35
+        ],
+        "max": [
+          -10,
+          0,
+          -11
+        ]
+      },
+      "spawn": {
+        "position": [
+          -11.5,
+          -5,
+          -31
+        ],
+        "yawDeg": 180
+      },
+      "doorways": [
+        {
+          "to": "terrace-north",
+          "axis": "z",
+          "at": -35,
+          "center": -16,
+          "width": 5,
+          "height": 3.2
+        },
+        {
+          "to": "foyer",
+          "axis": "z",
+          "at": -35,
+          "center": -11.8,
+          "width": 3.2,
+          "height": 3.2,
+          "signRoom": "foyer"
+        },
+        {
+          "to": "terrace",
+          "axis": "z",
+          "at": -11,
+          "center": -16,
+          "width": 5,
+          "height": 3.2
+        },
+        {
+          "to": "foyer-south",
+          "axis": "z",
+          "at": -11,
+          "center": -11.8,
+          "width": 3.2,
+          "height": 3.2
+        },
+        {
+          "to": "parterre",
+          "axis": "x",
+          "at": -20,
+          "center": -23,
+          "width": 5,
+          "height": 3.6,
+          "treadMeters": 0.35
+        },
+        {
+          "to": "club",
+          "axis": "x",
+          "at": -10,
+          "center": -27,
+          "width": 4,
+          "height": 3.2
+        }
+      ],
+      "hangings": [],
+      "architecture": "observatory",
+      "openToSky": true
+    },
+    {
+      "id": "foyer-south",
+      "title": "south undercroft",
+      "presence": "club",
+      "bounds": {
+        "min": [
+          -20,
+          -5,
+          -11
+        ],
+        "max": [
+          -10,
+          -1.4,
+          72
+        ]
+      },
+      "spawn": {
+        "position": [
+          -15,
+          -5,
+          40
+        ],
+        "yawDeg": 90
+      },
+      "doorways": [
+        {
           "to": "stair-south",
           "axis": "z",
           "at": 72,
@@ -777,20 +898,13 @@
           "signRoom": "court-south"
         },
         {
-          "to": "club",
-          "axis": "x",
-          "at": -10,
-          "center": -55,
-          "width": 4,
-          "height": 3.2
-        },
-        {
-          "to": "club",
-          "axis": "x",
-          "at": -10,
-          "center": -27,
-          "width": 4,
-          "height": 3.2
+          "to": "stair-court",
+          "axis": "z",
+          "at": -11,
+          "center": -11.8,
+          "width": 3.2,
+          "height": 3.2,
+          "signRoom": "club"
         }
       ],
       "hangings": [],
@@ -830,7 +944,7 @@
           "height": 3.2
         },
         {
-          "to": "foyer",
+          "to": "stair-court",
           "axis": "x",
           "at": -10,
           "center": -27,
@@ -1346,6 +1460,73 @@
       "exposure": 1
     },
     {
+      "id": "terrace-north",
+      "title": "north terrace",
+      "presence": "terrace",
+      "fallback": {
+        "kind": "ground",
+        "color": "#101c2b"
+      },
+      "bounds": {
+        "min": [
+          -20,
+          0,
+          -76
+        ],
+        "max": [
+          -10,
+          8,
+          -35
+        ]
+      },
+      "spawn": {
+        "position": [
+          -15,
+          0,
+          -50
+        ],
+        "yawDeg": 90
+      },
+      "doorways": [
+        {
+          "to": "orangery",
+          "axis": "x",
+          "at": -10,
+          "center": -55,
+          "width": 3,
+          "height": 5
+        },
+        {
+          "to": "orangery",
+          "axis": "x",
+          "at": -10,
+          "center": -68,
+          "width": 3,
+          "height": 5
+        },
+        {
+          "to": "parterre",
+          "axis": "x",
+          "at": -20,
+          "center": -38,
+          "width": 5,
+          "height": 8
+        },
+        {
+          "to": "stair-court",
+          "axis": "z",
+          "at": -35,
+          "center": -16,
+          "width": 5,
+          "height": 3.2,
+          "signRoom": "club"
+        }
+      ],
+      "hangings": [],
+      "architecture": "observatory",
+      "exposure": 1
+    },
+    {
       "id": "terrace",
       "title": "terrace",
       "presence": "terrace",
@@ -1357,7 +1538,7 @@
         "min": [
           -20,
           0,
-          -76
+          -11
         ],
         "max": [
           -10,
@@ -1391,30 +1572,6 @@
           "height": 5.6
         },
         {
-          "to": "orangery",
-          "axis": "x",
-          "at": -10,
-          "center": -42,
-          "width": 3,
-          "height": 5
-        },
-        {
-          "to": "orangery",
-          "axis": "x",
-          "at": -10,
-          "center": -55,
-          "width": 3,
-          "height": 5
-        },
-        {
-          "to": "orangery",
-          "axis": "x",
-          "at": -10,
-          "center": -68,
-          "width": 3,
-          "height": 5
-        },
-        {
           "to": "gallery",
           "axis": "x",
           "at": -10,
@@ -1442,17 +1599,18 @@
           "to": "parterre",
           "axis": "x",
           "at": -20,
-          "center": -38,
+          "center": 38,
           "width": 5,
           "height": 8
         },
         {
-          "to": "parterre",
-          "axis": "x",
-          "at": -20,
-          "center": 38,
+          "to": "stair-court",
+          "axis": "z",
+          "at": -11,
+          "center": -16,
           "width": 5,
-          "height": 8
+          "height": 3.2,
+          "signRoom": "club"
         }
       ],
       "hangings": [],
@@ -1497,7 +1655,7 @@
           "height": 8
         },
         {
-          "to": "terrace",
+          "to": "terrace-north",
           "axis": "x",
           "at": -20,
           "center": -38,
@@ -1535,6 +1693,15 @@
           "center": -45,
           "width": 50,
           "height": 8
+        },
+        {
+          "to": "stair-court",
+          "axis": "x",
+          "at": -20,
+          "center": -23,
+          "width": 5,
+          "height": 3.6,
+          "signRoom": "club"
         }
       ],
       "hangings": [],

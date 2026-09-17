@@ -64,6 +64,18 @@
       "intro": "De kelder loopt over de hele lengte van het terras, een laag gewelf onder zijn stenen. Twee trappen komen erin uit vanaf de gronden, één aan elk eind van het terras, en twee deuren leiden verder de club in, die alleen opengaat voor een bezoeker met microfoon en geluid aan.",
       "lookFor": "De lantaarns bij de twee clubdeuren, en het licht erdoorheen: de kelder is warm, de club is koud."
     },
+    "stair-court": {
+      "title": "verdiepte hof",
+      "kicker": "Waar het terras de grond in gaat.",
+      "intro": "Een hof, vijf meter diep in het terras uitgesneden, tussen de hal en de orangerie. Uit elke arm van het terras daalt een trap af, een derde uit de tuin, en aan hun voet staat de deur van de club.",
+      "lookFor": "Kijk vanaf de bestrating terug omhoog: hier komen drie stenen trappen samen, en aan weerszijden opent zich de onderbouw."
+    },
+    "foyer-south": {
+      "title": "zuidelijke onderbouw",
+      "kicker": "De lange weg naar de verre trap.",
+      "intro": "De zuidelijke helft van het gewelf onder het terras, van de verdiepte hof tot de trap aan het zuideinde. Ze heeft geen eigen deur naar de club: die deur ligt aan de hof, een paar stappen achter u.",
+      "lookFor": "De lantaarns lopen door het hele gewelf; het lichtere eind is de hof."
+    },
     "club": {
       "title": "club",
       "kicker": "Hoe luid is een gewelfde kelder?",
@@ -101,6 +113,12 @@
       "kicker": "Waar het museum wordt onderhouden.",
       "intro": "De werkplaats is de kamer van de gastheer, naast de hal achter een deur die alleen voor hem opengaat. Hiervandaan worden werken opgehangen, gecontroleerd en weggehaald, en wat een bezoeker in de zalen ziet is eerst in deze kamer goedgekeurd. Ze hoort niet bij de openbare rondgang.",
       "lookFor": "Als u dit paneel kunt lezen, bent u de gastheer."
+    },
+    "terrace-north": {
+      "title": "noordterras",
+      "kicker": "De wandeling naar de orangerie.",
+      "intro": "De noordelijke arm van het terras, van de verdiepte hof tot het trappaviljoen aan het eind. De deuren van de orangerie komen erop uit, het hek naar het bosje ligt westwaarts, en de hof snijdt hem waar de trappen naar de club afdalen.",
+      "lookFor": "De borstwering rond de hof en de drie stenen trappen daarin."
     },
     "terrace": {
       "title": "terras",

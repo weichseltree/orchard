@@ -102,9 +102,13 @@ export function floorAt(mansion: Mansion, room: Room, x: number, z: number): num
 }
 
 /**
- * Keeps a body that has climbed onto a flight between its cheek walls: a
- * step that starts on the flight, above the room's floor, may not leave it
- * sideways. Returns the corrected destination.
+ * The cheek walls of a flight, both ways: a body that has climbed onto a
+ * flight may not step off it sideways into the air, and a body walking past
+ * a raised flight may not walk through its cheek into it. Only the second
+ * of those used to be enforced by the drawn stone; with the walk clamped
+ * INTO the flight's span, a visitor walking the terrace by the orangery was
+ * pulled through one cheek wall and held against the other (Manuel,
+ * 2026-09-17). Returns the corrected destination.
  */
 export function keepOnFlight(
   mansion: Mansion,
@@ -114,11 +118,26 @@ export function keepOnFlight(
   radius: number,
 ): { x: number; z: number } {
   for (const flight of flightsOf(mansion, room)) {
+    const lateralOf = (p: { x: number; z: number }) => (flight.door.axis === "x" ? p.z : p.x);
+    const centre = flight.door.center;
     const t = flightFraction(flight, from.x, from.z);
-    if (t === null || t < 0.02) continue;
-    const half = flight.door.width / 2 + STAIR_MARGIN - radius;
-    const lateral = flight.door.axis === "x" ? to.z : to.x;
-    const clamped = Math.min(flight.door.center + half, Math.max(flight.door.center - half, lateral));
+    const on = t !== null && t >= 0.02;
+    const half = flight.door.width / 2 + STAIR_MARGIN;
+    const lateral = lateralOf(to);
+    let clamped = lateral;
+    if (on) {
+      // Between the cheeks, the way the steps are drawn.
+      clamped = Math.min(centre + half - radius, Math.max(centre - half + radius, lateral));
+    } else {
+      // Outside it: the cheek is a wall as high as the flight beside it, so
+      // the body stops at its face rather than stepping into mid-flight.
+      const into = flightFraction(flight, to.x, to.z);
+      const rise = into === null ? 0 : flight.rise * into;
+      if (into === null || rise <= STAIR_RISE) continue;
+      const side = Math.sign(lateralOf(from) - centre) || 1;
+      const face = centre + side * (half + radius);
+      clamped = side > 0 ? Math.max(face, lateral) : Math.min(face, lateral);
+    }
     if (clamped === lateral) continue;
     return flight.door.axis === "x" ? { x: to.x, z: clamped } : { x: clamped, z: to.z };
   }

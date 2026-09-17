@@ -35,6 +35,7 @@ const stations = [
   ['belvedere', 0, 70, 0, -3],
   ['greenhouse', 11.5, 8, -90, 8],
   ['terrace', -15, 10, 90, 5],
+  ['stair-court', -15.5, -23, 90, 2],
   ['parterre', -26, 0, 90, 4],
   ['orchard-west', -45, -60, 0, 5],
   ['orchard-south', -80, 0, 90, 5],

@@ -8,7 +8,7 @@ describe("VenueCurtains", () => {
   const curtains = new VenueCurtains(mansion);
 
   it("hangs one curtain per door into a room that asks more than the room before it", () => {
-    expect(curtains.doors).toEqual(["curtain-foyer-club", "curtain-foyer-club", "curtain-club-stage"]);
+    expect(curtains.doors).toEqual(["curtain-foyer-club", "curtain-stair-court-club", "curtain-club-stage"]);
   });
 
   it("shows a curtain only over a barred door, and animates only what shows", () => {

@@ -64,6 +64,18 @@
       "intro": "A cave corre por todo o comprimento do terraço, uma abóbada baixa sob as suas lajes. Duas escadas descem até ela a partir dos jardins, uma em cada extremo do terraço, e duas portas seguem em frente para o clube, que só se abre ao visitante com o microfone e o som ligados.",
       "lookFor": "As lanternas nas duas portas do clube, e a luz que entra por elas: a cave é quente, o clube é frio."
     },
+    "stair-court": {
+      "title": "pátio encaixado",
+      "kicker": "Onde o terraço desce sob a terra.",
+      "intro": "Um pátio aberto no terraço entre o salão e a estufa, cinco metros mais abaixo. De cada braço do terraço desce um lanço, um terceiro vem do jardim, e ao pé deles está a porta do clube.",
+      "lookFor": "Do pavimento, olhe para o caminho por onde veio: aqui juntam-se três lanços de pedra, e a cave abre-se de ambos os lados."
+    },
+    "foyer-south": {
+      "title": "cave sul",
+      "kicker": "O caminho longo até à escada do fim.",
+      "intro": "A metade sul da abóbada sob o terraço, do pátio encaixado à escada do extremo sul. Não tem porta própria para o clube: essa porta fica no pátio, a poucos passos atrás de si.",
+      "lookFor": "As lanternas percorrem toda a abóbada; a extremidade mais clara é o pátio."
+    },
     "club": {
       "title": "clube",
       "kicker": "Quanto soa uma cave abobadada?",
@@ -101,6 +113,12 @@
       "kicker": "Onde o museu é cuidado.",
       "intro": "A oficina é a sala do anfitrião, ao lado do hall, atrás de uma porta que só se abre para ele. É daqui que as peças são penduradas, verificadas e retiradas, e o que um visitante vê nas salas foi aprovado primeiro nesta sala. Não faz parte da visita pública.",
       "lookFor": "Se consegue ler este painel, é o anfitrião."
+    },
+    "terrace-north": {
+      "title": "terraço norte",
+      "kicker": "O passeio até à estufa.",
+      "intro": "O braço norte do terraço, do pátio encaixado ao pavilhão de escada que o fecha. As portas da estufa abrem para ele, o portão do bosque fica a oeste, e o pátio corta-o onde descem as escadas do clube.",
+      "lookFor": "O parapeito à volta do pátio e os três lanços de pedra lá dentro."
     },
     "terrace": {
       "title": "terraço",

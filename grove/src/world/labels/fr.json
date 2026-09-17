@@ -64,6 +64,18 @@
       "intro": "Le sous-sol court sur toute la longueur de la terrasse, une voûte basse sous ses dalles. Deux escaliers y descendent depuis le domaine, un à chaque extrémité de la terrasse, et deux portes mènent plus loin dans le club, qui ne s'ouvre qu'au visiteur dont le micro et le son sont allumés.",
       "lookFor": "Les lanternes aux deux portes du club, et la lumière qui en vient : le sous-sol est chaud, le club est froid."
     },
+    "stair-court": {
+      "title": "cour en contrebas",
+      "kicker": "Là où la terrasse descend sous terre.",
+      "intro": "Une cour creusée dans la terrasse entre la salle et l'orangerie, cinq mètres plus bas. Une volée y descend de chaque bras de la terrasse, une troisième du jardin, et la porte du club se tient à leur pied.",
+      "lookFor": "Depuis le pavage, regardez d'où vous venez : trois volées de pierre se rejoignent ici, et le souterrain s'ouvre de part et d'autre."
+    },
+    "foyer-south": {
+      "title": "souterrain sud",
+      "kicker": "Le long chemin vers l'escalier du bout.",
+      "intro": "La moitié sud de la voûte sous la terrasse, de la cour en contrebas à l'escalier de l'extrémité sud. Elle n'a pas de porte propre vers le club : cette porte est à la cour, quelques pas derrière vous.",
+      "lookFor": "Les lanternes courent sur toute la voûte ; l'extrémité la plus claire est la cour."
+    },
     "club": {
       "title": "club",
       "kicker": "Quel bruit fait une cave voûtée ?",
@@ -101,6 +113,12 @@
       "kicker": "Là où le musée est entretenu.",
       "intro": "L'atelier est la pièce de l'hôte, à côté du hall, derrière une porte qui ne s'ouvre que pour lui. C'est d'ici que les expositions sont accrochées, vérifiées et retirées, et ce qu'un visiteur voit dans les salles a d'abord été approuvé dans cette pièce. Elle ne fait pas partie de la visite publique.",
       "lookFor": "Si vous pouvez lire ce panneau, vous êtes l'hôte."
+    },
+    "terrace-north": {
+      "title": "terrasse nord",
+      "kicker": "La promenade vers l'orangerie.",
+      "intro": "Le bras nord de la terrasse, de la cour en contrebas au pavillon d'escalier qui la termine. Les portes de l'orangerie y donnent, la grille du bosquet est à l'ouest, et la cour la coupe là où descendent les escaliers du club.",
+      "lookFor": "Le parapet autour de la cour, et les trois volées de pierre qu'elle contient."
     },
     "terrace": {
       "title": "terrasse",

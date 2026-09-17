@@ -64,6 +64,18 @@
       "intro": "Il sotterraneo corre per tutta la lunghezza della terrazza, una volta bassa sotto le sue lastre. Due scale vi scendono dai giardini, una a ciascuna estremità della terrazza, e due porte proseguono nel club, che si apre solo al visitatore con microfono e audio accesi.",
       "lookFor": "Le lanterne alle due porte del club, e la luce che ne viene: il sotterraneo è caldo, il club è freddo."
     },
+    "stair-court": {
+      "title": "corte incassata",
+      "kicker": "Dove la terrazza scende sottoterra.",
+      "intro": "Una corte tagliata nella terrazza fra la sala e l'aranciera, cinque metri più in basso. Una rampa vi scende da ciascun braccio della terrazza, una terza dal giardino, e ai loro piedi si apre la porta del club.",
+      "lookFor": "Dal selciato guardate da dove siete venuti: qui si incontrano tre rampe di pietra, e il sotterraneo si apre da entrambi i lati."
+    },
+    "foyer-south": {
+      "title": "sotterraneo sud",
+      "kicker": "La via lunga alla scala in fondo.",
+      "intro": "La metà sud della volta sotto la terrazza, dalla corte incassata alla scala all'estremità meridionale. Non ha una porta propria verso il club: quella porta è alla corte, pochi passi dietro di voi.",
+      "lookFor": "Le lanterne corrono per tutta la volta; l'estremità più chiara è la corte."
+    },
     "club": {
       "title": "club",
       "kicker": "Quanto suona una cantina a volta?",
@@ -101,6 +113,12 @@
       "kicker": "Dove il museo viene curato.",
       "intro": "L'officina è la stanza dell'ospite, accanto all'hall, dietro una porta che si apre solo per lui. Da qui le opere vengono appese, controllate e rimosse, e ciò che un visitatore vede nelle sale è stato approvato prima in questa stanza. Non fa parte del percorso pubblico.",
       "lookFor": "Se può leggere questo pannello, lei è l'ospite."
+    },
+    "terrace-north": {
+      "title": "terrazza nord",
+      "kicker": "La passeggiata verso l'aranciera.",
+      "intro": "Il braccio nord della terrazza, dalla corte incassata al padiglione della scala che la chiude. Le porte dell'aranciera vi si aprono, il cancello del bosco è a ovest, e la corte la taglia dove scendono le scale del club.",
+      "lookFor": "Il parapetto attorno alla corte e le tre rampe di pietra che vi stanno dentro."
     },
     "terrace": {
       "title": "terrazza",

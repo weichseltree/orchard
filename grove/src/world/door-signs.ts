@@ -24,15 +24,16 @@ import { OBSERVATORY_PALETTE, finishColour } from "./observatory";
  * of the cap height. 0.4 m reads from across a chamber (raised from 0.2 on
  * 2026-09-16); a low room scales them to its headroom (`signSize`).
  */
-export const SIGN = { size: 0.26, depth: 0.05, lintelFace: 0.4, band: 0.28, standoff: 0.004 } as const;
+export const SIGN = { size: 0.38, depth: 0.05, lintelFace: 0.4, band: 0.24, standoff: 0.004 } as const;
 
 /**
  * The cap height a door's sign gets: the full size where the ceiling allows,
- * less over a door close under it (arcedit's chambers). The letters are cut
- * into the lintel's own stone band, 0.44 m deep and centred 0.28 m over the
- * opening (observatory.ts's `surrounds`), so the cap height leaves that band
- * a margin; letters set over the band floated against the dark wall above it
- * (ruled 2026-09-17).
+ * less over a door close under it (arcedit's chambers). The letters sit on
+ * the lintel's own stone band, which is 0.44 m deep and centred 0.28 m over
+ * the opening (observatory.ts's `surrounds`); they are set 0.24 m over the
+ * opening, nearly filling that band. Letters over the band floated against
+ * the dark wall above it, and a smaller cap read as timid (ruled
+ * 2026-09-17).
  */
 export function signSize(headroom: number): number {
   return Math.min(SIGN.size, headroom * 0.4);
@@ -67,9 +68,16 @@ export interface DoorSign {
 
 const OUT = new Vector3(0, 0, 1);
 
-/** Whether a doorway carries a sign: the ones with surrounds, not the grounds' broad gates. */
-export function signed(room: Room, door: Doorway): boolean {
-  return door.width <= 8 && door.height < room.bounds.max[1] - room.bounds.min[1];
+/**
+ * Whether a doorway carries a sign: the ones with surrounds, not the
+ * grounds' broad gates, and not one whose head stands at the room's own
+ * ceiling, where there is no lintel to letter (the sunken court's doors up
+ * to the terrace open at the level of its rim).
+ */
+export function signed(room: Room, door: Doorway, mansion?: Mansion): boolean {
+  if (door.width > 8 || door.height >= room.bounds.max[1] - room.bounds.min[1]) return false;
+  const base = mansion ? doorBase(room, door, mansion) : room.bounds.min[1];
+  return base + door.height + SIGN.band + SIGN.size / 2 <= room.bounds.max[1];
 }
 
 /** The floor a doorway opens at: the higher of the two rooms it joins (observatory.ts's doorBase). */
@@ -84,7 +92,7 @@ export function planDoorSigns(room: Room, labels: Labels | null, mansion: Mansio
   const out: DoorSign[] = [];
   const [x0, , z0] = room.bounds.min, [x1, , z1] = room.bounds.max;
   for (const door of room.doorways) {
-    if (!signed(room, door)) continue;
+    if (!signed(room, door, mansion)) continue;
     const inward = door.axis === "x" ? (Math.abs(door.at - x0) < 0.001 ? 1 : Math.abs(door.at - x1) < 0.001 ? -1 : 0)
       : (Math.abs(door.at - z0) < 0.001 ? 1 : Math.abs(door.at - z1) < 0.001 ? -1 : 0);
     if (inward === 0) continue;

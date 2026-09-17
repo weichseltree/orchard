@@ -11,8 +11,8 @@ for (const { shell } of shells) shell.group.updateMatrixWorld(true);
 
 describe("the designed observatory", () => {
   it("builds every footprint with explicit architectural provenance, no textures or lights", () => {
-    // The palace's thirteen chambers and cells (coarsen's chamber went on 2026-09-16), the cellar venue's seven with its two garden courts (2026-09-17), and arcedit's area of six.
-    expect(shells).toHaveLength(26);
+    // The palace's fourteen chambers and cells (the terrace is two arms since its court was sunk, 2026-09-17), the cellar venue's nine with its garden courts and sunken court, and arcedit's area of six.
+    expect(shells).toHaveLength(29);
     for (const { room, shell } of shells) {
       expect(shell.group.name).toBe(`${room.id}-shell`);
       expect(shell.group.userData.architecture).toBe("observatory");
@@ -106,7 +106,7 @@ describe("the designed observatory", () => {
   });
 
   it("gives the roof a real open crown and leaves the terrace under the sky, except under another room, where it is lidded", () => {
-    expect(mansion.rooms.filter(r => covered(r, mansion)).map(r => r.id)).toEqual(["foyer", "club", "stage"]);
+    expect(mansion.rooms.filter(r => covered(r, mansion)).map(r => r.id)).toEqual(["foyer", "foyer-south", "club", "stage"]);
     for (const { room, shell } of shells) {
       // The crown runs the room's long way: along z, or along x in a turned room of an area.
       const turned = runsAlongX(room, mansion);
@@ -117,7 +117,9 @@ describe("the designed observatory", () => {
         .intersectObject(shell.group, true).map(h => h.object.name);
       // A ray through a box meets both its faces: two hits, both the lid, nothing else.
       if (covered(room, mansion)) expect(new Set(above), `${room.id} lid`).toEqual(new Set(["observatory-box-wall"]));
-      else expect(above, `${room.id} sky opening`).toEqual([]);
+      // A sunken court's flights rise past the height this ray starts at:
+      // it is open by construction, having no vault at all.
+      else if (!room.openToSky) expect(above, `${room.id} sky opening`).toEqual([]);
     }
   });
 
@@ -154,8 +156,9 @@ describe("the designed observatory", () => {
       }
       expect(outside, room.id).toEqual([]);
     }
-    // And the foyer's lanterns flank each of the club's two doors, clear of their jambs.
-    const foyer = shells.find(s => s.room.id === "foyer")!;
+    // And the lanterns flank each of the club's two doors, clear of their
+    // jambs: one door off the undercroft, one off the sunken court.
+    const foyer = shells.find(s => s.room.id === "stair-court")!;
     const lamps: number[] = [];
     const m = new Matrix4(), p = new Vector3(), s = new Vector3();
     for (const child of foyer.shell.group.children) {
@@ -166,7 +169,7 @@ describe("the designed observatory", () => {
         if (Math.abs(p.x + 10.6) < 0.05 && Math.abs(s.x - 0.26) < 0.01) lamps.push(Number(p.z.toFixed(2)));
       }
     }
-    expect(lamps.sort((a, b) => a - b)).toEqual([-57.6, -52.4, -29.6, -24.4]);
+    expect(lamps.sort((a, b) => a - b)).toEqual([-29.6, -24.4]);
   });
 
   it("honours the architecture switch before considering a legacy asset URL", async () => {

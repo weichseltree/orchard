@@ -64,6 +64,18 @@
       "intro": "Das Untergeschoss läuft die ganze Länge der Terrasse entlang, ein niedriges Gewölbe unter ihren Platten. Zwei Treppen führen aus den Gärten hinunter, eine an jedem Ende, und zwei Türen gehen weiter in den Club, der sich nur öffnet, wenn Mikrofon und Ton eingeschaltet sind.",
       "lookFor": "Die Laternen an den beiden Clubtüren und das Licht dahinter: Das Untergeschoss ist warm, der Club ist kalt."
     },
+    "stair-court": {
+      "title": "Senkhof",
+      "kicker": "Wo die Terrasse in die Tiefe geht.",
+      "intro": "Ein Hof, fünf Meter tief in die Terrasse geschnitten, zwischen Halle und Orangerie. Aus jedem Arm der Terrasse führt ein Lauf herunter, ein dritter aus dem Garten, und am Fuß steht die Tür des Clubs.",
+      "lookFor": "Schauen Sie vom Pflaster zurück nach oben: Drei steinerne Läufe treffen hier zusammen, und zu beiden Seiten öffnet sich das Untergeschoss."
+    },
+    "foyer-south": {
+      "title": "südliches Untergeschoss",
+      "kicker": "Der lange Weg zur fernen Treppe.",
+      "intro": "Die südliche Hälfte des Gewölbes unter der Terrasse, vom Senkhof bis zur Treppe am Südende. Sie hat keine eigene Tür in den Club: Diese Tür liegt am Hof, wenige Schritte hinter Ihnen.",
+      "lookFor": "Die Laternen ziehen sich durch das ganze Gewölbe; das hellere Ende ist der Hof."
+    },
     "club": {
       "title": "Club",
       "kicker": "Wie laut ist ein Gewölbekeller?",
@@ -101,6 +113,12 @@
       "kicker": "Wo das Museum gepflegt wird.",
       "intro": "Die Werkstatt ist der Raum des Gastgebers, neben der Halle hinter einer Tür, die sich nur für ihn öffnet. Von hier aus werden Exponate gehängt, geprüft und abgenommen, und was Besucher in den Kammern sehen, wurde zuerst in diesem Raum freigegeben. Sie gehört nicht zum öffentlichen Rundgang.",
       "lookFor": "Wenn Sie diese Tafel lesen können, sind Sie der Gastgeber."
+    },
+    "terrace-north": {
+      "title": "Nordterrasse",
+      "kicker": "Der Wandelgang zur Orangerie.",
+      "intro": "Der nördliche Arm der Terrasse, vom Senkhof bis zum Treppenpavillon an seinem Ende. Die Türen der Orangerie gehen von ihm ab, im Westen liegt das Tor zum Hain, und der Hof schneidet ihn dort, wo die Treppen zum Club hinabführen.",
+      "lookFor": "Die Brüstung um den Hof und die drei steinernen Läufe darin."
     },
     "terrace": {
       "title": "Terrasse",

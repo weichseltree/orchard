@@ -13,7 +13,7 @@ describe("mansion.json", () => {
   it("parses", () => {
     const mansion = parseMansion(mansionDocument);
     expect(mansion.schema).toBe("orchard/mansion/1");
-    const palace = ["hall", "einstruct", "world-engine", "orangery", "court-north", "stair-north", "stair-south", "court-south", "foyer", "club", "stage", "phototroph", "gallery", "belvedere", "greenhouse", "terrace", "parterre", "orchard-west", "orchard-south", "orchard-east", "orrery"];
+    const palace = ["hall", "einstruct", "world-engine", "orangery", "court-north", "stair-north", "stair-south", "court-south", "foyer", "stair-court", "foyer-south", "club", "stage", "phototroph", "gallery", "belvedere", "greenhouse", "terrace-north", "terrace", "parterre", "orchard-west", "orchard-south", "orchard-east", "orrery"];
     // arcedit's area (results/grove/area.json in that tree): five rooms walked as a loop, and the canvas at a tenth of the scale.
     const arcedit = ["arcedit", "arcedit/agent", "arcedit/reward", "arcedit/record", "arcedit/workshop", "arcedit/inside"];
     expect(mansion.rooms.map((room) => room.id)).toEqual([...palace, ...arcedit]);

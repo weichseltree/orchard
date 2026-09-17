@@ -20,7 +20,7 @@ describe("planDoorSigns over mansion.json", () => {
   for (const r of mansion.rooms) {
     it(`${r.id}: one sign per doorway with surrounds, on its lintel, facing into the room`, () => {
       const plans = planDoorSigns(r, labels, mansion);
-      const expected = r.doorways.filter((d) => signed(r, d));
+      const expected = r.doorways.filter((d) => signed(r, d, mansion));
       expect(plans.map((p) => p.to).sort()).toEqual(expected.map((d) => d.to).sort());
       for (const plan of plans) {
         const door = r.doorways.find((d) => d.to === plan.to)!;

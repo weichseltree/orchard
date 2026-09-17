@@ -64,6 +64,18 @@
       "intro": "El sótano recorre toda la longitud de la terraza, una bóveda baja bajo sus losas. Dos escaleras bajan hasta él desde los jardines, una en cada extremo de la terraza, y dos puertas siguen adelante hacia el club, que solo se abre al visitante que tiene el micrófono y el sonido encendidos.",
       "lookFor": "Los faroles en las dos puertas del club, y la luz que entra por ellas: el sótano es cálido, el club es frío."
     },
+    "stair-court": {
+      "title": "patio hundido",
+      "kicker": "Donde la terraza baja bajo tierra.",
+      "intro": "Un patio abierto en la terraza entre el vestíbulo y la orangerie, cinco metros más abajo. Un tramo baja desde cada brazo de la terraza, un tercero desde el jardín, y al pie de ellos está la puerta del club.",
+      "lookFor": "Desde el pavimento, mire hacia donde vino: aquí se juntan tres tramos de piedra, y el subterráneo se abre a ambos lados."
+    },
+    "foyer-south": {
+      "title": "subterráneo sur",
+      "kicker": "El camino largo a la escalera lejana.",
+      "intro": "La mitad sur de la bóveda bajo la terraza, del patio hundido a la escalera del extremo sur. No tiene puerta propia al club: esa puerta está en el patio, a unos pasos detrás de usted.",
+      "lookFor": "Las linternas recorren toda la bóveda; el extremo más claro es el patio."
+    },
     "club": {
       "title": "club",
       "kicker": "¿Cuánto suena un sótano abovedado?",
@@ -101,6 +113,12 @@
       "kicker": "Donde se cuida el museo.",
       "intro": "El taller es la habitación del anfitrión, junto al hall, tras una puerta que solo se abre para él. Desde aquí se cuelgan, revisan y retiran las piezas, y lo que un visitante ve en las salas fue aprobado primero en esta habitación. No forma parte del recorrido público.",
       "lookFor": "Si puede leer este panel, usted es el anfitrión."
+    },
+    "terrace-north": {
+      "title": "terraza norte",
+      "kicker": "El paseo hacia la orangerie.",
+      "intro": "El brazo norte de la terraza, del patio hundido al pabellón de escalera que la cierra. Las puertas de la orangerie dan a ella, la verja de la arboleda queda al oeste, y el patio la corta donde bajan las escaleras del club.",
+      "lookFor": "El pretil alrededor del patio y los tres tramos de piedra que contiene."
     },
     "terrace": {
       "title": "terraza",
