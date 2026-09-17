@@ -144,6 +144,12 @@ export const TapeHangingSchema = z.looseObject({
   palette: z.array(z.string()).default([]),
   /** Point size in pixels at 1 m; a tape of a few particles wants a larger one. */
   pointSize: z.number().positive().default(14),
+  /**
+   * Another tape hanging's id whose clock this one follows frame for frame,
+   * so two runs from one checkpoint (phototroph's lit and dark floors)
+   * advance together whatever each waited on while loading. Empty: its own clock.
+   */
+  clockWith: z.string().default(""),
   pedestal: z
     .looseObject({ position: Vec3, rotationDeg: Vec3.default([0, 0, 0]) })
     .optional(),
@@ -431,6 +437,15 @@ export const MansionSchema = z
           ctx.addIssue({ code: "custom", message: `duplicate hanging id "${hanging.id}"` });
         }
         hangingIds.add(hanging.id);
+        if (hanging.kind === "tape" && hanging.clockWith) {
+          const leader = room.hangings.find((other) => other.id === hanging.clockWith);
+          if (!leader || leader.kind !== "tape" || leader.clockWith) {
+            ctx.addIssue({
+              code: "custom",
+              message: `tape "${hanging.id}" follows the clock of "${hanging.clockWith}", which is not a leading tape in room "${room.id}"`,
+            });
+          }
+        }
       }
       for (const surface of room.gameSurfaces) {
         if (gameSurfaceIds.has(surface.id)) {

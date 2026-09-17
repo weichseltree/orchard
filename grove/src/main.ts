@@ -47,6 +47,7 @@ import { frameAt } from "./tape/time";
 import mansionDocument from "./world/mansion.json";
 import { parseMansion, roomById, type GameSurface as GameSurfaceConfig, type Room } from "./world/schema";
 import { buildWorld, exhibitRoom, neighbourhood, type BuiltWorld } from "./world/world";
+import { followClocks } from "./world/tape-clock";
 import { PortalSystem } from "./world/portal";
 import { pickLocale } from "./ui/locale";
 import { AVAILABLE_LOCALES, labelsFor, labelsLoaded, roomTitle } from "./world/labels/index";
@@ -1147,8 +1148,10 @@ view.start((dt, time, rawDt) => {
       // Tapes advance only in the room the visitor is in; the others freeze
       // where they are and cost no frame time. Scrubbing moves them all, so
       // tapes that share a clock stay in step when the visitor comes back.
-      if (exhibitRoom(each) === body.room) each.update(dt);
+      if (exhibitRoom(each) === body.room && !each.hanging.clockWith) each.update(dt);
     }
+    // A tape that follows another's clock lands on the frame its leader shows.
+    if (world) followClocks(world.tapes, body.room, exhibitRoom);
     if (!tape.waiting) visitMetrics.tapeReady();
     if (performance.now() > scrubbingUntil) {
       const frame = frameAt(tape.timeline, tape.tau);

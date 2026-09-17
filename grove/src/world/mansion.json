@@ -851,9 +851,150 @@
       ],
       "hangings": [
         {
+          "id": "phototroph-lit",
+          "kind": "tape",
+          "title": "Lit: the world under the beam",
+          "bundle": {
+            "exhibit": {
+              "tree": "phototroph",
+              "kind": "tape",
+              "bundle": "1b2687bcef4bbd7d"
+            },
+            "id": "1b2687bcef4bbd7d"
+          },
+          "position": [
+            4.5,
+            1.5,
+            24
+          ],
+          "rotationDeg": [
+            60,
+            180,
+            0
+          ],
+          "longSideMeters": 6,
+          "palette": [
+            "#d8dedb",
+            "#8c6bff",
+            "#d8dedb",
+            "#d8dedb",
+            "#d8dedb",
+            "#d8dedb"
+          ],
+          "pointSize": 120,
+          "pedestal": {
+            "position": [
+              4.5,
+              0,
+              21
+            ],
+            "rotationDeg": [
+              0,
+              180,
+              0
+            ]
+          }
+        },
+        {
+          "id": "phototroph-dark",
+          "kind": "tape",
+          "title": "Dark: the same world without the beam",
+          "bundle": {
+            "exhibit": {
+              "tree": "phototroph",
+              "kind": "tape",
+              "bundle": "d02b3361a7c42fb3"
+            },
+            "id": "d02b3361a7c42fb3"
+          },
+          "position": [
+            -4.5,
+            1.5,
+            24
+          ],
+          "rotationDeg": [
+            60,
+            180,
+            0
+          ],
+          "longSideMeters": 6,
+          "palette": [
+            "#d8dedb",
+            "#8c6bff",
+            "#d8dedb",
+            "#d8dedb",
+            "#d8dedb",
+            "#d8dedb"
+          ],
+          "pointSize": 120,
+          "pedestal": {
+            "position": [
+              -4.5,
+              0,
+              21
+            ],
+            "rotationDeg": [
+              0,
+              180,
+              0
+            ]
+          },
+          "clockWith": "phototroph-lit"
+        },
+        {
+          "id": "phototroph-walkup",
+          "kind": "still",
+          "title": "The lit floor and the dark floor",
+          "bundle": {
+            "exhibit": {
+              "tree": "phototroph",
+              "kind": "still",
+              "bundle": "db37b427cd30a92a"
+            },
+            "id": "db37b427cd30a92a"
+          },
+          "position": [
+            -9.74,
+            3.2,
+            24.2
+          ],
+          "rotationDeg": [
+            0,
+            90,
+            0
+          ],
+          "widthMeters": 5.2,
+          "heightMeters": 2.925
+        },
+        {
+          "id": "phototroph-starved",
+          "kind": "still",
+          "title": "Bathed in light, catching almost none",
+          "bundle": {
+            "exhibit": {
+              "tree": "phototroph",
+              "kind": "still",
+              "bundle": "62b09ae7a7f5d2cd"
+            },
+            "id": "62b09ae7a7f5d2cd"
+          },
+          "position": [
+            9.74,
+            3.2,
+            24.2
+          ],
+          "rotationDeg": [
+            0,
+            -90,
+            0
+          ],
+          "widthMeters": 5.2,
+          "heightMeters": 2.925
+        },
+        {
           "id": "phototroph-tape",
           "kind": "tape",
-          "title": "A three-body capture: two atoms fall together and stay, the third leaves",
+          "title": "Two atoms cannot catch each other",
           "bundle": {
             "exhibit": {
               "tree": "phototroph",
@@ -863,9 +1004,9 @@
             "id": "cecbb68e2d2274af"
           },
           "position": [
-            0,
+            -6.5,
             1,
-            21
+            17
           ],
           "rotationDeg": [
             -90,
@@ -875,13 +1016,13 @@
           "longSideMeters": 3,
           "pedestal": {
             "position": [
+              -6.5,
               0,
-              0,
-              19
+              14.5
             ],
             "rotationDeg": [
               0,
-              0,
+              180,
               0
             ]
           },

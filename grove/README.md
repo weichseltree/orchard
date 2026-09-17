@@ -178,5 +178,5 @@ Deployment configuration is in [HOSTING.md](../docs/HOSTING.md).
 
 Current implementation and measured limits are recorded in
 [WP2-grove.md](../docs/impl/WP2-grove.md). Voice between visitors, the
-club's stream and karaoke queue, and room acoustics are the work ahead
+club's karaoke queue and room acoustics are the work ahead
 ([CLUB.md](../docs/specs/CLUB.md)).

@@ -32,6 +32,13 @@ phenomena:
     arrives and carries the extra speed away.
   evidence: studio/scenes/dimer-split/README.md
   hero: true
+- id: light-melts-structure
+  title: Light melts the clumps it was meant to shape
+  hook: Two copies of one world of 432 atoms, one under a steady beam and one dark. The dark one freezes into
+    crystal patches with four atoms in five bonded; the lit one stays a warm gas with one in three bonded,
+    and its clumps are tuned less to the beam's colour, not more.
+  evidence: experiments/h1-hypothesis/scan-gamma-ic-20260913.md
+  hero: true
 artefacts:
 - kind: tape
   path: results/tapes/dimer-split
@@ -44,12 +51,53 @@ artefacts:
   sha256: 8dc31ed3d117586c49178d6bb2bb3136be23a8a0479c0985bb54c7b169ce81da
   approved: true
   bundle: cecbb68e2d2274af
+- kind: tape
+  path: results/tapes/lit-step100000
+  title: 'Lit: the world under the beam'
+  produced_by: 'EXP_PRIO=10 exprun -n phototroph-motion2-lit results/exhibit/run-gradient-motion --config results/exhibit/resume-lit-step100000/config-scan-a-spf15.toml --resume results/exhibit/resume-lit-step100000/checkpoints/step_000000100000.ckpt --steps 112000 --out-dir results/exhibit/motion-lit-step100000 --mechanical-tolerance 1e9 --momentum-tolerance 1e9 ; EXP_PRIO=10 exprun -n phototroph-tape-lit-step100000 uv run --locked experiments/video/ptvf_to_tape.py --input results/exhibit/motion-lit-step100000/frames.ptvf --expect-sha256 70e3760279d8f87ff9267bf949c948f8d1e23db1a427e983d888297e97dcf78c --frames 1:801 --scalars species,alive,bond_count --run-seed 20260906 --out results/tapes/lit-step100000'
+  commit: e0af094
+  sha256: 764d03a1d5b95c4ba0d94681cdc1937443d695d7d65f4fe284ba4b126b23fcc7
+  approved: true
+  bundle: 1b2687bcef4bbd7d
+- kind: tape
+  path: results/tapes/dark-step100000
+  title: 'Dark: the same world without the beam'
+  produced_by: 'EXP_PRIO=10 exprun -n phototroph-motion2-dark results/exhibit/run-gradient-motion --config results/exhibit/resume-dark-step100000/config-scan-c-spf15.toml --resume results/exhibit/resume-dark-step100000/checkpoints/step_000000100000.ckpt --steps 112000 --out-dir results/exhibit/motion-dark-step100000 --mechanical-tolerance 1e9 --momentum-tolerance 1e9 ; EXP_PRIO=10 exprun -n phototroph-tape-dark-step100000 uv run --locked experiments/video/ptvf_to_tape.py --input results/exhibit/motion-dark-step100000/frames.ptvf --expect-sha256 401d44f77aa2ba748d7bb9085a543e2ba63163b3e6327b9b3f8fa5d168eb1f69 --frames 1:801 --scalars species,alive,bond_count --run-seed 20260906 --out results/tapes/dark-step100000'
+  commit: e0af094
+  sha256: 27ba389acf2586c21c77933ac44b1a47cee548ee666939c2cc1be55382429a9d
+  approved: true
+  bundle: d02b3361a7c42fb3
+- kind: still
+  path: results/styleframes/two-floors-walkup.png
+  title: The lit floor and the dark floor
+  produced_by: uv run --locked experiments/video/styleframe_floors.py --lit results/exhibit/resume-lit-step100000/frames.ptvf --dark results/exhibit/resume-dark-step100000/frames.ptvf --frame 0 --view walkup --out results/styleframes/two-floors-walkup.png
+  commit: e0af094
+  sha256: f3a403641d5cf768e2feac5ff026961ab54904009cbd37007baef54764c993f1
+  approved: true
+  bundle: db37b427cd30a92a
+- kind: still
+  path: results/styleframes/two-floors-gallery.png
+  title: The lit floor and the dark floor from above
+  produced_by: uv run --locked experiments/video/styleframe_floors.py --lit results/exhibit/resume-lit-step100000/frames.ptvf --dark results/exhibit/resume-dark-step100000/frames.ptvf --frame 0 --view gallery --out results/styleframes/two-floors-gallery.png
+  commit: e0af094
+  sha256: 7e6a72c44cc55d414c364759fb7e3b8314b8d62a65dc0c85d223a9a60612d79f
+  approved: true
+  bundle: eb0899c566ada125
+- kind: still
+  path: results/charts/starved.png
+  title: Bathed in light, catching almost none
+  produced_by: EXP_PRIO=10 exprun -n phototroph-chart-starved-0a480e4 uv run --locked experiments/video/chart_starvation.py --results experiments/h1-hypothesis/scan2d/results-scan2d.json --out results/charts/starved.png
+  commit: 0a480e4
+  sha256: 338eb0801c89182bf6c85957464bd275dcbeab36d8df38c27759dcaa77711b55
+  approved: true
+  bundle: 62b09ae7a7f5d2cd
 producers:
-  tape: exp run phototroph-tape-<name> --prio 5 --lane cpu -- uv run --locked experiments/video/ptvf_to_tape.py
-    --input <dump>.ptvf --expect-sha256 <sha256 of the dump> --frames <a>:<b> --scalars
-    species,alive,bond_count --run-seed <seed> --out results/tapes/<name>
+  tape: exp run phototroph-tape-<name> --prio 10 --lane cpu -- uv run --locked experiments/video/ptvf_to_tape.py
+    --input <dump>.ptvf --expect-sha256 <sha256 of the dump> --frames <a>:<b> --scalars species,alive,bond_count
+    --run-seed <seed> --out results/tapes/<name>
   render: ''
-  figure: ''
+  figure: exp run phototroph-chart-<name> --prio 10 --lane cpu -- uv run --locked experiments/video/chart_starvation.py
+    --results experiments/h1-hypothesis/scan2d/results-scan2d.json --out results/charts/<name>.png
   lane: cpu
   env: {}
 theses:
