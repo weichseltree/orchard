@@ -141,6 +141,15 @@ const hud = new Hud(hudRoot, {
   onUnmute: () => void toggleAudio(),
   onAtlas: (mode) => void chooseAtlas(mode),
   onProvenance: () => provenance.toggle(view.camera),
+  onGuide: () => guide.show(),
+  onToggleChat: () => {
+    if (!chat.open) {
+      notice("Chat opens once you are connected to the room.");
+      return;
+    }
+    chat.setFolded(!chat.folded);
+    hud.setDockOpen("chat", !chat.folded);
+  },
   onOpenGame: () => commands.openGame(),
   onReport: (identity, reason) =>
     presence.report(identity, reason).then(
@@ -190,6 +199,7 @@ const guide = new VisitorGuide(hudRoot, mansion, device, () => {
   canvas.focus();
   if (!device.headset) desktopControls?.requestLock();
 }, (surface) => openGameSurface(surface));
+guide.onOpenChange = (open) => hud.setDockOpen("guide", open);
 
 /** A browser game over the world: from the Guide anywhere in its room, or at its table (G, or the offer). */
 function openGameSurface(surface: GameSurfaceConfig): void {
@@ -304,6 +314,7 @@ const presence = new Presence(
       // speak into, and a dead input is worse than no input.
       if (status === "online") chat.show();
       else chat.hide();
+      hud.setDockOpen("chat", chat.open && !chat.folded);
       if (status === "online") hud.setLink("connected");
       else if (status === "connecting") hud.setLink("connecting…");
       else {
@@ -1004,6 +1015,7 @@ view.start((dt, time, rawDt) => {
   hud.setHere(presence.here);
 
   provenance.update(view.camera, presenting);
+  hud.setDockOpen("sources", provenance.open);
   if (turnstile.opened(performance.now())) {
     // Said once, so a visitor who stopped trying the door knows they can go.
     toldAboutLock = null;
