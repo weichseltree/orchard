@@ -216,6 +216,8 @@ export function gazeBlock(
   let found: RepoBlock | null = null;
   let nearest = Number.POSITIVE_INFINITY;
   for (const block of blocks) {
+    // observatory.ts draws nothing under a centimetre: nothing to look at.
+    if (!(block.width >= 0.01 && block.depth >= 0.01)) continue;
     const t = enterBox(
       [origin.x, eye.y, origin.z], [d.x, d.y, d.z],
       [block.x - block.width / 2, base + block.level * PLATE_M, block.z - block.depth / 2],

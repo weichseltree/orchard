@@ -3,7 +3,7 @@ import mansionDocument from "../world/mansion.json";
 import { parseMansion } from "../world/schema";
 import { BODY_RADIUS } from "../world/navigation";
 import { ease, floorHit, glideSeconds, planGlide, roomUnder, stepGlide, wrap, type Glide } from "./glide";
-import { createBody } from "./locomotion";
+import { createBody, settle } from "./locomotion";
 
 const mansion = parseMansion(mansionDocument);
 
@@ -14,6 +14,15 @@ function glideAll(body: ReturnType<typeof createBody>, glide: Glide, locked?: (i
 }
 
 describe("a glide target is checked the way a walk would be", () => {
+  it("takes the room it is told, from low on a stair under another room's floor", () => {
+    const body = createBody(17, -27, 0, "foyer");
+    settle(body, mansion);
+    const engine = mansion.rooms.find((r) => r.id === "world-engine")!;
+    expect(roomUnder(mansion, body, 5, -27)?.id).not.toBe("world-engine");
+    const glide = planGlide(mansion, body, 5, -27, undefined, undefined, engine);
+    expect(typeof glide === "string" ? glide : "planned").toBe("planned");
+  });
+
   it("glides on a floor that lies under another room's (the club under the north wing)", () => {
     const body = createBody(0, -64, 0, "club");
     body.y = -5;

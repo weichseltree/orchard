@@ -501,7 +501,7 @@ function loadGo(): Promise<Go | null> {
     keys: !device.touch,
     locked: lockedRoom,
     notice,
-  })), () => {
+  }))).catch(() => {
     goLoad = null;
     return null;
   });
@@ -538,7 +538,7 @@ async function toggleMap(): Promise<void> {
     canvas!.focus();
     if (!device.touch) desktopControls?.requestLock();
     return true;
-  }), () => {
+  })).catch(() => {
     mapLoad = null;
     notice("The plan could not load. Try again in a moment.");
     return null;

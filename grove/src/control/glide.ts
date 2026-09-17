@@ -52,8 +52,10 @@ export function planGlide(
   z: number,
   locked?: (roomId: string) => boolean,
   face?: { yaw: number; pitch: number },
+  into?: Room,
 ): Glide | GlideRefusal {
-  const room = roomUnder(mansion, body, x, z);
+  // The caller's room when it knows one (the floor it hit, the exhibit it frames); else the body's level decides.
+  const room = into && into.scale === (mansion.rooms.find((r) => r.id === body.room)?.scale ?? 1) ? into : roomUnder(mansion, body, x, z);
   if (!room) return "no floor";
   if (room.id !== body.room) {
     if (locked?.(room.id)) return "locked";

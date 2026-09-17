@@ -78,7 +78,7 @@ export class Go {
     // A point by the skirting means the floor there: a body's width off the wall.
     const { min, max } = floor.room.bounds;
     const inset = (v: number, lo: number, hi: number) => Math.min(hi - BODY_RADIUS, Math.max(lo + BODY_RADIUS, v));
-    this.#go(inset(floor.x, min[0], max[0]), inset(floor.z, min[2], max[2]));
+    this.#go(inset(floor.x, min[0], max[0]), inset(floor.z, min[2], max[2]), undefined, false, floor.room);
     return "floor";
   }
 
@@ -99,7 +99,7 @@ export class Go {
     if (!hanging) return;
     const face = hangingFace(room, hanging);
     const pose = framingPose(face, room, camera.fov, camera.aspect, eyeHeight);
-    if (!this.#go(pose.x, pose.z, pose, room.id === body.room)) {
+    if (!this.#go(pose.x, pose.z, pose, room.id === body.room, room)) {
       if (room.id !== body.room) return;
       // No straight way to the viewing spot (a stair's cheek, say): turn to it from here.
       this.#go(body.x, body.z, lookFrom(body.x, body.z, face.centre, body.y + eyeHeight));
@@ -170,7 +170,7 @@ export class Go {
       eyeHeight,
     );
     this.release();
-    this.#go(pose.x, pose.z, pose);
+    this.#go(pose.x, pose.z, pose, false, room);
     const content = exhibitContent(room);
     const record = target.id.startsWith("line:") ? target.read() : { question: content.question, introduction: content.introduction };
     provenance.showRecord(target.title, record, target);
@@ -178,15 +178,15 @@ export class Go {
   }
 
   /** Starts a glide, or says why not; true when it started. */
-  #go(x: number, z: number, face?: { yaw: number; pitch: number }, quiet = false): boolean {
+  #go(x: number, z: number, face?: { yaw: number; pitch: number }, quiet = false, into?: Room): boolean {
     const { mansion, body, locked, notice } = this.#options;
-    const plan = planGlide(mansion, body, x, z, (id) => locked(id), face);
+    const plan = planGlide(mansion, body, x, z, (id) => locked(id), face, into);
     if (typeof plan === "string") {
       if (!quiet) notice(REFUSED[plan]);
       return false;
     }
     this.#glide = plan;
-    const room = roomUnder(mansion, body, x, z);
+    const room = into ?? roomUnder(mansion, body, x, z);
     const moving = Math.hypot(x - body.x, z - body.z) > 0.3;
     this.marker.visible = moving;
     if (room && moving) this.marker.position.set(x, floorAt(mansion, room, x, z) + 0.02, z);
