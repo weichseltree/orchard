@@ -97,17 +97,23 @@ function followPulse(room: Room): void {
   const key = finishKey(room.id);
   if (pulsing.has(key)) return;
   pulsing.add(key);
-  onPulse((gain) => tintLuminous(key, gain));
+  // The materials once, not three map lookups a frame.
+  const lamps = luminousOf(key);
+  onPulse((gain) => { for (const { m, base } of lamps) m.color.copy(base).multiplyScalar(gain); });
 }
-export function tintLuminous(roomId: string, gain: number): void {
+function luminousOf(roomId: string): Array<{ m: MeshBasicMaterial; base: Color }> {
   const own = finishOf(roomId);
-  if (!own) return;
+  if (!own) return [];
+  const out: Array<{ m: MeshBasicMaterial; base: Color }> = [];
   for (const finish of ["light", "blue", "neon"] as const) {
     if (!own[finish]) continue;
     const m = material(finish, roomId);
-    const base = (m.userData.base ??= m.color.clone()) as Color;
-    m.color.copy(base).multiplyScalar(gain);
+    out.push({ m, base: (m.userData.base ??= m.color.clone()) as Color });
   }
+  return out;
+}
+export function tintLuminous(roomId: string, gain: number): void {
+  for (const { m, base } of luminousOf(roomId)) m.color.copy(base).multiplyScalar(gain);
 }
 
 /** Quiet architectural surface shading, independent of all exhibit materials. */
@@ -958,13 +964,15 @@ function clubFittings(b: Builder): void {
   const stage = room.doorways.find(d => d.width > 8);
   if (stage) {
     const top = b.doorBase(stage) + stage.height, half = stage.width / 2;
+    // The apron's flight stands in front of the frame: its strips start above the parapet.
+    const apron = b.doorBase(stage) - y0 + 0.95 + 0.1;
     for (const side of [-1, 1]) {
       const x = cx + side * (half + 2.2), z = z0 + 1.2;
       b.box("inset", x, y0 + 1.5, z, 1.6, 3.0, 1.6);
       b.box("brass", x, y0 + 3.02, z, 1.7, 0.04, 1.7);
       for (const y of [y0 + 0.6, y0 + 1.5, y0 + 2.4]) b.add("ring", "blue", x, y, z + 0.81, 0.5, 0.5, 0.6);
       b.box("stone", cx + side * (half + 0.85), (y0 + top) / 2, z0 + 0.3, 0.7, top - y0, 0.5);
-      b.box("light", cx + side * (half + 0.47), (y0 + top) / 2 + 0.5, z0 + 0.3, 0.05, top - y0 - 1, 0.05);
+      b.box("light", cx + side * (half + 0.47), (y0 + apron + top) / 2, z0 + 0.3, 0.05, top - y0 - apron, 0.05);
     }
     b.box("stone", cx, top + 0.35, z0 + 0.3, stage.width + 2.4, 0.7, 0.5);
     b.box("neon", cx, top + 0.02, z0 + 0.32, stage.width + 0.2, 0.05, 0.05);
@@ -1002,8 +1010,9 @@ function foyerFittings(b: Builder): void {
   const cx = (x0 + x1) / 2;
   b.box("stone", cx, y0 + 0.55, z0 + 1.0, 8, 1.1, 0.7);
   b.box("brass", cx, y0 + 1.12, z0 + 1.0, 8.1, 0.04, 0.85);
+  // Close beside the door's surround: further out stands the north wall on one side and the stair's cheek on the other.
   const door = room.doorways.find(d => d.to === "club");
-  if (door) for (const side of [-1, 1]) lantern(b, x0 + 0.6, door.center + side * (door.width / 2 + 1.1));
+  if (door) for (const side of [-1, 1]) lantern(b, x0 + 0.6, door.center + side * (door.width / 2 + 0.6));
 }
 
 /**

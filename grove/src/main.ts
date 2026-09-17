@@ -396,7 +396,7 @@ view.renderer.xr.addEventListener("sessionstart", () => {
 let perfOpen = false;
 let nextPerfReport = 0;
 const pulseActive = venueBox(mansion) !== null;
-let barredKey = "";
+let barredKey = -1;
 let barred: ReadonlySet<string> = barredRooms(mansion, NOTHING_ON);
 let nextAudioReassign = 0;
 let scrubbingUntil = 0;
@@ -537,6 +537,7 @@ function boot(): void {
     // pinned ids: a slow link costs seconds, a dead one costs nothing.
     exhibits: demo ? undefined : () => presence.whenExhibits(EXHIBIT_WAIT_MS),
     audioContext: () => loadGear().then((g) => g.gate.context),
+    onAudio: () => syncVenueSound(),
     onRoomReady: (room, shell) => {
       // The sealed lenses over this room's closed doors may show now that their recesses stand.
       portals.roomReady(room.id);
@@ -1035,11 +1036,11 @@ view.start((dt, time, rawDt) => {
   if (pulseActive) {
     const gain = pulseGain(beat && gear?.gate.enabled ? beat.level() : null, time / 1000);
     setPulse(gain);
-    const state = venueState();
-    const key = `${state.microphone}${state.sound}${state.immersive}`;
+    // Re-derived only when a switch changed: nothing allocated on a quiet frame.
+    const key = (gear?.microphone.live ? 1 : 0) | (gear?.gate.enabled ? 2 : 0) | (view.renderer.xr.isPresenting ? 4 : 0);
     if (key !== barredKey) {
       barredKey = key;
-      barred = barredRooms(mansion, state);
+      barred = barredRooms(mansion, venueState());
     }
     curtains?.update(time / 1000, barred);
   }

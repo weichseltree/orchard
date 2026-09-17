@@ -43,6 +43,36 @@ function harness(menuOpen: { value: boolean } | null, talk?: string[]) {
   return { controls, commands, events, frame };
 }
 
+describe("the pointer teleport", () => {
+  it("aims at the floor the rig stands on, not at world y = 0", () => {
+    const left = { handedness: "left", gamepad: pad() };
+    const rig = new Group();
+    rig.position.set(0, -5, -40);
+    const renderer = {
+      xr: { isPresenting: true, getController: () => new Group(), addEventListener: () => undefined, getSession: () => ({ inputSources: [left] }) },
+    };
+    const landed: Array<[number, number]> = [];
+    const controls = new XrControls({
+      renderer: renderer as never, rig, input: { forward: 0, strafe: 0, scrub: 0, yawDelta: 0, pitchDelta: 0 } as never,
+      commands: { togglePlay: () => undefined, toggleProvenance: () => undefined } as never,
+      onTeleport: (x, z) => landed.push([x, z]),
+    });
+    // The hand a metre up, pointing forward and 45° down: the ray meets the club's floor 1.2 m ahead.
+    const hand = controls.controllerFor("left")!;
+    hand.position.set(0, 1.2, 0);
+    hand.rotation.x = -Math.PI / 4;
+    left.gamepad.buttons[1]!.pressed = true;
+    controls.update();
+    expect(controls.marker.visible).toBe(true);
+    expect(controls.marker.position.y).toBeCloseTo(-5 + 0.02);
+    left.gamepad.buttons[1]!.pressed = false;
+    controls.update();
+    expect(landed).toHaveLength(1);
+    expect(landed[0]![0]).toBeCloseTo(0);
+    expect(landed[0]![1]).toBeCloseTo(-41.2);
+  });
+});
+
 describe("the ask menu on the controllers", () => {
   it("opens on B/Y, once per press", () => {
     const h = harness({ value: false });

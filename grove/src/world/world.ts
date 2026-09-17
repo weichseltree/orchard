@@ -41,6 +41,8 @@ export interface BuildWorldOptions {
    * itself. The caller uses it to put the body on the asset's own spawn.
    */
   onRoomReady?: (room: Room, shell: RoomShell) => void;
+  /** A live audio exhibit has landed (after its room's crossing, asynchronously): the venue re-syncs its sound. */
+  onAudio?: (audio: AudioExhibit) => void;
   /**
    * The live exhibit table, when a hanging asks for one. Awaited once, after
    * the rooms are up; a resolver that never answers holds up only the
@@ -344,6 +346,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
             .then((audio) => {
               world.audios.push(audio);
               roomOf.set(audio, room.id);
+              options.onAudio?.(audio);
               provenance.register({
                 id: `audio:${hanging.id}`,
                 title: hanging.title,

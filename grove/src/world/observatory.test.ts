@@ -1,4 +1,4 @@
-import { InstancedMesh, Light, Mesh, MeshBasicMaterial, Raycaster, Vector3, type WebGLRenderer } from "three";
+import { InstancedMesh, Light, Matrix4, Mesh, MeshBasicMaterial, Raycaster, Vector3, type WebGLRenderer } from "three";
 import { describe, expect, it, vi } from "vitest";
 import mansionDocument from "./mansion.json";
 import { parseMansion } from "./schema";
@@ -106,6 +106,40 @@ describe("the designed observatory", () => {
       if (covered(room, mansion)) expect(new Set(above), `${room.id} lid`).toEqual(new Set(["observatory-box-inset"]));
       else expect(above, `${room.id} sky opening`).toEqual([]);
     }
+  });
+
+  it("keeps the venue's fittings inside their rooms", () => {
+    // The foyer's lanterns once stood in the north wall and inside the stair's cheek; every placed element's centre stays in its room's box.
+    const margin = 0.4;
+    for (const { room, shell } of shells.filter(s => ["foyer", "club", "stage"].includes(s.room.id))) {
+      const [x0, y0, z0] = room.bounds.min, [x1, y1, z1] = room.bounds.max;
+      const outside: string[] = [];
+      const m = new Matrix4(), p = new Vector3();
+      for (const child of shell.group.children) {
+        if (!(child instanceof InstancedMesh)) continue;
+        for (let i = 0; i < child.count; i++) {
+          child.getMatrixAt(i, m);
+          p.setFromMatrixPosition(m);
+          if (p.x < x0 - margin || p.x > x1 + margin || p.y < y0 - margin || p.y > y1 + margin || p.z < z0 - margin || p.z > z1 + margin) {
+            outside.push(`${child.name}[${i}] at ${p.x.toFixed(2)}, ${p.y.toFixed(2)}, ${p.z.toFixed(2)}`);
+          }
+        }
+      }
+      expect(outside, room.id).toEqual([]);
+    }
+    // And the foyer's lanterns stand clear of the stair's cheek walls (z −29.5..−24.5 beside the world-engine door).
+    const foyer = shells.find(s => s.room.id === "foyer")!;
+    const lamps: number[] = [];
+    const m = new Matrix4(), p = new Vector3(), s = new Vector3();
+    for (const child of foyer.shell.group.children) {
+      if (!(child instanceof InstancedMesh) || child.name !== "observatory-box-light") continue;
+      for (let i = 0; i < child.count; i++) {
+        child.getMatrixAt(i, m); p.setFromMatrixPosition(m); s.setFromMatrixScale(m);
+        // A lantern's head is the 0.26 m cube; the corner sconces on the end walls are thin strips.
+        if (Math.abs(p.x - 10.6) < 0.05 && Math.abs(s.x - 0.26) < 0.01) lamps.push(Number(p.z.toFixed(2)));
+      }
+    }
+    expect(lamps.sort((a, b) => a - b)).toEqual([-24.6, -20.4]);
   });
 
   it("honours the architecture switch before considering a legacy asset URL", async () => {
