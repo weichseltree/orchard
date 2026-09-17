@@ -209,8 +209,8 @@
     },
     "quantumflow": {
       "title": "quantumflow",
-      "kicker": "Por que é que um eletrão só assume certas energias?",
-      "intro": "Esta é a carreira de tiro. Gire o seletor e uma onda parte da parede próxima, tacteando a sala. Em quase todos os ajustes ela dispersa-se antes de alcançar a parede do fundo. Em uns poucos, deita-se plana. Esses poucos não foi ninguém que os escolheu de antemão.",
+      "kicker": "Porque é que um eletrão só assume certas energias?",
+      "intro": "Esta é a carreira de tiro. Gire o seletor e uma onda parte da parede próxima, tacteando a sala. Em quase todos os ajustes ela dispersa-se antes de alcançar a parede do fundo. Em uns poucos, deita-se plana. Esses poucos ninguém os escolheu.",
       "lookFor": "Os poucos ajustes em que a onda fica plana em vez de se dispersar."
     },
     "quantumflow/cloud": {
@@ -222,7 +222,7 @@
     "quantumflow/bowl": {
       "title": "A tigela",
       "kicker": "Como se acha o ponto mais baixo de uma paisagem que não se vê?",
-      "intro": "Duas superfícies estão lado a lado. Uma é uma tigela: comece onde começar, descer leva ao único ponto mais baixo. A outra é irregular, e descer pode deixá-lo preso numa cova que não é o fundo. Só numa delas se pode confiar para chegar ao fundo.",
+      "intro": "Duas superfícies estão lado a lado. Uma é uma tigela: comece onde começar, descer leva ao único ponto mais baixo. A outra é irregular, e descer pode deixá-lo preso numa cova que não é o fundo. Só numa delas se pode confiar.",
       "lookFor": "As covas da segunda superfície que não são o seu ponto mais baixo."
     },
     "quantumflow/inversion": {
@@ -233,14 +233,14 @@
     },
     "quantumflow/flow": {
       "title": "O escoamento",
-      "kicker": "O que aconteceu quando o projeto acrescentou uma regra de que tinha a certeza que ajudaria?",
-      "intro": "Uma nuvem de partículas é levada de onde parte para onde tem de terminar. O projeto acrescentou uma restrição em que acreditava por boas razões, e mediu que ela piorava a viagem em todas as intensidades tentadas. A curva ao lado, na parede, é esse resultado.",
+      "kicker": "O que aconteceu quando o projeto acrescentou uma regra de que tinha a certeza de que ajudaria?",
+      "intro": "Uma nuvem de partículas é levada de onde parte para onde tem de terminar. O projeto acrescentou uma restrição em que acreditava por boas razões, e mediu que ela piorava a viagem em todas as intensidades tentadas. A curva ao lado do escoamento é esse resultado.",
       "lookFor": "A curva na parede, que sobe onde deveria descer."
     },
     "quantumflow/inside": {
       "title": "Dentro da nuvem",
       "kicker": "Que aspeto tem um único orbital eletrónico visto por dentro?",
-      "intro": "Encolheu até à escala da nuvem. A bruma à sua volta é um orbital, desenhado onde a sua onda é mais forte. Perto do centro há uma superfície que não pode atravessar, porque ali a onda é exatamente zero e nada pode estar onde a onda é nula.",
+      "intro": "Encolheu até à escala da nuvem. A bruma que o rodeia por todos os lados é um único orbital, desenhado no lugar onde a sua onda é mais forte. Perto do centro há uma superfície que não pode atravessar, porque ali a onda é exatamente zero.",
       "lookFor": "A superfície que não pode atravessar, onde a onda cai a zero."
     }
   },

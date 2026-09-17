@@ -210,19 +210,19 @@
     "quantumflow": {
       "title": "quantumflow",
       "kicker": "Waarom neemt een elektron alleen bepaalde energieën aan?",
-      "intro": "Dit is de schietbaan. Draai aan de knop en een golf vertrekt van de dichtstbijzijnde muur, tastend door de zaal. Bij bijna elke stand vliegt hij uiteen voordat hij de verre wand bereikt. Bij een paar standen gaat hij vlak liggen. Dat handjevol standen heeft niemand gekozen.",
+      "intro": "Dit is de schietbaan. Draai aan de knop en een golf vertrekt van de nabije wand, tastend door de zaal. Bij bijna elke stand vliegt hij uiteen voordat hij de verre wand bereikt. Bij een paar standen gaat hij vlak liggen. Dat handjevol standen heeft niemand gekozen.",
       "lookFor": "De paar standen waarbij de golf vlak blijft liggen in plaats van uiteen te vliegen."
     },
     "quantumflow/cloud": {
       "title": "De wolk",
       "kicker": "Zes golven erin, één wolk eruit: wat gaat er verloren?",
-      "intro": "Elk orbitaal komt binnen met een eigen kleur en een eigen vorm. Ze worden bij elkaar opgeteld, en de kleuren vervagen tot één bleke wolk. Alles wat die zes wisten zit hier nog in, en de wand erachter zal dat bewijzen.",
+      "intro": "De orbitalen komen elk binnen met een eigen kleur en een eigen vorm. Ze worden bij elkaar opgeteld, en de kleuren vervagen tot één bleke wolk. Alles wat die zes wisten zit hier nog in, en de wand erachter zal dat bewijzen.",
       "lookFor": "Het moment waarop de kleuren verdwijnen, en de potentiaalput die daarna op de wand ontstaat."
     },
     "quantumflow/bowl": {
       "title": "De kom",
       "kicker": "Hoe vindt u het laagste punt van een landschap dat u niet kunt zien?",
-      "intro": "Twee oppervlakken staan naast elkaar. Het ene is een kom: waar u ook begint, leidt de weg naar beneden naar het enige laagste punt. Het andere is hobbelig, en de weg naar beneden kan u laten stranden in een kuil die niet het laagste punt is.",
+      "intro": "Twee oppervlakken staan naast elkaar. Het ene is een kom: waar u ook begint, leidt de weg omlaag naar het enige laagste punt. Het andere is hobbelig, en de weg naar beneden kan u laten stranden in een kuil die niet het laagste punt is.",
       "lookFor": "De kuilen in het tweede oppervlak die niet het laagste punt zijn."
     },
     "quantumflow/inversion": {

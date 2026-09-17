@@ -235,7 +235,7 @@
       "title": "Il flusso",
       "kicker": "Che cosa è accaduto quando il progetto ha aggiunto una regola di cui era certo che avrebbe aiutato?",
       "intro": "Una nube di particelle viene portata da dove parte a dove deve finire. Il progetto ha aggiunto un vincolo in cui credeva per buone ragioni, e ha misurato che peggiorava il viaggio a ogni intensità provata. La curva accanto al flusso è quel risultato.",
-      "lookFor": "La curva sulla parete, che sale dove ci si aspettava scendesse."
+      "lookFor": "La curva sulla parete, che sale dove dovrebbe scendere."
     },
     "quantumflow/inside": {
       "title": "Dentro la nube",

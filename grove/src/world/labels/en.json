@@ -240,7 +240,7 @@
     "quantumflow/inside": {
       "title": "Inside the cloud",
       "kicker": "What does a single electron orbital look like from within?",
-      "intro": "You have shrunk to the scale of the cloud. The haze around you is one orbital, drawn where its wave is strongest. Somewhere near the middle is a surface you cannot cross, because there the wave is exactly zero and nothing can stand there.",
+      "intro": "You have shrunk to the scale of the cloud. The haze around you is one orbital, drawn where its wave is strongest. Somewhere near the middle is a surface you cannot cross, because there the wave is exactly zero.",
       "lookFor": "The surface you cannot walk through, where the wave falls to zero."
     }
   },

@@ -2740,7 +2740,7 @@
     },
     {
       "id": "quantumflow",
-      "title": "The Shooting Gallery",
+      "title": "quantumflow",
       "architecture": "observatory",
       "presence": "quantumflow",
       "fallback": {
@@ -2807,7 +2807,7 @@
     },
     {
       "id": "quantumflow/cloud",
-      "title": "The Cloud",
+      "title": "The cloud",
       "architecture": "observatory",
       "presence": "quantumflow",
       "fallback": {
@@ -2877,7 +2877,7 @@
     },
     {
       "id": "quantumflow/bowl",
-      "title": "The Bowl",
+      "title": "The bowl",
       "architecture": "observatory",
       "presence": "quantumflow",
       "fallback": {
@@ -2928,7 +2928,7 @@
     },
     {
       "id": "quantumflow/inversion",
-      "title": "The Inversion",
+      "title": "The inversion",
       "architecture": "observatory",
       "presence": "quantumflow",
       "fallback": {
@@ -2979,7 +2979,7 @@
     },
     {
       "id": "quantumflow/flow",
-      "title": "The Flow",
+      "title": "The flow",
       "architecture": "observatory",
       "presence": "quantumflow",
       "fallback": {
@@ -3030,7 +3030,7 @@
     },
     {
       "id": "quantumflow/inside",
-      "title": "Inside the Cloud",
+      "title": "Inside the cloud",
       "architecture": "observatory",
       "presence": "quantumflow",
       "scale": 0.1,

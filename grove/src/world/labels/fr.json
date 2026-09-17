@@ -216,7 +216,7 @@
     "quantumflow/cloud": {
       "title": "Le nuage",
       "kicker": "Six ondes entrent et un nuage sort : qu'est-ce qui se perd ?",
-      "intro": "Chaque orbitale arrive ici avec sa propre couleur et sa propre forme. On les additionne les unes aux autres, et les couleurs se fondent pour ne plus faire qu'un seul nuage pâle. Tout ce que ces six-là savaient se trouve encore à l'intérieur, et le mur derrière va le prouver.",
+      "intro": "Les orbitales arrivent chacune avec sa propre couleur et sa propre forme. On les additionne les unes aux autres, et les couleurs se fondent pour ne plus faire qu'un seul nuage pâle. Tout ce que ces six-là savaient se trouve encore à l'intérieur, et le mur derrière va le prouver.",
       "lookFor": "L'instant où les couleurs disparaissent, et le puits de potentiel qui se reforme ensuite sur le mur."
     },
     "quantumflow/bowl": {
@@ -240,7 +240,7 @@
     "quantumflow/inside": {
       "title": "Dans le nuage",
       "kicker": "À quoi ressemble une seule orbitale électronique vue de l'intérieur ?",
-      "intro": "Vous avez rétréci jusqu'à l'échelle du nuage. La brume autour de vous est une orbitale, dessinée là où son onde est la plus forte. Près du centre se trouve une surface que vous ne pouvez pas franchir, car l'onde y est exactement nulle, et rien ne peut se tenir là.",
+      "intro": "Vous avez rétréci jusqu'à l'échelle du nuage. La brume qui vous entoure de toutes parts est une seule orbitale, dessinée là où son onde est la plus forte. Près du centre se trouve une surface que vous ne pouvez pas franchir, car l'onde y est exactement nulle.",
       "lookFor": "La surface que vous ne pouvez pas traverser, où l'onde tombe à zéro."
     }
   },

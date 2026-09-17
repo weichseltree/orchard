@@ -216,7 +216,7 @@
     "quantumflow/cloud": {
       "title": "Die Wolke",
       "kicker": "Sechs Wellen hinein, eine Wolke heraus: Was geht verloren?",
-      "intro": "Jedes Orbital kommt mit eigener Farbe und eigener Gestalt. Man addiert sie, und die Farben verblassen zu einer einzigen fahlen Wolke. Alles, was die sechs wussten, steckt noch hier drin, und die Wand dahinter wird es beweisen.",
+      "intro": "Die Orbitale kommen, jedes mit eigener Farbe und eigener Gestalt. Man addiert sie, und die Farben verblassen zu einer einzigen fahlen Wolke. Alles, was die sechs wussten, steckt noch hier drin, und die Wand dahinter wird es beweisen.",
       "lookFor": "Der Augenblick, in dem die Farben verschwinden, und der Potentialtopf, der danach an der Wand entsteht."
     },
     "quantumflow/bowl": {
@@ -233,8 +233,8 @@
     },
     "quantumflow/flow": {
       "title": "Der Fluss",
-      "kicker": "Was geschah, als das Vorhaben eine Regel hinzufügte, die sicher helfen sollte?",
-      "intro": "Eine Wolke aus Teilchen wird von ihrem Ausgangspunkt zu ihrem Ziel getragen. Das Vorhaben fügte eine Nebenbedingung hinzu, an die es aus guten Gründen glaubte, und maß, wie sie den Weg bei jeder Stärke verschlechterte. Die Kurve daneben ist dieses Ergebnis.",
+      "kicker": "Was geschah, als das Projekt eine Regel hinzufügte, die sicher helfen sollte?",
+      "intro": "Eine Wolke aus Teilchen wird von ihrem Ausgangspunkt zu ihrem Ziel getragen. Das Projekt fügte eine Nebenbedingung hinzu, an die es aus guten Gründen glaubte, und maß, wie sie den Weg bei jeder Stärke verschlechterte. Die Kurve daneben ist dieses Ergebnis.",
       "lookFor": "Die Kurve an der Wand: Sie steigt, wo sie fallen sollte."
     },
     "quantumflow/inside": {

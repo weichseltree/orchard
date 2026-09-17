@@ -50,7 +50,12 @@ describe("the designed observatory", () => {
     });
     // Fifteen batches a room, and the grounds are height-field meshes now.
     expect(draws).toBeLessThan(shells.length * 16);
-    // About fourteen thousand triangles a room: the palace's fifteen came to 200,000.
+    // About fourteen thousand triangles a room: the palace's fifteen came to
+    // 200,000. quantumflow's rooms are large and cost 13,100 to 16,000 each, so
+    // the world now sits at about 416,000 of 420,000 -- under 1% of slack. The
+    // next change that adds geometry to any room will have to buy some back
+    // (observatory.ts steps wall panels every 1.4 m, and the wing's chambers
+    // have 136 to 144 m of perimeter apiece), not merely nudge this number.
     expect(triangles).toBeLessThan(shells.length * 14_000);
     // Six primitives, one vault per chamber, one height field per cell.
     expect(geometries.size).toBeLessThanOrEqual(6 + shells.length);
