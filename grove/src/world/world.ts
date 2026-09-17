@@ -289,6 +289,25 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
         const group = buildRoomLabels(room, labels, locale, { mansion });
         labelGroups.set(room.id, group);
         groupFor(room).add(group);
+        // A plaque is pointable: it frames its exhibit, or the room it introduces.
+        group.children.forEach((plaque, i) => {
+          const data = plaque.userData as { hangingId?: string | null; line?: { title: string; text: string } };
+          if (data.line) {
+            const { title, text } = data.line;
+            provenance.register({ id: `line:${room.id}:${i}`, title, bounds: new Box3().setFromObject(plaque), read: () => ({ record: title, text }) });
+            return;
+          }
+          const hanging = data.hangingId ?? undefined;
+          provenance.register({
+            id: `plaque:${room.id}:${i}`,
+            title: room.hangings.find((h) => h.id === hanging)?.title || room.title || room.id,
+            bounds: new Box3().setFromObject(plaque),
+            hanging,
+            read: () => (hanging
+              ? provenance.forHanging(hanging)?.read() ?? { exhibit: hanging, status: "not loaded" }
+              : shells.get(room.id)?.provenance) ?? {},
+          });
+        });
         // The names over the doors, in brass letters; the typeface loads once, with the first room.
         return import("./door-signs").then(async ({ planDoorSigns, fontOnce, buildDoorSigns }) => {
           const signs = planDoorSigns(room, labels, mansion);
@@ -364,6 +383,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
               options.onAudio?.(audio);
               provenance.register({
                 id: `audio:${hanging.id}`,
+                hanging: hanging.id,
                 title: hanging.title,
                 bounds: audio.bounds,
                 read: () => audio.provenance(),
@@ -397,6 +417,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
               groupFor(room).add(tape.group);
               provenance.register({
                 id: `tape:${hanging.id}`,
+                hanging: hanging.id,
                 title: hanging.title || tape.bundle.title,
                 bounds: tape.bounds,
                 read: () => tape.provenance(),
@@ -430,6 +451,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
               groupFor(room).add(planet.group);
               provenance.register({
                 id: `planet:${hanging.id}`,
+                hanging: hanging.id,
                 title: hanging.title || planet.bundle.title,
                 bounds: planet.bounds,
                 read: () => planet.provenance(),
@@ -574,6 +596,7 @@ async function buildVideo(
   const height = hanging.widthMeters / (bundle.width / bundle.height);
   provenance.register({
     id: `video:${id}`,
+    hanging: id,
     title: title || bundle.title || "Video wall",
     bounds: new Box3().setFromCenterAndSize(
       new Vector3(x, y, z),
@@ -654,6 +677,7 @@ async function buildStill(
   still.mesh.quaternion.copy(place.quaternion);
   provenance.register({
     id: `still:${hanging.id}`,
+    hanging: hanging.id,
     title: hanging.title || bundle.title || "Still",
     bounds: new Box3().setFromCenterAndSize(
       place.position,

@@ -46,13 +46,13 @@
         "x": -82,
         "z": 92,
         "radius": 30,
-        "height": 2.0
+        "height": 2
       },
       {
         "x": -118,
         "z": 66,
         "radius": 18,
-        "height": 3.0
+        "height": 3
       }
     ]
   },
@@ -116,7 +116,7 @@
           "at": 10,
           "center": 7,
           "width": 1.6,
-          "height": 3.0,
+          "height": 3,
           "closed": true,
           "admin": true
         },
@@ -220,7 +220,7 @@
           },
           "position": [
             14.5,
-            1.0,
+            1,
             -12
           ],
           "rotationDeg": [
@@ -256,7 +256,7 @@
           },
           "position": [
             21.5,
-            1.0,
+            1,
             -12
           ],
           "rotationDeg": [
@@ -498,24 +498,24 @@
           "axis": "x",
           "at": -10,
           "center": -42,
-          "width": 3.0,
-          "height": 5.0
+          "width": 3,
+          "height": 5
         },
         {
           "to": "terrace",
           "axis": "x",
           "at": -10,
           "center": -55,
-          "width": 3.0,
-          "height": 5.0
+          "width": 3,
+          "height": 5
         },
         {
           "to": "terrace",
           "axis": "x",
           "at": -10,
           "center": -68,
-          "width": 3.0,
-          "height": 5.0
+          "width": 3,
+          "height": 5
         }
       ],
       "hangings": [],
@@ -735,7 +735,7 @@
           "at": -70,
           "center": 0,
           "width": 10,
-          "height": 4.0
+          "height": 4
         }
       ],
       "hangings": [],
@@ -776,7 +776,7 @@
           "at": -70,
           "center": 0,
           "width": 10,
-          "height": 4.0
+          "height": 4
         }
       ],
       "hangings": [],
@@ -848,7 +848,7 @@
           },
           "position": [
             0,
-            1.0,
+            1,
             21
           ],
           "rotationDeg": [
@@ -1071,7 +1071,7 @@
           "at": 10,
           "center": 7,
           "width": 1.6,
-          "height": 3.0,
+          "height": 3,
           "closed": true,
           "admin": true
         }
@@ -1130,24 +1130,24 @@
           "axis": "x",
           "at": -10,
           "center": -42,
-          "width": 3.0,
-          "height": 5.0
+          "width": 3,
+          "height": 5
         },
         {
           "to": "orangery",
           "axis": "x",
           "at": -10,
           "center": -55,
-          "width": 3.0,
-          "height": 5.0
+          "width": 3,
+          "height": 5
         },
         {
           "to": "orangery",
           "axis": "x",
           "at": -10,
           "center": -68,
-          "width": 3.0,
-          "height": 5.0
+          "width": 3,
+          "height": 5
         },
         {
           "to": "gallery",
@@ -1582,9 +1582,9 @@
           31.5
         ],
         "max": [
-          78,
-          6.33,
-          36.5
+          36,
+          6.5,
+          45.5
         ]
       },
       "spawn": {
@@ -1605,470 +1605,25 @@
           "height": 3.2
         },
         {
-          "to": "arcedit/arcedit",
-          "axis": "z",
-          "at": 36.5,
-          "center": 13.5,
-          "width": 2.4,
-          "height": 2.95
-        },
-        {
-          "to": "arcedit/docs",
-          "axis": "z",
-          "at": 36.5,
-          "center": 26,
-          "width": 2.4,
-          "height": 2.65
-        },
-        {
-          "to": "arcedit/mental",
-          "axis": "z",
-          "at": 36.5,
-          "center": 33,
-          "width": 2.4,
-          "height": 2.75
-        },
-        {
-          "to": "arcedit/results",
-          "axis": "z",
-          "at": 36.5,
-          "center": 39.5,
-          "width": 2.4,
-          "height": 3
-        },
-        {
-          "to": "arcedit/scripts",
-          "axis": "z",
-          "at": 36.5,
-          "center": 65,
-          "width": 2.4,
-          "height": 3
-        },
-        {
-          "to": "arcedit/tests",
-          "axis": "z",
-          "at": 36.5,
-          "center": 73.5,
-          "width": 2.4,
-          "height": 2.95
-        }
-      ],
-      "hangings": [],
-      "portals": [
-        {
-          "id": "arcedit.portal.inside",
-          "to": "arcedit/inside",
-          "position": [
-            76,
-            1.6,
-            34
-          ],
-          "radius": 2,
-          "exit": {
-            "position": [
-              435,
-              1.6,
-              41
-            ],
-            "radius": 6
-          }
-        }
-      ]
-    },
-    {
-      "id": "arcedit/arcedit",
-      "title": "arcedit",
-      "architecture": "observatory",
-      "presence": "arcedit",
-      "fallback": {
-        "kind": "box",
-        "color": "#101c2b"
-      },
-      "bounds": {
-        "min": [
-          11,
-          0,
-          36.5
-        ],
-        "max": [
-          16,
-          3.57,
-          46.5
-        ]
-      },
-      "spawn": {
-        "position": [
-          13.5,
-          0,
-          38
-        ],
-        "yawDeg": 180
-      },
-      "doorways": [
-        {
-          "to": "arcedit",
-          "axis": "z",
-          "at": 36.5,
-          "center": 13.5,
-          "width": 2.4,
-          "height": 2.95
-        },
-        {
-          "to": "arcedit/arcedit/serve",
+          "to": "arcedit/agent",
           "axis": "x",
-          "at": 16,
-          "center": 40.5,
+          "at": 36,
+          "center": 38.5,
           "width": 2.4,
-          "height": 2.65
-        }
-      ],
-      "hangings": []
-    },
-    {
-      "id": "arcedit/arcedit/serve",
-      "title": "serve",
-      "architecture": "observatory",
-      "presence": "arcedit",
-      "fallback": {
-        "kind": "box",
-        "color": "#101c2b"
-      },
-      "bounds": {
-        "min": [
-          16,
-          0,
-          37.5
-        ],
-        "max": [
-          22,
-          3.25,
-          43.5
-        ]
-      },
-      "spawn": {
-        "position": [
-          17.5,
-          0,
-          40.5
-        ],
-        "yawDeg": -90
-      },
-      "doorways": [
+          "height": 3.2
+        },
         {
-          "to": "arcedit/arcedit",
-          "axis": "x",
-          "at": 16,
-          "center": 40.5,
-          "width": 2.4,
-          "height": 2.65
-        }
-      ],
-      "hangings": []
-    },
-    {
-      "id": "arcedit/docs",
-      "title": "docs",
-      "architecture": "observatory",
-      "presence": "arcedit",
-      "fallback": {
-        "kind": "box",
-        "color": "#101c2b"
-      },
-      "bounds": {
-        "min": [
-          23,
-          0,
-          36.5
-        ],
-        "max": [
-          29,
-          3.25,
-          42.5
-        ]
-      },
-      "spawn": {
-        "position": [
-          26,
-          0,
-          38
-        ],
-        "yawDeg": 180
-      },
-      "doorways": [
-        {
-          "to": "arcedit",
+          "to": "arcedit/workshop",
           "axis": "z",
-          "at": 36.5,
-          "center": 26,
+          "at": 45.5,
+          "center": 23,
           "width": 2.4,
-          "height": 2.65
-        }
-      ],
-      "hangings": []
-    },
-    {
-      "id": "arcedit/mental",
-      "title": "mental",
-      "architecture": "observatory",
-      "presence": "arcedit",
-      "fallback": {
-        "kind": "box",
-        "color": "#101c2b"
-      },
-      "bounds": {
-        "min": [
-          30,
-          0,
-          36.5
-        ],
-        "max": [
-          36,
-          3.35,
-          44.5
-        ]
-      },
-      "spawn": {
-        "position": [
-          33,
-          0,
-          38
-        ],
-        "yawDeg": 180
-      },
-      "doorways": [
-        {
-          "to": "arcedit",
-          "axis": "z",
-          "at": 36.5,
-          "center": 33,
-          "width": 2.4,
-          "height": 2.75
-        }
-      ],
-      "hangings": []
-    },
-    {
-      "id": "arcedit/results",
-      "title": "results",
-      "architecture": "observatory",
-      "presence": "arcedit",
-      "fallback": {
-        "kind": "box",
-        "color": "#101c2b"
-      },
-      "bounds": {
-        "min": [
-          37,
-          0,
-          36.5
-        ],
-        "max": [
-          42,
-          6.04,
-          103.5
-        ]
-      },
-      "spawn": {
-        "position": [
-          39.5,
-          0,
-          38
-        ],
-        "yawDeg": 180
-      },
-      "doorways": [
-        {
-          "to": "arcedit",
-          "axis": "z",
-          "at": 36.5,
-          "center": 39.5,
-          "width": 2.4,
-          "height": 3
-        },
-        {
-          "to": "arcedit/results/grove",
-          "axis": "x",
-          "at": 42,
-          "center": 40,
-          "width": 2.4,
-          "height": 3
-        },
-        {
-          "to": "arcedit/results/i15_perception_under_reward",
-          "axis": "x",
-          "at": 42,
-          "center": 58.5,
-          "width": 2.4,
-          "height": 2.65
-        },
-        {
-          "to": "arcedit/results/i17_full_campaign",
-          "axis": "x",
-          "at": 42,
-          "center": 65.5,
-          "width": 2.4,
-          "height": 2.75
-        },
-        {
-          "to": "arcedit/results/i2_encoder",
-          "axis": "x",
-          "at": 42,
-          "center": 74,
-          "width": 2.4,
-          "height": 3
-        },
-        {
-          "to": "arcedit/results/i3_action",
-          "axis": "x",
-          "at": 42,
-          "center": 83,
-          "width": 2.4,
-          "height": 3
-        },
-        {
-          "to": "arcedit/results/i9_restriction",
-          "axis": "x",
-          "at": 42,
-          "center": 90.5,
-          "width": 2.4,
-          "height": 2.6
-        },
-        {
-          "to": "arcedit/results/interface_v1",
-          "axis": "x",
-          "at": 42,
-          "center": 98.5,
-          "width": 2.4,
-          "height": 3
-        }
-      ],
-      "hangings": []
-    },
-    {
-      "id": "arcedit/results/grove",
-      "title": "grove",
-      "architecture": "observatory",
-      "presence": "arcedit",
-      "fallback": {
-        "kind": "box",
-        "color": "#101c2b"
-      },
-      "bounds": {
-        "min": [
-          42,
-          0,
-          37.5
-        ],
-        "max": [
-          60,
-          5.44,
-          42.5
-        ]
-      },
-      "spawn": {
-        "position": [
-          43.5,
-          0,
-          40
-        ],
-        "yawDeg": -90
-      },
-      "doorways": [
-        {
-          "to": "arcedit/results",
-          "axis": "x",
-          "at": 42,
-          "center": 40,
-          "width": 2.4,
-          "height": 3
-        },
-        {
-          "to": "arcedit/results/grove/oracle_side5",
-          "axis": "z",
-          "at": 42.5,
-          "center": 47,
-          "width": 2.4,
-          "height": 3
-        },
-        {
-          "to": "arcedit/results/grove/policy_side3",
-          "axis": "z",
-          "at": 42.5,
-          "center": 55.5,
-          "width": 2.4,
-          "height": 3
+          "height": 3.2
         }
       ],
       "hangings": [
         {
-          "id": "arcedit.results.grove#0",
-          "kind": "still",
-          "title": "The editor as a place, cells as tiles, the cursor a column of light, the view stacked in glass above",
-          "bundle": {
-            "exhibit": {
-              "tree": "arcedit",
-              "kind": "still",
-              "bundle": "83d786cba7a501eb"
-            },
-            "id": "83d786cba7a501eb"
-          },
-          "position": [
-            51,
-            1.7,
-            37.76
-          ],
-          "rotationDeg": [
-            0,
-            0,
-            0
-          ],
-          "widthMeters": 2.6,
-          "heightMeters": 1.5
-        }
-      ]
-    },
-    {
-      "id": "arcedit/results/grove/oracle_side5",
-      "title": "oracle_side5",
-      "architecture": "observatory",
-      "presence": "arcedit",
-      "fallback": {
-        "kind": "box",
-        "color": "#101c2b"
-      },
-      "bounds": {
-        "min": [
-          43,
-          0,
-          42.5
-        ],
-        "max": [
-          51,
-          3.87,
-          54.5
-        ]
-      },
-      "spawn": {
-        "position": [
-          47,
-          0,
-          44
-        ],
-        "yawDeg": 180
-      },
-      "doorways": [
-        {
-          "to": "arcedit/results/grove",
-          "axis": "z",
-          "at": 42.5,
-          "center": 47,
-          "width": 2.4,
-          "height": 3
-        }
-      ],
-      "hangings": [
-        {
-          "id": "arcedit.results.grove.oracle_side5#0",
+          "id": "arcedit#0",
           "kind": "tape",
           "title": "The reference teacher copies a five-by-five grid of many colours, 114 clicks",
           "bundle": {
@@ -2080,16 +1635,16 @@
             "id": "080a665e625afc10"
           },
           "position": [
-            47,
+            23,
             0.3,
-            48.5
+            38.5
           ],
           "rotationDeg": [
             -90,
             0,
             0
           ],
-          "longSideMeters": 5.5,
+          "longSideMeters": 9,
           "pointSize": 26,
           "palette": [
             "#222a34",
@@ -2121,21 +1676,32 @@
           ],
           "pedestal": {
             "position": [
-              47,
+              17.8,
               0,
-              51.85
+              38.5
             ],
             "rotationDeg": [
               0,
-              0,
+              -90,
               0
             ]
           }
         },
         {
-          "id": "arcedit.results.grove.oracle_side5#1",
-          "kind": "video",
+          "id": "arcedit#1",
           "title": "The teacher's episode as a film, canvas above, the agent's view below",
+          "position": [
+            23,
+            2.6,
+            31.76
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "widthMeters": 5,
+          "kind": "video",
           "bundle": {
             "exhibit": {
               "tree": "arcedit",
@@ -2143,23 +1709,23 @@
               "bundle": "c598636cd2ac1451"
             },
             "id": "c598636cd2ac1451"
-          },
+          }
+        },
+        {
+          "id": "arcedit#2",
+          "title": "The task before the first click, source grid, empty answer frame, palette and tools",
           "position": [
-            50.74,
-            2.2,
-            48.5
+            15.5,
+            1.9,
+            45.24
           ],
           "rotationDeg": [
             0,
-            -90,
+            180,
             0
           ],
-          "widthMeters": 5.0
-        },
-        {
-          "id": "arcedit.results.grove.oracle_side5#2",
+          "widthMeters": 2.6,
           "kind": "still",
-          "title": "The task before the first click, source grid, empty answer frame, palette and tools",
           "bundle": {
             "exhibit": {
               "tree": "arcedit",
@@ -2168,24 +1734,84 @@
             },
             "id": "7e7cba7bf72e332f"
           },
+          "heightMeters": 0.938
+        },
+        {
+          "id": "arcedit#3",
+          "title": "The teacher mid-episode, painting a many-coloured grid with its view strip beneath",
           "position": [
-            43.26,
-            1.7,
-            46
+            30.5,
+            1.9,
+            45.24
+          ],
+          "rotationDeg": [
+            0,
+            180,
+            0
+          ],
+          "widthMeters": 2.6,
+          "kind": "still",
+          "bundle": {
+            "exhibit": {
+              "tree": "arcedit",
+              "kind": "still",
+              "bundle": "dec91c1f0260f323"
+            },
+            "id": "dec91c1f0260f323"
+          },
+          "heightMeters": 1.184
+        },
+        {
+          "id": "arcedit#4",
+          "title": "The editor as a place, cells as tiles, the cursor a column of light, the view stacked in glass above",
+          "position": [
+            10.26,
+            2.3,
+            41
           ],
           "rotationDeg": [
             0,
             90,
             0
           ],
-          "widthMeters": 2.6,
-          "heightMeters": 1.5
+          "widthMeters": 4,
+          "kind": "still",
+          "bundle": {
+            "exhibit": {
+              "tree": "arcedit",
+              "kind": "still",
+              "bundle": "83d786cba7a501eb"
+            },
+            "id": "83d786cba7a501eb"
+          },
+          "heightMeters": 2.25
         }
-      ]
+      ],
+      "portals": [
+        {
+          "id": "arcedit.portal.inside",
+          "to": "arcedit/inside",
+          "position": [
+            32,
+            1.6,
+            42
+          ],
+          "radius": 2,
+          "exit": {
+            "position": [
+              435,
+              1.6,
+              41
+            ],
+            "radius": 6
+          }
+        }
+      ],
+      "exposure": 1
     },
     {
-      "id": "arcedit/results/grove/policy_side3",
-      "title": "policy_side3",
+      "id": "arcedit/agent",
+      "title": "The learned agent",
       "architecture": "observatory",
       "presence": "arcedit",
       "fallback": {
@@ -2194,37 +1820,45 @@
       },
       "bounds": {
         "min": [
-          52,
+          36,
           0,
-          42.5
+          31.5
         ],
         "max": [
-          59,
-          3.64,
-          52.5
+          57,
+          6,
+          53.5
         ]
       },
       "spawn": {
         "position": [
-          55.5,
+          37.5,
           0,
-          44
+          38.5
         ],
-        "yawDeg": 180
+        "yawDeg": -90
       },
       "doorways": [
         {
-          "to": "arcedit/results/grove",
-          "axis": "z",
-          "at": 42.5,
-          "center": 55.5,
+          "to": "arcedit",
+          "axis": "x",
+          "at": 36,
+          "center": 38.5,
           "width": 2.4,
-          "height": 3
+          "height": 3.2
+        },
+        {
+          "to": "arcedit/reward",
+          "axis": "x",
+          "at": 57,
+          "center": 42.5,
+          "width": 2.4,
+          "height": 3.2
         }
       ],
       "hangings": [
         {
-          "id": "arcedit.results.grove.policy_side3#0",
+          "id": "arcedit.agent#0",
           "kind": "tape",
           "title": "A learned agent copies a yellow square, 16 clicks, seen from inside its view",
           "bundle": {
@@ -2236,16 +1870,16 @@
             "id": "52299c62b54fb773"
           },
           "position": [
-            55.5,
+            46.5,
             0.3,
-            47.5
+            42.5
           ],
           "rotationDeg": [
             -90,
             0,
             0
           ],
-          "longSideMeters": 4.5,
+          "longSideMeters": 8,
           "pointSize": 26,
           "palette": [
             "#222a34",
@@ -2277,21 +1911,32 @@
           ],
           "pedestal": {
             "position": [
-              55.5,
+              41.8,
               0,
-              50.35
+              42.5
             ],
             "rotationDeg": [
               0,
-              0,
+              -90,
               0
             ]
           }
         },
         {
-          "id": "arcedit.results.grove.policy_side3#1",
-          "kind": "video",
+          "id": "arcedit.agent#1",
           "title": "The same episode as a film, the canvas above and the nine levels of the agent's view below",
+          "position": [
+            46.5,
+            2.6,
+            31.76
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "widthMeters": 5,
+          "kind": "video",
           "bundle": {
             "exhibit": {
               "tree": "arcedit",
@@ -2299,23 +1944,48 @@
               "bundle": "e842d1420b50798a"
             },
             "id": "e842d1420b50798a"
-          },
+          }
+        },
+        {
+          "id": "arcedit.agent#2",
+          "title": "Change only the teacher's painting order: 76% or 98% per decision on solid grids, 0 or 124 of 128 copies, one seed each",
           "position": [
-            58.74,
-            2.2,
-            47.5
+            46.5,
+            2.6,
+            53.239999999999995
           ],
           "rotationDeg": [
             0,
-            -90,
+            180,
             0
           ],
-          "widthMeters": 5.0
+          "widthMeters": 5.2,
+          "kind": "still",
+          "bundle": {
+            "exhibit": {
+              "tree": "arcedit",
+              "kind": "still",
+              "bundle": "42299a802a086df0"
+            },
+            "id": "42299a802a086df0"
+          },
+          "heightMeters": 3.25
         },
         {
-          "id": "arcedit.results.grove.policy_side3#2",
-          "kind": "still",
+          "id": "arcedit.agent#3",
           "title": "Mid-episode, the learned agent painting from the palette colour it chose",
+          "position": [
+            36.260000000000005,
+            1.9,
+            48
+          ],
+          "rotationDeg": [
+            0,
+            90,
+            0
+          ],
+          "widthMeters": 2.6,
+          "kind": "still",
           "bundle": {
             "exhibit": {
               "tree": "arcedit",
@@ -2324,23 +1994,23 @@
             },
             "id": "c5b19626a8e2f6f1"
           },
+          "heightMeters": 2.303
+        },
+        {
+          "id": "arcedit.agent#4",
+          "title": "What the agent sees, one step, nine levels from sharp to blurred",
           "position": [
-            52.26,
-            1.7,
-            49.5
+            56.74,
+            1.9,
+            35.5
           ],
           "rotationDeg": [
             0,
-            90,
+            -90,
             0
           ],
           "widthMeters": 2.6,
-          "heightMeters": 1.5
-        },
-        {
-          "id": "arcedit.results.grove.policy_side3#3",
           "kind": "still",
-          "title": "What the agent sees, one step, nine levels from sharp to blurred",
           "bundle": {
             "exhibit": {
               "tree": "arcedit",
@@ -2349,24 +2019,356 @@
             },
             "id": "0b0b812dc41608b2"
           },
+          "heightMeters": 0.308
+        }
+      ],
+      "portals": [],
+      "exposure": 1
+    },
+    {
+      "id": "arcedit/reward",
+      "title": "Learning from reward",
+      "architecture": "observatory",
+      "presence": "arcedit",
+      "fallback": {
+        "kind": "box",
+        "color": "#101c2b"
+      },
+      "bounds": {
+        "min": [
+          57,
+          0,
+          31.5
+        ],
+        "max": [
+          78,
+          6,
+          53.5
+        ]
+      },
+      "spawn": {
+        "position": [
+          58.5,
+          0,
+          42.5
+        ],
+        "yawDeg": -90
+      },
+      "doorways": [
+        {
+          "to": "arcedit/agent",
+          "axis": "x",
+          "at": 57,
+          "center": 42.5,
+          "width": 2.4,
+          "height": 3.2
+        },
+        {
+          "to": "arcedit/record",
+          "axis": "z",
+          "at": 53.5,
+          "center": 67.5,
+          "width": 2.4,
+          "height": 3.2
+        }
+      ],
+      "hangings": [
+        {
+          "id": "arcedit.reward#0",
+          "title": "Learning from reward without a teacher: side 2 at 96, 116 and 121 of 128, side 3 at 10, 50 and 11",
           "position": [
-            52.26,
-            1.7,
-            45.5
+            67.5,
+            2.7,
+            31.76
           ],
           "rotationDeg": [
             0,
-            90,
+            0,
             0
           ],
-          "widthMeters": 2.6,
-          "heightMeters": 1.5
+          "widthMeters": 6,
+          "kind": "still",
+          "bundle": {
+            "exhibit": {
+              "tree": "arcedit",
+              "kind": "still",
+              "bundle": "1f3621a6968adbd2"
+            },
+            "id": "1f3621a6968adbd2"
+          },
+          "heightMeters": 3.75
+        },
+        {
+          "id": "arcedit.reward#1",
+          "title": "At side 3 it reads the colour, then often runs out of time instead of handing in",
+          "position": [
+            77.74,
+            2.7,
+            42.5
+          ],
+          "rotationDeg": [
+            0,
+            -90,
+            0
+          ],
+          "widthMeters": 6,
+          "kind": "still",
+          "bundle": {
+            "exhibit": {
+              "tree": "arcedit",
+              "kind": "still",
+              "bundle": "2a07fc5541753ffb"
+            },
+            "id": "2a07fc5541753ffb"
+          },
+          "heightMeters": 3.75
+        }
+      ],
+      "portals": [],
+      "exposure": 1
+    },
+    {
+      "id": "arcedit/record",
+      "title": "What failed, and what held",
+      "architecture": "observatory",
+      "presence": "arcedit",
+      "fallback": {
+        "kind": "box",
+        "color": "#101c2b"
+      },
+      "bounds": {
+        "min": [
+          36,
+          0,
+          53.5
+        ],
+        "max": [
+          78,
+          5.5,
+          71.5
+        ]
+      },
+      "spawn": {
+        "position": [
+          67.5,
+          0,
+          55
+        ],
+        "yawDeg": 180
+      },
+      "doorways": [
+        {
+          "to": "arcedit/reward",
+          "axis": "z",
+          "at": 53.5,
+          "center": 67.5,
+          "width": 2.4,
+          "height": 3.2
+        },
+        {
+          "to": "arcedit/workshop",
+          "axis": "x",
+          "at": 36,
+          "center": 62.5,
+          "width": 2.4,
+          "height": 3.2
+        }
+      ],
+      "hangings": [
+        {
+          "id": "arcedit.record#0",
+          "title": "Small mistakes compound: pooled per-click accuracy against whole copies, predicted and measured",
+          "position": [
+            48,
+            2.6,
+            71.24000000000001
+          ],
+          "rotationDeg": [
+            0,
+            180,
+            0
+          ],
+          "widthMeters": 5.2,
+          "kind": "still",
+          "bundle": {
+            "exhibit": {
+              "tree": "arcedit",
+              "kind": "still",
+              "bundle": "941802a1c5cdd910"
+            },
+            "id": "941802a1c5cdd910"
+          },
+          "heightMeters": 3.25
+        },
+        {
+          "id": "arcedit.record#1",
+          "title": "Which vocabulary is better depends on how you ask: imitation favours raw clicks, random play gets cells right only in semantic actions",
+          "position": [
+            66,
+            2.6,
+            71.24000000000001
+          ],
+          "rotationDeg": [
+            0,
+            180,
+            0
+          ],
+          "widthMeters": 5.2,
+          "kind": "still",
+          "bundle": {
+            "exhibit": {
+              "tree": "arcedit",
+              "kind": "still",
+              "bundle": "c888f5c37cff4348"
+            },
+            "id": "c888f5c37cff4348"
+          },
+          "heightMeters": 3.25
+        }
+      ],
+      "portals": [],
+      "exposure": 1,
+      "wallLines": [
+        {
+          "id": "arcedit.record.line.interface_v1",
+          "key": "interface_v1",
+          "position": [
+            39,
+            1.55,
+            53.760000000000005
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "widthMeters": 3.6
+        },
+        {
+          "id": "arcedit.record.line.i2_encoder",
+          "key": "i2_encoder",
+          "position": [
+            44,
+            1.55,
+            53.760000000000005
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "widthMeters": 3.6
+        },
+        {
+          "id": "arcedit.record.line.i3_action",
+          "key": "i3_action",
+          "position": [
+            49,
+            1.55,
+            53.760000000000005
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "widthMeters": 3.6
+        },
+        {
+          "id": "arcedit.record.line.i4_source_access",
+          "key": "i4_source_access",
+          "position": [
+            54,
+            1.55,
+            53.760000000000005
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "widthMeters": 3.6
+        },
+        {
+          "id": "arcedit.record.line.snapshot",
+          "key": "snapshot",
+          "position": [
+            59,
+            1.55,
+            53.760000000000005
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "widthMeters": 3.6
+        },
+        {
+          "id": "arcedit.record.line.aspace_measure",
+          "key": "aspace_measure",
+          "position": [
+            64,
+            1.55,
+            53.760000000000005
+          ],
+          "rotationDeg": [
+            0,
+            0,
+            0
+          ],
+          "widthMeters": 3.6
+        },
+        {
+          "id": "arcedit.record.line.i9_restriction",
+          "key": "i9_restriction",
+          "position": [
+            77.74,
+            1.55,
+            57.5
+          ],
+          "rotationDeg": [
+            0,
+            -90,
+            0
+          ],
+          "widthMeters": 3.6
+        },
+        {
+          "id": "arcedit.record.line.i11_i12_levers",
+          "key": "i11_i12_levers",
+          "position": [
+            77.74,
+            1.55,
+            62.5
+          ],
+          "rotationDeg": [
+            0,
+            -90,
+            0
+          ],
+          "widthMeters": 3.6
+        },
+        {
+          "id": "arcedit.record.line.i16_harness_revalidation",
+          "key": "i16_harness_revalidation",
+          "position": [
+            77.74,
+            1.55,
+            67.5
+          ],
+          "rotationDeg": [
+            0,
+            -90,
+            0
+          ],
+          "widthMeters": 3.6
         }
       ]
     },
     {
-      "id": "arcedit/results/i15_perception_under_reward",
-      "title": "i15_perception_under_reward",
+      "id": "arcedit/workshop",
+      "title": "The workshop",
       "architecture": "observatory",
       "presence": "arcedit",
       "fallback": {
@@ -2375,329 +2377,70 @@
       },
       "bounds": {
         "min": [
-          42,
+          10,
           0,
-          55.5
+          45.5
         ],
         "max": [
-          48,
-          3.25,
-          61.5
+          36,
+          7,
+          71.5
         ]
       },
       "spawn": {
         "position": [
-          43.5,
-          0,
-          58.5
-        ],
-        "yawDeg": -90
-      },
-      "doorways": [
-        {
-          "to": "arcedit/results",
-          "axis": "x",
-          "at": 42,
-          "center": 58.5,
-          "width": 2.4,
-          "height": 2.65
-        }
-      ],
-      "hangings": []
-    },
-    {
-      "id": "arcedit/results/i17_full_campaign",
-      "title": "i17_full_campaign",
-      "architecture": "observatory",
-      "presence": "arcedit",
-      "fallback": {
-        "kind": "box",
-        "color": "#101c2b"
-      },
-      "bounds": {
-        "min": [
-          42,
+          34.5,
           0,
           62.5
         ],
-        "max": [
-          50,
-          3.37,
-          68.5
-        ]
-      },
-      "spawn": {
-        "position": [
-          43.5,
-          0,
-          65.5
-        ],
-        "yawDeg": -90
+        "yawDeg": 90
       },
       "doorways": [
         {
-          "to": "arcedit/results",
+          "to": "arcedit/record",
           "axis": "x",
-          "at": 42,
-          "center": 65.5,
+          "at": 36,
+          "center": 62.5,
           "width": 2.4,
-          "height": 2.75
-        }
-      ],
-      "hangings": []
-    },
-    {
-      "id": "arcedit/results/i2_encoder",
-      "title": "i2_encoder",
-      "architecture": "observatory",
-      "presence": "arcedit",
-      "fallback": {
-        "kind": "box",
-        "color": "#101c2b"
-      },
-      "bounds": {
-        "min": [
-          42,
-          0,
-          69.5
-        ],
-        "max": [
-          55,
-          4.21,
-          78.5
-        ]
-      },
-      "spawn": {
-        "position": [
-          43.5,
-          0,
-          74
-        ],
-        "yawDeg": -90
-      },
-      "doorways": [
-        {
-          "to": "arcedit/results",
-          "axis": "x",
-          "at": 42,
-          "center": 74,
-          "width": 2.4,
-          "height": 3
-        }
-      ],
-      "hangings": []
-    },
-    {
-      "id": "arcedit/results/i3_action",
-      "title": "i3_action",
-      "architecture": "observatory",
-      "presence": "arcedit",
-      "fallback": {
-        "kind": "box",
-        "color": "#101c2b"
-      },
-      "bounds": {
-        "min": [
-          42,
-          0,
-          79.5
-        ],
-        "max": [
-          52,
-          3.61,
-          86.5
-        ]
-      },
-      "spawn": {
-        "position": [
-          43.5,
-          0,
-          83
-        ],
-        "yawDeg": -90
-      },
-      "doorways": [
-        {
-          "to": "arcedit/results",
-          "axis": "x",
-          "at": 42,
-          "center": 83,
-          "width": 2.4,
-          "height": 3
-        }
-      ],
-      "hangings": []
-    },
-    {
-      "id": "arcedit/results/i9_restriction",
-      "title": "i9_restriction",
-      "architecture": "observatory",
-      "presence": "arcedit",
-      "fallback": {
-        "kind": "box",
-        "color": "#101c2b"
-      },
-      "bounds": {
-        "min": [
-          42,
-          0,
-          87.5
-        ],
-        "max": [
-          48,
-          3.24,
-          93.5
-        ]
-      },
-      "spawn": {
-        "position": [
-          43.5,
-          0,
-          90.5
-        ],
-        "yawDeg": -90
-      },
-      "doorways": [
-        {
-          "to": "arcedit/results",
-          "axis": "x",
-          "at": 42,
-          "center": 90.5,
-          "width": 2.4,
-          "height": 2.6
-        }
-      ],
-      "hangings": []
-    },
-    {
-      "id": "arcedit/results/interface_v1",
-      "title": "interface_v1",
-      "architecture": "observatory",
-      "presence": "arcedit",
-      "fallback": {
-        "kind": "box",
-        "color": "#101c2b"
-      },
-      "bounds": {
-        "min": [
-          42,
-          0,
-          94.5
-        ],
-        "max": [
-          54,
-          3.88,
-          102.5
-        ]
-      },
-      "spawn": {
-        "position": [
-          43.5,
-          0,
-          98.5
-        ],
-        "yawDeg": -90
-      },
-      "doorways": [
-        {
-          "to": "arcedit/results",
-          "axis": "x",
-          "at": 42,
-          "center": 98.5,
-          "width": 2.4,
-          "height": 3
-        }
-      ],
-      "hangings": []
-    },
-    {
-      "id": "arcedit/scripts",
-      "title": "scripts",
-      "architecture": "observatory",
-      "presence": "arcedit",
-      "fallback": {
-        "kind": "box",
-        "color": "#101c2b"
-      },
-      "bounds": {
-        "min": [
-          61,
-          0,
-          36.5
-        ],
-        "max": [
-          69,
-          3.73,
-          47.5
-        ]
-      },
-      "spawn": {
-        "position": [
-          65,
-          0,
-          38
-        ],
-        "yawDeg": 180
-      },
-      "doorways": [
+          "height": 3.2
+        },
         {
           "to": "arcedit",
           "axis": "z",
-          "at": 36.5,
-          "center": 65,
+          "at": 45.5,
+          "center": 23,
           "width": 2.4,
-          "height": 3
+          "height": 3.2
         }
       ],
-      "hangings": []
-    },
-    {
-      "id": "arcedit/tests",
-      "title": "tests",
-      "architecture": "observatory",
-      "presence": "arcedit",
-      "fallback": {
-        "kind": "box",
-        "color": "#101c2b"
-      },
-      "bounds": {
-        "min": [
-          70,
-          0,
-          36.5
-        ],
-        "max": [
-          77,
-          3.57,
-          46.5
-        ]
-      },
-      "spawn": {
-        "position": [
-          73.5,
-          0,
-          38
-        ],
-        "yawDeg": 180
-      },
-      "doorways": [
+      "hangings": [],
+      "portals": [],
+      "exposure": 1,
+      "repoModels": [
         {
-          "to": "arcedit",
-          "axis": "z",
-          "at": 36.5,
-          "center": 73.5,
-          "width": 2.4,
-          "height": 2.95
+          "id": "arcedit.repo-model",
+          "title": "arcedit",
+          "position": [
+            23,
+            0,
+            58.5
+          ],
+          "yawDeg": 0,
+          "size": [
+            8,
+            6
+          ],
+          "tableHeight": 0.7,
+          "repo": "arcedit"
         }
-      ],
-      "hangings": []
+      ]
     },
     {
       "id": "arcedit/inside",
       "title": "Inside the canvas",
       "architecture": "observatory",
-      "scale": 0.1,
       "presence": "arcedit",
+      "scale": 0.1,
       "fallback": {
         "kind": "box",
         "color": "#070b12"
@@ -2723,6 +2466,8 @@
         "yawDeg": 0
       },
       "doorways": [],
+      "portals": [],
+      "exposure": 1,
       "hangings": [
         {
           "id": "arcedit.inside.canvas",
@@ -2746,7 +2491,7 @@
             0,
             0
           ],
-          "longSideMeters": 45.0,
+          "longSideMeters": 45,
           "pointSize": 180,
           "palette": [
             "#222a34",
@@ -2776,6 +2521,7 @@
             "#194780",
             "#10356e"
           ],
+          "caption_key": "results/grove/oracle_side5/tape",
           "pedestal": {
             "position": [
               435,

@@ -49,6 +49,8 @@ export interface HudCallbacks {
   onAtlas(mode: string): void;
   onUnmute(): void;
   onProvenance(): void;
+  /** The plan of this area's rooms. */
+  onMap(): void;
   /** The dock's Guide tab (phones): the same dialog the top bar opens. */
   onGuide(): void;
   /** The dock's Chat tab: fold the room chat away or bring it back. */
@@ -182,7 +184,9 @@ export class Hud {
     home.className = "btn hud-leave";
     home.href = "/";
     home.textContent = "Leave";
-    topRight.append(this.#vrButton, this.#unmuteButton, provenanceButton, home);
+    const mapButton = button("Map", "btn", callbacks.onMap);
+    mapButton.title = "Plan of the rooms (L)";
+    topRight.append(this.#vrButton, this.#unmuteButton, mapButton, provenanceButton, home);
     root.append(topRight);
 
     this.#notices = div("notices");

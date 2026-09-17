@@ -96,118 +96,6 @@
       "lookFor": "Camine hacia un mundo y observe su cara cortada; el brillo marca la materia más caliente, una codificación de la temperatura, no luz.",
       "limit": "Una sola simulación grabada por mundo, nada interpolado. Un centro pesado no basta por sí solo para separar la desmezcla del enfriamiento común como causa."
     },
-    "arcedit": {
-      "title": "arcedit",
-      "kicker": "¿Puede una máquina aprender a resolver rompecabezas ARC como una persona frente a una pantalla?",
-      "intro": "Esta es la entrada de arcedit, un proyecto de investigación sobre un agente que resuelve rompecabezas editando: mira a su alrededor, elige un color y hace clic, y solo ve con nitidez lo que está cerca de su cursor. El pasillo lleva al motor, a los instrumentos, a los registros y a las piezas expuestas.",
-      "lookFor": "Siga primero el pasillo hasta las piezas expuestas y vuelva después a las partes que las produjeron."
-    },
-    "arcedit/arcedit": {
-      "title": "arcedit",
-      "kicker": "¿De qué está hecha la máquina?",
-      "intro": "El motor: el lienzo sin fin, el editor exacto que aplica cada clic, la vista centrada en el cursor que se vuelve el doble de gruesa con cada anillo, y la red que aprende a usarlos. Todo lo que necesita un entrenamiento, y nada que decida qué experimento ejecutar.",
-      "lookFor": "Las estanterías nombran cada parte; la vista y el clic comparten una sola geometría, la idea fija del proyecto."
-    },
-    "arcedit/arcedit/serve": {
-      "title": "serve",
-      "kicker": "¿Qué se siente al ser el agente?",
-      "intro": "Una pequeña consola donde una persona maneja el editor a mano, en el mismo lienzo y a través de la misma vista estrecha que el agente, y puede ceder el cursor a una red entrenada y verla jugar.",
-      "lookFor": "Los clics de una persona y los de una red en la misma tarea pueden ponerse uno junto a otro."
-    },
-    "arcedit/docs": {
-      "title": "docs",
-      "kicker": "¿Qué se le pidió construir al proyecto?",
-      "intro": "El encargo, conservado tal como se escribió, con una tabla de cada punto en que la construcción se aparta de él y por qué, y la regla de que todo experimento se anuncia antes de recoger sus datos.",
-      "lookFor": "La tabla de desviaciones es la parte honesta: el teclado fue sustituido por clics y el presupuesto de pasos se redujo a la cuarta parte."
-    },
-    "arcedit/mental": {
-      "title": "mental",
-      "kicker": "¿Cómo puede recordar lo visto un agente que ve tan poco?",
-      "intro": "Una memoria exacta conservada de una línea de trabajo anterior: un espejo del editor sobre lo que el agente cree, mudo donde una celda no se ha visto, y un libro de cuentas que paga al agente por cada celda descubierta, una sola vez.",
-      "lookFor": "La memoria nunca contradijo al mundo en tres millones de comprobaciones; la recompensa por descubrir no puede ganarse dos veces."
-    },
-    "arcedit/results": {
-      "title": "results",
-      "kicker": "¿Qué mostraron realmente los experimentos?",
-      "intro": "Las pruebas: una sala por experimento, cada una con su relato fechado de lo que se preguntó, lo que se midió y lo que el número no dice. El pasillo es largo porque el proyecto guarda sus fracasos junto a sus aciertos.",
-      "lookFor": "Las salas más grandes son las campañas; las estanterías cerradas más pequeñas son líneas que terminaron."
-    },
-    "arcedit/results/grove": {
-      "title": "grove",
-      "kicker": "¿Cómo se ve el editor desde dentro?",
-      "intro": "Las piezas expuestas de este árbol: dos episodios grabados del editor, uno jugado por un agente entrenado y otro por el profesor programado cuyos clics lo enseñaron, cada uno mostrado como una nube de celdas en la que un visitante puede estar, como una película corta con la vista del agente bajo el lienzo, y como imágenes fijas. En la pared, el entorno construido como maqueta, con la vista del agente apilada en vidrio sobre las baldosas. Nada aquí está dibujado a mano; cada posición y color viene de un episodio grabado.",
-      "lookFor": "Compare las dos nubes: el breve paseo del agente entrenado hasta la paleta frente al recorrido de cien clics del profesor por una cuadrícula multicolor.",
-      "limit": "Un episodio ilustra una política, no es su medición; el episodio del profesor muestra la tarea, no un resultado aprendido."
-    },
-    "arcedit/results/grove/oracle_side5": {
-      "title": "oracle_side5",
-      "kicker": "¿Qué pide la tarea, clic a clic?",
-      "intro": "El profesor programado copia una cuadrícula multicolor de cinco por cinco: va a la paleta, elige un color, va a una celda, la pinta y vuelve, ciento catorce clics en total. Es el programa cuyas decisiones sirvieron de lecciones al agente entrenado, mostrado como una nube de celdas en la que estar, como una película con la vista del agente debajo, y como la disposición antes del primer clic. Sobre el lienzo, la pila de capas es lo que el agente vería desde aquí: nítida abajo, borrosa arriba.",
-      "lookFor": "Observe qué pocas veces la cuadrícula fuente está nítida mientras se pinta la respuesta; el color hay que buscarlo, recordarlo y llevarlo.",
-      "limit": "Ningún agente entrenado resuelve aún esta copia multicolor; lo que cuelga aquí es la tarea, ejecutada por el programa que la define."
-    },
-    "arcedit/results/grove/policy_side3": {
-      "title": "policy_side3",
-      "kicker": "¿Qué hace un agente entrenado con una vista tan estrecha?",
-      "intro": "Una red entrenada por imitación copia un cuadrado amarillo liso que nunca ha visto: va a la paleta, elige el color de la fuente, pinta la respuesta de tres por tres y la entrega, dieciséis clics. Solo ve con nitidez las ocho celdas alrededor de su cursor, así que el paseo es también una mirada. El episodio cuelga como una nube de celdas en la que estar, como una película con los nueve niveles de su vista bajo el lienzo, y como dos imágenes fijas: el momento de pintar, y la vista sola, que es todo lo que recibe la red.",
-      "lookFor": "Siga la ruta del cursor: va una vez a la paleta y luego pinta sin volver, porque el color ya está en su pincel.",
-      "limit": "Un episodio elegido de un conjunto reservado ilustra una política que acierta 124 de 128 cuadrados así; no es la medición, y el caso multicolor no está resuelto."
-    },
-    "arcedit/results/i15_perception_under_reward": {
-      "title": "i15_perception_under_reward",
-      "kicker": "¿Puede el agente aprender a ver si solo se le paga por las respuestas?",
-      "intro": "Un día de veintidós ensayos preguntando si la percepción puede aprenderse solo con recompensa. El codificador grande del encargo nunca superó el azar; uno pequeño leyó el color de la fuente en unos miles de actualizaciones y aprendió la copia de dos por dos desde cero, con tres semillas.",
-      "lookFor": "La barrera se movió: a tres por tres el agente lee el color y luego no entrega."
-    },
-    "arcedit/results/i17_full_campaign": {
-      "title": "i17_full_campaign",
-      "kicker": "¿Qué ocurre cuando todo el diseño se ejecuta a presupuesto completo?",
-      "intro": "Una campaña en dos máquinas: cada variante de percepción y el modelo completo en la tarea de copia más pequeña, tres semillas cada una. Terminó cuando la máquina anfitriona se cayó; el codificador grande no había aprendido a ver en ninguna de sus veinticuatro celdas.",
-      "lookFor": "Un registro de cuánto cómputo cuesta un resultado nulo, y del día en que la máquina se apagó."
-    },
-    "arcedit/results/i2_encoder": {
-      "title": "i2_encoder",
-      "kicker": "¿Puede la vista estrecha siquiera representar el clic correcto?",
-      "intro": "La primera pregunta hecha al codificador: con solo la vista centrada en el cursor, ¿puede decir qué clic haría el profesor a continuación? Podía, muy por encima del azar, una vez corregido el calendario de entrenamiento. Aquí el proyecto aprendió que la vista no era el cuello de botella.",
-      "lookFor": "Aquí se encontró un techo que las salas posteriores tuvieron que explicar."
-    },
-    "arcedit/results/i3_action": {
-      "title": "i3_action",
-      "kicker": "¿Cómo filtra un profesor la respuesta sin querer?",
-      "intro": "La primera política aprendida acertaba casi cada decisión y no resolvía nada: el profesor siempre había pintado las celdas en un orden, así que la red aprendió a entregar cuando el cursor estaba en la última celda. Un empate entre lecciones igual de buenas se había vuelto una pista.",
-      "lookFor": "Mover solo el cursor cambiaba la red de pintar a entregar; el remedio fue barajar al profesor."
-    },
-    "arcedit/results/i9_restriction": {
-      "title": "i9_restriction",
-      "kicker": "¿Cuánto puede reducirse el editor y seguir siendo exacto?",
-      "intro": "El editor reducido a un mundo de setenta mil estados que puede enumerarse por completo, de modo que cualquier afirmación sobre qué acciones vale la pena inventar se comprueba contra la verdad en lugar de estimarse.",
-      "lookFor": "Aquí se superaron tres puertas; la verdad de referencia para la pregunta de la abstracción de acciones vive en estas estanterías."
-    },
-    "arcedit/results/interface_v1": {
-      "title": "interface_v1",
-      "kicker": "¿Es aprendible siquiera la tarea de copia, si el agente pudiera verlo todo?",
-      "intro": "El control con el que se mide cada sala posterior: con toda la cuadrícula a la vista y un vocabulario simple de pinta-esta-celda-de-este-color, una red resuelve por completo la tarea de copia, con tres semillas. La dificultad está en la vista estrecha y los clics crudos, no en la tarea.",
-      "lookFor": "El suelo de todo el proyecto: lo que es posible cuando nada está oculto."
-    },
-    "arcedit/scripts": {
-      "title": "scripts",
-      "kicker": "¿Cómo se convierte cada pregunta en una medición?",
-      "intro": "Los instrumentos: un guion por experimento, cada uno recogiendo los números prometidos de antemano y escribiéndolos junto a una huella del código que los produjo. Dos de ellos hacen las piezas expuestas de este edificio.",
-      "lookFor": "Los nombres siguen la escalera de hitos; las sondas comprueban una premisa antes de anunciar un experimento."
-    },
-    "arcedit/tests": {
-      "title": "tests",
-      "kicker": "¿Qué no debe desviarse nunca?",
-      "intro": "Cada regla en la que se apoya el motor tiene una comprobación que falla cuando se rompe: el editor es exacto, la vista es una función pura del estado, ninguna observación lleva una coordenada absoluta, y la recompensa pagada por defecto es aquella bajo la que se midió cada número registrado.",
-      "lookFor": "Una estantería comprueba que las fugas halladas en el pasado no vuelvan en silencio."
-    },
-    "arcedit/inside": {
-      "title": "Dentro del lienzo",
-      "kicker": "¿Qué se siente al estar de pie sobre el lienzo?",
-      "intro": "Aquí usted tiene el tamaño de una celda. El episodio del profesor se desarrolla a su alrededor: la cuadrícula fuente está a un lado, el marco de respuesta se llena bajo sus pies celda a celda, la paleta es una fila de piedras encendidas, y el cursor es una columna de luz que va y viene. Arriba, las capas de la vista del agente cuelgan como suelos de vidrio, la más baja nítida y pequeña, cada una por encima el doble de ancha y el doble de vaga, hasta que la de arriba lo cubre todo y casi no dice nada. Recorra el tiempo para ver el color viajar de la paleta a la celda.",
-      "lookFor": "Párese sobre el marco de respuesta y mire hacia arriba a través de las capas cuando pase el cursor; la ventana nítida lo sigue.",
-      "limit": "Este es el episodio del profesor, no el de un agente entrenado, y la escala es un recurso para mirar; el agente nunca ve el lienzo como un lugar."
-    },
     "stair-north": {
       "title": "escalera",
       "kicker": "¿Qué hay bajo la terraza?",
@@ -237,6 +125,85 @@
       "kicker": "¿Quién canta?",
       "intro": "Un peldaño por encima de la pista, enmarcado por el proscenio e iluminado de frente. El escenario es para cantantes con visor: solo se abre a una sesión inmersiva, y salir de ella le devuelve a la pista. El karaoke funcionará desde aquí en cuanto exista el enlace de voz.",
       "lookFor": "El pie de micrófono en el centro y las candilejas a lo largo del borde: el cantante se sitúa donde se encuentran las dos líneas del suelo."
+    },
+    "arcedit": {
+      "title": "arcedit",
+      "kicker": "¿Puede una máquina aprender a resolver rompecabezas ARC como una persona frente a una pantalla?",
+      "intro": "arcedit pregunta si un agente puede resolver rompecabezas editando: mira a su alrededor, elige un color y hace clic, y solo ve con nitidez lo que está cerca de su cursor. Esta primera sala muestra la tarea. Un profesor programado copia una cuadrícula multicolor de cinco por cinco, celda a celda, mostrada como una nube de celdas por la que caminar, como una película con la vista del agente bajo el lienzo, y como imágenes fijas. En la pared oeste, el entorno está construido como maqueta, con la vista apilada en vidrio sobre las baldosas. La esfera junto a la nube lleva al interior del lienzo.",
+      "lookFor": "Observe qué pocas veces la cuadrícula fuente está nítida mientras se pinta la respuesta; el color hay que buscarlo y llevarlo.",
+      "limit": "Lo que cuelga aquí es la tarea, ejecutada por el programa que la define; ningún agente entrenado resuelve aún esta copia multicolor."
+    },
+    "arcedit/agent": {
+      "title": "El agente entrenado",
+      "kicker": "¿Qué hace una red entrenada con una vista tan estrecha?",
+      "intro": "Una red entrenada por imitación copia un cuadrado amarillo liso que nunca ha visto. Elige entre acciones como «pinta esta celda de este color», que el editor ejecuta como clics: la paleta, el color de la fuente, la respuesta de tres por tres, la entrega, dieciséis clics. El episodio cuelga como una nube de celdas, una película y dos imágenes fijas, una de ellas la vista sola. En la pared norte, qué marcó la diferencia en un par de ensayos: dos redes imitaron al mismo profesor y solo cambió su orden al pintar. En cuadrículas lisas una acertaba tres decisiones de cada cuatro y la otra casi todas; jugando solas, una copió cero de 128 cuadrados y la otra 124.",
+      "lookFor": "Siga el cursor: un solo viaje a la paleta y después pinta sin volver, porque el color ya está en su pincel.",
+      "limit": "Un episodio ilustra una política que copia 124 de 128 cuadrados inéditos; no es la medición. Aprendió de un profesor, no de la recompensa, sus acciones ya saben dónde están las celdas de la respuesta, y entrega cuando no queda ninguna celda vacía, no cuando la copia es correcta."
+    },
+    "arcedit/reward": {
+      "title": "Aprender de la recompensa",
+      "kicker": "¿Puede el agente aprender sin profesor, pagado solo con una puntuación?",
+      "intro": "Quite al profesor. Una red pequeña parte de cero; recibe un poco cada vez que la cuadrícula respuesta se acerca a la fuente, una bonificación por entregar una copia exacta, y cada paso le cuesta algo. Durante millones de pasos no copia nada exactamente, y luego despega. En la pared sur, tres ensayos con cuadrados de dos por dos terminan en 96, 116 y 121 de 128 cuadrados inéditos; con cuadrados de tres por tres, el mismo presupuesto termina en 10, 50 y 11. En la pared este, el cuadrado mayor: el agente aprende a pintar el color de la fuente, pero con sus jugadas más seguras a menudo se queda sin tiempo en lugar de entregar.",
+      "lookFor": "Compare los puntos con las líneas: la cuenta final es una prueba aparte, y las curvas oscilan mucho antes de ella.",
+      "limit": "Tres ensayos por tamaño, no todos con la misma versión del código. El ensayo de tres por tres que terminó en 10 usaba el código antiguo; repetido con el código reparado alcanzó 107 de 128 con el mismo presupuesto, así que parte del atasco quizá sea del código antiguo."
+    },
+    "arcedit/record": {
+      "title": "Lo que falló y lo que se sostuvo",
+      "kicker": "¿Qué aprendió el proyecto al equivocarse?",
+      "intro": "Cada experimento aquí se anunció antes de sus datos, y su registro dice lo que el número no muestra. A lo largo de las paredes, una línea por registro: qué se preguntó y qué volvió, sea un acierto, un resultado nulo o una corrección. Dos gráficos llevan las lecciones que se repiten. Los pequeños errores de cada paso se acumulan en una copia entera, así que una red que acierta la mayoría de los clics casi no copia nada. Y un vocabulario de acciones puede parecer peor bajo imitación y ser, aun así, el único en que el juego al azar acierta alguna celda.",
+      "lookFor": "Lea las líneas en orden: la mayoría de los giros del proyecto vinieron de un número que no significaba lo que primero parecía.",
+      "limit": "Son resúmenes breves de registros fechados; varios se enmendaron después, y las líneas dan la lectura enmendada.",
+      "lines": {
+        "interface_v1": {
+          "title": "La interfaz se puede aprender",
+          "text": "Con fuente y respuesta del todo visibles y un vocabulario de «pinta esta celda de este color», una red entrenada con un profesor copia todas las cuadrículas: 128 de 128, lisas y multicolores, con tres semillas."
+        },
+        "i2_encoder": {
+          "title": "Acierta casi cada clic, falla la copia",
+          "text": "Imitando al profesor a través de la vista estrecha, una red alcanzó un 87 % por clic y aun así copió como mucho 4 de 128 cuadrados: los errores pequeños se acumulan y se agrupan."
+        },
+        "i3_action": {
+          "title": "Un vocabulario mejor, medido de forma equivocada",
+          "text": "Con «pinta esta celda de este color» en lugar de clics crudos, la imitación puntuó menos por paso. Sus 0 copias de 128 eran un atajo que enseñó el orden del profesor; un profesor barajado llegó después a 124."
+        },
+        "i4_source_access": {
+          "title": "La memoria no basta",
+          "text": "Una memoria exacta de la cuadrícula fuente, devuelta a través de la misma vista estrecha, mezcla cada celda recordada con unas cuarenta más: el color se recuerda y aun así no se ve."
+        },
+        "snapshot": {
+          "title": "Un vistazo recordado",
+          "text": "Si se conserva una sola vista pasada sin cambios, un profesor que debe mirar antes de pintar copia de memoria todas las cuadrículas, lisas y multicolores: 128 de 128."
+        },
+        "aspace_measure": {
+          "title": "El juego al azar solo avanza con las palabras adecuadas",
+          "text": "Eligiendo clics crudos al azar, 256 partidas terminaron sin una sola celda correcta; eligiendo «pinta esta celda de este color» al azar, 152 de 256 terminaron con alguna correcta. Ninguna copió una cuadrícula."
+        },
+        "i9_restriction": {
+          "title": "Un mundo lo bastante pequeño para conocerlo entero",
+          "text": "El editor reducido a 70 656 estados, todos enumerados, para que las afirmaciones sobre qué acciones vale la pena inventar se comprueben contra la verdad en lugar de estimarse."
+        },
+        "i11_i12_levers": {
+          "title": "Dos palancas, cuatro ensayos, todos 0 de 128",
+          "text": "Aprendizaje por recompensa, variando de dos maneras cada uno el momento en que llega la recompensa y el tamaño de la cuadrícula: los cuatro ensayos copiaron 0 de 128 cuadrados. Se halló después: la recompensa nunca pedía la entrega que la puntuación contaba."
+        },
+        "i16_harness_revalidation": {
+          "title": "El arnés tenía errores que las pruebas no vieron",
+          "text": "El código que reúne experiencia y puntúa políticas tenía errores mientras pasaban las 410 pruebas. Reparado y revalidado con 434 pruebas; la frecuencia con que evalúa ya no cambia el entrenamiento ni en un bit."
+        }
+      }
+    },
+    "arcedit/workshop": {
+      "title": "El taller",
+      "kicker": "¿De qué está hecho el repositorio?",
+      "intro": "El repositorio como maqueta sobre una mesa: cada bloque es un directorio, del tamaño de los bytes que guarda. El motor, los instrumentos, las comprobaciones y los registros están todos aquí; algunos son lo que cuelga en las otras salas.",
+      "lookFor": "Los registros ocupan la mayor parte de la mesa; el motor en sí es pequeño."
+    },
+    "arcedit/inside": {
+      "title": "Dentro del lienzo",
+      "kicker": "¿Qué se siente al estar de pie sobre el lienzo?",
+      "intro": "Aquí usted tiene el tamaño de una celda. El episodio del profesor se desarrolla a su alrededor: la cuadrícula fuente está a un lado, el marco de respuesta se llena bajo sus pies celda a celda, la paleta es una fila de piedras encendidas, y el cursor es una columna de luz que va y viene. Arriba, las capas de la vista del agente cuelgan como suelos de vidrio, la más baja nítida y pequeña, cada una por encima el doble de ancha y el doble de vaga, hasta que la de arriba lo cubre todo y casi no dice nada. Recorra el tiempo para ver el color viajar de la paleta a la celda.",
+      "lookFor": "Párese sobre el marco de respuesta y mire hacia arriba a través de las capas cuando pase el cursor; la ventana nítida lo sigue.",
+      "limit": "Este es el episodio del profesor, no el de un agente entrenado, y la escala es un recurso para mirar; el agente nunca ve el lienzo como un lugar."
     }
   },
   "exhibits": {
@@ -280,37 +247,61 @@
       "title": "El trío de planetas a la escala del cielo",
       "caption": "Los mismos tres mundos grabados que en la sala de coarsen, cada uno de ochenta metros: 508.744 partículas, 1.129 fotogramas a lo largo de 96 tiempos dinámicos, una única disposición inicial, tres fuerzas de repulsión entre la clase pesada y la ligera. Las regiones color hierro contienen más partículas pesadas, las pálidas más ligeras; el brillo codifica la temperatura."
     },
-    "arcedit.results.grove#0": {
-      "title": "El editor como lugar",
-      "caption": "El editor como lugar: celdas como baldosas, el cursor como columna de luz, la vista del agente como placas de vidrio apiladas sobre el lienzo, cada capa el doble de ancha que la inferior. Posiciones y colores son del episodio; las proporciones, diseñadas."
-    },
-    "arcedit.results.grove.oracle_side5#0": {
+    "arcedit#0": {
       "title": "El profesor copia una cuadrícula multicolor",
       "caption": "El profesor programado copia una cuadrícula de cinco por cinco de muchos colores en 114 clics: a la paleta, a la celda, de vuelta a la paleta. Muestra la tarea mediante el programa que la define; ningún agente entrenado resuelve aún la copia multicolor."
     },
-    "arcedit.results.grove.oracle_side5#1": {
+    "arcedit#1": {
       "title": "El episodio del profesor como película",
       "caption": "El episodio del profesor como película, el lienzo arriba y la vista del agente abajo. Observe qué poco de la cuadrícula fuente está nítido mientras se pinta la respuesta; ahí está toda la dificultad de la tarea."
     },
-    "arcedit.results.grove.oracle_side5#2": {
+    "arcedit#2": {
       "title": "La tarea antes del primer clic",
       "caption": "La tarea antes del primer clic: la cuadrícula fuente, una flecha, el marco de respuesta vacío con su asa, y una barra de diez colores y siete herramientas, colocada al azar en cada episodio."
     },
-    "arcedit.results.grove.policy_side3#0": {
+    "arcedit#3": {
+      "title": "El profesor a mitad del episodio, con su vista",
+      "caption": "El profesor programado a mitad de una copia multicolor. Arriba, el lienzo: la cuadrícula fuente, el marco de respuesta a medio pintar, la paleta. Abajo, los nueve niveles de la vista que recibiría en este paso, de nítido a grueso."
+    },
+    "arcedit#4": {
+      "title": "El editor como lugar",
+      "caption": "El editor como lugar: celdas como baldosas, el cursor como columna de luz, la vista del agente como placas de vidrio apiladas sobre el lienzo, cada capa el doble de ancha que la inferior. Posiciones y colores son del episodio; las proporciones, diseñadas."
+    },
+    "arcedit.agent#0": {
       "title": "Un agente entrenado copia un cuadrado amarillo",
       "caption": "Un agente entrenado copia un cuadrado amarillo en 16 clics, viendo solo lo cercano a su cursor. Las capas sobre el lienzo son su vista, nítida abajo, borrosa arriba. Un episodio que ilustra una política que acierta 124 de 128 cuadrados nunca vistos; no es la medición."
     },
-    "arcedit.results.grove.policy_side3#1": {
+    "arcedit.agent#1": {
       "title": "El mismo episodio como película",
       "caption": "El mismo episodio como película: el lienzo arriba, los nueve niveles de la vista del agente abajo, tres clics por segundo. Observe cómo el cursor va a la paleta y vuelve con un color."
     },
-    "arcedit.results.grove.policy_side3#2": {
+    "arcedit.agent#2": {
+      "title": "Cambiar solo el orden del profesor",
+      "caption": "Dos redes imitaron al mismo profesor; solo cambiaba su orden al pintar. En cuadrículas lisas una acierta el 76 % de las decisiones reservadas y la otra el 98 %. Jugando solas, la primera copia cero de 128 cuadrados y la segunda 124."
+    },
+    "arcedit.agent#3": {
       "title": "A mitad del episodio, pintando con el color elegido",
       "caption": "A mitad del episodio: el agente entrenado ha elegido el color de la fuente y pinta la respuesta. El cuadrado blanco es su cursor; los marcos azules son sus ventanas de vista, cada una el doble de la anterior."
     },
-    "arcedit.results.grove.policy_side3#3": {
+    "arcedit.agent#4": {
       "title": "Lo que ve el agente, nueve niveles",
       "caption": "Lo que ve el agente en un paso: nueve niveles, cada uno el doble de grueso que el anterior, el cursor siempre en el centro. Esta es toda la observación. No hay mapa ni coordenadas."
+    },
+    "arcedit.reward#0": {
+      "title": "Aprender de la recompensa, sin profesor",
+      "caption": "Sin profesor: pagado cuando la respuesta se acerca y por una copia exacta entregada. Las líneas son pruebas durante el entrenamiento con 128 cuadrados inéditos; los puntos, la prueba final. Dos por dos: 96, 116, 121 de 128. Tres por tres, mismo presupuesto: 10, 50, 11."
+    },
+    "arcedit.reward#1": {
+      "title": "Lee el color y luego a menudo no entrega",
+      "caption": "Tres por tres, los mismos tres ensayos. Izquierda: el agente aprende a pintar el color de la fuente. Centro: con sus jugadas más seguras aún se queda sin tiempo en muchas partidas. Derecha: copias finales de 128, juego seguro frente a juego muestreado, que casi siempre entrega."
+    },
+    "arcedit.record#0": {
+      "title": "Los pequeños errores se acumulan",
+      "caption": "Cada punto es una red entrenada para imitar al profesor. La curva es lo que predirían errores independientes por clic para una copia de quince clics. Con el 87 % del mejor ensayo, sobre ambos tipos de cuadrícula, predice 17 de 128; la red copió 4."
+    },
+    "arcedit.record#1": {
+      "title": "Qué vocabulario es mejor depende de cómo se pregunte",
+      "caption": "El mismo editor, dos vocabularios. Imitando a un profesor paso a paso, los clics crudos superan mucho más al azar. Eligiendo al azar, los clics crudos nunca terminan una partida con una celda correcta, mientras que «pinta esta celda de este color» sí, en 152 de 256."
     },
     "arcedit.inside.canvas": {
       "title": "El lienzo a escala de una celda",

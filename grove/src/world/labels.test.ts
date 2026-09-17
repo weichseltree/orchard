@@ -8,6 +8,7 @@ import de from "./labels/de.json";
 import {
   DOOR_JAMB_M,
   LABEL,
+  LINE,
   PANEL,
   buildRoomLabels,
   creditFor,
@@ -134,6 +135,8 @@ describe("planRoomLabels over mansion.json", () => {
         it(`${name} stands at the right height above the room's floor`, () => {
           if (plan.kind === "entrance" && plan.mount === "wall") {
             expect(Math.max(...corners(plan).map((c) => c.y))).toBeCloseTo(floor + PANEL.top, 5);
+          } else if (plan.kind === "line") {
+            expect(plan.position.y).toBeCloseTo(floor + LINE.centre, 5);
           } else if (plan.mount === "wall") {
             expect(plan.position.y).toBeCloseTo(floor + LABEL.centre, 5);
           } else {

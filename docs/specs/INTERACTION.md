@@ -24,7 +24,9 @@ Read from `control/desktop.ts`, `control/touch.ts`, `control/xr.ts`,
 |---|---|---|---|---|
 | look | click for pointer lock, then mouse | drag anywhere right of the stick | neck | neck |
 | walk | WASD / arrows, Shift runs (2.4 / 4.2 m/s) | on-screen stick bottom-left, 52 px radius | left stick, walks where you look | none |
-| teleport | none | none | squeeze either grip, aim a straight ray at the floor, release; ring marker; 0.3 to 20 m | none |
+| teleport | click a floor point (crosshair when locked, cursor when not): an eased glide through the walking clamp, ring marker | tap a floor point, same glide | squeeze either grip, aim a straight ray at the floor, release; ring marker; 0.3 to 20 m | none |
+| frame an exhibit | click a hanging or its plaque: glide to a viewing spot, face it, open its panel; N / Shift+N the room's next / previous, "2 / 5" readout; Escape or walking ends it | tap a hanging or its plaque | none | none |
+| plan of rooms | L, HUD Map button: the area's rooms from mansion.json bounds; choosing a room a walk reaches goes to its spawn | Map button | none | none |
 | turn | mouse | drag | neck only (snap turn refused as a nausea trap) | neck |
 | play / pause | Space, HUD button | HUD button | either trigger | none |
 | scrub | `[` `]` one frame, held repeats; HUD slider | HUD slider | right stick x, 4 s of tape per second at full deflection | none |

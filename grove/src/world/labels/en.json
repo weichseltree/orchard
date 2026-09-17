@@ -96,118 +96,6 @@
       "lookFor": "Walk toward a world and watch its cut face; the glow marks the hottest matter, an encoding of temperature, not light.",
       "limit": "One recorded run per world, nothing interpolated. A heavy centre does not by itself separate unmixing from shared cooling as its cause."
     },
-    "arcedit": {
-      "title": "arcedit",
-      "kicker": "Can a machine learn to solve ARC puzzles the way a person does at a screen?",
-      "intro": "This is the entrance to arcedit, a research project about an agent that solves puzzles by editing: it looks around, picks a colour and clicks, and it sees clearly only what lies close to its cursor. The corridor leads to the engine, the instruments, the records and the exhibits.",
-      "lookFor": "Take the corridor to the exhibits first, then come back for the parts that made them."
-    },
-    "arcedit/arcedit": {
-      "title": "arcedit",
-      "kicker": "What is the machine made of?",
-      "intro": "The engine: the endless canvas, the exact editor that applies every click, the cursor-centred view that doubles in coarseness with each ring, and the network that learns to use them. Everything a training run needs, and nothing that decides which experiment to run.",
-      "lookFor": "The shelving names each part; the view and the click share one geometry, which is the project's one fixed idea."
-    },
-    "arcedit/arcedit/serve": {
-      "title": "serve",
-      "kicker": "What is it like to be the agent?",
-      "intro": "A small console where a person plays the editor by hand, on the same canvas and through the same narrow view the agent has, and can hand the cursor to a trained network and watch it play.",
-      "lookFor": "A human's clicks and a network's clicks on the same task can be laid side by side."
-    },
-    "arcedit/docs": {
-      "title": "docs",
-      "kicker": "What was the project asked to build?",
-      "intro": "The brief, kept as it was written, with a table of every place the build departs from it and why, and the rule that every experiment is announced before its data is collected.",
-      "lookFor": "The departures table is the honest part: the keyboard was replaced by clicks, and the step budget shrank fourfold."
-    },
-    "arcedit/mental": {
-      "title": "mental",
-      "kicker": "How can an agent that sees so little remember what it saw?",
-      "intro": "An exact memory kept from an earlier line of work: a mirror of the editor over what the agent believes, silent wherever a cell is unseen, and a ledger that pays the agent for every cell it discovers, once.",
-      "lookFor": "The memory never disagreed with the world in three million checks; the reward for discovery can never be earned twice."
-    },
-    "arcedit/results": {
-      "title": "results",
-      "kicker": "What did the experiments actually show?",
-      "intro": "The evidence of record: one room per experiment, each with its dated account of what was asked, what was measured and what the number does not say. The corridor is long because the project keeps its failures beside its successes.",
-      "lookFor": "The largest rooms are the campaigns; the smallest closed shelves are lines that ended."
-    },
-    "arcedit/results/grove": {
-      "title": "grove",
-      "kicker": "What does the editor look like from inside?",
-      "intro": "The exhibits of this tree: two recorded episodes of the editor, one played by a learned agent and one by the scripted teacher whose clicks taught it, each shown as a cloud of cells a visitor can stand in, as a short film with the agent's own view beneath the canvas, and as stills. On the wall, the environment built as a model, with the agent's view stacked in glass above the tiles. Nothing here is drawn by hand; every position and colour comes from a recorded episode.",
-      "lookFor": "Compare the two clouds: the learned agent's short walk to the palette against the teacher's hundred-click tour of a many-coloured grid.",
-      "limit": "One episode illustrates a policy, it is not its measurement; the teacher's episode shows the task, not a learned result."
-    },
-    "arcedit/results/grove/oracle_side5": {
-      "title": "oracle_side5",
-      "kicker": "What does the task ask, click by click?",
-      "intro": "The scripted teacher copies a five-by-five grid of many colours: it walks to the palette, picks a colour, walks to a cell, paints it, and back, one hundred and fourteen clicks in all. This is the program whose choices were used as lessons for the learned agent, shown as a cloud of cells to stand in, as a film with the agent's view beneath, and as the layout before the first click. Above the canvas the stack of layers is what the agent would see from here: sharp at the bottom, a blur at the top.",
-      "lookFor": "Watch how rarely the source grid is sharp while the answer is being painted; the colour has to be fetched, remembered and carried.",
-      "limit": "No learned agent solves this many-coloured copy yet; what hangs here is the task, performed by the program that defines it."
-    },
-    "arcedit/results/grove/policy_side3": {
-      "title": "policy_side3",
-      "kicker": "What does a learned agent do with so narrow a view?",
-      "intro": "A network trained by imitation copies a solid yellow square it has never seen: it walks to the palette, chooses the source's colour, paints the three-by-three answer and hands in, sixteen clicks. It sees only the eight cells around its cursor sharply, so the walk is also a look. The episode hangs as a cloud of cells to stand in, as a film with the nine levels of its view beneath the canvas, and as two stills: the moment of painting, and the view alone, which is the whole of what the network receives.",
-      "lookFor": "Follow the cursor's route: it goes to the palette once, then paints without returning, because the colour is now on its brush.",
-      "limit": "One episode chosen from a held-out set illustrates a policy that succeeds on 124 of 128 such squares; it is not the measurement, and the many-coloured case is not solved."
-    },
-    "arcedit/results/i15_perception_under_reward": {
-      "title": "i15_perception_under_reward",
-      "kicker": "Can the agent learn to see when it is only paid for answers?",
-      "intro": "A day of twenty-two trials asking whether perception can be learned from reward alone. The brief's large encoder never left chance; a small one read the source colour from reward in a few thousand updates, and learned the two-by-two copy from nothing at three seeds.",
-      "lookFor": "The barrier moved: at three by three the agent reads the colour and then fails to hand in."
-    },
-    "arcedit/results/i17_full_campaign": {
-      "title": "i17_full_campaign",
-      "kicker": "What happens when the whole design is run at full budget?",
-      "intro": "A campaign across two machines: every perception variant and the full model on the smallest copy task, three seeds each. It ended when the host machine crashed; the large encoder had not learned to see in any of its twenty-four cells.",
-      "lookFor": "A record of how much compute a null result costs, and of the day the box went down."
-    },
-    "arcedit/results/i2_encoder": {
-      "title": "i2_encoder",
-      "kicker": "Can the narrow view even represent the right click?",
-      "intro": "The first question asked of the encoder: given only the cursor-centred view, can it tell which click the teacher would make next? It could, well above chance, once the training schedule was fixed. This room is where the project learned that the view was not the bottleneck.",
-      "lookFor": "A ceiling was found here that later rooms had to explain."
-    },
-    "arcedit/results/i3_action": {
-      "title": "i3_action",
-      "kicker": "How does a teacher leak the answer without meaning to?",
-      "intro": "The first learned policy scored almost perfectly per decision and solved nothing: the teacher had always painted cells in one order, so the network learned to hand in whenever the cursor stood on the last cell. A tie between equally good lessons had become a cue.",
-      "lookFor": "Moving the cursor alone flipped the network from painting to handing in; the fix was to shuffle the teacher."
-    },
-    "arcedit/results/i9_restriction": {
-      "title": "i9_restriction",
-      "kicker": "How small can the editor be made and still be exact?",
-      "intro": "The editor cut down to a world of seventy thousand states that can be enumerated completely, so that any claim about what actions are worth inventing can be checked against the truth rather than estimated.",
-      "lookFor": "Three gates were cleared here; the ground truth for the question of action abstraction lives on these shelves."
-    },
-    "arcedit/results/interface_v1": {
-      "title": "interface_v1",
-      "kicker": "Is the copy task learnable at all, if the agent could see everything?",
-      "intro": "The control every later room is measured against: with the whole grid in view and a plain vocabulary of paint-this-cell-this-colour, a network solves the copy task completely at three seeds. The difficulty lies in the narrow view and the raw clicks, not in the task.",
-      "lookFor": "The floor of the whole project: what is possible when nothing is hidden."
-    },
-    "arcedit/scripts": {
-      "title": "scripts",
-      "kicker": "How is each question turned into a measurement?",
-      "intro": "The instruments: one script per experiment, each collecting the numbers it promised in advance and writing them beside a fingerprint of the code that produced them. Two of them make the exhibits in this building.",
-      "lookFor": "The names follow the ladder of milestones; the probes check a premise before an experiment is announced."
-    },
-    "arcedit/tests": {
-      "title": "tests",
-      "kicker": "What must never drift?",
-      "intro": "Every rule the engine relies on has a check that fails when it is broken: the editor is exact, the view is a pure function of the state, no observation carries an absolute coordinate, and the reward paid by default is the one every recorded number was measured under.",
-      "lookFor": "One shelf checks that leaks found in the past cannot quietly return."
-    },
-    "arcedit/inside": {
-      "title": "Inside the canvas",
-      "kicker": "What is it like to stand on the canvas?",
-      "intro": "Here you are the size of a cell. The teacher's episode plays around you: the source grid stands to one side, the answer frame fills in under your feet cell by cell, the palette is a row of lit stones, and the cursor is a column of light that comes and goes. Overhead, the layers of the agent's view hang like glass floors, the lowest one sharp and small, each one above it twice as wide and twice as vague, until the top layer covers everything and says almost nothing. Scrub time to watch the colour travel from the palette to the cell.",
-      "lookFor": "Stand on the answer frame and look up through the layers as the cursor passes; the sharp window follows it.",
-      "limit": "This is the teacher's episode, not a learned agent's, and the scale is a device for looking; the agent never sees the canvas as a place."
-    },
     "stair-north": {
       "title": "stair",
       "kicker": "What is under the terrace?",
@@ -237,6 +125,85 @@
       "kicker": "Who is singing?",
       "intro": "A step up from the floor, framed by the proscenium and lit from the front. The stage is for singers in a headset: it opens only to an immersive session, and leaving one puts you back on the floor. Karaoke will run from here once the voice link exists.",
       "lookFor": "The microphone stand at the centre and the footlights along the edge: the singer stands where the floor's two lines meet."
+    },
+    "arcedit": {
+      "title": "arcedit",
+      "kicker": "Can a machine learn to solve ARC puzzles the way a person does at a screen?",
+      "intro": "arcedit asks whether an agent can solve puzzles by editing: it looks around, picks a colour and clicks, and it sees sharply only what lies near its cursor. This first room shows the task. A scripted teacher copies a five-by-five grid of many colours, cell by cell, shown as a cloud of cells to walk through, as a film with the agent's view beneath the canvas, and as stills. On the west wall the environment is built as a model, the view stacked in glass above the tiles. The sphere beside the cloud takes you inside the canvas.",
+      "lookFor": "Watch how rarely the source grid is sharp while the answer is painted; the colour has to be fetched and carried.",
+      "limit": "What hangs here is the task, performed by the program that defines it; no learned agent solves this many-coloured copy yet."
+    },
+    "arcedit/agent": {
+      "title": "The learned agent",
+      "kicker": "What does a trained network do with so narrow a view?",
+      "intro": "A network trained by imitation copies a solid yellow square it has never seen. It chooses among actions such as 'paint this cell this colour', which the editor carries out as clicks: to the palette, the source's colour, the three-by-three answer, hand in, sixteen clicks. It hangs as a cloud of cells, a film and two stills. On the north wall, what made the difference in one pair of runs: two networks imitated the same teacher, and only its painting order differed. On solid grids one was right on three decisions in four, the other on almost all; playing alone, one copied none of 128 squares, the other 124.",
+      "lookFor": "Follow the cursor: one trip to the palette, then painting without returning, because the colour is on its brush.",
+      "limit": "One episode illustrates a policy that copies 124 of 128 unseen squares; it is not the measurement. It learned from a teacher, not from reward, its actions already know where the answer's cells are, and it hands in when no cell is blank, not when the copy is right."
+    },
+    "arcedit/reward": {
+      "title": "Learning from reward",
+      "kicker": "Can the agent learn with no teacher, paid only by a score?",
+      "intro": "No teacher. A small network starts from nothing; it is paid a little each time the answer grid gets closer to the source, a bonus for handing in an exact copy, minus a little per step. For millions of steps it copies nothing exactly, then it breaks out. On the south wall, three runs on two-by-two squares finish at 96, 116 and 121 of 128 unseen squares; on three-by-three squares the same budget finishes at 10, 50 and 11. On the east wall, the larger square: the agent learns to paint the source's colour, yet playing its most confident moves it often runs out of time instead of handing in.",
+      "lookFor": "Compare the dots with the lines: the final count is a separate test, and the curves swing widely before it.",
+      "limit": "Three runs per size, not all on the same version of the code. The three-by-three run that finished at 10 used the older code; repeated on the repaired code it reached 107 of 128 within the same budget, so part of the stall may belong to the old code."
+    },
+    "arcedit/record": {
+      "title": "What failed, and what held",
+      "kicker": "What did the project learn by being wrong?",
+      "intro": "Every experiment here was announced before its data, and its record says what the number does not show. Along the walls, one line per record: what was asked and what came back, whether a success, a null result or a correction. Two charts carry the lessons that recur. Small mistakes per step compound over a whole copy, so a network right on most clicks still copies almost nothing. And a vocabulary of actions can look worse under imitation while being the only one in which random play ever gets a cell right.",
+      "lookFor": "Read the lines in order: most of the project's turns came from a number that did not mean what it first seemed to.",
+      "limit": "These are short summaries of dated records; several records were later amended, and the lines give the amended reading.",
+      "lines": {
+        "interface_v1": {
+          "title": "The interface can be learned",
+          "text": "With source and answer in full view and a vocabulary of 'paint this cell this colour', a network trained on a teacher copies every grid: 128 of 128, solid and many-coloured, at three seeds."
+        },
+        "i2_encoder": {
+          "title": "Right on most clicks, wrong on the copy",
+          "text": "Imitating the teacher through the narrow view, a network reached 87% per click and still copied at most 4 of 128 squares: small errors compound, and they cluster."
+        },
+        "i3_action": {
+          "title": "A better vocabulary, measured the wrong way",
+          "text": "Given 'paint this cell this colour' instead of raw clicks, imitation scored lower per step. Its 0 of 128 copies was a shortcut its teacher's painting order taught; a shuffled teacher later reached 124."
+        },
+        "i4_source_access": {
+          "title": "Memory is not enough",
+          "text": "An exact memory of the source grid, fed back through the same narrow view, pools each remembered cell with about forty others: the colour is remembered and still not seen."
+        },
+        "snapshot": {
+          "title": "One remembered glimpse",
+          "text": "Keep a single past view unchanged, and a teacher that must look before it paints copies every grid from memory, solid and many-coloured: 128 of 128."
+        },
+        "aspace_measure": {
+          "title": "Random play gets somewhere only in the right words",
+          "text": "Choosing raw clicks at random, 256 games ended without a single cell right; choosing 'paint this cell this colour' at random, 152 of 256 ended with some right. No random game copied a grid."
+        },
+        "i9_restriction": {
+          "title": "A world small enough to know completely",
+          "text": "The editor cut down to 70,656 states, every one enumerated, so that claims about which actions are worth inventing could be checked against the truth instead of estimated."
+        },
+        "i11_i12_levers": {
+          "title": "Two levers, four trials, all 0 of 128",
+          "text": "Learning from reward, with when the reward arrives and the size of the grid each varied two ways: all four trials copied 0 of 128 squares. Found later: the reward never asked for the submit the score counted."
+        },
+        "i16_harness_revalidation": {
+          "title": "The harness had bugs the tests missed",
+          "text": "The code that gathers experience and scores policies had correctness bugs while all 410 tests passed. Repaired and revalidated with 434 tests; how often it evaluates no longer changes training by a single bit."
+        }
+      }
+    },
+    "arcedit/workshop": {
+      "title": "The workshop",
+      "kicker": "What is the repository made of?",
+      "intro": "The repository as a model on a table: each block a directory, sized by the bytes it holds. The engine, the instruments, the checks and the records are all here; a few of them are what hangs in the other rooms.",
+      "lookFor": "The records take up most of the table; the engine itself is small."
+    },
+    "arcedit/inside": {
+      "title": "Inside the canvas",
+      "kicker": "What is it like to stand on the canvas?",
+      "intro": "Here you are the size of a cell. The teacher's episode plays around you: the source grid stands to one side, the answer frame fills in under your feet cell by cell, the palette is a row of lit stones, and the cursor is a column of light that comes and goes. Overhead, the layers of the agent's view hang like glass floors, the lowest one sharp and small, each one above it twice as wide and twice as vague, until the top layer covers everything and says almost nothing. Scrub time to watch the colour travel from the palette to the cell.",
+      "lookFor": "Stand on the answer frame and look up through the layers as the cursor passes; the sharp window follows it.",
+      "limit": "This is the teacher's episode, not a learned agent's, and the scale is a device for looking; the agent never sees the canvas as a place."
     }
   },
   "exhibits": {
@@ -280,37 +247,61 @@
       "title": "The planet trio at the scale of the sky",
       "caption": "The same three recorded worlds as in the coarsen chamber, each eighty metres across: 508,744 particles, 1,129 frames over 96 dynamical times, one starting arrangement, three strengths of repulsion between the heavy and the light kind. Iron-warm regions hold more heavy particles, pale ones more light; the glow encodes temperature."
     },
-    "arcedit.results.grove#0": {
-      "title": "The editor as a place",
-      "caption": "The editor as a place: cells as tiles, the cursor a column of light, the agent's view as glass plates stacked above the canvas, each layer twice as wide as the one below. Positions and colours are the episode's; the proportions are designed."
-    },
-    "arcedit.results.grove.oracle_side5#0": {
+    "arcedit#0": {
       "title": "The teacher copies a grid of many colours",
       "caption": "The scripted teacher copies a five-by-five grid of many colours in 114 clicks: to the palette, to the cell, back to the palette. This shows the task by the program that defines it; no learned agent solves the many-coloured copy yet."
     },
-    "arcedit.results.grove.oracle_side5#1": {
+    "arcedit#1": {
       "title": "The teacher's episode as a film",
       "caption": "The teacher's episode as a film, canvas above and the agent's view below. Notice how little of the source is ever sharp while the answer is being painted; that is the whole difficulty."
     },
-    "arcedit.results.grove.oracle_side5#2": {
+    "arcedit#2": {
       "title": "The task before the first click",
       "caption": "The task before the first click: the source grid, an arrow, the empty answer frame with its resize handle, and a toolbar of ten colours and seven tools, placed at random in every episode."
     },
-    "arcedit.results.grove.policy_side3#0": {
+    "arcedit#3": {
+      "title": "The teacher mid-episode, with its view",
+      "caption": "The scripted teacher partway through a many-coloured copy. Above, the canvas: the source grid, the answer frame half painted, the palette. Below, the nine levels of the view it would receive at this step, from sharp to coarse."
+    },
+    "arcedit#4": {
+      "title": "The editor as a place",
+      "caption": "The editor as a place: cells as tiles, the cursor a column of light, the agent's view as glass plates stacked above the canvas, each layer twice as wide as the one below. Positions and colours are the episode's; the proportions are designed."
+    },
+    "arcedit.agent#0": {
       "title": "A learned agent copies a yellow square",
       "caption": "A learned agent copies a yellow square in 16 clicks, seeing only what is near its cursor. The layers above the canvas are its view, sharp below, blurred above. One episode illustrating a policy that succeeds on 124 of 128 unseen squares; it is not the measurement."
     },
-    "arcedit.results.grove.policy_side3#1": {
+    "arcedit.agent#1": {
       "title": "The same episode as a film",
       "caption": "The same episode as a film: the canvas above, the nine levels of the agent's view below, three clicks per second. Watch the cursor leave for the palette and come back with a colour."
     },
-    "arcedit.results.grove.policy_side3#2": {
+    "arcedit.agent#2": {
+      "title": "Change only the teacher's painting order",
+      "caption": "Two networks imitated the same teacher; only its painting order differed. On solid grids one is right on 76% of held-out decisions, the other on 98%. Playing alone, the first copies none of 128 squares, the second 124."
+    },
+    "arcedit.agent#3": {
       "title": "Mid-episode, painting from the chosen colour",
       "caption": "Mid-episode: the learned agent has chosen the source's colour and is painting the answer. The white square is its cursor; the blue frames are its windows of view, each twice the size of the last."
     },
-    "arcedit.results.grove.policy_side3#3": {
+    "arcedit.agent#4": {
       "title": "What the agent sees, nine levels",
       "caption": "What the agent sees at one step: nine levels, each twice as coarse as the last, the cursor always at the centre. This is the whole observation. There is no map and no coordinate."
+    },
+    "arcedit.reward#0": {
+      "title": "Learning from reward, without a teacher",
+      "caption": "No teacher: paid as the answer gets closer and for an exact copy handed in. Lines are tests during training on 128 unseen squares; dots are the final test. Two by two: 96, 116, 121 of 128. Three by three, same budget: 10, 50, 11."
+    },
+    "arcedit.reward#1": {
+      "title": "It reads the colour, then often does not hand in",
+      "caption": "Three by three, the same three runs. Left: the agent learns to paint the source's colour. Middle: playing its most confident moves, it still runs out of time in many games. Right: final copies of 128, confident play against sampled play, which nearly always hands in."
+    },
+    "arcedit.record#0": {
+      "title": "Small mistakes compound",
+      "caption": "Each dot is a network trained to imitate the teacher. The curve is what independent per-click errors would predict for a fifteen-click copy. At the best run's 87%, pooled over both kinds of grid, it predicts 17 of 128; the network copied 4."
+    },
+    "arcedit.record#1": {
+      "title": "Which vocabulary is better depends on how you ask",
+      "caption": "The same editor, two vocabularies. Imitating a teacher step by step, raw clicks score far higher above chance. Choosing at random, raw clicks never end a game with a cell right, while 'paint this cell this colour' does in 152 of 256 games."
     },
     "arcedit.inside.canvas": {
       "title": "The canvas at the scale of a cell",

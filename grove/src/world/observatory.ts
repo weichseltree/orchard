@@ -12,6 +12,7 @@ import { onPulse } from "./pulse";
 import { VENUE_TINT } from "./venue";
 import { PORTAL_TINT } from "./portal-shader";
 import { SEALED_TINT, sealedLens } from "./sealed";
+import { INLAY_M, PLATE_M, fromTable, layoutRepoModel } from "./repo-model";
 
 // The palace's architecture, generated at runtime from mansion.json: a
 // nocturne of mineral walls, brass and luminous inlays. Rooms may stand at
@@ -637,7 +638,8 @@ function vault(b: Builder): void {
   roof.computeVertexNormals();
   const mesh = new Mesh(roof, roofMaterial()); mesh.name = "observatory-vault"; b.group.add(mesh);
   // An area's chambers are many and small: ribs every six metres, two at least.
-  const ribSpacing = room.id === "hall" ? 3.7 : room.id === "spectre" ? 4.3 : b.area ? 6 : 4.8;
+  // The undercroft is a low vault the length of the terrace: a rib every second bay keeps it under the triangle budget.
+  const ribSpacing = room.id === "hall" ? 3.7 : room.id === "spectre" ? 4.3 : room.id === "foyer" ? 9.6 : b.area ? 6 : 4.8;
   const ribs = Math.max(b.area ? 2 : 3, Math.ceil(depth / ribSpacing));
   for (let i = 0; i <= ribs; i++) {
     const [x, z] = at(cu, v0 + 0.3 + (depth - 0.6) * i / ribs);
@@ -701,7 +703,7 @@ function chandeliers(b: Builder): void {
     chandelier(b, cx, y1, (z0 + z1) / 2, 2.4, 3);
     return;
   }
-  if (["gallery", "orangery", "world-engine", "einstruct", "phototroph", "belvedere", "foyer"].includes(room.id)) {
+  if (["gallery", "orangery", "world-engine", "einstruct", "phototroph", "belvedere"].includes(room.id)) {
     const count = Math.max(1, Math.round(depth / 12));
     for (let i = 0; i < count; i++) chandelier(b, cx, y1, z0 + depth * (i + 0.5) / count, Math.min(1.6, (x1 - x0) * 0.09), 2);
     return;
@@ -965,7 +967,7 @@ function obelisk(b: Builder, x: number, z: number): void {
 function plan(room: Room, mansion: Mansion | null): Builder {
   const b = new Builder(room, mansion);
   if (room.fallback.kind === "ground") grounds(b);
-  else { chamberFloor(b); chamberWalls(b); cladding(b); vault(b); statuary(b); gameTables(b); venue(b); }
+  else { chamberFloor(b); chamberWalls(b); cladding(b); vault(b); statuary(b); gameTables(b); venue(b); repoTables(b); }
   flights(b);
   return b;
 }
@@ -1136,6 +1138,49 @@ function gameTables(b: Builder): void {
     b.add("halo", "brass", x, y + 2.3, z, 0.5, 0.5, 0.7, FLAT);
     b.add("halo", "light", x, y + 2.25, z, 0.48, 0.48, 0.25, FLAT);
     b.bar("brass", new Vector3(x, y + 2.35, z), new Vector3(x, b.room.bounds.max[1] - 0.05, z), 0.015);
+  }
+}
+
+/**
+ * A table for every repository model in the room (repo-model.ts): a long
+ * brass-rimmed top on two stone pedestals, and on it the tree's directories
+ * as a small city, plates for folders and towers for the leaves. A
+ * directory with a room of its own is lit, the rest are stone. Everything is
+ * batched with the architecture, so a city of forty blocks costs no draws.
+ */
+function repoTables(b: Builder): void {
+  for (const model of b.room.repoModels) {
+    const [x, , z] = model.position;
+    const y = b.ground(x, z);
+    const [width, depth] = model.size;
+    const top = y + model.tableHeight;
+    const turn = new Quaternion().setFromAxisAngle(UNIT, model.yawDeg * Math.PI / 180);
+    for (const side of [-1, 1]) {
+      const leg = fromTable(model, side * width * 0.3, 0);
+      b.add("box", "stone", leg.x, y + (model.tableHeight - 0.06) / 2, leg.z, 0.3, model.tableHeight - 0.06, depth * 0.55, turn);
+    }
+    b.add("box", "brass", x, top - 0.03, z, width + 0.16, 0.06, depth + 0.16, turn);
+    b.add("box", "roof", x, top + 0.002, z, width + 0.04, 0.008, depth + 0.04, turn);
+    for (const block of layoutRepoModel(model)) {
+      if (!(block.width >= 0.01 && block.depth >= 0.01)) continue;
+      const at = fromTable(model, block.x, block.z);
+      const bottom = block.level * PLATE_M;
+      const finish: Finish = block.leaf ? "stone" : block.level % 2 === 0 ? "inset" : "joint";
+      b.add("box", finish, at.x, top + INLAY_M + (bottom + block.height) / 2, at.z, block.width, block.height - bottom, block.depth, turn);
+      if (block.leaf && block.room) {
+        // A folder with a room of its own carries a small lamp on its roof, not a lit roof.
+        const cap = Math.min(0.22, block.width * 0.4, block.depth * 0.4);
+        b.add("box", "light", at.x, top + INLAY_M + block.height + 0.015, at.z, cap, 0.03, cap, turn);
+      }
+    }
+    // A ring of light over the model, as wide as the model, high enough to walk under.
+    const ring = Math.max(0.7, Math.min(width, depth) * 0.4);
+    const lamp = Math.min(top + 2.2, b.room.bounds.max[1] - 0.6);
+    b.add("halo", "brass", x, lamp + 0.05, z, ring + 0.02, ring + 0.02, 0.7, FLAT);
+    b.add("halo", "light", x, lamp, z, ring, ring, 0.25, FLAT);
+    for (const side of [-1, 1]) {
+      b.bar("brass", new Vector3(x + side * ring, lamp + 0.05, z), new Vector3(x + side * ring, b.room.bounds.max[1] - 0.05, z), 0.015);
+    }
   }
 }
 
