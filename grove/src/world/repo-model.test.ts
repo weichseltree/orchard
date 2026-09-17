@@ -1,19 +1,22 @@
 import { describe, expect, it } from "vitest";
-import { RepoModelSchema } from "./schema";
-import { blockAt, fromTable, gazeBlock, layoutRepoModel, squarify, toTable } from "./repo-model";
+import { RepoEntrySchema, RepoModelSchema } from "./schema";
+import mansionDocument from "./mansion.json";
+import { parseMansion } from "./schema";
+import { blockAt, entriesOf, fromTable, gazeBlock, layoutRepoModel, squarify, toTable } from "./repo-model";
 
 const model = RepoModelSchema.parse({
   id: "arcedit-tree",
   position: [10, 0, 20],
   size: [2.4, 1.6],
-  entries: [
-    { path: "arcedit", bytes: 400_000, sentence: "the package" },
-    { path: "docs", bytes: 60_000 },
-    { path: "results/grove", bytes: 3_000_000, room: "arcedit" },
-    { path: "results/i15_perception_under_reward", bytes: 900_000, room: "arcedit/reward" },
-    { path: "tests", bytes: 120_000 },
-  ],
+  repo: "test",
 });
+const entries = [
+  { path: "arcedit", bytes: 400_000, sentence: "the package" },
+  { path: "docs", bytes: 60_000 },
+  { path: "results/grove", bytes: 3_000_000, room: "arcedit" },
+  { path: "results/i15_perception_under_reward", bytes: 900_000, room: "arcedit/reward" },
+  { path: "tests", bytes: 120_000 },
+].map((entry) => RepoEntrySchema.parse(entry));
 
 describe("squarify", () => {
   it("fills the rectangle exactly with areas in proportion", () => {
@@ -36,7 +39,7 @@ describe("squarify", () => {
 });
 
 describe("layoutRepoModel", () => {
-  const blocks = layoutRepoModel(model);
+  const blocks = layoutRepoModel(model, entries);
 
   it("implies the parents a list leaves out and nests children inside them", () => {
     const results = blocks.find((b) => b.path === "results")!;
@@ -57,8 +60,7 @@ describe("layoutRepoModel", () => {
   });
 
   it("builds the same city from the same tree in any order", () => {
-    const shuffled = { ...model, entries: [...model.entries].reverse() };
-    expect(layoutRepoModel(shuffled)).toEqual(blocks);
+    expect(layoutRepoModel(model, [...entries].reverse())).toEqual(blocks);
   });
 
   it("carries the sentence and the room through", () => {
@@ -68,7 +70,7 @@ describe("layoutRepoModel", () => {
 });
 
 describe("reading the model", () => {
-  const blocks = layoutRepoModel(model);
+  const blocks = layoutRepoModel(model, entries);
 
   it("turns room points into the table's frame and back", () => {
     const turned = { ...model, yawDeg: 37 };
@@ -97,5 +99,19 @@ describe("reading the model", () => {
     const direction = { x: to.x / length, y: to.y / length, z: to.z / length };
     expect(gazeBlock(model, blocks, eye, direction)?.path).toBe("results/grove");
     expect(gazeBlock(model, blocks, eye, { x: 0, y: 0.2, z: -1 })).toBeNull();
+  });
+});
+
+describe("the models in mansion.json", () => {
+  const models = parseMansion(mansionDocument).rooms.flatMap((room) => room.repoModels.map((m) => ({ room, model: m })));
+
+  it("each finds its repository's folders, and every room a folder names exists", () => {
+    const ids = new Set(parseMansion(mansionDocument).rooms.map((r) => r.id));
+    expect(models.length).toBeGreaterThan(0);
+    for (const { model } of models) {
+      const found = entriesOf(model);
+      expect(found.length, model.repo).toBeGreaterThan(0);
+      for (const entry of found) if (entry.room) expect(ids.has(entry.room), entry.room).toBe(true);
+    }
   });
 });

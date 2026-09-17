@@ -1,4 +1,12 @@
-import type { RepoModel } from "./schema";
+import { RepoEntrySchema, type RepoEntry, type RepoModel } from "./schema";
+
+/** Every repository a model can show, bundled with this module and not with the startup document. */
+const REPOS = import.meta.glob<{ default: unknown[] }>("./repos/*.json", { eager: true });
+
+/** The folders of a model's repository; empty when the file is missing. */
+export function entriesOf(model: RepoModel): RepoEntry[] {
+  return (REPOS[`./repos/${model.repo}.json`]?.default ?? []).map((entry) => RepoEntrySchema.parse(entry));
+}
 
 // A repository as a tabletop model (ruled 2026-09-17): its directories are
 // districts of a small city on a table, nested as they nest in the tree, each
@@ -35,13 +43,13 @@ const FOOTING_M = 0.03;
 
 interface Node {
   path: string;
-  entry: RepoModel["entries"][number] | null;
+  entry: RepoEntry | null;
   children: Node[];
   bytes: number;
 }
 
 /** Nest the flat entries by path; a parent the list never names is implied. */
-function tree(entries: RepoModel["entries"]): Node[] {
+function tree(entries: readonly RepoEntry[]): Node[] {
   const nodes = new Map<string, Node>();
   const roots: Node[] = [];
   const node = (path: string): Node => {
@@ -122,10 +130,10 @@ function worst(row: readonly number[], side: number): number {
 }
 
 /** The whole city for one model: every district, parents before their children. */
-export function layoutRepoModel(model: RepoModel): RepoBlock[] {
-  const roots = tree(model.entries);
+export function layoutRepoModel(model: RepoModel, entries: readonly RepoEntry[] = entriesOf(model)): RepoBlock[] {
+  const roots = tree(entries);
   const [width, depth] = model.size;
-  const leafBytes = [...model.entries.map((e) => e.bytes)].filter((b) => b > 0);
+  const leafBytes = entries.map((e) => e.bytes).filter((b) => b > 0);
   const lo = Math.log10(Math.max(1, Math.min(...leafBytes, Infinity)));
   const hi = Math.log10(Math.max(10, ...leafBytes));
   const blocks: RepoBlock[] = [];

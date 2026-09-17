@@ -106,21 +106,21 @@
     "arcedit/agent": {
       "title": "De getrainde agent",
       "kicker": "Wat doet een getraind netwerk met zo'n smal zicht?",
-      "intro": "Een netwerk dat door nabootsing is getraind kopieert een effen geel vierkant dat het nooit zag: het loopt naar het palet, kiest de kleur van de bron, schildert het drie-bij-drie-antwoord en levert in, zestien klikken. De episode hangt als een wolk van cellen, een film en twee stilstaande beelden, waarvan één het zicht alleen, alles wat het netwerk ontvangt. Aan de noordmuur, waarom het werkt: twee netwerken bootsten dezelfde leraar na, alleen de volgorde waarin hij schilderde verschilde. Stap voor stap leerden ze iets vergelijkbaars; alleen spelend kopieerde het ene geen van 128 vierkanten, het andere 124.",
+      "intro": "Een netwerk dat door nabootsing is getraind kopieert een effen geel vierkant dat het nooit zag. Het kiest uit handelingen als 'schilder deze cel in deze kleur', die de editor als klikken uitvoert: naar het palet, de kleur van de bron, het drie-bij-drie-antwoord, inleveren, zestien klikken. De episode hangt als een wolk van cellen, een film en twee stilstaande beelden, waarvan één het zicht alleen. Aan de noordmuur, wat in één paar runs het verschil maakte: twee netwerken bootsten dezelfde leraar na, alleen zijn schildervolgorde verschilde. Op effen rasters had het ene drie op vier beslissingen goed, het andere bijna alle; alleen kopieerde het ene geen van 128 vierkanten, het andere 124.",
       "lookFor": "Volg de cursor: één keer naar het palet, dan schilderen zonder terug te keren, want de kleur zit op de kwast.",
-      "limit": "Eén episode illustreert een beleid dat 124 van 128 ongeziene vierkanten kopieert; het is niet de meting. Het leerde van een leraar, niet uit beloning, en levert in als geen cel leeg is, niet als de kopie klopt."
+      "limit": "Eén episode illustreert een beleid dat 124 van 128 ongeziene vierkanten kopieert; het is niet de meting. Het leerde van een leraar, niet uit beloning, zijn handelingen weten al waar de cellen van het antwoord zijn, en het levert in als geen cel leeg is, niet als de kopie klopt."
     },
     "arcedit/reward": {
       "title": "Leren van beloning",
-      "kicker": "Kan de agent leren zonder leraar, alleen betaald voor een goed antwoord?",
-      "intro": "Haal de leraar weg. Een klein netwerk begint bij niets en wordt alleen betaald voor een juiste kopie. Miljoenen stappen lang verdient het bijna niets, dan breekt het door. Aan de zuidmuur eindigen drie runs met vierkanten van twee bij twee op 96, 116 en 121 van 128 ongeziene vierkanten; met vierkanten van drie bij drie eindigt hetzelfde budget op 10, 50 en 11. Aan de oostmuur, waarom het grotere vierkant stokt: de agent leert de kleur van de bron te schilderen, maar met zijn zekerste zetten raakt hij vaak door zijn tijd heen in plaats van in te leveren.",
+      "kicker": "Kan de agent leren zonder leraar, alleen betaald met een score?",
+      "intro": "Haal de leraar weg. Een klein netwerk begint bij niets; het krijgt een beetje telkens als het antwoordraster dichter bij de bron komt, een bonus voor het inleveren van een exacte kopie, en elke stap kost wat. Miljoenen stappen lang kopieert het niets exact, dan breekt het door. Aan de zuidmuur eindigen drie runs met vierkanten van twee bij twee op 96, 116 en 121 van 128 ongeziene vierkanten; met vierkanten van drie bij drie eindigt hetzelfde budget op 10, 50 en 11. Aan de oostmuur het grotere vierkant: de agent leert de kleur van de bron te schilderen, maar met zijn zekerste zetten raakt hij vaak door zijn tijd heen in plaats van in te leveren.",
       "lookFor": "Vergelijk de stippen met de lijnen: de eindtelling is een aparte test, en de curven schommelen daarvoor sterk.",
-      "limit": "Drie runs per grootte, niet allemaal met dezelfde versie van de code; waarom deze instelling leert is nog open, en runs met het dubbele budget lopen."
+      "limit": "Drie runs per grootte, niet allemaal met dezelfde versie van de code. De drie-bij-drie-run die op 10 eindigde gebruikte de oude code; herhaald met de herstelde code haalde hij 107 van 128 binnen hetzelfde budget, dus een deel van het stokken hoort mogelijk bij de oude code."
     },
     "arcedit/record": {
       "title": "Wat mislukte en wat standhield",
       "kicker": "Wat leerde het project door zich te vergissen?",
-      "intro": "Elk experiment hier werd aangekondigd vóór zijn gegevens, en zijn verslag zegt wat het getal niet laat zien. Langs de muren één regel per verslag: wat gevraagd werd en wat terugkwam, een succes, een nulresultaat of een correctie. Twee grafieken dragen de lessen die terugkeren. Kleine fouten per stap stapelen zich op over een hele kopie, zodat een netwerk dat de meeste klikken goed heeft toch bijna niets kopieert. En een woordenschat van handelingen kan er bij nabootsing slechter uitzien en toch de enige zijn waarin willekeurig spel ooit beloning vindt.",
+      "intro": "Elk experiment hier werd aangekondigd vóór zijn gegevens, en zijn verslag zegt wat het getal niet laat zien. Langs de muren één regel per verslag: wat gevraagd werd en wat terugkwam, een succes, een nulresultaat of een correctie. Twee grafieken dragen de lessen die terugkeren. Kleine fouten per stap stapelen zich op over een hele kopie, zodat een netwerk dat de meeste klikken goed heeft toch bijna niets kopieert. En een woordenschat van handelingen kan er bij nabootsing slechter uitzien en toch de enige zijn waarin willekeurig spel ooit een cel goed krijgt.",
       "lookFor": "Lees de regels op volgorde: de meeste wendingen van het project kwamen van een getal dat niet betekende wat het eerst leek.",
       "limit": "Dit zijn korte samenvattingen van gedateerde verslagen; enkele werden later aangevuld, en de regels geven de aangevulde lezing.",
       "lines": {
@@ -134,7 +134,7 @@
         },
         "i3_action": {
           "title": "Een betere woordenschat, verkeerd gemeten",
-          "text": "Met 'schilder deze cel in deze kleur' in plaats van rauwe klikken scoorde nabootsing lager per stap en kopieerde 0 van 128. Nabootsing kan niet laten zien waar een woordenschat voor dient: wat een willekeurige zoektocht bereikt."
+          "text": "Met 'schilder deze cel in deze kleur' in plaats van rauwe klikken scoorde nabootsing lager per stap. Haar 0 van 128 kopieën waren een kortere weg die de volgorde van de leraar leerde; een geschudde leraar haalde later 124."
         },
         "i4_source_access": {
           "title": "Geheugen is niet genoeg",
@@ -145,16 +145,16 @@
           "text": "Bewaar één eerder zicht ongewijzigd, en een leraar die moet kijken voordat hij schildert kopieert elk raster uit het geheugen, effen en veelkleurig: 128 van 128."
         },
         "aspace_measure": {
-          "title": "Willekeurig spel vindt alleen beloning in de juiste woorden",
-          "text": "Met rauwe klikken leverden 256 willekeurige spellen geen enkele beloning op; met 'schilder deze cel in deze kleur' leverden 152 van 256 er wat op. Geen enkel spel loste een kopie op."
+          "title": "Willekeurig spel komt alleen verder met de juiste woorden",
+          "text": "Met willekeurig gekozen rauwe klikken eindigden 256 spellen zonder één goede cel; met willekeurig 'schilder deze cel in deze kleur' eindigden 152 van 256 met enkele goede. Geen enkel spel kopieerde een raster."
         },
         "i9_restriction": {
           "title": "Een wereld klein genoeg om helemaal te kennen",
           "text": "De editor teruggebracht tot 70.656 toestanden, elk opgesomd, zodat beweringen over welke handelingen het uitvinden waard zijn tegen de waarheid worden getoetst in plaats van geschat."
         },
         "i11_i12_levers": {
-          "title": "Vier hefbomen, alle 0 van 128",
-          "text": "Leren van beloning met dichtheid en horizon van de beloning op vier manieren gevarieerd: elke run kopieerde 0 van 128. Later gevonden: de beloning vroeg nooit om het inleveren dat de score telde."
+          "title": "Twee hefbomen, vier proeven, alle 0 van 128",
+          "text": "Leren van beloning, waarbij het moment waarop de beloning komt en de grootte van het raster elk op twee manieren werden gevarieerd: alle vier proeven kopieerden 0 van 128 vierkanten. Later gevonden: de beloning vroeg nooit om het inleveren dat de score telde."
         },
         "i16_harness_revalidation": {
           "title": "Het harnas had fouten die de tests misten",
@@ -246,8 +246,8 @@
       "caption": "Dezelfde episode als film: het canvas boven, de negen niveaus van het zicht van de agent onder, drie klikken per seconde. Zie de cursor naar het palet gaan en met een kleur terugkomen."
     },
     "arcedit.agent#2": {
-      "title": "Vergelijkbaar per stap, tegengestelde uitkomsten",
-      "caption": "Twee netwerken bootsten dezelfde leraar na; alleen de volgorde waarin hij schilderde verschilde. Per stap eindigen ze dicht bij elkaar, goed op ongeveer de helft en drie vijfde van achtergehouden zetten. Alleen kopieert het ene geen van 128 vierkanten, het andere 124."
+      "title": "Alleen de volgorde van de leraar veranderen",
+      "caption": "Twee netwerken bootsten dezelfde leraar na; alleen zijn schildervolgorde verschilde. Op effen rasters heeft het ene 76 % van de achtergehouden beslissingen goed, het andere 98 %. Alleen kopieert het eerste geen van 128 vierkanten, het tweede 124."
     },
     "arcedit.agent#3": {
       "title": "Halverwege de episode, schilderend met de gekozen kleur",
@@ -258,20 +258,20 @@
       "caption": "Wat de agent in één stap ziet: negen niveaus, elk twee keer zo grof als het vorige, de cursor altijd in het midden. Dit is de hele waarneming. Er is geen kaart en geen coördinaat."
     },
     "arcedit.reward#0": {
-      "title": "Leren van alleen een score",
-      "caption": "Alleen betaald voor een juiste kopie, vanaf niets. Lijnen zijn tests tijdens de training op 128 ongeziene vierkanten; stippen de eindtest erna. Twee bij twee: 96, 116 en 121 van 128. Drie bij drie, zelfde budget: 10, 50 en 11."
+      "title": "Leren van beloning, zonder leraar",
+      "caption": "Geen leraar: betaald als het antwoord dichterbij komt en voor een ingeleverde exacte kopie. Lijnen zijn tests tijdens de training op 128 ongeziene vierkanten; stippen de eindtest. Twee bij twee: 96, 116, 121 van 128. Drie bij drie, zelfde budget: 10, 50, 11."
     },
     "arcedit.reward#1": {
-      "title": "Het leest de kleur en levert dan niet in",
+      "title": "Het leest de kleur en levert dan vaak niet in",
       "caption": "Drie bij drie, dezelfde drie runs. Links leert de agent de kleur van de bron te schilderen. Midden raakt hij met zijn zekerste zetten in veel spellen nog door zijn tijd heen. Rechts eindkopieën van 128, zeker spel tegenover gesampled spel, dat bijna altijd inlevert."
     },
     "arcedit.record#0": {
       "title": "Kleine fouten stapelen zich op",
-      "caption": "Elke stip is een netwerk dat de leraar leerde nabootsen. De curve is wat onafhankelijke fouten per klik zouden voorspellen voor een kopie van vijftien klikken. Bij 87 % per klik voorspelt ze 17 van 128; het netwerk kopieerde er 4, dus zijn fouten klonteren samen."
+      "caption": "Elke stip is een netwerk dat de leraar leerde nabootsen. De curve is wat onafhankelijke fouten per klik zouden voorspellen voor een kopie van vijftien klikken. Bij de 87 % van de beste run, over beide soorten rasters, voorspelt ze 17 van 128; het netwerk kopieerde er 4."
     },
     "arcedit.record#1": {
       "title": "Welke woordenschat beter is hangt af van de vraag",
-      "caption": "Dezelfde editor, twee woordenschatten. Bij het nabootsen van een leraar scoren rauwe klikken per stap veel beter en kopiëren ze 4 vierkanten tegen 0. Bij willekeurig klikken verdienen rauwe klikken nooit beloning, semantische handelingen wel iets in 152 van 256 spellen."
+      "caption": "Dezelfde editor, twee woordenschatten. Bij het stap voor stap nabootsen van een leraar scoren rauwe klikken veel hoger boven toeval. Bij willekeurige keuze eindigen rauwe klikken nooit een spel met een goede cel, 'schilder deze cel in deze kleur' wel, in 152 van 256 spellen."
     },
     "arcedit.inside.canvas": {
       "title": "Het canvas op celschaal",

@@ -106,21 +106,21 @@
     "arcedit/agent": {
       "title": "El agente entrenado",
       "kicker": "¿Qué hace una red entrenada con una vista tan estrecha?",
-      "intro": "Una red entrenada por imitación copia un cuadrado amarillo liso que nunca ha visto: va a la paleta, elige el color de la fuente, pinta la respuesta de tres por tres y la entrega, dieciséis clics. El episodio cuelga como una nube de celdas, una película y dos imágenes fijas, una de ellas la vista sola, que es todo lo que recibe la red. En la pared norte, por qué funciona: dos redes imitaron al mismo profesor y solo cambió el orden en que pintaba. Paso a paso aprendieron una habilidad parecida; jugando solas, una copió cero de 128 cuadrados y la otra 124.",
+      "intro": "Una red entrenada por imitación copia un cuadrado amarillo liso que nunca ha visto. Elige entre acciones como «pinta esta celda de este color», que el editor ejecuta como clics: la paleta, el color de la fuente, la respuesta de tres por tres, la entrega, dieciséis clics. El episodio cuelga como una nube de celdas, una película y dos imágenes fijas, una de ellas la vista sola. En la pared norte, qué marcó la diferencia en un par de ensayos: dos redes imitaron al mismo profesor y solo cambió su orden al pintar. En cuadrículas lisas una acertaba tres decisiones de cada cuatro y la otra casi todas; jugando solas, una copió cero de 128 cuadrados y la otra 124.",
       "lookFor": "Siga el cursor: un solo viaje a la paleta y después pinta sin volver, porque el color ya está en su pincel.",
-      "limit": "Un episodio ilustra una política que copia 124 de 128 cuadrados inéditos; no es la medición. Aprendió de un profesor, no de la recompensa, y entrega cuando no queda ninguna celda vacía, no cuando la copia es correcta."
+      "limit": "Un episodio ilustra una política que copia 124 de 128 cuadrados inéditos; no es la medición. Aprendió de un profesor, no de la recompensa, sus acciones ya saben dónde están las celdas de la respuesta, y entrega cuando no queda ninguna celda vacía, no cuando la copia es correcta."
     },
     "arcedit/reward": {
       "title": "Aprender de la recompensa",
-      "kicker": "¿Puede el agente aprender sin profesor, pagado solo por una respuesta correcta?",
-      "intro": "Quite al profesor. Una red pequeña parte de cero y solo se le paga por una copia correcta. Durante millones de pasos no gana casi nada, y luego despega. En la pared sur, tres ensayos con cuadrados de dos por dos terminan en 96, 116 y 121 de 128 cuadrados inéditos; con cuadrados de tres por tres, el mismo presupuesto termina en 10, 50 y 11. En la pared este, por qué se atasca el cuadrado mayor: el agente aprende a pintar el color de la fuente, pero con sus jugadas más seguras a menudo se queda sin tiempo en lugar de entregar.",
+      "kicker": "¿Puede el agente aprender sin profesor, pagado solo con una puntuación?",
+      "intro": "Quite al profesor. Una red pequeña parte de cero; recibe un poco cada vez que la cuadrícula respuesta se acerca a la fuente, una bonificación por entregar una copia exacta, y cada paso le cuesta algo. Durante millones de pasos no copia nada exactamente, y luego despega. En la pared sur, tres ensayos con cuadrados de dos por dos terminan en 96, 116 y 121 de 128 cuadrados inéditos; con cuadrados de tres por tres, el mismo presupuesto termina en 10, 50 y 11. En la pared este, el cuadrado mayor: el agente aprende a pintar el color de la fuente, pero con sus jugadas más seguras a menudo se queda sin tiempo en lugar de entregar.",
       "lookFor": "Compare los puntos con las líneas: la cuenta final es una prueba aparte, y las curvas oscilan mucho antes de ella.",
-      "limit": "Tres ensayos por tamaño, no todos con la misma versión del código; por qué este ajuste aprende sigue abierto, y hay ensayos con el doble de presupuesto en marcha."
+      "limit": "Tres ensayos por tamaño, no todos con la misma versión del código. El ensayo de tres por tres que terminó en 10 usaba el código antiguo; repetido con el código reparado alcanzó 107 de 128 con el mismo presupuesto, así que parte del atasco quizá sea del código antiguo."
     },
     "arcedit/record": {
       "title": "Lo que falló y lo que se sostuvo",
       "kicker": "¿Qué aprendió el proyecto al equivocarse?",
-      "intro": "Cada experimento aquí se anunció antes de sus datos, y su registro dice lo que el número no muestra. A lo largo de las paredes, una línea por registro: qué se preguntó y qué volvió, sea un acierto, un resultado nulo o una corrección. Dos gráficos llevan las lecciones que se repiten. Los pequeños errores de cada paso se acumulan en una copia entera, así que una red que acierta la mayoría de los clics casi no copia nada. Y un vocabulario de acciones puede parecer peor bajo imitación y ser, aun así, el único en que el juego al azar encuentra alguna recompensa.",
+      "intro": "Cada experimento aquí se anunció antes de sus datos, y su registro dice lo que el número no muestra. A lo largo de las paredes, una línea por registro: qué se preguntó y qué volvió, sea un acierto, un resultado nulo o una corrección. Dos gráficos llevan las lecciones que se repiten. Los pequeños errores de cada paso se acumulan en una copia entera, así que una red que acierta la mayoría de los clics casi no copia nada. Y un vocabulario de acciones puede parecer peor bajo imitación y ser, aun así, el único en que el juego al azar acierta alguna celda.",
       "lookFor": "Lea las líneas en orden: la mayoría de los giros del proyecto vinieron de un número que no significaba lo que primero parecía.",
       "limit": "Son resúmenes breves de registros fechados; varios se enmendaron después, y las líneas dan la lectura enmendada.",
       "lines": {
@@ -134,7 +134,7 @@
         },
         "i3_action": {
           "title": "Un vocabulario mejor, medido de forma equivocada",
-          "text": "Con «pinta esta celda de este color» en lugar de clics crudos, la imitación puntuó menos por paso y copió 0 de 128. La imitación no puede mostrar para qué sirve un vocabulario: lo que alcanza una búsqueda al azar."
+          "text": "Con «pinta esta celda de este color» en lugar de clics crudos, la imitación puntuó menos por paso. Sus 0 copias de 128 eran un atajo que enseñó el orden del profesor; un profesor barajado llegó después a 124."
         },
         "i4_source_access": {
           "title": "La memoria no basta",
@@ -145,16 +145,16 @@
           "text": "Si se conserva una sola vista pasada sin cambios, un profesor que debe mirar antes de pintar copia de memoria todas las cuadrículas, lisas y multicolores: 128 de 128."
         },
         "aspace_measure": {
-          "title": "El juego al azar solo encuentra recompensa con las palabras adecuadas",
-          "text": "Con clics crudos, 256 partidas al azar no ganaron ninguna recompensa; con «pinta esta celda de este color», 152 de 256 ganaron algo. Ninguna partida al azar resolvió una copia."
+          "title": "El juego al azar solo avanza con las palabras adecuadas",
+          "text": "Eligiendo clics crudos al azar, 256 partidas terminaron sin una sola celda correcta; eligiendo «pinta esta celda de este color» al azar, 152 de 256 terminaron con alguna correcta. Ninguna copió una cuadrícula."
         },
         "i9_restriction": {
           "title": "Un mundo lo bastante pequeño para conocerlo entero",
           "text": "El editor reducido a 70 656 estados, todos enumerados, para que las afirmaciones sobre qué acciones vale la pena inventar se comprueben contra la verdad en lugar de estimarse."
         },
         "i11_i12_levers": {
-          "title": "Cuatro palancas, todas 0 de 128",
-          "text": "Aprendizaje por recompensa con la densidad y el horizonte de la recompensa variados de cuatro maneras: cada ensayo copió 0 de 128. Se halló después: la recompensa nunca pedía la entrega que la puntuación contaba."
+          "title": "Dos palancas, cuatro ensayos, todos 0 de 128",
+          "text": "Aprendizaje por recompensa, variando de dos maneras cada uno el momento en que llega la recompensa y el tamaño de la cuadrícula: los cuatro ensayos copiaron 0 de 128 cuadrados. Se halló después: la recompensa nunca pedía la entrega que la puntuación contaba."
         },
         "i16_harness_revalidation": {
           "title": "El arnés tenía errores que las pruebas no vieron",
@@ -246,8 +246,8 @@
       "caption": "El mismo episodio como película: el lienzo arriba, los nueve niveles de la vista del agente abajo, tres clics por segundo. Observe cómo el cursor va a la paleta y vuelve con un color."
     },
     "arcedit.agent#2": {
-      "title": "Habilidad parecida por paso, resultados opuestos",
-      "caption": "Dos redes imitaron al mismo profesor; solo cambiaba el orden en que pintaba. Por paso terminan cerca, acertando en torno a la mitad y tres quintos de las jugadas reservadas. Jugando solas, una copia cero de 128 cuadrados y la otra 124."
+      "title": "Cambiar solo el orden del profesor",
+      "caption": "Dos redes imitaron al mismo profesor; solo cambiaba su orden al pintar. En cuadrículas lisas una acierta el 76 % de las decisiones reservadas y la otra el 98 %. Jugando solas, la primera copia cero de 128 cuadrados y la segunda 124."
     },
     "arcedit.agent#3": {
       "title": "A mitad del episodio, pintando con el color elegido",
@@ -258,20 +258,20 @@
       "caption": "Lo que ve el agente en un paso: nueve niveles, cada uno el doble de grueso que el anterior, el cursor siempre en el centro. Esta es toda la observación. No hay mapa ni coordenadas."
     },
     "arcedit.reward#0": {
-      "title": "Aprender solo de una puntuación",
-      "caption": "Pagado solo por una copia correcta, partiendo de cero. Las líneas son pruebas durante el entrenamiento con 128 cuadrados inéditos; los puntos, la prueba final después. Dos por dos: 96, 116 y 121 de 128. Tres por tres, mismo presupuesto: 10, 50 y 11."
+      "title": "Aprender de la recompensa, sin profesor",
+      "caption": "Sin profesor: pagado cuando la respuesta se acerca y por una copia exacta entregada. Las líneas son pruebas durante el entrenamiento con 128 cuadrados inéditos; los puntos, la prueba final. Dos por dos: 96, 116, 121 de 128. Tres por tres, mismo presupuesto: 10, 50, 11."
     },
     "arcedit.reward#1": {
-      "title": "Lee el color y luego no entrega",
+      "title": "Lee el color y luego a menudo no entrega",
       "caption": "Tres por tres, los mismos tres ensayos. Izquierda: el agente aprende a pintar el color de la fuente. Centro: con sus jugadas más seguras aún se queda sin tiempo en muchas partidas. Derecha: copias finales de 128, juego seguro frente a juego muestreado, que casi siempre entrega."
     },
     "arcedit.record#0": {
       "title": "Los pequeños errores se acumulan",
-      "caption": "Cada punto es una red entrenada para imitar al profesor. La curva es lo que predirían errores independientes por clic para una copia de quince clics. Con un 87 % por clic predice 17 de 128; la red copió 4, así que sus errores se agrupan."
+      "caption": "Cada punto es una red entrenada para imitar al profesor. La curva es lo que predirían errores independientes por clic para una copia de quince clics. Con el 87 % del mejor ensayo, sobre ambos tipos de cuadrícula, predice 17 de 128; la red copió 4."
     },
     "arcedit.record#1": {
       "title": "Qué vocabulario es mejor depende de cómo se pregunte",
-      "caption": "El mismo editor, dos vocabularios. Imitando a un profesor, los clics crudos puntúan mucho mejor por paso y copian 4 cuadrados frente a 0. Haciendo clic al azar, los clics crudos nunca ganan recompensa, mientras que las acciones semánticas ganan algo en 152 de 256 partidas."
+      "caption": "El mismo editor, dos vocabularios. Imitando a un profesor paso a paso, los clics crudos superan mucho más al azar. Eligiendo al azar, los clics crudos nunca terminan una partida con una celda correcta, mientras que «pinta esta celda de este color» sí, en 152 de 256."
     },
     "arcedit.inside.canvas": {
       "title": "El lienzo a escala de una celda",

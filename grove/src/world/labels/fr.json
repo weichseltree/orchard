@@ -106,21 +106,21 @@
     "arcedit/agent": {
       "title": "L'agent entraîné",
       "kicker": "Que fait un réseau entraîné avec une vue si étroite ?",
-      "intro": "Un réseau entraîné par imitation copie un carré jaune uni qu'il n'a jamais vu : il va à la palette, choisit la couleur de la source, peint la réponse de trois sur trois et rend sa copie, seize clics. L'épisode est accroché comme un nuage de cellules, un film et deux images fixes, dont la vue seule, qui est tout ce que reçoit le réseau. Au mur nord, pourquoi cela marche : deux réseaux ont imité le même professeur, seul l'ordre dans lequel il peignait différait. Pas à pas, ils ont appris une habileté semblable ; seuls, l'un a copié zéro carré sur 128, l'autre 124.",
+      "intro": "Un réseau entraîné par imitation copie un carré jaune uni qu'il n'a jamais vu. Il choisit parmi des actions comme « peins cette cellule de cette couleur », que l'éditeur exécute en clics : la palette, la couleur de la source, la réponse de trois sur trois, la remise, seize clics. L'épisode est accroché comme un nuage de cellules, un film et deux images fixes, dont la vue seule. Au mur nord, ce qui a fait la différence dans une paire d'essais : deux réseaux ont imité le même professeur, seul son ordre de peinture différait. Sur les grilles unies, l'un avait raison sur trois décisions sur quatre, l'autre sur presque toutes ; seuls, l'un a copié zéro carré sur 128, l'autre 124.",
       "lookFor": "Suivez le curseur : un seul passage à la palette, puis il peint sans y revenir, car la couleur est sur son pinceau.",
-      "limit": "Un épisode illustre une politique qui copie 124 carrés inédits sur 128 ; ce n'est pas la mesure. Elle a appris d'un professeur, non de la récompense, et rend sa copie quand aucune cellule n'est vide, non quand la copie est juste."
+      "limit": "Un épisode illustre une politique qui copie 124 carrés inédits sur 128 ; ce n'est pas la mesure. Elle a appris d'un professeur, non de la récompense, ses actions savent déjà où sont les cellules de la réponse, et elle rend sa copie quand aucune cellule n'est vide, non quand la copie est juste."
     },
     "arcedit/reward": {
       "title": "Apprendre de la récompense",
-      "kicker": "L'agent peut-il apprendre sans professeur, payé seulement pour une bonne réponse ?",
-      "intro": "Retirez le professeur. Un petit réseau part de rien et n'est payé que pour une copie correcte. Pendant des millions de pas il ne gagne presque rien, puis il perce. Au mur sud, trois essais sur des carrés de deux sur deux finissent à 96, 116 et 121 carrés inédits sur 128 ; sur des carrés de trois sur trois, le même budget finit à 10, 50 et 11. Au mur est, pourquoi le grand carré cale : l'agent apprend à peindre la couleur de la source, mais en jouant ses coups les plus sûrs il manque souvent de temps au lieu de rendre sa copie.",
+      "kicker": "L'agent peut-il apprendre sans professeur, payé seulement par un score ?",
+      "intro": "Retirez le professeur. Un petit réseau part de rien ; il reçoit un peu chaque fois que la grille réponse se rapproche de la source, une prime pour une copie exacte rendue, et chaque pas lui coûte un peu. Pendant des millions de pas il ne copie rien exactement, puis il perce. Au mur sud, trois essais sur des carrés de deux sur deux finissent à 96, 116 et 121 carrés inédits sur 128 ; sur des carrés de trois sur trois, le même budget finit à 10, 50 et 11. Au mur est, le grand carré : l'agent apprend à peindre la couleur de la source, mais en jouant ses coups les plus sûrs il manque souvent de temps au lieu de rendre sa copie.",
       "lookFor": "Comparez les points et les lignes : le compte final est un test à part, et les courbes oscillent fortement avant lui.",
-      "limit": "Trois essais par taille, pas tous avec la même version du code ; pourquoi ce réglage apprend reste ouvert, et des essais au double du budget sont en cours."
+      "limit": "Trois essais par taille, pas tous avec la même version du code. L'essai trois sur trois qui a fini à 10 utilisait l'ancien code ; refait avec le code réparé, il a atteint 107 sur 128 dans le même budget, si bien qu'une part du blocage tient peut-être à l'ancien code."
     },
     "arcedit/record": {
       "title": "Ce qui a échoué, et ce qui a tenu",
       "kicker": "Qu'a appris le projet en se trompant ?",
-      "intro": "Chaque expérience ici a été annoncée avant ses données, et son compte rendu dit ce que le nombre ne montre pas. Le long des murs, une ligne par compte rendu : ce qui fut demandé et ce qui revint, réussite, résultat nul ou correction. Deux graphiques portent les leçons qui reviennent. De petites erreurs à chaque pas s'accumulent sur une copie entière, si bien qu'un réseau juste sur la plupart des clics ne copie presque rien. Et un vocabulaire d'actions peut paraître pire sous imitation tout en étant le seul où le jeu au hasard trouve jamais une récompense.",
+      "intro": "Chaque expérience ici a été annoncée avant ses données, et son compte rendu dit ce que le nombre ne montre pas. Le long des murs, une ligne par compte rendu : ce qui fut demandé et ce qui revint, réussite, résultat nul ou correction. Deux graphiques portent les leçons qui reviennent. De petites erreurs à chaque pas s'accumulent sur une copie entière, si bien qu'un réseau juste sur la plupart des clics ne copie presque rien. Et un vocabulaire d'actions peut paraître pire sous imitation tout en étant le seul où le jeu au hasard réussit jamais une cellule.",
       "lookFor": "Lisez les lignes dans l'ordre : la plupart des tournants du projet sont venus d'un nombre qui ne voulait pas dire ce qu'il semblait d'abord dire.",
       "limit": "Ce sont de brefs résumés de comptes rendus datés ; plusieurs ont été amendés plus tard, et les lignes donnent la lecture amendée.",
       "lines": {
@@ -134,7 +134,7 @@
         },
         "i3_action": {
           "title": "Un meilleur vocabulaire, mal mesuré",
-          "text": "Avec « peins cette cellule de cette couleur » au lieu de clics bruts, l'imitation a moins bien réussi par pas et copié 0 sur 128. L'imitation ne peut montrer à quoi sert un vocabulaire : ce qu'une recherche au hasard atteint."
+          "text": "Avec « peins cette cellule de cette couleur » au lieu de clics bruts, l'imitation a moins bien réussi par pas. Ses 0 copies sur 128 venaient d'un raccourci appris de l'ordre du professeur ; un professeur mélangé a ensuite atteint 124."
         },
         "i4_source_access": {
           "title": "La mémoire ne suffit pas",
@@ -145,16 +145,16 @@
           "text": "Gardez une seule vue passée inchangée, et un professeur qui doit regarder avant de peindre copie chaque grille de mémoire, unie ou multicolore : 128 sur 128."
         },
         "aspace_measure": {
-          "title": "Le jeu au hasard ne trouve la récompense que dans les bons mots",
-          "text": "En clics bruts, 256 parties au hasard n'ont rapporté aucune récompense ; en « peins cette cellule de cette couleur », 152 sur 256 en ont rapporté un peu. Aucune n'a réussi une copie."
+          "title": "Le jeu au hasard n'avance qu'avec les bons mots",
+          "text": "En choisissant des clics bruts au hasard, 256 parties ont fini sans une seule cellule juste ; en choisissant « peins cette cellule de cette couleur » au hasard, 152 sur 256 en ont eu quelques-unes. Aucune n'a copié une grille."
         },
         "i9_restriction": {
           "title": "Un monde assez petit pour être connu en entier",
           "text": "L'éditeur réduit à 70 656 états, tous énumérés, pour que les affirmations sur les actions qu'il vaut la peine d'inventer se vérifient contre la vérité au lieu d'être estimées."
         },
         "i11_i12_levers": {
-          "title": "Quatre leviers, tous à 0 sur 128",
-          "text": "Apprentissage par récompense, densité et horizon de la récompense variés de quatre façons : chaque essai a copié 0 sur 128. Découvert plus tard : la récompense n'exigeait jamais la remise que le score comptait."
+          "title": "Deux leviers, quatre essais, tous à 0 sur 128",
+          "text": "Apprentissage par récompense, en variant de deux façons chacun le moment où la récompense arrive et la taille de la grille : les quatre essais ont copié 0 carré sur 128. Découvert plus tard : la récompense n'exigeait jamais la remise que le score comptait."
         },
         "i16_harness_revalidation": {
           "title": "Le harnais avait des bogues que les tests manquaient",
@@ -246,8 +246,8 @@
       "caption": "Le même épisode en film : la toile en haut, les neuf niveaux de la vue de l'agent en bas, trois clics par seconde. Regardez le curseur partir vers la palette et revenir avec une couleur."
     },
     "arcedit.agent#2": {
-      "title": "Habileté semblable par pas, issues opposées",
-      "caption": "Deux réseaux ont imité le même professeur ; seul l'ordre dans lequel il peignait différait. Par pas, ils finissent proches, justes sur environ la moitié et les trois cinquièmes des coups réservés. Seuls, l'un copie zéro carré sur 128, l'autre 124."
+      "title": "Changer seulement l'ordre du professeur",
+      "caption": "Deux réseaux ont imité le même professeur ; seul son ordre de peinture différait. Sur les grilles unies, l'un a raison sur 76 % des décisions réservées, l'autre sur 98 %. Seuls, le premier copie zéro carré sur 128, le second 124."
     },
     "arcedit.agent#3": {
       "title": "Au milieu de l'épisode, peindre avec la couleur choisie",
@@ -258,20 +258,20 @@
       "caption": "Ce que voit l'agent à un instant : neuf niveaux, chacun deux fois plus grossier que le précédent, le curseur toujours au centre de chacun. C'est toute l'observation qui parvient au réseau, sans aucune carte ni coordonnée absolue."
     },
     "arcedit.reward#0": {
-      "title": "Apprendre d'un seul score",
-      "caption": "Payé seulement pour une copie correcte, en partant de rien. Les lignes sont des tests pendant l'entraînement sur 128 carrés inédits ; les points, le test final après. Deux sur deux : 96, 116 et 121 sur 128. Trois sur trois, même budget : 10, 50 et 11."
+      "title": "Apprendre de la récompense, sans professeur",
+      "caption": "Sans professeur : payé quand la réponse se rapproche et pour une copie exacte rendue. Les lignes sont des tests pendant l'entraînement sur 128 carrés inédits ; les points, le test final. Deux sur deux : 96, 116, 121 sur 128. Trois sur trois, même budget : 10, 50, 11."
     },
     "arcedit.reward#1": {
-      "title": "Il lit la couleur, puis ne rend pas sa copie",
+      "title": "Il lit la couleur, puis souvent ne rend pas sa copie",
       "caption": "Trois sur trois, les trois mêmes essais. À gauche, l'agent apprend à peindre la couleur de la source. Au milieu, en jouant ses coups les plus sûrs, il manque encore de temps dans bien des parties. À droite, copies finales sur 128, jeu sûr contre jeu tiré au sort, qui rend presque toujours."
     },
     "arcedit.record#0": {
       "title": "Les petites erreurs s'accumulent",
-      "caption": "Chaque point est un réseau entraîné à imiter le professeur. La courbe est ce que prédiraient des erreurs indépendantes par clic pour une copie de quinze clics. À 87 % par clic elle prédit 17 sur 128 ; le réseau en a copié 4, ses erreurs se groupent donc."
+      "caption": "Chaque point est un réseau entraîné à imiter le professeur. La courbe est ce que prédiraient des erreurs indépendantes par clic pour une copie de quinze clics. Aux 87 % du meilleur essai, sur les deux sortes de grilles, elle prédit 17 sur 128 ; le réseau en a copié 4."
     },
     "arcedit.record#1": {
       "title": "Le meilleur vocabulaire dépend de la question",
-      "caption": "Le même éditeur, deux vocabulaires. En imitant un professeur, les clics bruts réussissent bien mieux par pas et copient 4 carrés contre 0. En cliquant au hasard, les clics bruts ne gagnent jamais rien, tandis que les actions sémantiques gagnent un peu dans 152 parties sur 256."
+      "caption": "Le même éditeur, deux vocabulaires. En imitant un professeur pas à pas, les clics bruts dépassent bien plus le hasard. En choisissant au hasard, les clics bruts ne finissent jamais une partie avec une cellule juste, « peins cette cellule de cette couleur » si, dans 152 parties sur 256."
     },
     "arcedit.inside.canvas": {
       "title": "La toile à l'échelle d'une cellule",

@@ -41,7 +41,7 @@ import { finiteParameter, visitRoom } from "./world/visit";
 import { frameAt } from "./tape/time";
 import mansionDocument from "./world/mansion.json";
 import { parseMansion, roomById, type GameSurface as GameSurfaceConfig, type RepoModel } from "./world/schema";
-import { gazeBlock, layoutRepoModel, type RepoBlock } from "./world/repo-model";
+import type { RepoBlock } from "./world/repo-model";
 import { buildWorld, exhibitRoom, neighbourhood, type BuiltWorld } from "./world/world";
 import { PortalSystem } from "./world/portal";
 import { pickLocale } from "./ui/locale";
@@ -773,24 +773,39 @@ const REPO_TABLE_REACH_M = 1.6;
 const repoLayouts = new WeakMap<RepoModel, RepoBlock[]>();
 let readBlock: RepoBlock | null = null;
 let nextModelCheck = 0;
+/** The layout code, fetched the first time a room with a model is entered; most rooms never need it. */
+let repoModule: (typeof import("./world/repo-model") & { reading: import("./ui/model-reading").ModelReading }) | null = null;
+let repoModuleLoading = false;
 function readRepoModel(): void {
   const now = performance.now();
   if (now < nextModelCheck) return;
   nextModelCheck = now + 150;
+  const models = roomById(mansion, body.room)?.repoModels ?? [];
+  if (models.length > 0 && !repoModule) {
+    if (!repoModuleLoading) {
+      repoModuleLoading = true;
+      void Promise.all([import("./world/repo-model"), import("./ui/model-reading")]).then(
+        ([layout, ui]) => { repoModule = { ...layout, reading: ui.attachModelReading(hud.root) }; },
+        () => { repoModuleLoading = false; },
+      );
+    }
+    return;
+  }
+  const { gazeBlock, layoutRepoModel } = repoModule ?? {};
   let found: RepoBlock | null = null;
-  for (const model of roomById(mansion, body.room)?.repoModels ?? []) {
+  for (const model of gazeBlock && layoutRepoModel ? models : []) {
     const reach = Math.hypot(model.size[0], model.size[1]) / 2 + REPO_TABLE_REACH_M;
     if (Math.hypot(model.position[0] - body.x, model.position[2] - body.z) > reach) continue;
     let blocks = repoLayouts.get(model);
-    if (!blocks) repoLayouts.set(model, blocks = layoutRepoModel(model));
+    if (!blocks) repoLayouts.set(model, blocks = layoutRepoModel!(model));
     view.camera.getWorldPosition(headWorld);
     view.camera.getWorldDirection(_forward);
-    found = gazeBlock(model, blocks, headWorld, _forward);
+    found = gazeBlock!(model, blocks, headWorld, _forward);
     if (found) break;
   }
   if (found === readBlock) return;
   readBlock = found;
-  hud.setModelReading(found ? { path: found.path, sentence: found.sentence, room: found.room ? roomById(mansion, found.room)?.title || found.room : "" } : null);
+  repoModule?.reading.set(found ? { path: found.path, sentence: found.sentence, room: found.room ? roomById(mansion, found.room)?.title || found.room : "" } : null);
 }
 
 /** The mode buttons follow the screen that holds the decoder: a planet's modes, or nothing. */

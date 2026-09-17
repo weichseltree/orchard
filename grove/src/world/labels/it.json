@@ -106,21 +106,21 @@
     "arcedit/agent": {
       "title": "L'agente addestrato",
       "kicker": "Che cosa fa una rete addestrata con una vista così stretta?",
-      "intro": "Una rete addestrata per imitazione copia un quadrato giallo uniforme che non ha mai visto: va alla tavolozza, sceglie il colore della sorgente, dipinge la risposta tre per tre e consegna, sedici clic. L'episodio è appeso come una nuvola di celle, un filmato e due immagini fisse, una delle quali è la sola vista, tutto ciò che la rete riceve. Sulla parete nord, perché funziona: due reti hanno imitato lo stesso maestro, e cambiava solo l'ordine in cui dipingeva. Passo per passo hanno imparato un'abilità simile; giocando da sole, una ha copiato zero quadrati su 128, l'altra 124.",
+      "intro": "Una rete addestrata per imitazione copia un quadrato giallo uniforme che non ha mai visto. Sceglie tra azioni come «dipingi questa cella di questo colore», che l'editor esegue come clic: la tavolozza, il colore della sorgente, la risposta tre per tre, la consegna, sedici clic. L'episodio è appeso come una nuvola di celle, un filmato e due immagini fisse, una delle quali è la sola vista. Sulla parete nord, che cosa ha fatto la differenza in una coppia di prove: due reti hanno imitato lo stesso maestro, e cambiava solo il suo ordine di pittura. Sulle griglie uniformi una era giusta su tre decisioni su quattro, l'altra su quasi tutte; da sole, una ha copiato zero quadrati su 128, l'altra 124.",
       "lookFor": "Seguite il cursore: un solo viaggio alla tavolozza, poi dipinge senza tornare, perché il colore è sul pennello.",
-      "limit": "Un episodio illustra una politica che copia 124 quadrati inediti su 128; non è la misura. Ha imparato da un maestro, non dalla ricompensa, e consegna quando nessuna cella è vuota, non quando la copia è giusta."
+      "limit": "Un episodio illustra una politica che copia 124 quadrati inediti su 128; non è la misura. Ha imparato da un maestro, non dalla ricompensa, le sue azioni sanno già dove sono le celle della risposta, e consegna quando nessuna cella è vuota, non quando la copia è giusta."
     },
     "arcedit/reward": {
       "title": "Imparare dalla ricompensa",
-      "kicker": "Può l'agente imparare senza maestro, pagato solo per una risposta giusta?",
-      "intro": "Togliete il maestro. Una piccola rete parte da zero ed è pagata solo per una copia corretta. Per milioni di passi non guadagna quasi nulla, poi sfonda. Sulla parete sud, tre prove su quadrati due per due finiscono a 96, 116 e 121 quadrati inediti su 128; su quadrati tre per tre, lo stesso budget finisce a 10, 50 e 11. Sulla parete est, perché il quadrato più grande si blocca: l'agente impara a dipingere il colore della sorgente, ma giocando le mosse più sicure spesso esaurisce il tempo invece di consegnare.",
+      "kicker": "Può l'agente imparare senza maestro, pagato solo da un punteggio?",
+      "intro": "Togliete il maestro. Una piccola rete parte da zero; riceve un poco ogni volta che la griglia risposta si avvicina alla sorgente, un premio per una copia esatta consegnata, e ogni passo le costa qualcosa. Per milioni di passi non copia nulla esattamente, poi sfonda. Sulla parete sud, tre prove su quadrati due per due finiscono a 96, 116 e 121 quadrati inediti su 128; su quadrati tre per tre, lo stesso budget finisce a 10, 50 e 11. Sulla parete est, il quadrato più grande: l'agente impara a dipingere il colore della sorgente, ma giocando le mosse più sicure spesso esaurisce il tempo invece di consegnare.",
       "lookFor": "Confrontate i punti con le linee: il conteggio finale è una prova a sé, e prima le curve oscillano molto.",
-      "limit": "Tre prove per dimensione, non tutte con la stessa versione del codice; perché questa impostazione impari resta aperto, e sono in corso prove con il doppio del budget."
+      "limit": "Tre prove per dimensione, non tutte con la stessa versione del codice. La prova tre per tre finita a 10 usava il codice vecchio; ripetuta con il codice riparato ha raggiunto 107 su 128 con lo stesso budget, quindi parte del blocco potrebbe appartenere al vecchio codice."
     },
     "arcedit/record": {
       "title": "Ciò che è fallito e ciò che ha retto",
       "kicker": "Che cosa ha imparato il progetto sbagliando?",
-      "intro": "Ogni esperimento qui è stato annunciato prima dei suoi dati, e il suo resoconto dice ciò che il numero non mostra. Lungo le pareti, una riga per resoconto: che cosa fu chiesto e che cosa tornò, un successo, un risultato nullo o una correzione. Due grafici portano le lezioni che ritornano. Piccoli errori a ogni passo si accumulano su un'intera copia, così una rete giusta sulla maggior parte dei clic non copia quasi nulla. E un vocabolario di azioni può sembrare peggiore sotto imitazione ed essere comunque l'unico in cui il gioco casuale trova mai una ricompensa.",
+      "intro": "Ogni esperimento qui è stato annunciato prima dei suoi dati, e il suo resoconto dice ciò che il numero non mostra. Lungo le pareti, una riga per resoconto: che cosa fu chiesto e che cosa tornò, un successo, un risultato nullo o una correzione. Due grafici portano le lezioni che ritornano. Piccoli errori a ogni passo si accumulano su un'intera copia, così una rete giusta sulla maggior parte dei clic non copia quasi nulla. E un vocabolario di azioni può sembrare peggiore sotto imitazione ed essere comunque l'unico in cui il gioco casuale azzecca mai una cella.",
       "lookFor": "Leggete le righe in ordine: quasi tutte le svolte del progetto vennero da un numero che non significava ciò che sembrava all'inizio.",
       "limit": "Sono brevi sintesi di resoconti datati; diversi furono emendati in seguito, e le righe riportano la lettura emendata.",
       "lines": {
@@ -134,7 +134,7 @@
         },
         "i3_action": {
           "title": "Un vocabolario migliore, misurato nel modo sbagliato",
-          "text": "Con «dipingi questa cella di questo colore» al posto dei clic grezzi, l'imitazione ha reso meno per passo e copiato 0 su 128. L'imitazione non può mostrare a che cosa serve un vocabolario: ciò che una ricerca casuale raggiunge."
+          "text": "Con «dipingi questa cella di questo colore» al posto dei clic grezzi, l'imitazione ha reso meno per passo. Le sue 0 copie su 128 erano una scorciatoia insegnata dall'ordine del maestro; un maestro mescolato ha poi raggiunto 124."
         },
         "i4_source_access": {
           "title": "La memoria non basta",
@@ -145,16 +145,16 @@
           "text": "Conservando una sola vista passata invariata, un maestro che deve guardare prima di dipingere copia a memoria ogni griglia, uniforme e multicolore: 128 su 128."
         },
         "aspace_measure": {
-          "title": "Il gioco casuale trova ricompensa solo con le parole giuste",
-          "text": "Con clic grezzi, 256 partite casuali non hanno guadagnato alcuna ricompensa; con «dipingi questa cella di questo colore», 152 su 256 ne hanno guadagnata un po'. Nessuna ha risolto una copia."
+          "title": "Il gioco casuale avanza solo con le parole giuste",
+          "text": "Scegliendo clic grezzi a caso, 256 partite sono finite senza una sola cella giusta; scegliendo a caso «dipingi questa cella di questo colore», 152 su 256 ne avevano qualcuna. Nessuna ha copiato una griglia."
         },
         "i9_restriction": {
           "title": "Un mondo abbastanza piccolo da conoscerlo tutto",
           "text": "L'editor ridotto a 70 656 stati, tutti enumerati, così che le affermazioni su quali azioni valga la pena inventare si verifichino contro la verità invece di essere stimate."
         },
         "i11_i12_levers": {
-          "title": "Quattro leve, tutte a 0 su 128",
-          "text": "Apprendimento da ricompensa con densità e orizzonte della ricompensa variati in quattro modi: ogni prova ha copiato 0 su 128. Scoperto dopo: la ricompensa non chiedeva mai la consegna che il punteggio contava."
+          "title": "Due leve, quattro prove, tutte a 0 su 128",
+          "text": "Apprendimento da ricompensa, variando in due modi ciascuno il momento in cui arriva la ricompensa e la grandezza della griglia: le quattro prove hanno copiato 0 quadrati su 128. Scoperto dopo: la ricompensa non chiedeva mai la consegna che il punteggio contava."
         },
         "i16_harness_revalidation": {
           "title": "L'impalcatura aveva errori che i test non vedevano",
@@ -246,8 +246,8 @@
       "caption": "Lo stesso episodio come filmato: la tela sopra, i nove livelli della vista dell'agente sotto, tre clic al secondo. Guardate il cursore andare alla tavolozza e tornare con un colore."
     },
     "arcedit.agent#2": {
-      "title": "Abilità simile per passo, esiti opposti",
-      "caption": "Due reti hanno imitato lo stesso maestro; cambiava solo l'ordine in cui dipingeva. Per passo finiscono vicine, giuste su circa metà e tre quinti delle mosse riservate. Da sole, una copia zero quadrati su 128, l'altra 124."
+      "title": "Cambiare solo l'ordine del maestro",
+      "caption": "Due reti hanno imitato lo stesso maestro; cambiava solo il suo ordine di pittura. Sulle griglie uniformi una è giusta sul 76 % delle decisioni riservate, l'altra sul 98 %. Da sole, la prima copia zero quadrati su 128, la seconda 124."
     },
     "arcedit.agent#3": {
       "title": "A metà episodio, dipingendo con il colore scelto",
@@ -258,20 +258,20 @@
       "caption": "Ciò che l'agente vede in un passo: nove livelli, ciascuno due volte più grossolano del precedente, il cursore sempre al centro. Questa è l'intera osservazione. Non c'è mappa né coordinata."
     },
     "arcedit.reward#0": {
-      "title": "Imparare da un solo punteggio",
-      "caption": "Pagato solo per una copia corretta, partendo da zero. Le linee sono prove durante l'addestramento su 128 quadrati inediti; i punti, la prova finale dopo. Due per due: 96, 116 e 121 su 128. Tre per tre, stesso budget: 10, 50 e 11."
+      "title": "Imparare dalla ricompensa, senza maestro",
+      "caption": "Senza maestro: pagato quando la risposta si avvicina e per una copia esatta consegnata. Le linee sono prove durante l'addestramento su 128 quadrati inediti; i punti, la prova finale. Due per due: 96, 116, 121 su 128. Tre per tre, stesso budget: 10, 50, 11."
     },
     "arcedit.reward#1": {
-      "title": "Legge il colore, poi non consegna",
+      "title": "Legge il colore, poi spesso non consegna",
       "caption": "Tre per tre, le stesse tre prove. A sinistra l'agente impara a dipingere il colore della sorgente. Al centro, giocando le mosse più sicure, esaurisce ancora il tempo in molte partite. A destra le copie finali su 128, gioco sicuro contro gioco campionato, che consegna quasi sempre."
     },
     "arcedit.record#0": {
       "title": "I piccoli errori si accumulano",
-      "caption": "Ogni punto è una rete addestrata a imitare il maestro. La curva è ciò che errori indipendenti per clic prevederebbero per una copia di quindici clic. All'87 % per clic prevede 17 su 128; la rete ne ha copiati 4, quindi i suoi errori si raggruppano."
+      "caption": "Ogni punto è una rete addestrata a imitare il maestro. La curva è ciò che errori indipendenti per clic prevederebbero per una copia di quindici clic. All'87 % della prova migliore, su entrambi i tipi di griglia, prevede 17 su 128; la rete ne ha copiati 4."
     },
     "arcedit.record#1": {
       "title": "Quale vocabolario sia migliore dipende da come si chiede",
-      "caption": "Lo stesso editor, due vocabolari. Imitando un maestro, i clic grezzi rendono molto meglio per passo e copiano 4 quadrati contro 0. Cliccando a caso, i clic grezzi non guadagnano mai ricompensa, mentre le azioni semantiche ne guadagnano un po' in 152 partite su 256."
+      "caption": "Lo stesso editor, due vocabolari. Imitando un maestro passo per passo, i clic grezzi superano molto di più il caso. Scegliendo a caso, i clic grezzi non finiscono mai una partita con una cella giusta, mentre «dipingi questa cella di questo colore» sì, in 152 partite su 256."
     },
     "arcedit.inside.canvas": {
       "title": "La tela alla scala di una cella",

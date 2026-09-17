@@ -10,7 +10,7 @@
 //
 // Take both files from the tree's pinned commit (git show <sha>:<path>), never
 // from a working copy.
-import { readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -90,10 +90,7 @@ const rooms = area.rooms.map((source) => {
       size: TABLE_SIZE,
       // Low enough to see the far districts over the near ones from the table's edge.
       tableHeight: 0.7,
-      // The repository's root is the table itself, not a district on it.
-      entries: area.repo_model.filter((e) => e.path !== "." && e.path !== "").map((e) => ({
-        path: e.path, bytes: e.bytes, sentence: e.sentence ?? "", room: e.room ?? "",
-      })),
+      repo: tree,
     }];
     delete room.tabletop;
   }
@@ -117,9 +114,18 @@ mansion.rooms = [...kept.slice(0, at), ...rooms, ...kept.slice(at)];
 const written = [];
 const save = (path, doc) => {
   written.push(path);
-  if (!dryRun) writeFileSync(path, `${JSON.stringify(doc, null, 2)}\n`);
+  if (dryRun) return;
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, `${JSON.stringify(doc, null, 2)}\n`);
 };
 save(mansionPath, mansion);
+if (Array.isArray(area.repo_model)) {
+  // The table's folders load with the table, not with the startup document.
+  // The repository's root is the table itself, not a district on it.
+  save(join(world, "repos", `${tree}.json`), area.repo_model.filter((e) => e.path !== "." && e.path !== "").map((e) => ({
+    path: e.path, bytes: e.bytes, sentence: e.sentence ?? "", room: e.room ?? "",
+  })));
+}
 
 const exhibitIds = new Set(rooms.flatMap((r) => (r.hangings ?? []).map((h) => h.id)));
 for (const [locale, copy] of Object.entries(areaLabels)) {

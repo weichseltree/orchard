@@ -1680,7 +1680,7 @@
         },
         {
           "id": "arcedit.agent#2",
-          "title": "Similar skill per step, opposite outcomes: the teacher's painting order, 0 or 124 of 128",
+          "title": "Change only the teacher's painting order: 76% or 98% per decision on solid grids, 0 or 124 of 128 copies, one seed each",
           "position": [
             46.5,
             2.6,
@@ -1805,7 +1805,7 @@
       "hangings": [
         {
           "id": "arcedit.reward#0",
-          "title": "Learning from a score alone: side 2 learned in three seeds, side 3 at 10, 50 and 11 of 128",
+          "title": "Learning from reward without a teacher: side 2 at 96, 116 and 121 of 128, side 3 at 10, 50 and 11",
           "position": [
             67.5,
             2.7,
@@ -1828,7 +1828,7 @@
         },
         {
           "id": "arcedit.reward#1",
-          "title": "At side 3 it reads the colour, then runs out of time instead of handing in",
+          "title": "At side 3 it reads the colour, then often runs out of time instead of handing in",
           "position": [
             77.74,
             2.7,
@@ -1903,7 +1903,7 @@
       "hangings": [
         {
           "id": "arcedit.record#0",
-          "title": "Small mistakes compound: per-click accuracy against whole copies, predicted and measured",
+          "title": "Small mistakes compound: pooled per-click accuracy against whole copies, predicted and measured",
           "position": [
             48,
             2.6,
@@ -1926,7 +1926,7 @@
         },
         {
           "id": "arcedit.record#1",
-          "title": "Which vocabulary is better depends on how you ask: imitation favours raw clicks, random play finds reward only in semantic actions",
+          "title": "Which vocabulary is better depends on how you ask: imitation favours raw clicks, random play gets cells right only in semantic actions",
           "position": [
             66,
             2.6,
@@ -2153,170 +2153,7 @@
             6
           ],
           "tableHeight": 0.7,
-          "entries": [
-            {
-              "path": "arcedit",
-              "bytes": 338831,
-              "sentence": "The engine: the endless canvas, the exact editor, the cursor-centred view and the network that learns to use them.",
-              "room": ""
-            },
-            {
-              "path": "arcedit/serve",
-              "bytes": 102236,
-              "sentence": "A browser console where a person plays the editor through the agent's narrow view.",
-              "room": ""
-            },
-            {
-              "path": "docs",
-              "bytes": 33282,
-              "sentence": "The brief, kept as written, and the discipline every experiment follows.",
-              "room": ""
-            },
-            {
-              "path": "mental",
-              "bytes": 105017,
-              "sentence": "An exact memory kept from an earlier line: what the agent has seen, and nothing it has not.",
-              "room": ""
-            },
-            {
-              "path": "results",
-              "bytes": 18874912,
-              "sentence": "The evidence of record: one directory per experiment, each with its dated account.",
-              "room": ""
-            },
-            {
-              "path": "results/grove",
-              "bytes": 5328948,
-              "sentence": "The exhibits: recorded episodes, films, stills, charts and the environment as a 3D model.",
-              "room": "arcedit"
-            },
-            {
-              "path": "results/grove/oracle_side5",
-              "bytes": 1478571,
-              "sentence": "The scripted teacher copying a five-by-five grid of many colours, 114 clicks.",
-              "room": "arcedit"
-            },
-            {
-              "path": "results/grove/oracle_side5/tape",
-              "bytes": 1128393,
-              "sentence": "The teacher's episode as a particle tape, walked at the scale of a cell.",
-              "room": "arcedit/inside"
-            },
-            {
-              "path": "results/grove/policy_side3",
-              "bytes": 229905,
-              "sentence": "A learned agent copying a solid three-by-three square, 16 clicks.",
-              "room": "arcedit/agent"
-            },
-            {
-              "path": "results/i15_perception_under_reward",
-              "bytes": 8372954,
-              "sentence": "Learning from reward alone: side 2 learned in three of three seeds, side 3 reads the colour and does not hand in.",
-              "room": "arcedit/reward"
-            },
-            {
-              "path": "results/i17_full_campaign",
-              "bytes": 151528,
-              "sentence": "A full-budget campaign across two machines; it has not finished and is not shown.",
-              "room": ""
-            },
-            {
-              "path": "results/i2_encoder",
-              "bytes": 1415444,
-              "sentence": "Imitation of the teacher at up to 87% per click, and why that still copies almost nothing.",
-              "room": "arcedit/record"
-            },
-            {
-              "path": "results/i3_action",
-              "bytes": 454401,
-              "sentence": "The same recipe with a 'paint this cell this colour' vocabulary: 0 of 128.",
-              "room": "arcedit/record"
-            },
-            {
-              "path": "results/i9_restriction",
-              "bytes": 28023,
-              "sentence": "The editor cut down to a world small enough to enumerate every state.",
-              "room": "arcedit/record"
-            },
-            {
-              "path": "results/interface_v1",
-              "bytes": 938723,
-              "sentence": "With the whole grid in view, a network learns the copy completely: 128 of 128 at three seeds.",
-              "room": "arcedit/record"
-            },
-            {
-              "path": "scripts",
-              "bytes": 515150,
-              "sentence": "The instruments: one script per experiment, and the ones that make these exhibits.",
-              "room": ""
-            },
-            {
-              "path": "tests",
-              "bytes": 361807,
-              "sentence": "The checks that fail when a rule the engine relies on drifts.",
-              "room": ""
-            },
-            {
-              "path": "results/aspace_measure",
-              "bytes": 26194,
-              "sentence": "Random play finds nothing in raw clicks and scores in over half its games in semantic actions.",
-              "room": "arcedit/record"
-            },
-            {
-              "path": "results/i10_snapshot_bc",
-              "bytes": 21379,
-              "sentence": "Does a learner use one remembered glimpse? The bar was not met.",
-              "room": ""
-            },
-            {
-              "path": "results/i11_measure",
-              "bytes": 239719,
-              "sentence": "Does reward convert what imitation learned? Both arms 0 of 128.",
-              "room": "arcedit/record"
-            },
-            {
-              "path": "results/i12_levers",
-              "bytes": 9109,
-              "sentence": "Four credit-assignment levers, all 0 of 128.",
-              "room": "arcedit/record"
-            },
-            {
-              "path": "results/i13_teacher_order",
-              "bytes": 348686,
-              "sentence": "Shuffling the teacher's painting order alone: 0 of 128 became 124 of 128.",
-              "room": "arcedit/agent"
-            },
-            {
-              "path": "results/i14_gate_and_budget",
-              "bytes": 337655,
-              "sentence": "Preconditions for reward learning: the submit gate and the step budget, measured before training.",
-              "room": ""
-            },
-            {
-              "path": "results/i16_harness_revalidation",
-              "bytes": 212775,
-              "sentence": "The training harness had bugs the test suite missed; repaired and revalidated.",
-              "room": "arcedit/record"
-            },
-            {
-              "path": "results/i4_source_access",
-              "bytes": 3324,
-              "sentence": "Remembering the source grid does not deliver its colours through the narrow view.",
-              "room": "arcedit/record"
-            },
-            {
-              "path": "results/i5_ceiling",
-              "bytes": 35894,
-              "sentence": "Closed-form ceilings on what the narrow view can support.",
-              "room": ""
-            },
-            {
-              "path": "results/snapshot",
-              "bytes": 29291,
-              "sentence": "One remembered glimpse makes the many-coloured copy solvable in principle: the teacher solves 128 of 128.",
-              "room": "arcedit/record"
-            }
-          ]
+          "repo": "arcedit"
         }
       ]
     },

@@ -51,14 +51,21 @@ export const RepoModelSchema = z.looseObject({
   /** The model's footprint on the table top: across, then along. */
   size: z.tuple([z.number().positive(), z.number().positive()]).default([2.4, 1.6]),
   tableHeight: z.number().positive().default(0.85),
-  entries: z.array(z.looseObject({
-    /** Relative to the repository root, "/"-separated; parents the list does not name are implied. */
-    path: z.string().min(1),
-    bytes: z.number().nonnegative().default(0),
-    sentence: z.string().default(""),
-    /** The room that shows this directory's content, when it has one. */
-    room: z.string().default(""),
-  })).min(1),
+  /**
+   * Whose folders stand on the table: repos/<repo>.json beside this file, a
+   * list of {path, bytes, sentence, room}. Kept out of mansion.json because
+   * this document loads at startup and the table's sentences need not.
+   */
+  repo: z.string().min(1),
+});
+
+export const RepoEntrySchema = z.looseObject({
+  /** Relative to the repository root, "/"-separated; parents the list does not name are implied. */
+  path: z.string().min(1),
+  bytes: z.number().nonnegative().default(0),
+  sentence: z.string().default(""),
+  /** The room that shows this directory's content, when it has one. */
+  room: z.string().default(""),
 });
 
 /**
@@ -456,6 +463,7 @@ export type Bounds = z.infer<typeof BoundsSchema>;
 export type Spawn = z.infer<typeof SpawnSchema>;
 export type GameSurface = z.infer<typeof GameSurfaceSchema>;
 export type RepoModel = z.infer<typeof RepoModelSchema>;
+export type RepoEntry = z.infer<typeof RepoEntrySchema>;
 export type WallLine = z.infer<typeof WallLineSchema>;
 export type Doorway = z.infer<typeof DoorwaySchema>;
 export type BundleRef = z.infer<typeof BundleRefSchema>;

@@ -106,21 +106,21 @@
     "arcedit/agent": {
       "title": "The learned agent",
       "kicker": "What does a trained network do with so narrow a view?",
-      "intro": "A network trained by imitation copies a solid yellow square it has never seen: it walks to the palette, chooses the source's colour, paints the three-by-three answer and hands in, sixteen clicks. The episode hangs as a cloud of cells, a film and two stills, one of them the view alone, which is all the network receives. On the north wall, why it works: two networks imitated the same teacher, and only the order in which the teacher painted differed. Step by step they learned similar skill; playing alone, one copied none of 128 squares, the other 124.",
+      "intro": "A network trained by imitation copies a solid yellow square it has never seen. It chooses among actions such as 'paint this cell this colour', which the editor carries out as clicks: to the palette, the source's colour, the three-by-three answer, hand in, sixteen clicks. It hangs as a cloud of cells, a film and two stills. On the north wall, what made the difference in one pair of runs: two networks imitated the same teacher, and only its painting order differed. On solid grids one was right on three decisions in four, the other on almost all; playing alone, one copied none of 128 squares, the other 124.",
       "lookFor": "Follow the cursor: one trip to the palette, then painting without returning, because the colour is on its brush.",
-      "limit": "One episode illustrates a policy that copies 124 of 128 unseen squares; it is not the measurement. The policy learned from a teacher, not from reward, and it hands in when no cell is blank, not when the copy is right."
+      "limit": "One episode illustrates a policy that copies 124 of 128 unseen squares; it is not the measurement. It learned from a teacher, not from reward, its actions already know where the answer's cells are, and it hands in when no cell is blank, not when the copy is right."
     },
     "arcedit/reward": {
       "title": "Learning from reward",
-      "kicker": "Can the agent learn with no teacher, paid only for a right answer?",
-      "intro": "Take the teacher away. A small network starts from nothing and is paid only for a correct copy. For millions of steps it earns almost nothing, then it breaks out. On the south wall, three runs on two-by-two squares finish at 96, 116 and 121 of 128 unseen squares; on three-by-three squares the same budget finishes at 10, 50 and 11. On the east wall, why the larger square stalls: the agent learns to paint the source's colour, yet playing its most confident moves it often runs out of time instead of handing in.",
+      "kicker": "Can the agent learn with no teacher, paid only by a score?",
+      "intro": "No teacher. A small network starts from nothing; it is paid a little each time the answer grid gets closer to the source, a bonus for handing in an exact copy, minus a little per step. For millions of steps it copies nothing exactly, then it breaks out. On the south wall, three runs on two-by-two squares finish at 96, 116 and 121 of 128 unseen squares; on three-by-three squares the same budget finishes at 10, 50 and 11. On the east wall, the larger square: the agent learns to paint the source's colour, yet playing its most confident moves it often runs out of time instead of handing in.",
       "lookFor": "Compare the dots with the lines: the final count is a separate test, and the curves swing widely before it.",
-      "limit": "Three runs per size, and they did not all use the same version of the code; why this setting learns is still open, and runs with twice the budget are under way."
+      "limit": "Three runs per size, not all on the same version of the code. The three-by-three run that finished at 10 used the older code; repeated on the repaired code it reached 107 of 128 within the same budget, so part of the stall may belong to the old code."
     },
     "arcedit/record": {
       "title": "What failed, and what held",
       "kicker": "What did the project learn by being wrong?",
-      "intro": "Every experiment here was announced before its data, and its record says what the number does not show. Along the walls, one line per record: what was asked and what came back, whether a success, a null result or a correction. Two charts carry the lessons that recur. Small mistakes per step compound over a whole copy, so a network right on most clicks still copies almost nothing. And a vocabulary of actions can look worse under imitation while being the only one in which random play ever finds reward.",
+      "intro": "Every experiment here was announced before its data, and its record says what the number does not show. Along the walls, one line per record: what was asked and what came back, whether a success, a null result or a correction. Two charts carry the lessons that recur. Small mistakes per step compound over a whole copy, so a network right on most clicks still copies almost nothing. And a vocabulary of actions can look worse under imitation while being the only one in which random play ever gets a cell right.",
       "lookFor": "Read the lines in order: most of the project's turns came from a number that did not mean what it first seemed to.",
       "limit": "These are short summaries of dated records; several records were later amended, and the lines give the amended reading.",
       "lines": {
@@ -134,7 +134,7 @@
         },
         "i3_action": {
           "title": "A better vocabulary, measured the wrong way",
-          "text": "Given 'paint this cell this colour' instead of raw clicks, imitation scored lower per step and copied 0 of 128. Imitation cannot show what a vocabulary is for: what a random search can reach."
+          "text": "Given 'paint this cell this colour' instead of raw clicks, imitation scored lower per step. Its 0 of 128 copies was a shortcut its teacher's painting order taught; a shuffled teacher later reached 124."
         },
         "i4_source_access": {
           "title": "Memory is not enough",
@@ -145,16 +145,16 @@
           "text": "Keep a single past view unchanged, and a teacher that must look before it paints copies every grid from memory, solid and many-coloured: 128 of 128."
         },
         "aspace_measure": {
-          "title": "Random play finds reward only in the right words",
-          "text": "In raw clicks, 256 random games earned no reward at all; in 'paint this cell this colour', 152 of 256 earned some. No random game solved a copy."
+          "title": "Random play gets somewhere only in the right words",
+          "text": "Choosing raw clicks at random, 256 games ended without a single cell right; choosing 'paint this cell this colour' at random, 152 of 256 ended with some right. No random game copied a grid."
         },
         "i9_restriction": {
           "title": "A world small enough to know completely",
           "text": "The editor cut down to 70,656 states, every one enumerated, so that claims about which actions are worth inventing could be checked against the truth instead of estimated."
         },
         "i11_i12_levers": {
-          "title": "Four levers, all 0 of 128",
-          "text": "Reward learning with the reward's density and horizon varied four ways: every cell copied 0 of 128. Found later: the reward never asked for the submit that the score counted."
+          "title": "Two levers, four trials, all 0 of 128",
+          "text": "Learning from reward, with when the reward arrives and the size of the grid each varied two ways: all four trials copied 0 of 128 squares. Found later: the reward never asked for the submit the score counted."
         },
         "i16_harness_revalidation": {
           "title": "The harness had bugs the tests missed",
@@ -246,8 +246,8 @@
       "caption": "The same episode as a film: the canvas above, the nine levels of the agent's view below, three clicks per second. Watch the cursor leave for the palette and come back with a colour."
     },
     "arcedit.agent#2": {
-      "title": "Similar skill per step, opposite outcomes",
-      "caption": "Two networks imitated the same teacher; only the order in which it painted differed. Per step they end up close, right on about half and three-fifths of held-out moves. Playing alone, one copies none of 128 squares, the other 124."
+      "title": "Change only the teacher's painting order",
+      "caption": "Two networks imitated the same teacher; only its painting order differed. On solid grids one is right on 76% of held-out decisions, the other on 98%. Playing alone, the first copies none of 128 squares, the second 124."
     },
     "arcedit.agent#3": {
       "title": "Mid-episode, painting from the chosen colour",
@@ -258,20 +258,20 @@
       "caption": "What the agent sees at one step: nine levels, each twice as coarse as the last, the cursor always at the centre. This is the whole observation. There is no map and no coordinate."
     },
     "arcedit.reward#0": {
-      "title": "Learning from a score alone",
-      "caption": "Paid only for a correct copy, starting from nothing. Lines are tests during training on 128 unseen squares; dots are the final test after training. Two by two: 96, 116 and 121 of 128. Three by three, same budget: 10, 50 and 11."
+      "title": "Learning from reward, without a teacher",
+      "caption": "No teacher: paid as the answer gets closer and for an exact copy handed in. Lines are tests during training on 128 unseen squares; dots are the final test. Two by two: 96, 116, 121 of 128. Three by three, same budget: 10, 50, 11."
     },
     "arcedit.reward#1": {
-      "title": "It reads the colour, then does not hand in",
+      "title": "It reads the colour, then often does not hand in",
       "caption": "Three by three, the same three runs. Left: the agent learns to paint the source's colour. Middle: playing its most confident moves, it still runs out of time in many games. Right: final copies of 128, confident play against sampled play, which nearly always hands in."
     },
     "arcedit.record#0": {
       "title": "Small mistakes compound",
-      "caption": "Each dot is a network trained to imitate the teacher. The curve is what independent per-click errors would predict for a fifteen-click copy. At 87% per click it predicts 17 of 128; the network copied 4, so its mistakes cluster."
+      "caption": "Each dot is a network trained to imitate the teacher. The curve is what independent per-click errors would predict for a fifteen-click copy. At the best run's 87%, pooled over both kinds of grid, it predicts 17 of 128; the network copied 4."
     },
     "arcedit.record#1": {
       "title": "Which vocabulary is better depends on how you ask",
-      "caption": "The same editor, two vocabularies. Imitating a teacher, raw clicks score far better per step and copy 4 squares against 0. Clicking at random, raw clicks never earn any reward, while semantic actions earn some in 152 of 256 games."
+      "caption": "The same editor, two vocabularies. Imitating a teacher step by step, raw clicks score far higher above chance. Choosing at random, raw clicks never end a game with a cell right, while 'paint this cell this colour' does in 152 of 256 games."
     },
     "arcedit.inside.canvas": {
       "title": "The canvas at the scale of a cell",

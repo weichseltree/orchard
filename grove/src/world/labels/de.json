@@ -106,21 +106,21 @@
     "arcedit/agent": {
       "title": "Der gelernte Agent",
       "kicker": "Was macht ein trainiertes Netz mit so enger Sicht?",
-      "intro": "Ein durch Nachahmung trainiertes Netz kopiert ein einfarbiges gelbes Quadrat, das es nie gesehen hat: Es geht zur Palette, wählt die Farbe der Vorlage, malt die Drei-mal-drei-Antwort und gibt ab, sechzehn Klicks. Die Episode hängt als Zellwolke, als Film und als zwei Standbilder, eines davon die Sicht allein, die alles ist, was das Netz erhält. An der Nordwand, warum es funktioniert: Zwei Netze ahmten denselben Lehrer nach, nur die Reihenfolge, in der er malte, war verschieden. Schritt für Schritt lernten sie Ähnliches; allein spielend kopierte eines keins von 128 Quadraten, das andere 124.",
+      "intro": "Ein durch Nachahmung trainiertes Netz kopiert ein einfarbiges gelbes Quadrat, das es nie gesehen hat. Es wählt unter Handlungen wie 'male diese Zelle in dieser Farbe', die der Editor als Klicks ausführt: zur Palette, die Farbe der Vorlage, die Drei-mal-drei-Antwort, abgeben, sechzehn Klicks. Die Episode hängt als Zellwolke, als Film und als zwei Standbilder, eines davon die Sicht allein. An der Nordwand, was in einem Paar von Läufen den Unterschied machte: Zwei Netze ahmten denselben Lehrer nach, nur seine Malreihenfolge war anders. Bei einfarbigen Gittern lag eines bei drei von vier Entscheidungen richtig, das andere bei fast allen; allein kopierte eines keins von 128 Quadraten, das andere 124.",
       "lookFor": "Folgen Sie dem Cursor: ein Gang zur Palette, dann Malen ohne Rückkehr, denn die Farbe ist auf dem Pinsel.",
-      "limit": "Eine Episode veranschaulicht eine Strategie, die 124 von 128 ungesehenen Quadraten kopiert; sie ist nicht die Messung. Die Strategie lernte von einem Lehrer, nicht aus Belohnung, und gibt ab, wenn keine Zelle leer ist, nicht wenn die Kopie stimmt."
+      "limit": "Eine Episode veranschaulicht eine Strategie, die 124 von 128 ungesehenen Quadraten kopiert; sie ist nicht die Messung. Sie lernte von einem Lehrer, nicht aus Belohnung, ihre Handlungen kennen die Zellen der Antwort schon, und sie gibt ab, wenn keine Zelle leer ist, nicht wenn die Kopie stimmt."
     },
     "arcedit/reward": {
       "title": "Lernen aus Belohnung",
-      "kicker": "Kann der Agent ohne Lehrer lernen, bezahlt nur für eine richtige Antwort?",
-      "intro": "Nehmen Sie den Lehrer weg. Ein kleines Netz beginnt bei null und wird nur für eine korrekte Kopie bezahlt. Millionen Schritte lang verdient es fast nichts, dann bricht es durch. An der Südwand enden drei Läufe mit Zwei-mal-zwei-Quadraten bei 96, 116 und 121 von 128 ungesehenen Quadraten; bei Drei-mal-drei-Quadraten endet dasselbe Budget bei 10, 50 und 11. An der Ostwand, warum das größere Quadrat stockt: Der Agent lernt, die Farbe der Vorlage zu malen, doch mit seinen sichersten Zügen läuft ihm oft die Zeit ab, statt dass er abgibt.",
+      "kicker": "Kann der Agent ohne Lehrer lernen, bezahlt nur durch eine Wertung?",
+      "intro": "Nehmen Sie den Lehrer weg. Ein kleines Netz beginnt bei null; es erhält ein wenig, sobald das Antwortgitter der Vorlage näherkommt, einen Bonus für die Abgabe einer exakten Kopie, und jeder Schritt kostet etwas. Millionen Schritte lang kopiert es nichts exakt, dann bricht es durch. An der Südwand enden drei Läufe mit Zwei-mal-zwei-Quadraten bei 96, 116 und 121 von 128 ungesehenen Quadraten; bei Drei-mal-drei-Quadraten endet dasselbe Budget bei 10, 50 und 11. An der Ostwand das größere Quadrat: Der Agent lernt, die Farbe der Vorlage zu malen, doch mit seinen sichersten Zügen läuft ihm oft die Zeit ab, statt dass er abgibt.",
       "lookFor": "Vergleichen Sie die Punkte mit den Linien: Die Endzahl ist ein eigener Test, und die Kurven schwanken davor stark.",
-      "limit": "Drei Läufe je Größe, nicht alle mit derselben Codeversion; warum diese Einstellung lernt, ist offen, und Läufe mit doppeltem Budget sind im Gang."
+      "limit": "Drei Läufe je Größe, nicht alle mit derselben Codeversion. Der Drei-mal-drei-Lauf, der bei 10 endete, nutzte den älteren Code; mit dem reparierten Code wiederholt, erreichte er im selben Budget 107 von 128, also gehört ein Teil der Stockung womöglich zum alten Code."
     },
     "arcedit/record": {
       "title": "Was scheiterte und was hielt",
       "kicker": "Was hat das Projekt gelernt, indem es sich irrte?",
-      "intro": "Jedes Experiment hier wurde vor seinen Daten angekündigt, und sein Bericht sagt, was die Zahl nicht zeigt. An den Wänden eine Zeile je Bericht: was gefragt wurde und was zurückkam, ob Erfolg, Nullergebnis oder Korrektur. Zwei Diagramme tragen die Lehren, die wiederkehren. Kleine Fehler je Schritt summieren sich über eine ganze Kopie, sodass ein Netz, das bei den meisten Klicks richtig liegt, dennoch fast nichts kopiert. Und ein Vokabular von Handlungen kann unter Nachahmung schlechter aussehen und doch das einzige sein, in dem zufälliges Spiel je Belohnung findet.",
+      "intro": "Jedes Experiment hier wurde vor seinen Daten angekündigt, und sein Bericht sagt, was die Zahl nicht zeigt. An den Wänden eine Zeile je Bericht: was gefragt wurde und was zurückkam, ob Erfolg, Nullergebnis oder Korrektur. Zwei Diagramme tragen die Lehren, die wiederkehren. Kleine Fehler je Schritt summieren sich über eine ganze Kopie, sodass ein Netz, das bei den meisten Klicks richtig liegt, dennoch fast nichts kopiert. Und ein Vokabular von Handlungen kann unter Nachahmung schlechter aussehen und doch das einzige sein, in dem zufälliges Spiel je eine Zelle richtig trifft.",
       "lookFor": "Lesen Sie die Zeilen der Reihe nach: Die meisten Wendungen des Projekts kamen von einer Zahl, die nicht bedeutete, was sie zuerst zu bedeuten schien.",
       "limit": "Dies sind kurze Zusammenfassungen datierter Berichte; mehrere wurden später ergänzt, und die Zeilen geben die ergänzte Lesart.",
       "lines": {
@@ -134,7 +134,7 @@
         },
         "i3_action": {
           "title": "Ein besseres Vokabular, falsch gemessen",
-          "text": "Mit 'male diese Zelle in dieser Farbe' statt roher Klicks schnitt Nachahmung je Schritt schlechter ab und kopierte 0 von 128. Nachahmung kann nicht zeigen, wofür ein Vokabular gut ist: was eine zufällige Suche erreicht."
+          "text": "Mit 'male diese Zelle in dieser Farbe' statt roher Klicks schnitt Nachahmung je Schritt schlechter ab. Ihre 0 von 128 Kopien waren eine Abkürzung, die die Malreihenfolge des Lehrers lehrte; ein gemischter Lehrer erreichte später 124."
         },
         "i4_source_access": {
           "title": "Gedächtnis reicht nicht",
@@ -145,16 +145,16 @@
           "text": "Wird ein einziger früherer Blick unverändert behalten, kopiert ein Lehrer, der vor dem Malen hinsehen muss, jedes Gitter aus dem Gedächtnis, einfarbig und vielfarbig: 128 von 128."
         },
         "aspace_measure": {
-          "title": "Zufallsspiel findet Belohnung nur in den richtigen Worten",
-          "text": "Mit rohen Klicks brachten 256 Zufallsspiele gar keine Belohnung; mit 'male diese Zelle in dieser Farbe' brachten 152 von 256 etwas. Kein Zufallsspiel löste eine Kopie."
+          "title": "Zufallsspiel kommt nur mit den richtigen Worten voran",
+          "text": "Mit zufällig gewählten rohen Klicks endeten 256 Spiele ohne eine einzige richtige Zelle; mit zufälligem 'male diese Zelle in dieser Farbe' endeten 152 von 256 mit einigen richtigen. Kein Zufallsspiel kopierte ein Gitter."
         },
         "i9_restriction": {
           "title": "Eine Welt, klein genug, um sie ganz zu kennen",
           "text": "Der Editor, verkleinert auf 70 656 Zustände, jeder einzelne aufgezählt, damit Behauptungen darüber, welche Handlungen es zu erfinden lohnt, an der Wahrheit geprüft statt geschätzt werden."
         },
         "i11_i12_levers": {
-          "title": "Vier Hebel, alle 0 von 128",
-          "text": "Lernen aus Belohnung, Dichte und Horizont der Belohnung auf vier Arten variiert: Jede Zelle kopierte 0 von 128. Später gefunden: Die Belohnung verlangte nie die Abgabe, die die Wertung zählte."
+          "title": "Zwei Hebel, vier Versuche, alle 0 von 128",
+          "text": "Lernen aus Belohnung, wobei der Zeitpunkt der Belohnung und die Größe des Gitters je zweifach variiert wurden: Alle vier Versuche kopierten 0 von 128 Quadraten. Später gefunden: Die Belohnung verlangte nie die Abgabe, die die Wertung zählte."
         },
         "i16_harness_revalidation": {
           "title": "Das Gerüst hatte Fehler, die die Tests übersahen",
@@ -246,8 +246,8 @@
       "caption": "Dieselbe Episode als Film: oben die Leinwand, unten die neun Stufen der Sicht des Agenten, drei Klicks pro Sekunde. Der Cursor geht zur Palette und kommt mit einer Farbe zurück."
     },
     "arcedit.agent#2": {
-      "title": "Ähnliches Können je Schritt, gegensätzliche Ergebnisse",
-      "caption": "Zwei Netze ahmten denselben Lehrer nach; nur die Reihenfolge, in der er malte, war anders. Je Schritt liegen sie am Ende nah beieinander, richtig bei etwa der Hälfte und drei Fünfteln zurückgehaltener Züge. Allein kopiert eines keins von 128 Quadraten, das andere 124."
+      "title": "Nur die Malreihenfolge des Lehrers ändern",
+      "caption": "Zwei Netze ahmten denselben Lehrer nach; nur seine Malreihenfolge war anders. Bei einfarbigen Gittern liegt eines bei 76 % zurückgehaltener Entscheidungen richtig, das andere bei 98 %. Allein kopiert das erste keins von 128 Quadraten, das zweite 124."
     },
     "arcedit.agent#3": {
       "title": "Mitten in der Episode, Malen mit der gewählten Farbe",
@@ -258,20 +258,20 @@
       "caption": "Was der Agent in einem Schritt sieht: neun Stufen, jede doppelt so grob wie die vorige, der Cursor immer in der Mitte. Das ist die ganze Beobachtung. Es gibt keine Karte und keine Koordinate."
     },
     "arcedit.reward#0": {
-      "title": "Lernen allein aus einer Wertung",
-      "caption": "Nur für eine korrekte Kopie bezahlt, vom Nullpunkt aus. Linien sind Tests während des Trainings an 128 ungesehenen Quadraten, Punkte der Schlusstest danach. Zwei mal zwei: 96, 116 und 121 von 128. Drei mal drei, gleiches Budget: 10, 50 und 11."
+      "title": "Lernen aus Belohnung, ohne Lehrer",
+      "caption": "Kein Lehrer: Bezahlung, wenn die Antwort näherkommt, und für eine abgegebene exakte Kopie. Linien sind Tests während des Trainings an 128 ungesehenen Quadraten, Punkte der Schlusstest. Zwei mal zwei: 96, 116, 121 von 128. Drei mal drei, gleiches Budget: 10, 50, 11."
     },
     "arcedit.reward#1": {
-      "title": "Es liest die Farbe und gibt dann nicht ab",
+      "title": "Es liest die Farbe und gibt dann oft nicht ab",
       "caption": "Drei mal drei, dieselben drei Läufe. Links: Der Agent lernt, die Farbe der Vorlage zu malen. Mitte: Mit seinen sichersten Zügen läuft ihm in vielen Spielen noch die Zeit ab. Rechts: Schlusskopien von 128, sicheres Spiel gegen gezogenes Spiel, das fast immer abgibt."
     },
     "arcedit.record#0": {
       "title": "Kleine Fehler summieren sich",
-      "caption": "Jeder Punkt ist ein Netz, das den Lehrer nachahmen lernte. Die Kurve ist, was unabhängige Fehler je Klick für eine Kopie aus fünfzehn Klicks vorhersagen. Bei 87 % je Klick sagt sie 17 von 128 voraus; das Netz kopierte 4, seine Fehler häufen sich."
+      "caption": "Jeder Punkt ist ein Netz, das den Lehrer nachahmen lernte. Die Kurve ist, was unabhängige Fehler je Klick für eine Kopie aus fünfzehn Klicks vorhersagen. Bei den 87 % des besten Laufs, über beide Gitterarten gemittelt, sagt sie 17 von 128 voraus; das Netz kopierte 4."
     },
     "arcedit.record#1": {
       "title": "Welches Vokabular besser ist, hängt von der Frage ab",
-      "caption": "Derselbe Editor, zwei Vokabulare. Beim Nachahmen eines Lehrers schneiden rohe Klicks je Schritt weit besser ab und kopieren 4 Quadrate gegen 0. Beim zufälligen Klicken bringen rohe Klicks nie Belohnung, semantische Handlungen dagegen in 152 von 256 Spielen etwas."
+      "caption": "Derselbe Editor, zwei Vokabulare. Beim schrittweisen Nachahmen eines Lehrers liegen rohe Klicks weit höher über dem Zufall. Bei zufälliger Wahl beenden rohe Klicks nie ein Spiel mit einer richtigen Zelle, 'male diese Zelle in dieser Farbe' dagegen in 152 von 256 Spielen."
     },
     "arcedit.inside.canvas": {
       "title": "Die Leinwand im Maßstab einer Zelle",
