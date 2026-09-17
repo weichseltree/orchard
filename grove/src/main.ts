@@ -657,7 +657,16 @@ function boot(): void {
     // pinned ids: a slow link costs seconds, a dead one costs nothing.
     exhibits: demo ? undefined : () => presence.whenExhibits(EXHIBIT_WAIT_MS),
     audioContext: () => loadGear().then((g) => g.gate.context),
-    onAudio: () => syncVenueSound(),
+    liveExhibits: !demo,
+    // A stream's news is the room's: said where it is heard, logged elsewhere.
+    audioNotice: (roomId, text) => {
+      if (roomId === body.room) notice(text);
+      else console.info(`[grove] ${roomId}: ${text}`);
+    },
+    onAudio: (audio) => {
+      audio.setActive(exhibitRoom(audio) === body.room);
+      syncVenueSound();
+    },
     onRoomReady: (room, shell) => {
       // The sealed lenses over this room's closed doors may show now that their recesses stand.
       portals.roomReady(room.id);
@@ -1125,6 +1134,8 @@ view.start((dt, time, rawDt) => {
     notice(roomTitle(labelsLoaded(locale), body.crossedInto) ?? roomById(mansion, body.crossedInto)?.title ?? body.crossedInto);
     // Arriving in the foyer is when the club's door is worth explaining.
     offerVenue();
+    // A live stream is awake in its own room only: the club's floor is fetched by its visitors, not the palace's.
+    for (const audio of world?.audios ?? []) audio.setActive(exhibitRoom(audio) === body.crossedInto);
     syncVenueSound();
     // Acted on: cleared here, once, rather than at the start of `step`, so a
     // teleport earlier in the frame is not erased before it is seen.
@@ -1172,7 +1183,9 @@ view.start((dt, time, rawDt) => {
   // music's low end when there is music, a slow breath when there is not
   // (audio/beat.ts); and the curtains over the doors barred to this visitor.
   if (pulseActive) {
-    const gain = pulseGain(beat && gear?.gate.enabled ? beat.level() : null, time / 1000);
+    // A stream that is on but silent (the floor idle) breathes like no stream at all.
+    const level = beat && gear?.gate.enabled ? beat.level() : null;
+    const gain = pulseGain(level !== null && level > 0.02 ? level : null, time / 1000);
     setPulse(gain);
     // Re-derived only when a switch changed: nothing allocated on a quiet frame.
     const key = (gear?.microphone.live ? 1 : 0) | (gear?.gate.enabled ? 2 : 0) | (view.renderer.xr.isPresenting ? 4 : 0);

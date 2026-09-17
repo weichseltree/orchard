@@ -117,8 +117,9 @@
     "club": {
       "title": "club",
       "kicker": "Quanto suona una cantina a volta?",
-      "intro": "Un club sotto l'ala nord: una volta bassa, una pista da ballo di piastrelle luminose, un bancone lungo la parete est, séparé lungo quella ovest, un palco in fondo. La musica sarà una diretta; finché non suona, le luci respirano da sole.",
-      "lookFor": "La sfera a specchi sopra la pista e le due linee di colore lungo la volta; pulsano con la musica, quando c'è musica."
+      "intro": "Un club sotto l'ala nord: una volta bassa, una pista da ballo di piastrelle luminose, un bancone lungo la parete est, séparé lungo quella ovest, un palco in fondo. Ciò che suona è la diretta della pista stessa, un set calcolato sulla macchina del palazzo e trasmesso dal vivo, così che tutti i visitatori sentono lo stesso battito a pochi secondi l'uno dall'altro. Le luci seguono i suoi bassi; quando la pista tace, respirano da sole. La porta chiede microfono e audio, perché parlare e cantare possano funzionare qui non appena esisterà il collegamento vocale.",
+      "lookFor": "La sfera a specchi sopra la pista e le due linee di colore lungo la volta; pulsano con la musica, quando c'è musica.",
+      "limit": "Il set lo compone un programma a seme fisso, non una persona; nulla qui è un'affermazione sulla musica, e l'encoder si ferma quando il club è vuoto."
     },
     "stage": {
       "title": "palco",
@@ -306,6 +307,10 @@
     "arcedit.inside.canvas": {
       "title": "La tela alla scala di una cella",
       "caption": "Il maestro programmato copia una griglia multicolore cinque per cinque in 114 clic: alla tavolozza, alla cella, di nuovo alla tavolozza. Mostra il compito tramite il programma che lo definisce; nessun agente addestrato risolve ancora la copia multicolore."
+    },
+    "club-floor": {
+      "title": "La pista",
+      "caption": "Il set del club, generato sulla macchina del palazzo da un seme e portato qui come diretta: cassa, basso, charleston e un tappeto sonoro che cambiano ogni otto battute. Nulla viene registrato; quando l'ultimo visitatore se ne va, l'encoder si ferma e la pista tace."
     }
   }
 }

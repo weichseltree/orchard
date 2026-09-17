@@ -280,6 +280,16 @@ def cmd_area(a):
         print(area.listing())
 
 
+def cmd_stream(a):
+    from . import stream
+    if a.what == "render":
+        from .setgen import render_wav
+        frames = render_wav(a.out, a.bars, a.seed)
+        print(f"{a.out}: {a.bars} bars, {frames} frames at 48 kHz, seed {a.seed}")
+        return
+    sys.exit(stream.run_from_args(a))
+
+
 def cmd_push(a):
     from .push import R2NotEnabled, cors_preflight, push, refresh_headers, wait_public
     try:
@@ -435,6 +445,26 @@ def main(argv=None):
     s = sub.add_parser("sync", help="the live database: push trees and the ledger, pull rulings")
     s.add_argument("what", choices=["trees", "snapshot", "rulings", "all", "install"])
     s.set_defaults(fn=cmd_sync)
+
+    s = sub.add_parser("stream", help="the club floor's live stream (CLUB.md §5)")
+    ssub = s.add_subparsers(dest="what", required=True)
+    r = ssub.add_parser("run", help="encode and publish the floor while someone is in the club")
+    r.add_argument("--provider", default="club"); r.add_argument("--stream", default="floor")
+    r.add_argument("--room", default="club", help="the presence room whose visitors count as listeners")
+    r.add_argument("--db", default="orchard")
+    r.add_argument("--local", default="", help="publish into this directory instead of R2 (dev: results/bundles/audio/live/club/floor)")
+    r.add_argument("--tracks", default=str(Path.home() / ".local/share/orchard-stream/tracks"), help="a directory of licensed tracks to loop; the seeded set when empty")
+    r.add_argument("--seed", type=int, default=0, help="the seeded set's seed")
+    r.add_argument("--workdir", default="", help="where ffmpeg writes; a per-stream directory under ~/.local/share by default")
+    r.add_argument("--idle", type=float, default=60.0, help="seconds without a listener before the encoder stops")
+    r.add_argument("--poll", type=float, default=5.0, help="seconds between listener counts")
+    r.add_argument("--always", action="store_true", help="encode whether or not anyone listens")
+    r.add_argument("--ledger", default="", help="the usage file to append to; the ledger's by default")
+    r.add_argument("--ffmpeg", default="ffmpeg")
+    r.set_defaults(fn=cmd_stream)
+    r = ssub.add_parser("render", help="write the seeded set to a WAV, to listen to it")
+    r.add_argument("out"); r.add_argument("--bars", type=int, default=16); r.add_argument("--seed", type=int, default=0)
+    r.set_defaults(fn=cmd_stream)
 
     s = sub.add_parser("push", help="upload a bundle to R2")
     s.add_argument("bundle_dir")
