@@ -313,6 +313,17 @@ beside it rather than replacing it, and:
   a regression. A lone event keeps the producer's own title, which is how
   "s=0.96: hit the 60-year cap unbalanced at -3.26 W/m²" reaches the room.
 
+**What is worth saying is decided upstream, in the graph, not here.**
+`ANNOUNCE-FEED.md` §2 puts that filter in the editor on purpose — a person can
+read and change it there, and the demo graphs wire "Worth saying" and
+"Run-declared states and alerts" into theirs. So Faye has no allow-list of
+types: she says what the feed she was pointed at publishes, in the producer's
+own words. Pointing her at a stream of box facts would put box facts in the
+room, and the fix for that is the graph, not a second filter here that would
+silently swallow a state the runs learn to declare next month. One caveat of
+the same kind: the spec lets `repo` fall back to `context.service`, and a
+service name in that field reads in the room as though it were a tree.
+
 **The live service does not pass `--feed-url` yet.** The announce feed exists
 only on the local emulator; a feed that observes real boxes goes behind the
 `no-store` Worker first (`AUDIO-STREAM.md` §7), and the deployed unit

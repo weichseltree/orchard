@@ -38,7 +38,10 @@ import type { Identity } from "spacetimedb";
 import { DbConnection } from "../src/module_bindings";
 import { connectionPolicy } from "../src/faye/local";
 import { readFeed, type TreeTitles } from "../src/faye/events";
-import { NEW_WATCH, feedNameFor, feedRequest, takeReadings, type Watch } from "../src/faye/feeds";
+import {
+  NEW_WATCH, feedRequest, feedTimeoutMs, planFeeds, takeReadings,
+  type FeedSource, type Watch,
+} from "../src/faye/feeds";
 import { replyTo } from "../src/faye/reply";
 import { Speaker, TURN_POSE_HZ, isNewLine, onDisconnectAction } from "../src/faye/listen";
 import { FAYE_NAME, FAYE_ROOM } from "../src/faye/names";
@@ -68,7 +71,11 @@ const { values: args } = parseArgs({
      * expdash's, never instead of it.
      */
     "feed-url": { type: "string", multiple: true, default: [] },
-    /** A bearer token for those feeds, one line, mode 600. None means no header. */
+    /**
+     * A bearer token for those feeds, one line, mode 600. None means no
+     * header. One token for every `--feed-url` and never for `--status-url`:
+     * pair them per feed only when a second origin needs a different one.
+     */
     "feed-token-file": { type: "string", default: "" },
     /** Seconds between polls; 0 leaves her silent about the compute. */
     poll: { type: "string", default: "30" },
@@ -211,6 +218,14 @@ async function main(): Promise<void> {
     return;
   }
 
+  // Both secrets and the feed plan are read BEFORE she connects: a mode-644
+  // token file must not throw after she is standing in the room, where the
+  // exit skips `leave` and her capsule lingers until the socket times out.
+  const bearer = args["feed-token-file"] ? secretFirstLine(args["feed-token-file"]) : "";
+  const sources = planFeeds(args["status-url"] ?? "", args["feed-url"] ?? []);
+  const pollSeconds = Number(args.poll);
+  if (!Number.isFinite(pollSeconds) || pollSeconds < 0) throw new Error("--poll wants seconds");
+
   const token = policy.ok && policy.token === "token-file" ? secretFirstLine(args["token-file"] ?? "") : publisherToken(args["cli-config"] ?? "");
   const { conn, hex, identity } = await connect(token);
   console.log(`faye: connected to ${DB} at ${URI} as ${hex.slice(0, 16)}…`);
@@ -312,33 +327,15 @@ async function main(): Promise<void> {
   // not paying for around the clock (TURN_POSE_HZ says why).
   const timer = turnSeconds > 0 ? setInterval(sendPose, 1000 / TURN_POSE_HZ) : null;
 
-  const pollSeconds = Number(args.poll);
-  if (!Number.isFinite(pollSeconds) || pollSeconds < 0) throw new Error("--poll wants seconds");
-
-  // expdash first and always: it is the feed that places a run on a box and
-  // reports the mirror, and an announcement feed runs beside it rather than
-  // replacing it (Manuel, 2026-09-17, orchard #60). `--status-url ""` drops it,
-  // leaving her with what runs declare and nothing about the lanes -- which she
-  // then says, rather than reporting an idle box she cannot see.
-  const bearer = args["feed-token-file"] ? secretFirstLine(args["feed-token-file"]) : "";
-  const sources: { name: string; url: string; token: string; lanes: boolean }[] = [];
-  if (args["status-url"]) sources.push({ name: "expdash", url: args["status-url"], token: "", lanes: true });
-  (args["feed-url"] ?? []).forEach((url, index) => {
-    if (!url || sources.some((source) => source.url === url)) return;
-    // Two feeds under one name would share a cursor, and one would swallow the
-    // other's numbering. The name is for the log; uniqueness is not optional.
-    let name = feedNameFor(url, index);
-    for (let n = 2; sources.some((source) => source.name === name); n++) name = `${feedNameFor(url, index)}-${n}`;
-    sources.push({ name, url, token: bearer, lanes: false });
-  });
+  // Which feeds, and in which order (src/faye/feeds.ts says why expdash leads).
   if (sources.length === 0) console.log("faye: no compute feed; she will say she has not heard from it");
 
-  type Source = (typeof sources)[number];
+  const timeoutMs = feedTimeoutMs(pollSeconds);
 
   /** One feed's document, or null when it did not answer. Never spoken about. */
-  const fetchFeed = async (source: Source): Promise<unknown> => {
+  const fetchFeed = async (source: FeedSource): Promise<unknown> => {
     try {
-      const response = await fetch(source.url, feedRequest(source.token));
+      const response = await fetch(source.url, feedRequest(source.lanes ? "" : bearer, timeoutMs));
       if (!response.ok) throw new Error(`${response.status}`);
       return await response.json();
     } catch (error) {
@@ -351,8 +348,9 @@ async function main(): Promise<void> {
 
   const pollOnce = async (): Promise<void> => {
     if (life.leaving) return;
-    // Every feed at once: a second feed behind a slow one must not delay the
-    // first feed's news by a whole fetch timeout.
+    // Every feed at once, each with its own timeout: a stalled feed costs this
+    // poll that timeout and no more, and never a run of polls in which she
+    // stands there saying nothing.
     const docs = await Promise.all(sources.map(fetchFeed));
     if (life.leaving) return;
 

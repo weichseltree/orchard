@@ -109,6 +109,14 @@ describe("readFeed", () => {
     expect(reading.mirror).toBeNull();
   });
 
+  it("does not call a mirror that names no peer a peer", () => {
+    // expdash reports `{"state": "never"}` on a box where the mirror has never
+    // run: a legitimate single-box setup, not a fault. Calling it a peer would
+    // have her say " has stopped reporting" about nobody.
+    expect(readFeed({ health: { mirror: { state: "never" } } }).mirror).toBeNull();
+    expect(readFeed({ health: { mirror: { state: "ok", peer: "", age_s: 3 } } }).mirror).toBeNull();
+  });
+
   it("ignores a hosts field that is not a list of names", () => {
     expect(readFeed({ hosts: "SirBase" }).hosts).toEqual([]);
     expect(readFeed({ hosts: [1, "", null, "Legion"] }).hosts).toEqual(["Legion"]);
@@ -204,6 +212,10 @@ describe("announce", () => {
     expect(said("cap")).toBe("2 runs flagged as unlikely to reach the cap in spectre.");
     // The box slowing a run is never a regression: box load has fooled us before.
     expect(said("slowdown")).toBe("2 runs flagged the box slowing them in spectre.");
+    // `running` is a run declaring it HAS started; "2 runs running" would read
+    // as two runs on the lanes now, which a declaration feed cannot know.
+    expect(said("running")).toBe("2 runs started in spectre.");
+    expect(said("live-stalled")).toBe("2 runs lost their live stream in spectre.");
     // A state nobody wrote a phrase for is still said as the producer wrote it.
     expect(said("spun-down")).toBe("2 runs spun-down in spectre.");
   });

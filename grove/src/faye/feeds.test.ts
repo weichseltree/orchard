@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { ComputeEvent, FeedReading } from "./events";
 import {
-  DUPLICATE_WINDOW_S, ECHO_MEMORY_KEYS, NEW_FEED, NEW_WATCH, NOTHING_HEARD,
-  feedNameFor, feedRequest, mergeFresh, takeFeed, takeReadings,
+  DUPLICATE_WINDOW_S, ECHO_MEMORY_KEYS, ECHO_MEMORY_TIMES, NEW_FEED, NEW_WATCH, NOTHING_HEARD,
+  FEED_TIMEOUT_MS, feedNameFor, feedRequest, feedTimeoutMs, mergeFresh, planFeeds,
+  takeFeed, takeReadings,
 } from "./feeds";
 
 function event(over: Partial<ComputeEvent> = {}): ComputeEvent {
@@ -12,6 +13,11 @@ function event(over: Partial<ComputeEvent> = {}): ComputeEvent {
     repo: "spectre", host: "SirBase", exp: "m06-fold-s0.96",
     ...over,
   };
+}
+
+/** How many timestamps the echo memory is holding in total. */
+function entries(heard: { byKey: ReadonlyMap<string, readonly number[]> }): number {
+  return [...heard.byKey.values()].reduce((n, times) => n + times.length, 0);
 }
 
 describe("takeFeed", () => {
@@ -37,6 +43,19 @@ describe("takeFeed", () => {
     expect(takeFeed(late.state, [event({ id: "ev_901" })]).fresh.map((e) => e.id)).toEqual(["ev_901"]);
   });
 
+  it("does not call a reading with no usable event a baseline", () => {
+    // A 200 with a broken body -- a proxy error object, `{"events": null}` --
+    // moves no cursor, so the feed is still waiting for its baseline. Taking
+    // it would let the feed's whole rolling window be announced as news.
+    const empty = takeFeed(NEW_FEED, []);
+    expect(empty.state.baselined).toBe(false);
+    expect(empty.baseline).toBe(false);
+    const real = takeFeed(empty.state, [event({ id: "ev_1" }), event({ id: "ev_2" })]);
+    expect(real.baseline).toBe(true);
+    expect(real.fresh).toEqual([]);
+    expect(takeFeed(real.state, [event({ id: "ev_3" })]).fresh.map((e) => e.id)).toEqual(["ev_3"]);
+  });
+
   it("passes on a restarted numbering rather than stalling", () => {
     const first = takeFeed(NEW_FEED, [event({ id: "ev_900" })]);
     const restarted = takeFeed(first.state, [event({ id: "ev_1" })]);
@@ -58,8 +77,8 @@ describe("takeFeed", () => {
 describe("mergeFresh", () => {
   it("keeps everything when the feeds say different things", () => {
     const merged = mergeFresh([
-      { feed: "expdash", fresh: [event({ id: "ev_1", type: "crashed" })] },
-      { feed: "planet", fresh: [event({ id: "ev_43", type: "hit-cap-unbalanced" })] },
+      { feed: "expdash", primary: true, fresh: [event({ id: "ev_1", type: "crashed" })] },
+      { feed: "planet", primary: false, fresh: [event({ id: "ev_43", type: "hit-cap-unbalanced" })] },
     ]);
     expect(merged.fresh.map((e) => e.id)).toEqual(["ev_1", "ev_43"]);
   });
@@ -69,30 +88,30 @@ describe("mergeFresh", () => {
     // announced together it would collapse into "2 runs crashed", which is not
     // what happened.
     const merged = mergeFresh([
-      { feed: "expdash", fresh: [event({ id: "ev_1", ts: 1789650000 })] },
-      { feed: "planet", fresh: [event({ id: "ev_43", ts: 1789650012 })] },
+      { feed: "expdash", primary: true, fresh: [event({ id: "ev_1", ts: 1789650000 })] },
+      { feed: "planet", primary: false, fresh: [event({ id: "ev_43", ts: 1789650012 })] },
     ]);
     expect(merged.fresh.map((e) => e.id)).toEqual(["ev_1"]);
   });
 
   it("still says it once when the echo lands on the NEXT poll", () => {
     const first = mergeFresh([
-      { feed: "expdash", fresh: [event({ id: "ev_1", ts: 1789650000 })] },
-      { feed: "planet", fresh: [] },
+      { feed: "expdash", primary: true, fresh: [event({ id: "ev_1", ts: 1789650000 })] },
+      { feed: "planet", primary: false, fresh: [] },
     ]);
     const second = mergeFresh([
-      { feed: "expdash", fresh: [] },
-      { feed: "planet", fresh: [event({ id: "ev_43", ts: 1789650020 })] },
+      { feed: "expdash", primary: true, fresh: [] },
+      { feed: "planet", primary: false, fresh: [event({ id: "ev_43", ts: 1789650020 })] },
     ], first.heard);
     expect(second.fresh).toEqual([]);
   });
 
   it("does not silence the same run's state hours later", () => {
-    const first = mergeFresh([{ feed: "expdash", fresh: [event({ id: "ev_1", ts: 1789650000 })] }]);
+    const first = mergeFresh([{ feed: "expdash", primary: true, fresh: [event({ id: "ev_1", ts: 1789650000 })] }]);
     const later = event({ id: "ev_44", ts: 1789650000 + DUPLICATE_WINDOW_S + 60 });
     const second = mergeFresh([
-      { feed: "expdash", fresh: [] },
-      { feed: "planet", fresh: [later] },
+      { feed: "expdash", primary: true, fresh: [] },
+      { feed: "planet", primary: false, fresh: [later] },
     ], first.heard);
     expect(second.fresh.map((e) => e.id)).toEqual(["ev_44"]);
   });
@@ -100,23 +119,37 @@ describe("mergeFresh", () => {
   it("never holds back the primary feed, even against itself", () => {
     // Adding a second feed may make her say more; it may never make her say
     // less than expdash alone would have.
-    const first = mergeFresh([{ feed: "expdash", fresh: [event({ id: "ev_1" })] }]);
-    const again = mergeFresh([{ feed: "expdash", fresh: [event({ id: "ev_2" })] }], first.heard);
+    const first = mergeFresh([{ feed: "expdash", primary: true, fresh: [event({ id: "ev_1" })] }]);
+    const again = mergeFresh([{ feed: "expdash", primary: true, fresh: [event({ id: "ev_2" })] }], first.heard);
     expect(again.fresh.map((e) => e.id)).toEqual(["ev_2"]);
+  });
+
+  it("checks the echo even when the primary feed did not answer", () => {
+    // The poll where the second feed is the ONLY one talking is the poll the
+    // echo check exists for; deciding "primary" by position would switch it
+    // off exactly there and say the same crash twice.
+    const first = mergeFresh([
+      { feed: "expdash", primary: true, fresh: [event({ id: "ev_1", ts: 1789650000 })] },
+      { feed: "planet", primary: false, fresh: [] },
+    ]);
+    const expdashDown = mergeFresh([
+      { feed: "planet", primary: false, fresh: [event({ id: "ev_43", ts: 1789650020 })] },
+    ], first.heard);
+    expect(expdashDown.fresh).toEqual([]);
   });
 
   it("tells two runs apart even when they crash in the same second", () => {
     const merged = mergeFresh([
-      { feed: "expdash", fresh: [event({ id: "ev_1", exp: "m06-fold-s0.95" })] },
-      { feed: "planet", fresh: [event({ id: "ev_43", exp: "m06-fold-s0.96" })] },
+      { feed: "expdash", primary: true, fresh: [event({ id: "ev_1", exp: "m06-fold-s0.95" })] },
+      { feed: "planet", primary: false, fresh: [event({ id: "ev_43", exp: "m06-fold-s0.96" })] },
     ]);
     expect(merged.fresh).toHaveLength(2);
   });
 
   it("falls back to the title when a feed names no run", () => {
     const merged = mergeFresh([
-      { feed: "expdash", fresh: [event({ id: "ev_1", exp: "", title: "Crashed: tests" })] },
-      { feed: "planet", fresh: [
+      { feed: "expdash", primary: true, fresh: [event({ id: "ev_1", exp: "", title: "Crashed: tests" })] },
+      { feed: "planet", primary: false, fresh: [
         event({ id: "ev_43", exp: "", title: "Crashed: tests" }),
         event({ id: "ev_44", exp: "", title: "Crashed: assemble" }),
       ] },
@@ -128,16 +161,16 @@ describe("mergeFresh", () => {
     // With no timestamp there is nothing to place it in time by, and saying it
     // twice is the louder mistake.
     const merged = mergeFresh([
-      { feed: "expdash", fresh: [event({ id: "ev_1", ts: 1789650000 })] },
-      { feed: "planet", fresh: [event({ id: "ev_43", ts: 0 })] },
+      { feed: "expdash", primary: true, fresh: [event({ id: "ev_1", ts: 1789650000 })] },
+      { feed: "planet", primary: false, fresh: [event({ id: "ev_43", ts: 0 })] },
     ]);
     expect(merged.fresh.map((e) => e.id)).toEqual(["ev_1"]);
   });
 
   it("groups by repo: the same job name in two trees is two events", () => {
     const merged = mergeFresh([
-      { feed: "expdash", fresh: [event({ id: "ev_1", repo: "spectre", exp: "tests" })] },
-      { feed: "planet", fresh: [event({ id: "ev_43", repo: "einstruct", exp: "tests" })] },
+      { feed: "expdash", primary: true, fresh: [event({ id: "ev_1", repo: "spectre", exp: "tests" })] },
+      { feed: "planet", primary: false, fresh: [event({ id: "ev_43", repo: "einstruct", exp: "tests" })] },
     ]);
     expect(merged.fresh).toHaveLength(2);
   });
@@ -147,29 +180,103 @@ describe("mergeFresh", () => {
     for (let poll = 0; poll < 40; poll++) {
       const fresh = Array.from({ length: 50 }, (_, i) =>
         event({ id: `ev_${poll * 50 + i}`, ts: 0, exp: `run-${poll}-${i}` }));
-      heard = mergeFresh([{ feed: "expdash", fresh }], heard).heard;
+      heard = mergeFresh([{ feed: "expdash", primary: true, fresh }], heard).heard;
     }
-    // 2000 distinct untimed events; the window cannot age any of them out.
+    // 2000 distinct untimed events; the window cannot age any of them out, so
+    // the count cap is the only thing holding this down.
     expect(heard.byKey.size).toBe(ECHO_MEMORY_KEYS);
+    expect(entries(heard)).toBeLessThanOrEqual(ECHO_MEMORY_KEYS * ECHO_MEMORY_TIMES);
+  });
+
+  it("does not grow one key without bound either", () => {
+    // The same run's state over and over -- a stuck watcher re-declaring it --
+    // is one key, so the key cap can never fire on it.
+    let heard = NOTHING_HEARD;
+    for (let poll = 0; poll < 200; poll++) {
+      heard = mergeFresh([{ feed: "expdash", primary: true, fresh: [event({ id: `ev_${poll}`, ts: 0 })] }], heard).heard;
+    }
+    expect(heard.byKey.size).toBe(1);
+    // One "unknown time" is all the echo check reads of them.
+    expect(entries(heard)).toBe(1);
+
+    let timed = NOTHING_HEARD;
+    for (let poll = 0; poll < 200; poll++) {
+      timed = mergeFresh([{ feed: "expdash", primary: true, fresh: [event({ id: `ev_${poll}`, ts: 1789650000 + poll * 600 })] }], timed).heard;
+    }
+    expect(entries(timed)).toBeLessThanOrEqual(ECHO_MEMORY_TIMES);
+  });
+
+  it("is not blinded by a producer that sends milliseconds", () => {
+    // A `ts` in milliseconds is year 58 000 as seconds, and measuring the
+    // window against it would age every real key out and turn the check off.
+    const first = mergeFresh([{ feed: "expdash", primary: true, fresh: [event({ id: "ev_1", ts: 1789650000 })] }]);
+    const wrongUnit = mergeFresh([
+      { feed: "expdash", primary: true, fresh: [event({ id: "ev_2", ts: 1789650000000, exp: "other" })] },
+    ], first.heard);
+    expect(wrongUnit.heard.byKey.size).toBe(2);
+    const echo = mergeFresh([
+      { feed: "planet", primary: false, fresh: [event({ id: "ev_43", ts: 1789650030 })] },
+    ], wrongUnit.heard);
+    expect(echo.fresh).toEqual([]);
   });
 
   it("is deterministic: the same poll merges the same way", () => {
     const feeds = [
-      { feed: "expdash", fresh: [event({ id: "ev_1" }), event({ id: "ev_2", exp: "other" })] },
-      { feed: "planet", fresh: [event({ id: "ev_43" })] },
+      { feed: "expdash", primary: true, fresh: [event({ id: "ev_1" }), event({ id: "ev_2", exp: "other" })] },
+      { feed: "planet", primary: false, fresh: [event({ id: "ev_43" })] },
     ];
     expect(mergeFresh(feeds).fresh).toEqual(mergeFresh(feeds).fresh);
   });
 });
 
 describe("feedRequest", () => {
-  it("never takes a cached feed", () => {
+  it("never takes a cached feed, and never waits forever", () => {
     expect(feedRequest("").cache).toBe("no-store");
     expect(feedRequest("").headers).toBeUndefined();
+    expect(feedRequest("").signal).toBeInstanceOf(AbortSignal);
   });
 
   it("sends a token as a header, never in the URL", () => {
     expect(feedRequest("owner").headers).toEqual({ authorization: "Bearer owner" });
+  });
+});
+
+describe("feedTimeoutMs", () => {
+  it("always leaves room for the next poll", () => {
+    // A stalled feed must cost one poll, not a run of them.
+    expect(feedTimeoutMs(30)).toBe(FEED_TIMEOUT_MS);
+    expect(feedTimeoutMs(4)).toBe(2_000);
+    expect(feedTimeoutMs(1)).toBe(1_000);
+    // A poll of 0 means she is not watching at all; the ceiling stands.
+    expect(feedTimeoutMs(0)).toBe(FEED_TIMEOUT_MS);
+  });
+});
+
+describe("planFeeds", () => {
+  it("puts expdash first, and the declaration feeds after it", () => {
+    expect(planFeeds("http://localhost:8686/api/status", ["http://x/feeds/p/planet/live"])).toEqual([
+      { name: "expdash", url: "http://localhost:8686/api/status", lanes: true },
+      { name: "planet", url: "http://x/feeds/p/planet/live", lanes: false },
+    ]);
+  });
+
+  it("drops the lane feed when it is turned off, and keeps the rest", () => {
+    expect(planFeeds("", ["http://x/feeds/p/planet/live"]))
+      .toEqual([{ name: "planet", url: "http://x/feeds/p/planet/live", lanes: false }]);
+    expect(planFeeds("", [])).toEqual([]);
+    expect(planFeeds("", [""])).toEqual([]);
+  });
+
+  it("never gives two feeds one name or one URL twice", () => {
+    // Each feed keys a cursor by name; two under one name would swallow each
+    // other's numbering.
+    const plan = planFeeds("", [
+      "http://a/feeds/p1/planet/live",
+      "http://b/feeds/p2/planet/live",
+      "http://a/feeds/p1/planet/live",
+    ]);
+    expect(plan.map((source) => source.name)).toEqual(["planet", "planet-2"]);
+    expect(plan).toHaveLength(2);
   });
 });
 
@@ -222,7 +329,10 @@ describe("takeReadings", () => {
   });
 
   it("says what a run declares, once the feed has a baseline", () => {
-    const first = takeReadings(NEW_WATCH, [lanes(), planet()]);
+    const first = takeReadings(NEW_WATCH, [
+      lanes({ events: [event({ id: "ev_1" })] }),
+      planet({ events: [event({ id: "ev_42", type: "balanced" })] }),
+    ]);
     const second = takeReadings(first.state, [
       lanes(),
       planet({ events: [event({
@@ -236,7 +346,10 @@ describe("takeReadings", () => {
   });
 
   it("keeps the lane facts when expdash is the feed that went down", () => {
-    const first = takeReadings(NEW_WATCH, [lanes(), planet()]);
+    const first = takeReadings(NEW_WATCH, [
+      lanes({ events: [event({ id: "ev_1" })] }),
+      planet({ events: [event({ id: "ev_42", type: "balanced" })] }),
+    ]);
     const withoutLanes = takeReadings(first.state, [
       { feed: "expdash", lanes: true, reading: null },
       planet({ events: [event({ id: "ev_43", type: "stalled" })] }),
@@ -271,7 +384,7 @@ describe("takeReadings", () => {
 
   it("says the peer went quiet once, and says it came back once", () => {
     const stale = { ...MIRROR_OK, ageSeconds: 3600 };
-    let watch = takeReadings(NEW_WATCH, [lanes()]).state;
+    let watch = takeReadings(NEW_WATCH, [lanes({ events: [event({ id: "ev_1" })] })]).state;
     expect(takeReadings(watch, [lanes({ mirror: MIRROR_OK })]).lines).toEqual([]);
     const quiet = takeReadings(watch, [lanes({ mirror: stale })]);
     expect(quiet.lines).toEqual(["Legion has stopped reporting."]);
@@ -281,7 +394,10 @@ describe("takeReadings", () => {
   });
 
   it("does not mistake a down expdash for a quiet peer", () => {
-    const watch = takeReadings(NEW_WATCH, [lanes(), planet()]).state;
+    const watch = takeReadings(NEW_WATCH, [
+      lanes({ events: [event({ id: "ev_1" })] }),
+      planet({ events: [event({ id: "ev_42" })] }),
+    ]).state;
     const gone = takeReadings(watch, [
       { feed: "expdash", lanes: true, reading: null },
       planet(),
@@ -290,8 +406,61 @@ describe("takeReadings", () => {
     expect(gone.state.peerSilent).toBe(false);
   });
 
+  it("keeps the echo check when expdash is the feed that is down", () => {
+    // The whole-poll version of the same trap: the announce feed is the only
+    // one talking, and its ingested copy of the crash expdash already
+    // reported must not be announced a second time.
+    const first = takeReadings(NEW_WATCH, [
+      lanes({ events: [event({ id: "ev_1", exp: "earlier" })] }),
+      planet({ events: [event({ id: "ev_42", exp: "earlier" })] }),
+    ]);
+    const crash = takeReadings(first.state, [
+      lanes({ events: [event({ id: "ev_2", ts: 1789650000 })] }),
+      planet(),
+    ]);
+    expect(crash.lines).toHaveLength(1);
+    const echo = takeReadings(crash.state, [
+      { feed: "expdash", lanes: true, reading: null },
+      planet({ events: [event({ id: "ev_43", ts: 1789650020 })] }),
+    ]);
+    expect(echo.lines).toEqual([]);
+  });
+
+  it("keeps the boxes expdash named when expdash is down", () => {
+    const first = takeReadings(NEW_WATCH, [
+      lanes({ events: [event({ id: "ev_1" })] }),
+      planet({ events: [event({ id: "ev_42" })] }),
+    ]);
+    expect(first.state.known.hosts).toEqual(["Legion", "SirBase"]);
+    const alone = takeReadings(first.state, [
+      { feed: "expdash", lanes: true, reading: null },
+      planet({ events: [event({ id: "ev_43" })] }),
+    ]);
+    // The announce feed knows about one box; that is not news that the other
+    // one is gone, and "I am watching SirBase" would be wrong.
+    expect(alone.state.known.hosts).toEqual(["Legion", "SirBase"]);
+    expect(alone.state.known.lanesFresh).toBe(false);
+  });
+
+  it("does not let a poll with no mirror at all reset the peer's memory", () => {
+    const stale = { ...MIRROR_OK, ageSeconds: 3600 };
+    const watch = takeReadings(NEW_WATCH, [lanes({ events: [event({ id: "ev_1" })] })]).state;
+    const quiet = takeReadings(watch, [lanes({ mirror: stale })]);
+    expect(quiet.lines).toEqual(["Legion has stopped reporting."]);
+    // expdash answers, with no `health.mirror` in the document at all.
+    const noMirror = takeReadings(quiet.state, [lanes({ mirror: null })]);
+    expect(noMirror.state.peerSilent).toBe(true);
+    // Not a second "has stopped reporting" for the same episode.
+    expect(takeReadings(noMirror.state, [lanes({ mirror: stale })]).lines).toEqual([]);
+    expect(takeReadings(noMirror.state, [lanes({ mirror: MIRROR_OK })]).lines)
+      .toEqual(["Legion is reporting again."]);
+  });
+
   it("says one crash once when both feeds carry it", () => {
-    const watch = takeReadings(NEW_WATCH, [lanes(), planet()]).state;
+    const watch = takeReadings(NEW_WATCH, [
+      lanes({ events: [event({ id: "ev_1", exp: "earlier" })] }),
+      planet({ events: [event({ id: "ev_42", exp: "earlier" })] }),
+    ]).state;
     const both = takeReadings(watch, [
       lanes({ events: [event({ id: "ev_2", ts: 1789650000 })] }),
       planet({ events: [event({ id: "ev_44", ts: 1789650030 })] }),

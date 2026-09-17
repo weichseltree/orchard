@@ -8,8 +8,9 @@ function state(over: Partial<FayeState> = {}): FayeState {
     ...EMPTY_STATE,
     hasFeed: true,
     // expdash answering is what makes the lanes knowable; a state built
-    // without it is the second feed alone (see the test below).
+    // without it is the second feed alone (see the tests below).
     knowsRunning: true,
+    lanesFresh: true,
     hosts: ["Legion", "SirBase"],
     mirror: { state: "ok", ageSeconds: 3, peer: "Legion", records: 105 },
     ...over,
@@ -91,6 +92,19 @@ describe("replyTo", () => {
 
   it("treats an empty card as a real answer", () => {
     expect(replyTo("faye what is running", state())).toBe("Nothing is running that I can see.");
+  });
+
+  it("says what she last saw as the past, not as the present", () => {
+    // The lane facts survive an expdash outage rather than becoming an idle
+    // box, but an hour-old count in the present tense is a made-up freshness.
+    const stale = state({ lanesFresh: false, running: [{ host: "SirBase", tree: "spectre" }] });
+    expect(replyTo("faye what is running", stale, titles))
+      .toBe("When I last looked, 1 run: 1 on SirBase (coarsen) (the dashboard is not answering now).");
+    expect(replyTo("faye what is running", state({ lanesFresh: false })))
+      .toBe("When I last looked, nothing was running.");
+    // And the mirror's age is the age of a reading she is no longer getting.
+    expect(replyTo("faye how is the peer", state({ lanesFresh: false })))
+      .toBe("The dashboard is not answering me; when it last did, Legion was reporting.");
   });
 
   it("does not call the boxes idle when she only hears what runs declare", () => {

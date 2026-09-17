@@ -100,7 +100,11 @@ export function readFeed(doc: unknown): FeedReading {
   }
   const health = asRecord(root?.["health"]);
   const m = asRecord(health?.["mirror"]);
-  const mirror: MirrorHealth | null = m
+  // A mirror with no peer named is not a peer. expdash reports
+  // `{"state": "never"}` on a box where the mirror has never run -- a legitimate
+  // single-box setup, not a fault -- and calling that a peer would have her say
+  // " has stopped reporting" about nobody, with no name and a leading space.
+  const mirror: MirrorHealth | null = m && typeof m["peer"] === "string" && m["peer"]
     ? {
         state: typeof m["state"] === "string" ? m["state"] : "",
         ageSeconds: numberOr(m["age_s"], 0),
@@ -299,6 +303,11 @@ export function peerIsSilent(mirror: MirrorHealth | null, staleAfterSeconds = 36
  * A type with no phrase here is said as the producer wrote it.
  */
 const COLLAPSED_PHRASES: Readonly<Record<string, string>> = {
+  // `running` is a run declaring that it HAS started, and "2 runs running"
+  // would read as two runs on the lanes right now -- which is the one claim a
+  // declaration feed cannot make (see `knowsRunning` in reply.ts).
+  running: "started",
+  "live-stalled": "lost their live stream",
   "hit-cap-unbalanced": "hit the cap unbalanced",
   "completed-unverified": "finished unverified",
   spinup: "entered spinup",

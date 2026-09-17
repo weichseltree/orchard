@@ -41,9 +41,9 @@ export const NEW_FEED: FeedState = { cursor: EMPTY_CURSOR, baselined: false };
 
 export interface FeedTake {
   state: FeedState;
-  /** Events not seen before, oldest first. Empty on the baseline reading. */
+  /** Events not seen before, oldest first. Empty while the feed is baselining. */
   fresh: ComputeEvent[];
-  /** This reading was the feed's baseline: taken in, said nothing. */
+  /** This reading was taken as the feed's baseline: taken in, said nothing. */
   baseline: boolean;
   /** The feed restarted its numbering (`accumulate` says what that means). */
   rebaselined: boolean;
@@ -53,18 +53,32 @@ export interface FeedTake {
  * Takes one reading of one feed. The first reading of a feed is a baseline:
  * every event in it happened before Faye could see it, and a spirit who walks
  * in reciting the last hour informs nobody.
+ *
+ * A reading with no numbered event in it -- an empty window, a proxy's error
+ * object, `{"events": null}` -- moves no cursor, so it cannot BE the baseline:
+ * the feed stays unbaselined and the next real reading is taken in silently.
+ * Otherwise a 200 with a broken body would let the feed's whole rolling window
+ * (up to 200 events) be announced as news.
  */
 export function takeFeed(state: FeedState, events: readonly ComputeEvent[]): FeedTake {
   const taken = accumulate(state.cursor, events);
+  const baselined = state.baselined || taken.cursor.seen >= 0;
   if (!state.baselined) {
-    return { state: { cursor: taken.cursor, baselined: true }, fresh: [], baseline: true, rebaselined: false };
+    return { state: { cursor: taken.cursor, baselined }, fresh: [], baseline: baselined, rebaselined: false };
   }
-  return { state: { cursor: taken.cursor, baselined: true }, fresh: taken.fresh, baseline: false, rebaselined: taken.rebaselined };
+  return { state: { cursor: taken.cursor, baselined }, fresh: taken.fresh, baseline: false, rebaselined: taken.rebaselined };
 }
 
 /** Fresh events from one feed, with the name Faye logs it under. */
 export interface FeedFresh {
   feed: string;
+  /**
+   * Whether this is the feed whose news is never held back (expdash, when it
+   * answered). Never inferred from the order of the list: a poll where the
+   * primary did not answer must not promote the feed behind it, or the echo
+   * check switches itself off on exactly the poll where it is needed.
+   */
+  primary: boolean;
   fresh: readonly ComputeEvent[];
 }
 
@@ -96,6 +110,16 @@ export const ECHO_MEMORY_S = DUPLICATE_WINDOW_S * 4;
  */
 export const ECHO_MEMORY_KEYS = 500;
 
+/**
+ * And a ceiling per key, for the same reason: one run's state reported over
+ * and over would otherwise grow one list without bound. `isEcho` only ever
+ * needs the recent few, and one "unknown time" is all it needs of those.
+ */
+export const ECHO_MEMORY_TIMES = 8;
+
+/** Above this a `ts` is not seconds (it is year 5138), so it cannot be "now". */
+const PLAUSIBLE_SECONDS = 1e11;
+
 export interface MergedFresh {
   fresh: ComputeEvent[];
   heard: Heard;
@@ -107,10 +131,12 @@ export interface MergedFresh {
  * polls, because a feed that polls a log lags a dashboard that watches a
  * status file and the echo arrives on the NEXT poll.
  *
- * Feeds are given primary first and **the primary is never silenced**: its
- * events all pass, and only a later feed's events can be dropped. So adding a
+ * **The primary feed is never silenced**: every event of the feed marked
+ * `primary` passes, and only another feed's events can be dropped. So adding a
  * second feed can make Faye say more, never less, which is the property that
- * makes it safe to add one at all.
+ * makes it safe to add one at all. When the primary did not answer, no feed
+ * carries that immunity -- the whole point of the check is the poll where the
+ * second feed is the only one talking.
  *
  * Sameness is the run, the repo and what happened: an event names its run
  * (`exp`) when its feed knows one, and falls back to the title when it does
@@ -124,19 +150,42 @@ export function mergeFresh(feeds: readonly FeedFresh[], heard: Heard = NOTHING_H
   const seen = new Map<string, number[]>(
     [...heard.byKey].map(([key, times]) => [key, [...times]]),
   );
-  feeds.forEach(({ fresh }, index) => {
+  for (const { fresh, primary } of feeds) {
     for (const event of fresh) {
       const key = sameness(event);
       // The primary's news is never held back by an echo check it can only
       // lose to; every other feed is an addition and may be deduplicated.
-      if (index > 0 && isEcho(seen.get(key), event.ts)) continue;
+      if (!primary && isEcho(seen.get(key), event.ts)) continue;
       out.push(event);
-      seen.set(key, [...(seen.get(key) ?? []), event.ts]);
+      seen.set(key, remember(seen.get(key), event.ts));
     }
-  });
+  }
   return { fresh: out, heard: { byKey: prune(seen) } };
 }
 
+/**
+ * One key's timestamps with this event's added: the newest few, and at most
+ * one "unknown", which is all `isEcho` reads of it.
+ */
+function remember(times: readonly number[] | undefined, ts: number): number[] {
+  const had = times ?? [];
+  const unknown = !ts || had.some((seen) => !seen);
+  const known = [...had.filter((seen) => seen), ...(ts ? [ts] : [])]
+    .slice(-(ECHO_MEMORY_TIMES - 1));
+  return unknown ? [0, ...known] : known;
+}
+
+/**
+ * What makes two events the same event: the run, the tree and what happened.
+ *
+ * That this matches on the ingest path is worth stating, because it is not
+ * promised by a contract. expdash sets `exp` to the status record's id
+ * (`20260913_021243_1515015`), and when LogSwarm ingests expdash's feed it
+ * carries that string through as `data.exp`, which is the last rung of
+ * ANNOUNCE-FEED's `exp` fallback chain -- so both feeds end up naming the run
+ * the same way. If a producer ever named it differently the key falls back to
+ * the title, which the two feeds also share on that path.
+ */
 function sameness(event: ComputeEvent): string {
   return JSON.stringify([event.type, event.repo, event.exp || event.title]);
 }
@@ -157,7 +206,12 @@ function isEcho(times: readonly number[] | undefined, ts: number): boolean {
  */
 function prune(seen: ReadonlyMap<string, readonly number[]>): Map<string, readonly number[]> {
   let newest = 0;
-  for (const times of seen.values()) for (const ts of times) newest = Math.max(newest, ts);
+  for (const times of seen.values()) {
+    // A producer that sent milliseconds where the contract says seconds would
+    // otherwise age out everything else as 56 000 years old, turning the echo
+    // check off until the memory refills. Such a stamp is not a clock here.
+    for (const ts of times) if (ts <= PLAUSIBLE_SECONDS) newest = Math.max(newest, ts);
+  }
   const rows: { key: string; times: readonly number[]; newest: number }[] = [];
   for (const [key, times] of seen) {
     // A timestamp of 0 is "unknown", and survives the window: it is the case
@@ -169,13 +223,66 @@ function prune(seen: ReadonlyMap<string, readonly number[]>): Map<string, readon
   return new Map(rows.slice(0, ECHO_MEMORY_KEYS).map((row) => [row.key, row.times]));
 }
 
+/** The longest a feed may take to answer before the poll gives up on it. */
+export const FEED_TIMEOUT_MS = 8_000;
+
 /**
- * How a feed is asked for its document: never cached, and with a bearer token
- * when one is configured. The token comes from a file and is put in a header,
- * never in the URL -- a URL ends up in logs, in `ps`, and in a Referer.
+ * A timeout that always leaves room for the next poll. undici's defaults let a
+ * server that accepts the connection and then stalls hold the promise for
+ * minutes; with one poll at a time, that is minutes in which she says nothing
+ * and answers visitors from frozen state.
  */
-export function feedRequest(token: string): RequestInit {
-  return { cache: "no-store", ...(token ? { headers: { authorization: `Bearer ${token}` } } : {}) };
+export function feedTimeoutMs(pollSeconds: number): number {
+  const half = Math.round(pollSeconds * 500);
+  return Math.max(1_000, Math.min(FEED_TIMEOUT_MS, half || FEED_TIMEOUT_MS));
+}
+
+/**
+ * How a feed is asked for its document: never cached, never for longer than
+ * the timeout, and with a bearer token when one is configured. The token comes
+ * from a file and is put in a header, never in the URL -- a URL ends up in
+ * logs, in `ps`, and in a Referer.
+ */
+export function feedRequest(token: string, timeoutMs = FEED_TIMEOUT_MS): RequestInit {
+  return {
+    cache: "no-store",
+    signal: AbortSignal.timeout(timeoutMs),
+    ...(token ? { headers: { authorization: `Bearer ${token}` } } : {}),
+  };
+}
+
+/** A feed Faye polls: expdash's, or a run's own. */
+export interface FeedSource {
+  /** The short name she logs it under, unique among her feeds. */
+  name: string;
+  url: string;
+  /** Whether this is expdash's feed, the one that places runs and sees the mirror. */
+  lanes: boolean;
+}
+
+/**
+ * The feeds to poll, from `--status-url` and the repeatable `--feed-url`.
+ * expdash first and always: it is the feed that places a run on a box and
+ * reports the mirror, and an announcement feed runs beside it rather than
+ * replacing it (Manuel, 2026-09-17, orchard #60). An empty `--status-url`
+ * drops it, leaving her with what runs declare and nothing about the lanes,
+ * which is a thing she then says rather than an idle box she cannot see.
+ *
+ * A repeated URL is dropped, and no two feeds may share a name: they key a
+ * cursor apiece, and two feeds under one name would swallow each other's
+ * numbering.
+ */
+export function planFeeds(statusUrl: string, feedUrls: readonly string[]): FeedSource[] {
+  const sources: FeedSource[] = [];
+  if (statusUrl) sources.push({ name: "expdash", url: statusUrl, lanes: true });
+  feedUrls.forEach((url, index) => {
+    if (!url || sources.some((source) => source.url === url)) return;
+    const wanted = feedNameFor(url, index);
+    let name = wanted;
+    for (let n = 2; sources.some((source) => source.name === name); n++) name = `${wanted}-${n}`;
+    sources.push({ name, url, lanes: false });
+  });
+  return sources;
 }
 
 /**
@@ -235,9 +342,21 @@ export interface Polled {
  *   happened, not what is happening -- and a poll where expdash was down keeps
  *   the last answer it gave rather than reporting an idle box.
  * - **Announce a backlog.** Each feed's first reading is its baseline.
+ * - **Report a stale fact as a fresh one.** The lane facts survive an outage,
+ *   but `lanesFresh` goes false and `reply.ts` says they are the last she saw.
  */
 export function takeReadings(state: Watch, answers: readonly FeedAnswer[], titles?: TreeTitles): Polled {
   if (answers.every((answer) => answer.reading === null)) return { state, lines: [], notes: [] };
+
+  // Which feed's news is never held back this poll: expdash when it answered,
+  // and otherwise -- only when there is no expdash at all -- the first feed
+  // that did. A poll where expdash is merely down promotes nobody; that is the
+  // poll the echo check exists for.
+  const lanesAnswer = answers.find((answer) => answer.lanes) ?? null;
+  const lanes = lanesAnswer?.reading ?? null;
+  const primaryFeed = lanesAnswer
+    ? (lanes ? lanesAnswer.feed : null)
+    : answers.find((answer) => answer.reading)?.feed ?? null;
 
   const feeds = new Map(state.feeds);
   const notes: string[] = [];
@@ -248,12 +367,14 @@ export function takeReadings(state: Watch, answers: readonly FeedAnswer[], title
     feeds.set(feed, take.state);
     if (take.baseline) notes.push(`baseline from ${feed} at ${reading.events.length} event(s)`);
     if (take.rebaselined) notes.push(`${feed} restarted its numbering; re-baselined`);
-    takes.push({ feed, fresh: take.fresh });
+    takes.push({ feed, primary: feed === primaryFeed, fresh: take.fresh });
   }
 
   const merged = mergeFresh(takes, state.heard);
-  const lanes = answers.find((answer) => answer.lanes && answer.reading)?.reading ?? null;
-  const hosts = new Set<string>();
+  // Every box any feed mentions. The ones expdash named are kept through an
+  // expdash outage: a second feed that knows about one box must not narrow
+  // "I am watching Legion and SirBase" down to one of them.
+  const hosts = new Set<string>(lanes ? [] : state.known.hosts);
   for (const { reading } of answers) for (const host of reading?.hosts ?? []) hosts.add(host);
 
   const known: FayeState = {
@@ -265,6 +386,7 @@ export function takeReadings(state: Watch, answers: readonly FeedAnswer[], title
     // Once expdash has answered she can place runs; a later poll where it is
     // down does not unlearn that, it just has nothing newer to say.
     knowsRunning: state.known.knowsRunning || lanes !== null,
+    lanesFresh: lanes !== null,
   };
 
   const lines = announce(merged.fresh, titles).map((a) => a.text);
@@ -272,9 +394,12 @@ export function takeReadings(state: Watch, answers: readonly FeedAnswer[], title
   // The peer going quiet or coming back is worth one line each way, never one
   // per poll. This is the mirror's freshness, not any job's age.
   let peerSilent = state.peerSilent;
-  if (lanes) {
+  // Only when there IS a mirror to judge. A poll whose document carried no
+  // `health.mirror` says nothing about the peer, and letting it reset the
+  // memory would announce the same episode twice or swallow the recovery.
+  if (lanes?.mirror) {
     const silentNow = peerIsSilent(lanes.mirror);
-    if (peerSilent !== null && silentNow !== peerSilent && lanes.mirror) {
+    if (peerSilent !== null && silentNow !== peerSilent) {
       lines.push(silentNow
         ? `${lanes.mirror.peer} has stopped reporting.`
         : `${lanes.mirror.peer} is reporting again.`);
