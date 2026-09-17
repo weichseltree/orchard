@@ -848,7 +848,10 @@ function terrainMesh(b: Builder): void {
     const grain = 0.9 + 0.2 * hash2(Math.floor(x / 3), Math.floor(z / 3));
     // Lawn over earth: a third of the way to the grove green on the flat, greener up a slope and on a crown.
     tint.copy(earth).lerp(grass, Math.min(1, 0.38 + h * 0.14 + slope * 0.6)).multiplyScalar(grain);
-    colors.push(tint.r, tint.g, tint.b);
+    // The material multiplies its own earth colour in as well, which made the
+    // lawn nearly black (the tint darkened twice); divide it out so what is
+    // drawn is the tint that was designed.
+    colors.push(tint.r / earth.r, tint.g / earth.g, tint.b / earth.b);
   }
   geometry.setAttribute("color", new Float32BufferAttribute(colors, 3));
   geometry.computeVertexNormals();
