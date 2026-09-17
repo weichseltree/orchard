@@ -136,11 +136,12 @@ downloads and browser errors. Playback stops before each camera is rendered
 once for inspection; this is not a frame-rate benchmark. Since 2026-09-17 it
 also stands at the garden's spawn and photographs the armillary: taking the
 Orrery away must change the lens, and the far view's own target must hold
-star points far above its sky, centred on the portal's axis, rendered for
-that photograph. The sky alone is no evidence — a cleared target carries the
-page's own background at about the luminance the Orrery's sky has (23 against
-17), which is how the first draft of the check passed a clipped far view. Interaction and
-production-transfer checks are separate; see [QUALITY.md](../QUALITY.md).
+star points far above its sky, centred on the portal's axis, at the size the
+document gives the dome, rendered for that photograph. The sky alone is no
+evidence — a cleared target carries the page's own background at about the
+luminance the Orrery's sky has, 23 against 17, which is how the first draft
+of the check passed a clipped far view. Interaction and production-transfer
+checks are separate; see [QUALITY.md](../QUALITY.md).
 
 The site hero is a lossless encoding of an actual local-demo browser capture
 with controls hidden. `grove/public/site/imagery.json` records its source.

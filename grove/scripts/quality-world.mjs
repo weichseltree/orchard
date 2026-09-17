@@ -200,7 +200,10 @@ try {
     const boxW = x1 - x0, boxH = y1 - y0;
 
     const shoot = (live) => {
-      app.portalFrame(live);
+      // No time passes between shots: the lens shimmers on its own clock, and
+      // a shot taken a frame later differs from its twin by a pixel or two,
+      // which is the whole margin the noise floor has under it.
+      app.portalFrame(live, 0);
       app.view.renderer.render(app.view.scene, app.view.camera);
       const pixels = new Uint8Array(boxW * boxH * 4);
       gl.readPixels(x0, y0, boxW, boxH, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
@@ -309,29 +312,56 @@ try {
       // of the distance, for no fault. The bright pixels' own bounding box
       // is the region the numbers are taken over, so they measure the room.
       const sorted = [...farLuma].sort((a, b) => a - b);
+      // Two thresholds, on purpose: the box is FOUND against the frame's own
+      // median, which is the page's background, so it finds what is brighter
+      // than the room's surroundings; the numbers inside are then taken
+      // against the region's median, which is the Orrery's sky. One
+      // threshold cannot do both, because the two skies differ.
       const floor = sorted[Math.floor(sorted.length * 0.5)] + 24;
-      let sx2 = 0, sy2 = 0, count = 0;
-      let bx0 = fw, by0 = fh, bx1 = 0, by1 = 0;
+      const xs = [], ys = [];
       for (let i = 0; i < farLuma.length; i++) {
         if (farLuma[i] <= floor) continue;
-        const px = i % fw, py = Math.floor(i / fw);
-        sx2 += px; sy2 += py; count++;
-        bx0 = Math.min(bx0, px); bx1 = Math.max(bx1, px);
-        by0 = Math.min(by0, py); by1 = Math.max(by1, py);
+        xs.push(i % fw);
+        ys.push(Math.floor(i / fw));
       }
+      const count = xs.length;
       if (count) {
+        // The box is trimmed at the fiftieth of its points, and the centre is
+        // a median rather than a mean, so a handful of stray bright pixels
+        // somewhere else in the frame cannot drag either. Rows here are
+        // bottom-up, as GL reads them; the saved PNG is flipped to top-down.
+        const span = (values) => {
+          const s = [...values].sort((a, b) => a - b);
+          const cut = Math.floor(s.length * 0.02);
+          return { lo: s[cut], hi: s[s.length - 1 - cut], mid: s[Math.floor(s.length / 2)] };
+        };
+        const sx = span(xs), sy = span(ys);
+        const bx0 = sx.lo, bx1 = sx.hi, by0 = sy.lo, by1 = sy.hi;
         // Against the portal's own axis, not the middle of the frame: the far
-        // view is the same window as the eye's, so the ball belongs where the
-        // armillary itself projects. Move the spawn or the portal and this
-        // follows; turn the far camera and it does not. Measured in pixels
-        // and scaled by the frame's height, so a yaw error and a pitch error
-        // of one angle count the same.
+        // camera stands on the line from the eye through the portal and keeps
+        // the eye's own lens, so the exit projects exactly where the
+        // armillary does. Move the spawn or the portal and this follows; turn
+        // the far camera and it does not. The light measured is the dome's
+        // rather than the exit's, and those coincide only because the dome
+        // stands over the middle of a room whose middle is its landing: bounds
+        // extended to one side would move the dome off the axis for no fault.
+        // `offset` is in pixels scaled by the frame's HEIGHT, so a yaw error
+        // and a pitch error of one angle count the same; `x` and `y` are
+        // fractions of the frame's own width and height.
         const wantX = (ndcX * 0.5 + 0.5) * fw, wantY = (ndcY * 0.5 + 0.5) * fh;
         centre = {
-          x: (sx2 / count) / fw, y: (sy2 / count) / fh,
-          offset: Math.hypot(sx2 / count - wantX, sy2 / count - wantY) / fh,
+          x: sx.mid / fw, y: sy.mid / fh,
+          offset: Math.hypot(sx.mid - wantX, sy.mid - wantY) / fh,
         };
-        region = { x0: bx0, y0: by0, width: bx1 - bx0 + 1, height: by1 - by0 + 1 };
+        // The ball's size, in frame heights on both axes so a round thing
+        // reads round. Under it, the far view holds a scrap of the room and
+        // the region's own statistics would call that a sky with stars; over
+        // it, something bright stands outside the dome and the box is no
+        // longer the ball.
+        region = {
+          x0: bx0, y0: by0, width: bx1 - bx0 + 1, height: by1 - by0 + 1,
+          spanX: (bx1 - bx0 + 1) / fh, spanY: (by1 - by0 + 1) / fh,
+        };
         const inside = [];
         for (let y = by0; y <= by1; y++) for (let x = bx0; x <= bx1; x++) inside.push(farLuma[y * fw + x]);
         region.pixels = inside.length;
@@ -398,6 +428,14 @@ try {
       && portal.farView.region.brightFraction > 0.0015, portal);
     check('And the far camera looks down the portal, not somewhere else in the room', Boolean(portal.farView?.centre)
       && portal.farView.centre.offset < 0.08, portal);
+    // Both region numbers are scale-free — contrast against the region's own
+    // sky, a fraction of the region's own area — so a scrap of the room reads
+    // exactly like the room. The dome's size on the far view is the
+    // document's: measured a quarter of the frame's height, and a clipped cap
+    // or a stray light outside the dome moves it off that.
+    check('And what stands there is the dome, at the size the document gives it', Boolean(portal.farView?.region)
+      && portal.farView.region.spanX > 0.12 && portal.farView.region.spanX < 0.5
+      && portal.farView.region.spanY > 0.12 && portal.farView.region.spanY < 0.5, portal);
   }
 
   check('No legacy palace or lightmap downloads', events.legacy.length === 0, events.legacy);

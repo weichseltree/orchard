@@ -33,9 +33,10 @@ lens can differ, and a third shot to prove the floor has no noise under it.
 Then it reads the far view's own render target, where nothing of the near
 room can stand in for the far one, and asks three things of it: star points
 far above its sky (the sky alone proves nothing — a cleared buffer carries
-the scene's background at the same luminance the Orrery's sky has), the
-bright points centred where the portal's axis points, and the view rendered
-for this photograph rather than kept from an earlier frame.
+the scene's background at about the luminance the Orrery's sky has), the
+bright points centred where the portal's axis points, at the size the
+document gives the dome, and the view rendered for this photograph rather
+than kept from an earlier frame.
 
 Floors measured in the shipping state and in three broken ones: the
 depth-range fix taken back out, the far view rendered but never composited,

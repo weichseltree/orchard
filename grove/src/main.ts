@@ -1362,12 +1362,14 @@ Object.defineProperty(window, "grove", {
      * the lens, without it the same lens has nothing behind it. The frame
      * loop is stopped by then, so nothing else moves between the two.
      */
-    portalFrame: (live: boolean): Crossing | null => {
+    portalFrame: (live: boolean, dt = 1 / 60): Crossing | null => {
       view.rig.updateMatrixWorld(true);
       // Handed back rather than dropped: at a portal's core this frame
       // crosses, and a caller that discards the crossing leaves the portals
       // believing the visitor is through while the body stands where it was.
-      return portalFrame(1 / 60, live);
+      // `dt` is the check's: at zero the lens's own time does not advance, so
+      // two shots of one pose are the same pixels rather than nearly.
+      return portalFrame(dt, live);
     },
     /** The target the last far view was rendered into: the far room without its lens (portal.ts). */
     get farTarget() {
