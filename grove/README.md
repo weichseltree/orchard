@@ -44,10 +44,10 @@ doors to repositories without rooms stay sealed.
 | Look | Click the view, then move the mouse | Drag the view | Turn your head |
 | Pause or play | Space or play button | Play button | Trigger |
 | Scrub time | `[` / `]` or time slider | Time slider | Right stick |
-| Inspect sources | P or About this view | About this view | Menu button |
+| Inspect sources | P or Sources | Sources | Menu button |
 | Go there | Click the floor | Tap the floor | Hold squeeze, aim at the floor, release |
 | Frame an exhibit | Click it, or N / Shift+N; Esc ends | Tap it | — |
-| Plan of the area | L or the Map button | Map button | — |
+| Plan of the area | L or Map on the rail | Map in the dock | — |
 | Talk | Hold “Hold to talk” in the chat | Hold to talk | Press a thumbstick in |
 | Ask the host | Type in the chat | Type in the chat | B/Y opens a menu of asks; right stick chooses, trigger sends |
 | Take an offer | Its button | Its button | Trigger |

@@ -15,15 +15,18 @@ export function destinations(mansion: Mansion, room: Room): Room[] {
   return mansion.rooms.filter((candidate) => ids.has(candidate.id));
 }
 
-/** A native dialog keeps focus, Escape and touch scrolling in the browser's hands. */
+/**
+ * The room's guide, as a panel in the HUD's column (hud.ts): non-modal, so
+ * the world stays live beside it. The column's header carries its kicker and
+ * question; `heading` supplies them.
+ */
 export class VisitorGuide {
-  #dialog = document.createElement("dialog");
+  /** The panel's content; main.ts hands it to the HUD. */
+  readonly element = document.createElement("section");
   #location = document.createElement("button");
-  #locationLine = document.createElement("span");
   #locationKicker = document.createElement("span");
   #locationQuestion = document.createElement("span");
-  #title = document.createElement("h1");
-  #kicker = document.createElement("p");
+  #heading: readonly [string, string] = ["Guide", ""];
   #intro = document.createElement("p");
   #look = document.createElement("section");
   #observations = document.createElement("ul");
@@ -45,8 +48,9 @@ export class VisitorGuide {
   #onGameSurface: (surface: GameSurface) => void;
   #onExplore: () => void;
   #onGo: (roomId: string) => boolean;
-  /** Told when the dialog opens or closes, so the phone dock can show it. */
-  onOpenChange: (open: boolean) => void = () => undefined;
+  /** Opens and closes the guide's panel; main.ts points these at the HUD. */
+  onShow: () => void = () => undefined;
+  onHide: () => void = () => undefined;
 
   constructor(
     root: HTMLElement,
@@ -66,31 +70,19 @@ export class VisitorGuide {
     this.#location.className = "location btn panel";
     this.#location.type = "button";
     this.#location.addEventListener("click", () => this.show());
-    this.#location.setAttribute("aria-haspopup", "dialog");
-    // One sentence on a wide screen; on a phone the same button is the room
-    // card, kicker over question. The CSS shows one form or the other, and a
-    // hidden span is not part of the button's accessible name.
-    this.#locationLine.className = "location-line";
+    this.#location.setAttribute("aria-controls", "panel-column");
+    this.#location.title = "Open the guide";
+    this.#location.setAttribute("aria-expanded", "false");
+    // The room card: which room, over the question it asks.
     this.#locationKicker.className = "location-kicker";
     this.#locationQuestion.className = "location-question";
-    this.#location.append(this.#locationLine, this.#locationKicker, this.#locationQuestion);
+    const hint = document.createElement("span");
+    hint.className = "sr-only";
+    hint.textContent = " · Open the guide";
+    this.#location.append(this.#locationKicker, this.#locationQuestion, hint);
     root.querySelector(".top-left")?.prepend(this.#location);
 
-    const help = document.createElement("button");
-    help.type = "button";
-    help.className = "btn guide-open";
-    help.textContent = "Guide";
-    help.setAttribute("aria-haspopup", "dialog");
-    help.addEventListener("click", () => this.show());
-    root.querySelector(".top-right")?.prepend(help);
-
-    this.#dialog.className = "visitor-guide observatory-guide panel";
-    this.#dialog.setAttribute("aria-labelledby", "guide-title");
-    this.#dialog.setAttribute("aria-describedby", "guide-intro");
-    this.#title.id = "guide-title";
-    this.#title.tabIndex = -1;
-    this.#title.setAttribute("autofocus", "");
-    this.#kicker.className = "guide-kicker";
+    this.element.className = "visitor-guide observatory-guide";
     this.#intro.id = "guide-intro";
     this.#intro.className = "guide-intro";
 
@@ -104,15 +96,15 @@ export class VisitorGuide {
     const explore = document.createElement("button");
     explore.type = "button";
     explore.className = "btn accent";
-    explore.textContent = device.headset ? "Return to the view" : "Start exploring";
+    explore.textContent = device.headset ? "Return to the view" : "Back to the view";
     explore.addEventListener("click", () => {
-      this.#dialog.close();
+      this.onHide();
       onExplore();
     });
     const home = document.createElement("a");
     home.href = "/";
     home.className = "btn";
-    home.textContent = "Back to the website";
+    home.textContent = "Leave";
     const quickControl = document.createElement("p");
     quickControl.className = "guide-quick-control";
     quickControl.textContent = device.headset
@@ -121,7 +113,7 @@ export class VisitorGuide {
         : "Click the view to look around. Use W A S D to walk.";
     actions.append(explore, home, quickControl);
 
-    const lookHeading = document.createElement("h2");
+    const lookHeading = document.createElement("h3");
     lookHeading.textContent = "Look for";
     this.#look.className = "guide-looking";
     this.#look.append(lookHeading, this.#observations);
@@ -139,7 +131,7 @@ export class VisitorGuide {
     this.#roomLinks.className = "guide-room-links";
     this.#rooms.append(roomSummary, directHint, this.#roomLinks);
 
-    const doorHeading = document.createElement("h2");
+    const doorHeading = document.createElement("h3");
     doorHeading.textContent = "Open doorways from here";
     const doorHint = document.createElement("p");
     doorHint.className = "guide-note";
@@ -149,7 +141,7 @@ export class VisitorGuide {
     this.#doorSection.className = "guide-door-section";
     this.#doorSection.append(doorHeading, doorHint, this.#doors);
 
-    const gameHeading = document.createElement("h2");
+    const gameHeading = document.createElement("h3");
     gameHeading.textContent = "Play here";
     const gameHint = document.createElement("p");
     gameHint.className = "guide-note";
@@ -166,7 +158,7 @@ export class VisitorGuide {
     controlSummary.textContent = "How to move and use a tape";
     const rows = device.headset
       ? [
-          ["Look and walk", "Enter VR from the top bar. Look around and use the left stick to walk."],
+          ["Look and walk", "Choose Enter VR in the view. Look around and use the left stick to walk."],
           ["Go to a floor point", "Hold a controller grip, aim at the floor, then release."],
           ["Follow a tape", "The trigger plays or pauses. The right stick moves through time; the menu button shows where the view came from."],
           ["Return to this page", "End VR from your headset's system menu. Controllers are needed to move in VR."],
@@ -176,14 +168,14 @@ export class VisitorGuide {
             ["Look around", "Drag across the view."],
             ["Walk", "Move the round stick at the bottom left, or tap the floor to go there."],
             ["Exhibits", "Tap a picture, tape or plaque to see it up close. Map shows the plan of rooms."],
-            ["Follow a tape", "In a room with a tape, use Play or Pause and drag the time slider below."],
-            ["Read or listen", "About this view shows where it came from. Sound on lets you hear the room's video."],
+            ["Follow a tape", "In a room with a tape, use Play or Pause and drag the time slider above the dock."],
+            ["Read or listen", "Sources shows where the view came from. Sound on lets you hear the room's video."],
           ]
         : [
             ["Look around", "Click the view, then move your mouse. Press Escape to release the pointer and use the buttons."],
             ["Walk", "Use W A S D or the arrow keys. Hold Shift to walk faster. Click the floor to go there."],
             ["Exhibits", "Click a picture, tape or plaque to see it up close. N and Shift+N step through the room; Escape walks on. L shows the plan of rooms."],
-            ["Follow a tape", "Space plays or pauses; [ and ] move one frame. You can also use the time slider below."],
+            ["Follow a tape", "Space plays or pauses; [ and ] move one frame. You can also use the time slider at the bottom."],
             ["Read or listen", "P shows where the view came from. M turns the room's video sound on or off. X changes tape speed."],
           ];
     const controlList = document.createElement("dl");
@@ -195,21 +187,18 @@ export class VisitorGuide {
       controlList.append(term, description);
     }
     controls.append(controlSummary, controlList);
-    this.#dialog.append(this.#kicker, this.#title, mode, this.#intro, actions, this.#look,
+    this.element.append(mode, this.#intro, actions, this.#look,
       this.#limitation, this.#evidence, this.#rooms, this.#doorSection, this.#games, controls);
-    // A phone has no Escape key: the sheet gets a close button of its own.
-    const close = document.createElement("button");
-    close.type = "button";
-    close.className = "guide-close";
-    close.setAttribute("aria-label", "Close the guide");
-    close.innerHTML = '<svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15"></path></svg>';
-    close.addEventListener("click", () => this.#dialog.close());
-    this.#dialog.prepend(close);
-    this.#dialog.addEventListener("close", () => {
-      this.onOpenChange(false);
-      try { localStorage.setItem(SEEN_KEY, "1"); } catch { /* Visiting does not need storage. */ }
-    });
-    root.append(this.#dialog);
+  }
+
+  /** The column header over the guide: "Guide · room", and the room's question. */
+  get heading(): readonly [string, string] {
+    return this.#heading;
+  }
+
+  /** Once seen and closed, the guide stops opening itself on arrival. */
+  markSeen(): void {
+    try { localStorage.setItem(SEEN_KEY, "1"); } catch { /* Visiting does not need storage. */ }
   }
 
   setRoom(id: string): void {
@@ -217,12 +206,10 @@ export class VisitorGuide {
     if (!room) return;
     const title = room.title || room.id;
     const exhibit = exhibitContent(room, this.#demo);
-    this.#locationLine.textContent = `You are in ${title.replace(/^The /, "the ")} · Guide`;
     const ordinal = RESEARCH_ORDER.findIndex((stop) => stop === id);
     this.#locationKicker.textContent = ordinal >= 0 ? `Room ${String(ordinal + 1).padStart(2, "0")} · ${title}` : title;
     this.#locationQuestion.textContent = exhibit.question;
-    this.#kicker.textContent = exhibit.source ? `${title} / ${exhibit.source}` : title;
-    this.#title.textContent = exhibit.question;
+    this.#heading = [exhibit.source && exhibit.source !== title ? `Guide · ${title} / ${exhibit.source}` : `Guide · ${title}`, exhibit.question];
     this.#intro.textContent = exhibit.introduction;
     this.#look.hidden = exhibit.lookFor.length === 0;
     this.#observations.replaceChildren(...exhibit.lookFor.map((observation) => {
@@ -279,7 +266,7 @@ export class VisitorGuide {
       button.textContent = `Open ${surface.title}`;
       button.title = surface.description;
       button.addEventListener("click", () => {
-        this.#dialog.close();
+        this.onHide();
         queueMicrotask(() => this.#onGameSurface(surface));
       });
       return button;
@@ -291,16 +278,14 @@ export class VisitorGuide {
     link.addEventListener("click", (event) => {
       if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || !this.#onGo(id)) return;
       event.preventDefault();
-      this.#dialog.close();
+      this.onHide();
       this.#onExplore();
     });
   }
 
   show(): void {
     if (document.pointerLockElement) document.exitPointerLock();
-    if (this.#dialog.open) return;
-    this.#dialog.showModal();
-    this.onOpenChange(true);
+    this.onShow();
   }
 
   welcome(): void {
