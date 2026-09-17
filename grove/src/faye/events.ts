@@ -7,16 +7,27 @@
 // records there, every one of them host SirBase, while the mirror was holding
 // 105 of the peer's.
 //
+// A second feed says what a RUN declares about itself -- balanced at year N,
+// hit the cap unbalanced, stalled -- which the lane's own vocabulary cannot
+// express. LogSwarm publishes it as `logswarm/announce/1` in exactly this
+// shape (its docs/specs/ANNOUNCE-FEED.md), so everything here reads it
+// unchanged; `feeds.ts` holds the little that is new, and the vocabulary of
+// those declared states is in `announce` below.
+//
 // Nothing here talks to SpacetimeDB or to a visitor. It turns a feed into a
 // short list of things worth broadcasting, and that decision is the whole
 // point: 173 events were pending in one sample, and a spirit that announces
 // 173 things has told you nothing.
 
-/** One event as expdash publishes it. Unknown fields are ignored, never invented. */
+/** One event as a feed publishes it. Unknown fields are ignored, never invented. */
 export interface ComputeEvent {
   id: string;
   ts: number;
-  /** "crashed", "completed", "started", ... -- expdash's vocabulary, not ours. */
+  /**
+   * "crashed", "completed", "started" from expdash; "balanced",
+   * "hit-cap-unbalanced", "stalled", "plateau" from a run's own feed. Always
+   * the producer's vocabulary, never ours.
+   */
   type: string;
   /** 1 is most urgent (a crash); 3 is routine (a run finished). */
   priority: number;
@@ -24,6 +35,12 @@ export interface ComputeEvent {
   detail: string;
   repo: string;
   host: string;
+  /**
+   * The run this is about (`m06-fold-s0.96`), when the feed names one. Only
+   * the announce feed does; it is what lets the same event arriving on two
+   * feeds be recognised as one (`feeds.ts`). Empty when unknown.
+   */
+  exp: string;
 }
 
 export interface MirrorHealth {
@@ -55,9 +72,12 @@ export interface FeedReading {
 }
 
 /**
- * Reads one `/api/status` document. Anything malformed is dropped rather than
- * guessed -- a spirit that announces a run it misread is worse than a quiet
- * one -- and a document with no events at all is a valid reading, not an error.
+ * Reads one feed document: expdash's `/api/status`, or `logswarm/announce/1`,
+ * which carries the same `events[]` and states its `hosts` outright instead of
+ * having them derived from `experiments[]`. Anything malformed is dropped
+ * rather than guessed -- a spirit that announces a run it misread is worse
+ * than a quiet one -- and a document with no events at all is a valid reading,
+ * not an error.
  */
 export function readFeed(doc: unknown): FeedReading {
   const root = asRecord(doc);
@@ -75,6 +95,7 @@ export function readFeed(doc: unknown): FeedReading {
       detail: typeof e?.["detail"] === "string" ? e["detail"] : "",
       repo: typeof e?.["repo"] === "string" ? e["repo"] : "",
       host: typeof e?.["host"] === "string" ? e["host"] : "",
+      exp: typeof e?.["exp"] === "string" ? e["exp"] : "",
     });
   }
   const health = asRecord(root?.["health"]);
@@ -91,6 +112,11 @@ export function readFeed(doc: unknown): FeedReading {
   const running: RunningRun[] = [];
   const own = typeof root?.["hostname"] === "string" ? root["hostname"] : "";
   if (own) hosts.add(own);
+  // A feed with no `experiments[]` -- the announce feed -- says which boxes its
+  // events are about. Taken as given; it is the only place that knows.
+  for (const raw of asArray(root?.["hosts"])) {
+    if (typeof raw === "string" && raw) hosts.add(raw);
+  }
   for (const raw of asArray(root?.["experiments"])) {
     const e = asRecord(raw);
     const host = typeof e?.["host"] === "string" ? e["host"] : "";
@@ -261,9 +287,30 @@ export function peerIsSilent(mirror: MirrorHealth | null, staleAfterSeconds = 36
   return mirror.state !== "ok" || mirror.ageSeconds > staleAfterSeconds;
 }
 
+/**
+ * A declared state or alert as a sentence can carry it, for the collapsed form
+ * only -- a lone event always keeps the producer's own title.
+ *
+ * "2 runs hit-cap-unbalanced" is not English, and this is the whole of the
+ * translation: no state becomes a conclusion (`balanced` is not "stable",
+ * `plateau` is not "stuck"), `finished` never becomes "succeeded", and a
+ * `slowdown` stays the box slowing a run and is never called a regression
+ * (COMPUTE-WATCH.md §3 and §5 in logswarm; box load has fooled us before).
+ * A type with no phrase here is said as the producer wrote it.
+ */
+const COLLAPSED_PHRASES: Readonly<Record<string, string>> = {
+  "hit-cap-unbalanced": "hit the cap unbalanced",
+  "completed-unverified": "finished unverified",
+  spinup: "entered spinup",
+  record: "entered the record",
+  plateau: "flagged a plateau",
+  cap: "flagged as unlikely to reach the cap",
+  slowdown: "flagged the box slowing them",
+};
+
 function plural(type: string, n: number): string {
-  const word = type || "events";
-  return n === 1 ? `run ${word}` : `runs ${word}`;
+  const said = COLLAPSED_PHRASES[type] ?? (type || "events");
+  return n === 1 ? `run ${said}` : `runs ${said}`;
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {

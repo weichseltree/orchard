@@ -23,6 +23,13 @@ export interface FayeState {
   running: readonly RunningRun[];
   /** Whether a feed has answered at all yet. */
   hasFeed: boolean;
+  /**
+   * Whether any feed she reads can tell her what is on the lanes. expdash's
+   * can; a run's own announcement feed cannot -- it says what happened, not
+   * what is happening -- so with that one alone an empty `running` means she
+   * cannot see, not that the boxes are idle (`feeds.ts`).
+   */
+  knowsRunning: boolean;
 }
 
 export const EMPTY_STATE: FayeState = {
@@ -31,6 +38,7 @@ export const EMPTY_STATE: FayeState = {
   seenByType: new Map(),
   running: [],
   hasFeed: false,
+  knowsRunning: false,
 };
 
 /** The things a visitor can ask for. `none` means they were not talking to her. */
@@ -82,6 +90,11 @@ export function replyTo(text: string, state: FayeState, titles?: TreeTitles): st
 
   // "running"
   if (!state.hasFeed) return "I have not heard from the compute yet.";
+  if (!state.knowsRunning) {
+    // She hears what runs declare and nothing about the lanes. Saying nothing
+    // is running would be a fact she does not have.
+    return "I hear what the runs say about themselves, but I cannot see the lanes from here.";
+  }
   if (state.running.length === 0) {
     // Nothing running is a real answer, and a common one at night.
     return "Nothing is running that I can see.";

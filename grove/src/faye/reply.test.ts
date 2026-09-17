@@ -7,6 +7,9 @@ function state(over: Partial<FayeState> = {}): FayeState {
   return {
     ...EMPTY_STATE,
     hasFeed: true,
+    // expdash answering is what makes the lanes knowable; a state built
+    // without it is the second feed alone (see the test below).
+    knowsRunning: true,
     hosts: ["Legion", "SirBase"],
     mirror: { state: "ok", ageSeconds: 3, peer: "Legion", records: 105 },
     ...over,
@@ -88,6 +91,13 @@ describe("replyTo", () => {
 
   it("treats an empty card as a real answer", () => {
     expect(replyTo("faye what is running", state())).toBe("Nothing is running that I can see.");
+  });
+
+  it("does not call the boxes idle when she only hears what runs declare", () => {
+    // With a run's own announcement feed and no expdash, an empty `running` is
+    // what she cannot see, not what the boxes are doing (src/faye/feeds.ts).
+    expect(replyTo("faye what is running", state({ knowsRunning: false })))
+      .toBe("I hear what the runs say about themselves, but I cannot see the lanes from here.");
   });
 
   const run = (host: string, tree: string) => ({ host, tree });

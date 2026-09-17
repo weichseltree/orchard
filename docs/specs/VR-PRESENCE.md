@@ -163,6 +163,9 @@ not local unless it is run with `--live` and her own identity.
   feed she holds, and "I cannot see a peer from here" is a real answer.
 - **She never announces the plumbing.** A dashboard that will not answer is
   logged, not broadcast.
+- **She never reports what she cannot see.** With a run's own feed and no
+  expdash she can say what runs declare and nothing about the lanes, and that
+  is what she says — never that the boxes are idle (§10).
 - **She speaks only when named.** A room where every sentence might summon a
   spirit is a room nobody can talk in.
 - **She stands in the live world only as herself.** Ruled by Manuel on
@@ -206,6 +209,9 @@ not local unless it is run with `--live` and her own identity.
 - `grove/scripts/faye.ts` — presence, the compute watch, announcements, replies.
 - `grove/src/faye/events.ts`, `reply.ts` — the feed, the cursor, the selection,
   the answers. Pure, tested, never in the client bundle.
+- `grove/src/faye/feeds.ts` — more than one feed at once: a cursor and a
+  baseline per feed, one poll turned into what she says, and the echo check
+  (§10, orchard #60).
 - `spacetime/spacetimedb/src/index.ts` — the public `broadcast` table,
   `send_broadcast`, and expiry in the sweep.
 
@@ -259,3 +265,55 @@ second pass, see `quality/budgets.json`) and this branch measures 222,156. Both 
 demand — voice on the first press, the log panel on the first session — and
 that deferral is what keeps it under. The next thing on the startup path needs
 either its own deferral or a deliberate ruling on the ceiling.
+
+## 10. What she hears — the two feeds
+
+*Built 2026-09-17 against [orchard #60](https://github.com/weichseltree/orchard/issues/60).*
+
+expdash's `/api/status` says what the **lane** did: started, `completed
+exit=0`, crashed. It cannot say what a **run declares about itself** — balanced
+at year 41, hit the 60-year cap unbalanced, stalled, or the alerts coarsen
+asked for — because no such vocabulary exists in a lane record. LogSwarm
+watches those runs from outside (its `docs/specs/COMPUTE-WATCH.md`) and
+publishes `logswarm/announce/1`, deliberately in the same document shape Faye
+already reads (`ANNOUNCE-FEED.md` there), so `readFeed`, `accumulate` and
+`announce` take it unchanged.
+
+    pnpm tsx scripts/faye.ts … \
+      --feed-url 'http://localhost:6104/feeds/<project>/planet/live.json?ns=demo-logswarm-default-rtdb' \
+      --feed-token-file ~/.config/orchard/logswarm-feed.token
+
+`--feed-url` is repeatable. The token is read from a mode-600 file and sent as
+a header: a URL ends up in `ps`, in logs and in a `Referer`.
+
+**expdash stays the primary feed** (Manuel, 2026-09-17). It is the one that
+places a run on a box and reports the mirror, so an announcement feed runs
+beside it rather than replacing it, and:
+
+- **A cursor and a baseline per feed.** Both number their events `ev_<n>` from
+  their own counter, and the counters have nothing to do with each other: one
+  shared cursor would swallow the lower-numbered feed entirely or re-baseline
+  every poll. Each feed's first reading is its own arrival, so a feed that
+  comes up an hour late does not recite that hour.
+- **One event is said once.** LogSwarm can ingest expdash's feed as well, so a
+  crash can arrive on both. Announced together they would collapse into "2 runs
+  crashed", which is not what happened, so a later feed's copy of what an
+  earlier one already reported is dropped — matched on the run, the repo and
+  the state, within three minutes, across polls as well as inside one.
+- **The primary is never silenced.** Only a later feed's events can be
+  dropped, so adding a feed can make her say more and never less than expdash
+  alone would have.
+- **A feed that does not answer changes nothing.** The mirror and what is
+  running come from expdash alone; a poll where it was down keeps the last
+  answer it gave rather than reporting an idle box.
+- **No declared state becomes a conclusion.** A collapsed burst needs English
+  ("2 runs hit the cap unbalanced"), and that translation is the whole of it:
+  `balanced` is not "stable", `plateau` is not "stuck", `finished` is not
+  "succeeded", and a `slowdown` stays the box slowing a run and is never called
+  a regression. A lone event keeps the producer's own title, which is how
+  "s=0.96: hit the 60-year cap unbalanced at -3.26 W/m²" reaches the room.
+
+**The live service does not pass `--feed-url` yet.** The announce feed exists
+only on the local emulator; a feed that observes real boxes goes behind the
+`no-store` Worker first (`AUDIO-STREAM.md` §7), and the deployed unit
+(`deploy/faye/orchard-faye.service`) takes it then.
