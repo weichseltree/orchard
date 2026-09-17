@@ -1,5 +1,5 @@
 import type { Mansion } from "../world/schema";
-import { reachableRooms, resolveMove, BODY_RADIUS } from "../world/navigation";
+import { reachableRooms, resolveMove, roomAt, BODY_RADIUS } from "../world/navigation";
 import { floorAt } from "../world/terrain";
 import type { InputState } from "./input";
 
@@ -134,7 +134,10 @@ export function clampPitch(pitch: number): number {
  * default only into a room the body could walk to -- not through a closed
  * doorway, and not past a locked room on the way. `walls: false` drops the
  * last rule for a caller that jumps between rooms on purpose (the quality
- * suite's room tour); locks still hold.
+ * suite's room tour); locks still hold. Rooms may stand one over another,
+ * so the point's room is the body's own when that holds it, else the storey
+ * nearest the body's feet; `into` names the room outright for a caller that
+ * means one in particular, and fails when the point is not in it.
  */
 export function teleport(
   body: Body,
@@ -142,16 +145,10 @@ export function teleport(
   x: number,
   z: number,
   locked?: (roomId: string) => boolean,
-  { walls = true }: { walls?: boolean } = {},
+  { walls = true, into }: { walls?: boolean; into?: string } = {},
 ): boolean {
-  const room = mansion.rooms.find(
-    (r) =>
-      x >= r.bounds.min[0] + BODY_RADIUS &&
-      x <= r.bounds.max[0] - BODY_RADIUS &&
-      z >= r.bounds.min[2] + BODY_RADIUS &&
-      z <= r.bounds.max[2] - BODY_RADIUS,
-  );
-  if (!room) return false;
+  const room = roomAt(mansion, x, z, BODY_RADIUS, body.y, into ?? body.room);
+  if (!room || (into !== undefined && room.id !== into)) return false;
   if (room.id !== body.room && locked?.(room.id)) return false;
   if (walls && room.id !== body.room && !reachableRooms(mansion, body.room, locked).has(room.id)) return false;
   body.x = x;

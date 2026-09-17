@@ -26,6 +26,9 @@ const stations = [
   ['phototroph', 0, 14, 180, -8],
   ['world-engine', 0, -14, 0, 5],
   ['orangery', 0, -36, 0, 12],
+  ['foyer', 21, -22.5, 90, 4],
+  ['club', 0, -20, 0, 4],
+  ['stage', 2.2, -74.5, 180, 4],
   ['gallery', 0, 33, 180, 12],
   ['belvedere', 0, 70, 0, -3],
   ['greenhouse', 11.5, 8, -90, 8],
@@ -101,8 +104,8 @@ try {
     return { rooms, batches, instances, tapes: app.world.tapes.filter(Boolean).length };
   });
   report.world = world;
-  check('All 32 rooms use runtime architecture (31 Observatory, the Orrery in space)', world.rooms.length === 32
-    && world.rooms.filter((room) => room.architecture === 'observatory').length === 31
+  check('All 35 rooms use runtime architecture (34 Observatory, the Orrery in space)', world.rooms.length === 35
+    && world.rooms.filter((room) => room.architecture === 'observatory').length === 34
     && world.rooms.filter((room) => room.architecture === 'space').length === 1, world.rooms);
   check('Architecture stays near fifteen draw batches a room across the whole world', world.batches < world.rooms.length * 16, world.batches);
   // Six tapes: einstruct's two sheets, phototroph's capture, and arcedit's three
@@ -126,15 +129,17 @@ try {
   for (const [room, x, z, yaw, pitch] of stations) {
     await page.evaluate(({ room, x, z, yaw, pitch }) => {
       const app = window.grove, yawRad = yaw * Math.PI / 180, pitchRad = pitch * Math.PI / 180;
-      Object.assign(app.body, { room, x, z, yaw: yawRad, pitch: pitchRad });
-      app.view.rig.position.set(x, 0, z);
+      // The camera stands on the room's own floor: rooms are at different heights, and the club is under the wing.
+      const floor = app.mansion.rooms.find((r) => r.id === room).bounds.min[1];
+      Object.assign(app.body, { room, x, y: floor, z, yaw: yawRad, pitch: pitchRad });
+      app.view.rig.position.set(x, floor, z);
       app.view.rig.rotation.y = yawRad;
       app.view.camera.rotation.set(pitchRad, 0, 0);
       app.view.renderer.render(app.view.scene, app.view.camera);
     }, { room, x, z, yaw, pitch });
     await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
     const metrics = await page.evaluate(() => window.grove.metrics());
-    const station = { room, camera: { x, z, eyeHeight: 1.6, yaw, pitch }, rendering: metrics.rendering };
+    const station = { room, camera: { x, z, eyeHeight: 1.6, floor: true, yaw, pitch }, rendering: metrics.rendering };
     check(`${room}: rendered a nonempty scene`, metrics.rendering.calls > 0 && metrics.rendering.triangles > 0);
     if (args.screenshots) {
       const file = resolve(shotDir, `${room}.png`);

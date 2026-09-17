@@ -207,6 +207,24 @@
       "intro": "Here you are the size of a cell. The teacher's episode plays around you: the source grid stands to one side, the answer frame fills in under your feet cell by cell, the palette is a row of lit stones, and the cursor is a column of light that comes and goes. Overhead, the layers of the agent's view hang like glass floors, the lowest one sharp and small, each one above it twice as wide and twice as vague, until the top layer covers everything and says almost nothing. Scrub time to watch the colour travel from the palette to the cell.",
       "lookFor": "Stand on the answer frame and look up through the layers as the cursor passes; the sharp window follows it.",
       "limit": "This is the teacher's episode, not a learned agent's, and the scale is a device for looking; the agent never sees the canvas as a place."
+    },
+    "foyer": {
+      "title": "foyer",
+      "kicker": "Who gets past the door?",
+      "intro": "The stair from the world-engine room comes down to the cellar's foyer. Two doors lead on: the club, which opens only to a visitor whose microphone and sound are on, and beyond it a stage for headsets alone. The offers on your screen switch both on.",
+      "lookFor": "The brass rail of the long stair and the lanterns beside the club door: they burn warm, while the club's own colours are cold."
+    },
+    "club": {
+      "title": "club",
+      "kicker": "How loud is a vaulted cellar?",
+      "intro": "A club under the north wing: a low vault, a dance floor of lit tiles, a bar along the east wall, booths along the west, a stage at the far end. The music will be a live stream; until it plays, the lights breathe on their own.",
+      "lookFor": "The mirror ball over the floor and the two colour lines along the vault; they pulse with the music when there is music."
+    },
+    "stage": {
+      "title": "stage",
+      "kicker": "Who is singing?",
+      "intro": "A step up from the floor, framed by the proscenium and lit from the front. The stage is for singers in a headset: it opens only to an immersive session, and leaving one puts you back on the floor. Karaoke will run from here once the voice link exists.",
+      "lookFor": "The microphone stand at the centre and the footlights along the edge: the singer stands where the floor's two lines meet."
     }
   },
   "exhibits": {

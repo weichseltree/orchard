@@ -2,7 +2,7 @@ import { InstancedMesh, Light, Mesh, MeshBasicMaterial, Raycaster, Vector3, type
 import { describe, expect, it, vi } from "vitest";
 import mansionDocument from "./mansion.json";
 import { parseMansion } from "./schema";
-import { buildObservatory, runsAlongX } from "./observatory";
+import { buildObservatory, covered, runsAlongX } from "./observatory";
 import { buildRoom } from "./rooms";
 
 const mansion = parseMansion(mansionDocument);
@@ -11,8 +11,8 @@ for (const { shell } of shells) shell.group.updateMatrixWorld(true);
 
 describe("the designed observatory", () => {
   it("builds every footprint with explicit architectural provenance, no textures or lights", () => {
-    // The palace's thirteen chambers and cells (coarsen's chamber went on 2026-09-16), and arcedit's area of eighteen (TREE-AREAS.md).
-    expect(shells).toHaveLength(31);
+    // The palace's thirteen chambers and cells (coarsen's chamber went on 2026-09-16), the cellar venue's three, and arcedit's area of eighteen (TREE-AREAS.md).
+    expect(shells).toHaveLength(34);
     for (const { room, shell } of shells) {
       expect(shell.group.name).toBe(`${room.id}-shell`);
       expect(shell.group.userData.architecture).toBe("observatory");
@@ -92,15 +92,19 @@ describe("the designed observatory", () => {
     }
   });
 
-  it("gives the roof a real open crown and leaves the terrace under the sky", () => {
+  it("gives the roof a real open crown and leaves the terrace under the sky, except under another room, where it is lidded", () => {
+    expect(mansion.rooms.filter(r => covered(r, mansion)).map(r => r.id)).toEqual(["club", "stage"]);
     for (const { room, shell } of shells) {
       // The crown runs the room's long way: along z, or along x in a turned room of an area.
       const turned = runsAlongX(room, mansion);
       const x = turned ? room.bounds.min[0] + 1.1 : (room.bounds.min[0] + room.bounds.max[0]) / 2;
       const z = turned ? (room.bounds.min[2] + room.bounds.max[2]) / 2 : room.bounds.min[2] + 1.1;
       // From above any flight's parapet, so a stair at the north wall does not count as roof.
-      expect(new Raycaster(new Vector3(x, room.bounds.min[1] + 3.2, z), new Vector3(0, 1, 0), 0.001, 10)
-        .intersectObject(shell.group, true), `${room.id} sky opening`).toEqual([]);
+      const above = new Raycaster(new Vector3(x, room.bounds.min[1] + 3.2, z), new Vector3(0, 1, 0), 0.001, 10)
+        .intersectObject(shell.group, true).map(h => h.object.name);
+      // A ray through a box meets both its faces: two hits, both the lid, nothing else.
+      if (covered(room, mansion)) expect(new Set(above), `${room.id} lid`).toEqual(new Set(["observatory-box-inset"]));
+      else expect(above, `${room.id} sky opening`).toEqual([]);
     }
   });
 

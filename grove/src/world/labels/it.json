@@ -207,6 +207,24 @@
       "intro": "Qui avete la grandezza di una cella. L'episodio del maestro si svolge intorno a voi: la griglia sorgente sta da un lato, il riquadro della risposta si riempie sotto i vostri piedi cella per cella, la tavolozza è una fila di pietre accese, e il cursore è una colonna di luce che va e viene. In alto, gli strati della vista dell'agente pendono come pavimenti di vetro, il più basso nitido e piccolo, ciascuno sopra due volte più largo e due volte più vago, finché il più alto copre tutto e non dice quasi nulla. Scorrete il tempo per vedere il colore viaggiare dalla tavolozza alla cella.",
       "lookFor": "State sul riquadro della risposta e guardate in alto attraverso gli strati mentre il cursore passa; la finestra nitida lo segue.",
       "limit": "Questo è l'episodio del maestro, non di un agente addestrato, e la scala è un espediente per guardare; l'agente non vede mai la tela come un luogo."
+    },
+    "foyer": {
+      "title": "foyer",
+      "kicker": "Chi passa la porta?",
+      "intro": "La scala dalla sala di world-engine scende nel foyer della cantina. Due porte proseguono: il club, che si apre solo al visitatore con microfono e audio accesi, e oltre un palco riservato ai visori. Le proposte sullo schermo accendono entrambi.",
+      "lookFor": "Il corrimano d'ottone della lunga scala e le lanterne accanto alla porta del club: ardono calde, mentre i colori del club sono freddi."
+    },
+    "club": {
+      "title": "club",
+      "kicker": "Quanto suona una cantina a volta?",
+      "intro": "Un club sotto l'ala nord: una volta bassa, una pista da ballo di piastrelle luminose, un bancone lungo la parete est, séparé lungo quella ovest, un palco in fondo. La musica sarà una diretta; finché non suona, le luci respirano da sole.",
+      "lookFor": "La sfera a specchi sopra la pista e le due linee di colore lungo la volta; pulsano con la musica, quando c'è musica."
+    },
+    "stage": {
+      "title": "palco",
+      "kicker": "Chi canta?",
+      "intro": "Un gradino sopra la pista, incorniciato dal proscenio e illuminato di fronte. Il palco è per chi canta con il visore: si apre solo a una sessione immersiva, e lasciarla riporta in pista. Il karaoke partirà da qui appena esisterà il collegamento vocale.",
+      "lookFor": "L'asta del microfono al centro e le luci di ribalta lungo il bordo: chi canta sta dove le due linee del pavimento si incontrano."
     }
   },
   "exhibits": {

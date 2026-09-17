@@ -207,6 +207,24 @@
       "intro": "Aqui tem o tamanho de uma célula. O episódio do professor decorre à sua volta: a grelha fonte está de um lado, a moldura de resposta preenche-se sob os seus pés célula a célula, a paleta é uma fila de pedras acesas, e o cursor é uma coluna de luz que vem e vai. Por cima, as camadas da visão do agente pendem como chãos de vidro, a mais baixa nítida e pequena, cada uma acima duas vezes mais larga e duas vezes mais vaga, até que a de cima cobre tudo e quase nada diz. Percorra o tempo para ver a cor viajar da paleta à célula.",
       "lookFor": "Fique sobre a moldura de resposta e olhe para cima através das camadas quando o cursor passar; a janela nítida segue-o.",
       "limit": "Este é o episódio do professor, não o de um agente treinado, e a escala é um recurso para olhar; o agente nunca vê a tela como um lugar."
+    },
+    "foyer": {
+      "title": "foyer",
+      "kicker": "Quem passa a porta?",
+      "intro": "A escada da sala de world-engine desce até ao foyer da cave. Duas portas seguem em frente: o clube, que só se abre ao visitante com o microfone e o som ligados, e mais além um palco reservado aos visores. As propostas no seu ecrã ligam ambos.",
+      "lookFor": "O corrimão de latão da longa escada e as lanternas junto à porta do clube: ardem quentes, enquanto as cores do clube são frias."
+    },
+    "club": {
+      "title": "clube",
+      "kicker": "Quanto soa uma cave abobadada?",
+      "intro": "Um clube sob a ala norte: uma abóbada baixa, uma pista de dança de lajes iluminadas, um bar ao longo da parede leste, reservados ao longo da oeste, um palco ao fundo. A música será uma emissão em directo; até tocar, as luzes respiram por si.",
+      "lookFor": "A bola de espelhos sobre a pista e as duas linhas de cor ao longo da abóbada; pulsam com a música quando há música."
+    },
+    "stage": {
+      "title": "palco",
+      "kicker": "Quem canta?",
+      "intro": "Um degrau acima da pista, emoldurado pelo proscénio e iluminado de frente. O palco é para quem canta de visor: só se abre a uma sessão imersiva, e sair dela devolve-o à pista. O karaoke correrá daqui assim que a ligação de voz existir.",
+      "lookFor": "O pé de microfone ao centro e as luzes da ribalta ao longo da borda: quem canta fica onde as duas linhas do chão se encontram."
     }
   },
   "exhibits": {

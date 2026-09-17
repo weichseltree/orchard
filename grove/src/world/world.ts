@@ -48,6 +48,8 @@ export interface BuildWorldOptions {
    * which is different from answering with nothing hung.
    */
   exhibits?: () => Promise<ExhibitRow[] | null>;
+  /** The AudioContext a live audio exhibit joins (audio/gate.ts); each makes its own when absent. */
+  audioContext?: () => Promise<AudioContext>;
   /** The room the visitor starts in; `mansion.start` when absent. */
   startRoom?: string;
   scheduler?: ChunkScheduler;
@@ -335,8 +337,9 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
           continue;
         }
         pending.push(
-          import("./audio-exhibit").then(({ AudioExhibit }) => AudioExhibit.load({
+          Promise.all([import("./audio-exhibit"), options.audioContext?.()]).then(([{ AudioExhibit }, context]) => AudioExhibit.load({
             hanging, archivedBase: archived, tier: device.tier, onNotice,
+            ...(context ? { context } : {}),
           }))
             .then((audio) => {
               world.audios.push(audio);

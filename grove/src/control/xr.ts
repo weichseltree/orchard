@@ -289,7 +289,7 @@ export class XrControls {
 
     if (this.#edge("trigger", pressed(right, BUTTON_TRIGGER) || pressed(left, BUTTON_TRIGGER))) {
       if (askMenu?.isOpen()) askMenu.onEvent("choose");
-      else this.#commands.togglePlay();
+      else if (!this.#commands.confirm?.()) this.#commands.togglePlay();
     }
     if (this.#edge("menu", pressed(right, BUTTON_MENU) || pressed(left, BUTTON_MENU))) {
       this.#commands.toggleProvenance();
