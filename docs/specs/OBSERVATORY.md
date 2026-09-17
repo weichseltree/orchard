@@ -138,8 +138,8 @@ also stands at the garden's spawn and photographs the armillary: taking the
 Orrery away must change the lens, and the far view's own target must hold
 star points far above its sky, centred on the portal's axis, rendered for
 that photograph. The sky alone is no evidence — a cleared target carries the
-page's own background at the luminance the Orrery's sky has, which is how the
-first draft of the check passed a clipped far view. Interaction and
+page's own background at about the luminance the Orrery's sky has (23 against
+17), which is how the first draft of the check passed a clipped far view. Interaction and
 production-transfer checks are separate; see [QUALITY.md](../QUALITY.md).
 
 The site hero is a lossless encoding of an actual local-demo browser capture

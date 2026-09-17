@@ -156,8 +156,9 @@ try {
   // stands — and on 2026-09-17 the Orrery was empty through the portal with
   // all of them green, because a far view WAS rendered: into a black
   // rectangle, past a frustum that stopped short of the room. So this one
-  // reads pixels, and only the lens's own disc: a bright landing ring in an
-  // otherwise black room would carry a whole-frame difference on its own.
+  // reads pixels, in two places that cannot cover for each other: the disc
+  // on screen, to ask whether the far room reaches the lens, and the far
+  // view's own target, to ask what reached it.
   await page.evaluate((keep) => { window.__keepShots = keep; }, args.screenshots);
   const portal = await page.evaluate(() => {
     const app = window.grove;
@@ -271,6 +272,7 @@ try {
     let readBack = false;
     let png = null;
     let centre = null;
+    let region = null;
     if (target) {
       const fw = Math.max(1, Math.round(target.width * app.farViewScale));
       const fh = Math.max(1, Math.round(target.height * app.farViewScale));
@@ -281,9 +283,12 @@ try {
       // Three refuses a read whose format the backend does not offer, with a
       // console error and an untouched buffer. Said as its own condition, or
       // it surfaces as three unrelated failures and no cause.
+      // The poison is not part of its own evidence: `raw.some(v => v !== 0)`
+      // over the whole buffer finds the poison and is true whatever happened,
+      // which is how the first version of this check could not fail.
       raw[0] = 0xffff;
       app.view.renderer.readRenderTargetPixels(target, 0, 0, fw, fh, raw);
-      readBack = raw[0] !== 0xffff || raw.some((value) => value !== 0);
+      readBack = raw[0] !== 0xffff || raw.subarray(1).some((value) => value !== 0);
       const half = (h) => {
         const sign = h & 0x8000 ? -1 : 1, exponent = (h & 0x7c00) >> 10, fraction = h & 0x03ff;
         if (exponent === 0) return sign * 2 ** -14 * (fraction / 1024);
@@ -296,21 +301,42 @@ try {
         encoded[i] = Math.round(255 * (i % 4 === 3 ? linear : linear ** (1 / 2.2)));
       }
       for (let i = 0; i < encoded.length; i += 4) farLuma.push(luminance(encoded, i));
-      // Where the light sits. The far camera looks down the portal's own
-      // axis, so the Orrery's dome stands as a ball in the middle of the far
-      // view and its stars are the only bright things in it: a far camera
-      // pointed elsewhere, or at another room, moves this off centre even
-      // though the statistics above would not notice.
+      // Where the light sits, and over what. The Orrery's dome stands as a
+      // ball a sixth of the frame across, the rest being the scene's own
+      // background, so statistics over the whole frame are a quarter about
+      // the room and the rest about how far away this check is standing —
+      // move the station and the star fraction moves with the inverse square
+      // of the distance, for no fault. The bright pixels' own bounding box
+      // is the region the numbers are taken over, so they measure the room.
       const sorted = [...farLuma].sort((a, b) => a - b);
       const floor = sorted[Math.floor(sorted.length * 0.5)] + 24;
       let sx2 = 0, sy2 = 0, count = 0;
+      let bx0 = fw, by0 = fh, bx1 = 0, by1 = 0;
       for (let i = 0; i < farLuma.length; i++) {
         if (farLuma[i] <= floor) continue;
-        sx2 += (i % fw) / fw;
-        sy2 += Math.floor(i / fw) / fh;
-        count++;
+        const px = i % fw, py = Math.floor(i / fw);
+        sx2 += px; sy2 += py; count++;
+        bx0 = Math.min(bx0, px); bx1 = Math.max(bx1, px);
+        by0 = Math.min(by0, py); by1 = Math.max(by1, py);
       }
-      if (count) centre = { x: sx2 / count, y: sy2 / count, offset: Math.hypot(sx2 / count - 0.5, sy2 / count - 0.5) };
+      if (count) {
+        // Against the portal's own axis, not the middle of the frame: the far
+        // view is the same window as the eye's, so the ball belongs where the
+        // armillary itself projects. Move the spawn or the portal and this
+        // follows; turn the far camera and it does not. Measured in pixels
+        // and scaled by the frame's height, so a yaw error and a pitch error
+        // of one angle count the same.
+        const wantX = (ndcX * 0.5 + 0.5) * fw, wantY = (ndcY * 0.5 + 0.5) * fh;
+        centre = {
+          x: (sx2 / count) / fw, y: (sy2 / count) / fh,
+          offset: Math.hypot(sx2 / count - wantX, sy2 / count - wantY) / fh,
+        };
+        region = { x0: bx0, y0: by0, width: bx1 - bx0 + 1, height: by1 - by0 + 1 };
+        const inside = [];
+        for (let y = by0; y <= by1; y++) for (let x = bx0; x <= bx1; x++) inside.push(farLuma[y * fw + x]);
+        region.pixels = inside.length;
+        Object.assign(region, describe(inside));
+      }
       // The photograph itself, kept when the run keeps its others: a check
       // that photographs a portal and throws the photograph away leaves a
       // failure with nothing to look at. GL reads bottom-up, a canvas draws
@@ -334,33 +360,42 @@ try {
       farViewReaches, noise, lensGoesDark,
       freshRenders: app.farRenders - rendersBefore,
       readBack,
-      farView: farSize ? { ...farSize, ...describe(farLuma), centre } : null,
+      farView: farSize ? { ...farSize, ...describe(farLuma), centre, region } : null,
       png,
     };
   });
   if (portal.png) {
     const file = resolve(shotDir, 'armillary-far-view.png');
-    await writeFile(file, Buffer.from(portal.png.split(',')[1], 'base64'));
-    portal.screenshot = { file, width: portal.farView.width, height: portal.farView.height };
+    const bytes = Buffer.from(portal.png.split(',')[1], 'base64');
+    await writeFile(file, bytes);
+    // Hashed like every station's capture: deterministic on SwiftShader, so
+    // it is a baseline and not only something to look at after a failure.
+    portal.screenshot = {
+      file, width: portal.farView.width, height: portal.farView.height,
+      sha256: createHash('sha256').update(bytes).digest('hex'),
+    };
   }
   delete portal.png;
   report.portal = portal;
-  // Floors measured on 2026-09-17, in the state that ships and in two broken
-  // ones: with the far room taken away, and with the depth-range fix taken
-  // back out. Drawn, the far view reads median 23, the eighth-brightest
-  // pixel 141, a bright fraction of 1.5 in ten thousand, and 0.78 of the
-  // disc owed to the far room. Clipped or empty, the far view is the scene's
-  // own background — median 23 still, nothing above it, nothing of the disc
-  // owed to it. The median is therefore no evidence at all and is not asked
-  // for one; what separates them is what stands ABOVE the sky.
+  // Floors measured on 2026-09-17 in the state that ships and in three
+  // broken ones: the depth-range fix taken back out, the far view rendered
+  // but never composited, and the far camera turned half a radian. Shipping,
+  // the far room owes 0.78 of the disc, its star ball reads median 17 with
+  // the eighth-brightest pixel at 179 and a bright fraction of 4.4 in a
+  // thousand, and that ball sits 0.011 of a frame height off the portal's
+  // own axis. The frame's median is 23 in EVERY state, broken ones included:
+  // it is the scene's background painted into the target before anything
+  // else, so it is no evidence and is asked for none. What separates the
+  // states is what stands above the sky, and where.
   if (portal.error) check(`The armillary could not be photographed: ${portal.error}`, false, portal);
   else {
     check('The far view was read back from its target', portal.readBack, portal);
     check('It was rendered for this photograph, not an earlier frame', portal.freshRenders > 0, portal);
     check('The far view reaches the lens: take the Orrery away and the armillary changes', portal.farViewReaches > 0.3, portal);
     check('And nothing else moves between two shots of the same view', portal.noise < 0.01, portal);
-    check('What reaches it is the Orrery: star points stand far above its sky', Boolean(portal.farView)
-      && portal.farView.eighth - portal.farView.median > 80 && portal.farView.brightFraction > 0.00005, portal);
+    check('What reaches it is the Orrery: star points stand far above its sky', Boolean(portal.farView?.region)
+      && portal.farView.region.eighth - portal.farView.region.median > 80
+      && portal.farView.region.brightFraction > 0.0015, portal);
     check('And the far camera looks down the portal, not somewhere else in the room', Boolean(portal.farView?.centre)
       && portal.farView.centre.offset < 0.08, portal);
   }
