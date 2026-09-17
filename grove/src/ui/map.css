@@ -1,5 +1,7 @@
 /* The plan: the Guide's opaque surface, so the lines never depend on the world behind. */
 .room-map {
+  /* Inside #hud, which lets clicks through to the view: the plan's rooms must take them. */
+  pointer-events: auto;
   width: min(26rem, calc(100vw - 28px));
   max-height: min(90dvh, 48rem);
   padding: 18px;
