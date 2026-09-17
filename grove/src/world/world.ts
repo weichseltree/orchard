@@ -276,13 +276,21 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
         groupFor(room).add(group);
         // A plaque is pointable: it frames its exhibit, or the room it introduces.
         group.children.forEach((plaque, i) => {
-          const hanging = (plaque.userData as { hangingId?: string | null }).hangingId ?? undefined;
+          const data = plaque.userData as { hangingId?: string | null; line?: { title: string; text: string } };
+          if (data.line) {
+            const { title, text } = data.line;
+            provenance.register({ id: `line:${room.id}:${i}`, title, bounds: new Box3().setFromObject(plaque), read: () => ({ record: title, text }) });
+            return;
+          }
+          const hanging = data.hangingId ?? undefined;
           provenance.register({
             id: `plaque:${room.id}:${i}`,
             title: room.hangings.find((h) => h.id === hanging)?.title || room.title || room.id,
             bounds: new Box3().setFromObject(plaque),
             hanging,
-            read: () => (hanging ? provenance.forHanging(hanging)?.read() : shells.get(room.id)?.provenance) ?? {},
+            read: () => (hanging
+              ? provenance.forHanging(hanging)?.read() ?? { exhibit: hanging, status: "not loaded" }
+              : shells.get(room.id)?.provenance) ?? {},
           });
         });
         // The names over the doors, in brass letters; the typeface loads once, with the first room.

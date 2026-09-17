@@ -535,7 +535,8 @@ export function planRoomLabels(room: Room, labels: Labels, mansion: Mansion): Pl
     const width = Math.min(LINE.width, line.widthMeters);
     const p = new Vector3(...line.position);
     const obstacles = [...wallObstacles(room, wall), ...spansOn(wall)];
-    const c = placeAlongWall(wall, along(wall, p), width / 2, rightAlong(wall), obstacles);
+    // placeAlongWall starts a plate at its near edge: half a width back puts the plan's point at its centre.
+    const c = placeAlongWall(wall, along(wall, p) - rightAlong(wall) * width / 2, width / 2, rightAlong(wall), obstacles);
     spansOn(wall).push([c - width / 2, c + width / 2]);
     const plan = wallPlaque(wall, room, c, floor + LINE.centre, { ...LINE, width }, {
       kind: "line", hangingId: line.id,
@@ -715,7 +716,11 @@ function slabMaterial(): MeshBasicMaterial {
 function buildPlaque(plan: PlaquePlan, locale: string): Group {
   const group = new Group();
   group.name = `plaque-${plan.kind}${plan.hangingId ? `-${plan.hangingId}` : ""}`;
-  group.userData = { plaque: plan.kind, mount: plan.mount, facing: plan.facing, hangingId: plan.hangingId ?? null, locale };
+  group.userData = {
+    plaque: plan.kind, mount: plan.mount, facing: plan.facing, hangingId: plan.hangingId ?? null, locale,
+    // A record line is its own content: what it says travels with the plaque.
+    ...(plan.kind === "line" ? { line: { title: plan.text.title, text: plan.text.body } } : {}),
+  };
   const disposables: Array<{ dispose(): void }> = [];
 
   const normal = new Vector3(0, 0, 1).applyQuaternion(plan.quaternion);

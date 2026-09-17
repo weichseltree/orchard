@@ -3,10 +3,10 @@ import { PALETTE } from "../config";
 import { exhibitContent } from "../ui/exhibit-content";
 import type { Provenance, ProvenanceTarget } from "../ui/provenance";
 import { framingPose, hangingFace, lookFrom, nextHangingIndex } from "../world/framing";
-import { BODY_RADIUS, roomAt } from "../world/navigation";
+import { BODY_RADIUS } from "../world/navigation";
 import { roomById, type Mansion, type Room } from "../world/schema";
 import { floorAt } from "../world/terrain";
-import { floorHit, planGlide, stepGlide, type Glide, type GlideRefusal } from "./glide";
+import { floorHit, planGlide, roomUnder, stepGlide, type Glide, type GlideRefusal } from "./glide";
 import type { InputState } from "./input";
 import type { Body } from "./locomotion";
 
@@ -153,10 +153,12 @@ export class Go {
         if (index >= 0) return this.frame(room, index);
       }
     }
-    // A room's own plaque: framed from where it hangs, read as the room's introduction.
+    // A room's own plaque, or one of its record lines: framed from where it
+    // hangs, read as the room's introduction or as the line itself.
     const centre = target.bounds.getCenter(new Vector3());
     const size = target.bounds.getSize(new Vector3());
-    const room = roomAt(mansion, centre.x, centre.z);
+    // A plaque hangs at reading height over its own floor.
+    const room = roomUnder(mansion, body, centre.x, centre.z, centre.y - eyeHeight, 0);
     if (!room) return;
     const normal = [body.x - centre.x, body.z - centre.z];
     const length = Math.hypot(normal[0]!, normal[1]!) || 1;
@@ -170,7 +172,8 @@ export class Go {
     this.release();
     this.#go(pose.x, pose.z, pose);
     const content = exhibitContent(room);
-    provenance.showRecord(target.title, { question: content.question, introduction: content.introduction }, target);
+    const record = target.id.startsWith("line:") ? target.read() : { question: content.question, introduction: content.introduction };
+    provenance.showRecord(target.title, record, target);
     this.#show(room, null, target.title);
   }
 
@@ -183,7 +186,7 @@ export class Go {
       return false;
     }
     this.#glide = plan;
-    const room = roomAt(mansion, x, z);
+    const room = roomUnder(mansion, body, x, z);
     const moving = Math.hypot(x - body.x, z - body.z) > 0.3;
     this.marker.visible = moving;
     if (room && moving) this.marker.position.set(x, floorAt(mansion, room, x, z) + 0.02, z);

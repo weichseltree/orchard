@@ -90,6 +90,27 @@ describe("reading the model", () => {
     expect(blockAt(blocks, 5, 5)).toBeNull();
   });
 
+  it("reads the tower the eye rests on, not the district behind it on the table's plane", () => {
+    const tall = [...blocks].filter((b) => b.leaf).sort((a, b) => b.height - a.height)[0]!;
+    const top = fromTable(model, tall.x, tall.z);
+    const eye = { x: top.x, y: 1.6, z: top.z + 1.2 };
+    const target = { x: top.x, y: model.position[1] + model.tableHeight + tall.height, z: top.z };
+    const to = { x: target.x - eye.x, y: target.y - eye.y, z: target.z - eye.z };
+    const length = Math.hypot(to.x, to.y, to.z);
+    const direction = { x: to.x / length, y: to.y / length, z: to.z / length };
+    expect(gazeBlock(model, blocks, eye, direction)?.path).toBe(tall.path);
+  });
+
+  it("lays out nothing, and no NaN, for a folder too narrow for its children", () => {
+    const tiny = [
+      { path: "results", bytes: 5e9 }, { path: "src", bytes: 2e6 }, { path: "a", bytes: 10 },
+      { path: "a/b", bytes: 5 }, { path: "a/b/c", bytes: 2 }, { path: "a/b/d", bytes: 2 },
+    ].map((e) => RepoEntrySchema.parse(e));
+    const laid = layoutRepoModel(model, tiny);
+    for (const b of laid) for (const v of [b.x, b.z, b.width, b.depth, b.height]) expect(Number.isFinite(v), b.path).toBe(true);
+    expect(blockAt(laid, 100, 100)).toBeNull();
+  });
+
   it("reads the district the eye looks down at, and nothing when looking up", () => {
     const grove = blocks.find((b) => b.path === "results/grove")!;
     const target = fromTable(model, grove.x, grove.z);

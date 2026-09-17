@@ -86,7 +86,8 @@ interface Rect { x: number; z: number; width: number; depth: number }
  */
 export function squarify(weights: readonly number[], rect: Rect): Rect[] {
   const total = weights.reduce((sum, w) => sum + w, 0);
-  if (weights.length === 0 || total <= 0) return [];
+  // A district narrower than its own gaps has no room for its children.
+  if (weights.length === 0 || !(total > 0) || !(rect.width > 0) || !(rect.depth > 0)) return [];
   const scale = (rect.width * rect.depth) / total;
   const areas = weights.map((w) => w * scale);
   const out: Rect[] = [];
@@ -140,7 +141,8 @@ export function layoutRepoModel(model: RepoModel, entries: readonly RepoEntry[] 
   const place = (nodes: Node[], rect: Rect, level: number, base: number): void => {
     const rects = squarify(nodes.map((n) => Math.sqrt(n.bytes)), rect);
     nodes.forEach((n, i) => {
-      const r = rects[i]!;
+      const r = rects[i];
+      if (!r || ![r.x, r.z, r.width, r.depth].every(Number.isFinite)) return;
       const inner = { x: r.x + GAP_M / 2, z: r.z + GAP_M / 2, width: Math.max(0, r.width - GAP_M), depth: Math.max(0, r.depth - GAP_M) };
       const leaf = n.children.length === 0;
       if (leaf) {
@@ -187,24 +189,64 @@ export function fromTable(model: RepoModel, x: number, z: number): { x: number; 
 export function blockAt(blocks: readonly RepoBlock[], x: number, z: number): RepoBlock | null {
   let found: RepoBlock | null = null;
   for (const block of blocks) {
-    if (Math.abs(x - block.x) > block.width / 2 || Math.abs(z - block.z) > block.depth / 2) continue;
+    if (!(Math.abs(x - block.x) <= block.width / 2 && Math.abs(z - block.z) <= block.depth / 2)) continue;
     if (!found || block.level > found.level) found = block;
   }
   return found;
 }
 
+/** How far above the table top the model's plates start (observatory.ts lays them on a thin inlay). */
+export const INLAY_M = 0.006;
+
 /**
- * Which district the eye is looking at: the gaze ray meets the plane of the
- * table top (the towers are low enough that the plane is the honest pick at
- * reading distance). Null when looking up, or off the model.
+ * Which district the eye is looking at: the first block the gaze ray enters,
+ * tower side or roof, in the table's own frame. Towers stand up to a fifth of
+ * a metre, so the table's plane alone would name the district behind the one
+ * looked at. Null when the ray misses the model.
  */
 export function gazeBlock(
   model: RepoModel, blocks: readonly RepoBlock[],
   eye: { x: number; y: number; z: number }, direction: { x: number; y: number; z: number },
 ): RepoBlock | null {
-  const top = model.position[1] + model.tableHeight;
-  if (direction.y >= -1e-3 || eye.y <= top) return null;
-  const t = (top - eye.y) / direction.y;
-  const hit = toTable(model, eye.x + direction.x * t, eye.z + direction.z * t);
-  return blockAt(blocks, hit.x, hit.z);
+  const origin = toTable(model, eye.x, eye.z);
+  const yaw = -model.yawDeg * Math.PI / 180;
+  const c = Math.cos(yaw), s = Math.sin(yaw);
+  const d = { x: direction.x * c + direction.z * s, y: direction.y, z: -direction.x * s + direction.z * c };
+  const base = model.position[1] + model.tableHeight + INLAY_M;
+  let found: RepoBlock | null = null;
+  let nearest = Number.POSITIVE_INFINITY;
+  for (const block of blocks) {
+    const t = enterBox(
+      [origin.x, eye.y, origin.z], [d.x, d.y, d.z],
+      [block.x - block.width / 2, base + block.level * PLATE_M, block.z - block.depth / 2],
+      [block.x + block.width / 2, base + block.height, block.z + block.depth / 2],
+    );
+    if (t === null) continue;
+    // A tower and the plate it stands on can be met at the same point: the deeper one is what is seen.
+    if (t < nearest - 1e-6 || (Math.abs(t - nearest) <= 1e-6 && found && block.level > found.level)) {
+      nearest = t;
+      found = block;
+    }
+  }
+  return found;
+}
+
+/** Where a ray enters an axis-aligned box (slab test), or null when it misses or the box is behind. */
+function enterBox(o: readonly number[], d: readonly number[], lo: readonly number[], hi: readonly number[]): number | null {
+  let near = 0;
+  let far = Number.POSITIVE_INFINITY;
+  for (let axis = 0; axis < 3; axis++) {
+    if (!(hi[axis]! - lo[axis]! >= 0)) return null;
+    if (Math.abs(d[axis]!) < 1e-9) {
+      if (o[axis]! < lo[axis]! || o[axis]! > hi[axis]!) return null;
+      continue;
+    }
+    let t1 = (lo[axis]! - o[axis]!) / d[axis]!;
+    let t2 = (hi[axis]! - o[axis]!) / d[axis]!;
+    if (t1 > t2) [t1, t2] = [t2, t1];
+    near = Math.max(near, t1);
+    far = Math.min(far, t2);
+    if (near > far) return null;
+  }
+  return near;
 }

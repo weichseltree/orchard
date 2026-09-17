@@ -1,5 +1,5 @@
 import type { Mansion, Room } from "../world/schema";
-import { BODY_RADIUS, insideRoom, reachableRooms } from "../world/navigation";
+import { BODY_RADIUS, insideRoom, reachableRooms, roomAt } from "../world/navigation";
 import { floorAt } from "../world/terrain";
 import { clampPitch, moveTo, STRIDE, type Body } from "./locomotion";
 
@@ -25,6 +25,17 @@ export interface Glide {
 
 export type GlideRefusal = "no floor" | "locked" | "out of reach" | "in the way";
 
+/**
+ * The room a floor point belongs to for this body: one of its own scale, its
+ * own room when that holds the point, else the one whose floor is nearest the
+ * height given. Rooms stand over one another (the club under the north wing),
+ * so a plan position alone does not name a room.
+ */
+export function roomUnder(mansion: Mansion, body: Body, x: number, z: number, y = body.y, radius = BODY_RADIUS): Room | undefined {
+  const scale = mansion.rooms.find((r) => r.id === body.room)?.scale ?? 1;
+  return roomAt({ ...mansion, rooms: mansion.rooms.filter((r) => r.scale === scale) }, x, z, radius, y, body.room);
+}
+
 /** How near the walk must end to the point asked for, metres. */
 const ARRIVE_M = 0.05;
 
@@ -42,8 +53,7 @@ export function planGlide(
   locked?: (roomId: string) => boolean,
   face?: { yaw: number; pitch: number },
 ): Glide | GlideRefusal {
-  const here = mansion.rooms.find((r) => r.id === body.room);
-  const room = mansion.rooms.find((r) => r.scale === (here?.scale ?? 1) && insideRoom(r, x, z, BODY_RADIUS));
+  const room = roomUnder(mansion, body, x, z);
   if (!room) return "no floor";
   if (room.id !== body.room) {
     if (locked?.(room.id)) return "locked";

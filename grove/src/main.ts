@@ -461,7 +461,11 @@ const commands: Commands = {
     return go && !view.renderer.xr.isPresenting ? go.point(at) : "nothing";
   },
   nextExhibit: (delta) => {
-    if (!view.renderer.xr.isPresenting) void loadGo().then((loaded) => loaded.next(delta));
+    if (!view.renderer.xr.isPresenting) {
+      void loadGo().then((loaded) => {
+        if (!view.renderer.xr.isPresenting) loaded?.next(delta);
+      });
+    }
   },
   toggleMap: () => void toggleMap(),
   release: () => go?.release(),
@@ -483,8 +487,9 @@ const commands: Commands = {
  * the first click usually finds them already here.
  */
 let go: Go | null = null;
-let goLoad: Promise<Go> | null = null;
-function loadGo(): Promise<Go> {
+let goLoad: Promise<Go | null> | null = null;
+/** Null when the download failed; the next ask tries again. */
+function loadGo(): Promise<Go | null> {
   goLoad ??= import("./control/go").then(({ Go: Pointing }) => (go = new Pointing({
     mansion,
     body,
@@ -496,7 +501,10 @@ function loadGo(): Promise<Go> {
     keys: !device.touch,
     locked: lockedRoom,
     notice,
-  })));
+  })), () => {
+    goLoad = null;
+    return null;
+  });
   return goLoad;
 }
 
@@ -508,7 +516,8 @@ function loadGo(): Promise<Go> {
 function goToRoom(id: string): boolean {
   const room = roomById(mansion, id);
   if (!room || view.renderer.xr.isPresenting) return false;
-  if (!teleport(body, mansion, room.spawn.position[0], room.spawn.position[2], lockedRoom)) return false;
+  // `into`: rooms stand over one another, and the spawn's plan position alone could name the one above.
+  if (!teleport(body, mansion, room.spawn.position[0], room.spawn.position[2], lockedRoom, { into: id })) return false;
   go?.release();
   body.yaw = MathUtils.degToRad(room.spawn.yawDeg);
   body.pitch = 0;
@@ -516,9 +525,11 @@ function goToRoom(id: string): boolean {
   return true;
 }
 
-let mapLoad: Promise<RoomMap> | null = null;
+let mapLoad: Promise<RoomMap | null> | null = null;
+let mapWaiting = false;
 async function toggleMap(): Promise<void> {
-  if (view.renderer.xr.isPresenting) return;
+  // A second press while the plan is still downloading is the same press.
+  if (view.renderer.xr.isPresenting || mapWaiting) return;
   mapLoad ??= import("./ui/map").then(({ RoomMap: Plan }) => new Plan(hudRoot!, (id) => {
     if (!goToRoom(id)) {
       notice(`No open way leads to ${roomTitleOf(id)} from here.`);
@@ -527,8 +538,14 @@ async function toggleMap(): Promise<void> {
     canvas!.focus();
     if (!device.touch) desktopControls?.requestLock();
     return true;
-  }));
-  const plan = await mapLoad;
+  }), () => {
+    mapLoad = null;
+    notice("The plan could not load. Try again in a moment.");
+    return null;
+  });
+  mapWaiting = true;
+  const plan = await mapLoad.finally(() => { mapWaiting = false; });
+  if (!plan || view.renderer.xr.isPresenting) return;
   if (plan.open) {
     plan.close();
     return;

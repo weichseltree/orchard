@@ -12,7 +12,7 @@ import { onPulse } from "./pulse";
 import { VENUE_TINT } from "./venue";
 import { PORTAL_TINT } from "./portal-shader";
 import { SEALED_TINT, sealedLens } from "./sealed";
-import { PLATE_M, fromTable, layoutRepoModel } from "./repo-model";
+import { INLAY_M, PLATE_M, fromTable, layoutRepoModel } from "./repo-model";
 
 // The palace's architecture, generated at runtime from mansion.json: a
 // nocturne of mineral walls, brass and luminous inlays. Rooms may stand at
@@ -1073,15 +1073,15 @@ function repoTables(b: Builder): void {
     b.add("box", "brass", x, top - 0.03, z, width + 0.16, 0.06, depth + 0.16, turn);
     b.add("box", "roof", x, top + 0.002, z, width + 0.04, 0.008, depth + 0.04, turn);
     for (const block of layoutRepoModel(model)) {
-      if (block.width < 0.01 || block.depth < 0.01) continue;
+      if (!(block.width >= 0.01 && block.depth >= 0.01)) continue;
       const at = fromTable(model, block.x, block.z);
       const bottom = block.level * PLATE_M;
       const finish: Finish = block.leaf ? "stone" : block.level % 2 === 0 ? "inset" : "joint";
-      b.add("box", finish, at.x, top + 0.006 + (bottom + block.height) / 2, at.z, block.width, block.height - bottom, block.depth, turn);
+      b.add("box", finish, at.x, top + INLAY_M + (bottom + block.height) / 2, at.z, block.width, block.height - bottom, block.depth, turn);
       if (block.leaf && block.room) {
         // A folder with a room of its own carries a small lamp on its roof, not a lit roof.
         const cap = Math.min(0.22, block.width * 0.4, block.depth * 0.4);
-        b.add("box", "light", at.x, top + 0.006 + block.height + 0.015, at.z, cap, 0.03, cap, turn);
+        b.add("box", "light", at.x, top + INLAY_M + block.height + 0.015, at.z, cap, 0.03, cap, turn);
       }
     }
     // A ring of light over the model, as wide as the model, high enough to walk under.

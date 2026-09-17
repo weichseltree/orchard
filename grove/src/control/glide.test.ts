@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import mansionDocument from "../world/mansion.json";
 import { parseMansion } from "../world/schema";
 import { BODY_RADIUS } from "../world/navigation";
-import { ease, floorHit, glideSeconds, planGlide, stepGlide, wrap, type Glide } from "./glide";
+import { ease, floorHit, glideSeconds, planGlide, roomUnder, stepGlide, wrap, type Glide } from "./glide";
 import { createBody } from "./locomotion";
 
 const mansion = parseMansion(mansionDocument);
@@ -14,6 +14,16 @@ function glideAll(body: ReturnType<typeof createBody>, glide: Glide, locked?: (i
 }
 
 describe("a glide target is checked the way a walk would be", () => {
+  it("glides on a floor that lies under another room's (the club under the north wing)", () => {
+    const body = createBody(0, -64, 0, "club");
+    body.y = -5;
+    const glide = planGlide(mansion, body, 1, -66);
+    if (typeof glide === "string") throw new Error(glide);
+    expect(glideAll(body, glide)).toBe("arrived");
+    expect(body.room).toBe("club");
+    expect(roomUnder(mansion, createBody(0, -40, 0, "orangery", 1, 1.5), 0, -40)?.id).toBe("orangery");
+  });
+
   it("plans a glide across the room and arrives on the point", () => {
     const body = createBody(0, 10, 0, "hall");
     const glide = planGlide(mansion, body, 4, -6);
