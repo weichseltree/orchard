@@ -14,7 +14,8 @@ import type { RoomShell } from "./rooms";
 /**
  * The dome's radius, metres. It stands over the middle of the room and has
  * to satisfy both ends: wide enough that everything hung in the room is
- * inside it (the worlds reach 198 m from the centre), and narrow enough that
+ * inside it (the chi 6 world's far side reaches 206 m from the centre, the
+ * furthest of the three), and narrow enough that
  * its far wall stays within the eye's own range — 600 m — from the furthest
  * corner a visitor can walk to, 228 m out. At the 560 m it was, looking back
  * across the room cut a starless hole out of the sky where the far wall

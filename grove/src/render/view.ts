@@ -19,13 +19,15 @@ import { FrameClock } from "./frame-clock";
 
 /** Default eye height; an asset's spawn marker overrides it (hall.json: 1.6). */
 export const EYE_HEIGHT = 1.6;
+/** The nearest the eye draws, metres. */
+export const VIEW_NEAR = 0.05;
 /**
  * How far the eye sees, metres. Every backdrop a room stands inside has to
  * fit within this from anywhere in that room — the sky dome (400 m around a
- * 130 m palace) and the Orrery's star dome both do their sums against it —
- * and a portal's far view stretches it by the far room's scale (portal.ts).
+ * 130 m palace) and the Orrery's star dome (320 m) both do their sums
+ * against it — and a portal's far view stretches both planes by the far
+ * room's scale (portal.ts).
  */
-export const VIEW_NEAR = 0.05;
 export const VIEW_FAR = 600;
 // The sky dome and tape volume still rely on ShaderMaterial, which Three's
 // WebGPU backend logs as incompatible during the quality run. Keep the async

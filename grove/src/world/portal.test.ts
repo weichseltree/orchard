@@ -644,11 +644,14 @@ describe("PortalSystem", () => {
     const rig = new Rig();
     // Where the garden sets a visitor down, facing the armillary. The walk
     // is what this test rests on, so it says what it needs of the document:
-    // far enough out that the eye's own range falls short over there, near
-    // enough that a far view is rendered at all.
+    // far enough out that the eye's own range falls short of the furthest
+    // world over there, near enough that a far view is rendered at all.
+    const worlds = orreryRoom.hangings[0]!;
+    if (worlds.kind !== "planet") throw new Error("the Orrery's hanging is the planet");
+    const deepest = Math.max(...worlds.worlds.map((w) => new Vector3(...w.position).distanceTo(garden.exit)));
     const spawn = new Vector3(gardenRoom.spawn.position[0], gardenRoom.spawn.position[1] + 1.6, gardenRoom.spawn.position[2]);
     const walk = spawn.distanceTo(garden.center);
-    expect(walk).toBeGreaterThan(rig.camera.far / garden.ratio);
+    expect(walk).toBeGreaterThan((rig.camera.far + deepest) / garden.ratio);
     expect(walk).toBeLessThan(garden.radius * LIVE_WITHIN_RADII);
 
     rig.place(spawn, new Vector3(-1, 0, 0));
@@ -670,7 +673,7 @@ describe("PortalSystem", () => {
     const frustum = new Frustum().setFromProjectionMatrix(
       new Matrix4().multiplyMatrices(far.projectionMatrix, far.matrixWorldInverse),
     );
-    const planet = orreryRoom.hangings.find((hanging) => hanging.kind === "planet")!;
+    const planet = worlds;
     // A thousand seven hundred Orrery metres out: with the garden's own six
     // hundred the frustum stopped short of every one of them and the
     // armillary was a black dome (the Orrery empty through the portal).
@@ -818,9 +821,9 @@ describe("the Orrery in the document", () => {
     expect(planet.worlds.map((w) => w.world)).toEqual(["adiabat-chi0", "adiabat-chi6", "adiabat-chi12"]);
     for (const world of planet.worlds) {
       expect(world.cutToward).toEqual(armillary.exit.position);
-      // Each world clears the walking plane and stays inside the star dome.
+      // Each world clears the walking plane; the star dome that holds them
+      // is the next test's, which measures it against the dome itself.
       expect(world.position[1] - planet.radiusMeters).toBeGreaterThan(5);
-      expect(Math.hypot(world.position[0] - orrery.center.x, world.position[2] - orrery.center.z)).toBeLessThan(200);
     }
   });
 
@@ -845,6 +848,11 @@ describe("the Orrery in the document", () => {
       }
     }
     expect(corner + STAR_DOME_RADIUS).toBeLessThan(VIEW_FAR);
+    // And wide enough for the armillary: seen from the garden the dome is
+    // shrunk by the scale ratio, and below the lens's own radius it would
+    // stop covering it — stars would give way to the page's background in
+    // the middle of the portal.
+    expect(STAR_DOME_RADIUS / garden.ratio).toBeGreaterThan(garden.radius);
   });
 
   it("is a neighbour of the garden through the portal, both ways, and the garden's cells come with it", () => {

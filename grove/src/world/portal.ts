@@ -178,9 +178,10 @@ export function farEye(end: PortalEnd, eye: Vector3, t: number, out = new Vector
  *
  * It assumes what the document holds to: a room's content stands within the
  * eye camera's own range of the exit it is entered by — six hundred metres
- * here, against the Orrery's star dome of five hundred and sixty. A room
- * drawn wider than that clips at the crossing, where the scale is one, and
- * no scale factor can help it.
+ * here, against the five hundred and forty-eight the Orrery's star dome
+ * reaches from the furthest corner of its walk. A room drawn wider than
+ * that clips at the crossing, where the scale is one, and no scale factor
+ * can help it.
  */
 export function farDepthScale(end: Pick<PortalEnd, "ratio">, t: number): number {
   return Math.max(Math.pow(end.ratio, 1 - t), 1);
@@ -214,7 +215,13 @@ export interface PortalFrame {
   body: { room: string; scale: number; x: number; z: number };
   /** Seconds since the previous frame; what the intent estimate integrates over. */
   dt: number;
-  camera: Camera;
+  /**
+   * The eye. A perspective one by contract, not by hope: the far view is the
+   * eye's own projection with its depth range scaled (`#renderFar`), and the
+   * term that carries the range is the one that only a perspective
+   * projection has. Every caller passes `view.camera`, which is one.
+   */
+  camera: PerspectiveCamera;
   scene: Scene;
   /** The group that holds the world; everything else in the scene is hidden from the far view. */
   worldRoot: Object3D;
@@ -506,7 +513,7 @@ export class PortalSystem {
     }
     this.#liveEnd = live;
     if (live) {
-      const fov = ((camera as PerspectiveCamera).fov ?? 60) * (Math.PI / 180);
+      const fov = camera.fov * (Math.PI / 180);
       const coverage = screenCoverage(nearestDistance, live.radius, fov);
       this.#renderFar(live, frame, _eye, nearestBlend, viewScaleFor(nearestBlend, coverage, VIEW_SCALE_MIN));
     }
@@ -602,26 +609,25 @@ export class PortalSystem {
     // The eye's own lens, reaching the far room's distances: multiplying
     // both planes by `s` scales exactly one element of a perspective
     // projection, -2fn/(f-n), by `s`, and leaves every term that shapes the
-    // frustum alone — an off-centre eye, a film or view offset and either
-    // coordinate system included. So the far view stays the same window,
-    // lined up with the near one pixel for pixel, and only its depth range
-    // is the far room's (`farDepthScale`); the shader reads colour, never
-    // depth, and the slide to one at the crossing stays smooth. The fields
-    // are set to match, for a backend that rebuilds a camera's projection
-    // itself (the WebGPU one does, on its first sight of a camera).
-    const source = camera as PerspectiveCamera;
+    // frustum alone — an off-centre eye, a film or view offset, reversed
+    // depth and either coordinate system included. So the far view stays the
+    // same window, lined up with the near one pixel for pixel, and only its
+    // depth range is the far room's (`farDepthScale`); the shader reads
+    // colour, never depth, and the slide to one at the crossing stays
+    // smooth. It is the one term an orthographic projection does not carry,
+    // which is why `PortalFrame` asks for a perspective eye and this needs
+    // no branch. The fields are set to match, for a backend that rebuilds a
+    // camera's projection itself (the WebGPU one does, on first sight).
     const depth = farDepthScale(end, t);
-    if (source.isPerspectiveCamera) {
-      far.fov = source.fov;
-      far.aspect = source.aspect;
-      far.zoom = source.zoom;
-      far.filmGauge = source.filmGauge;
-      far.filmOffset = source.filmOffset;
-      far.view = source.view ? { ...source.view } : null;
-      far.near = source.near * depth;
-      far.far = source.far * depth;
-    }
-    far.projectionMatrix.copy(source.projectionMatrix);
+    far.fov = camera.fov;
+    far.aspect = camera.aspect;
+    far.zoom = camera.zoom;
+    far.filmGauge = camera.filmGauge;
+    far.filmOffset = camera.filmOffset;
+    far.view = camera.view ? { ...camera.view } : null;
+    far.near = camera.near * depth;
+    far.far = camera.far * depth;
+    far.projectionMatrix.copy(camera.projectionMatrix);
     far.projectionMatrix.elements[14]! *= depth;
     far.projectionMatrixInverse.copy(far.projectionMatrix).invert();
     far.updateMatrixWorld(true);
