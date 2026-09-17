@@ -213,8 +213,9 @@ hud.definePanel("sources", {
     if (!provenance.open) provenance.show(view.camera);
   },
   onClose: () => {
-    // Closing a framed exhibit's record is walking on from it.
-    if (!go?.release()) provenance.close();
+    // Closing a framed exhibit's record is walking on from it; a glide keeps going.
+    go?.releaseFraming();
+    provenance.close();
   },
 });
 // A framed exhibit shows its record: in the Sources panel, without taking the view's focus.

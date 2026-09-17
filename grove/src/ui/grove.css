@@ -501,12 +501,13 @@ noscript a { color: var(--accent); }
     text-align: left;
   }
   .touch .top-left > .location:hover { color: inherit; }
-  /* A framed exhibit's readout under the room card, clear of Sound on at the right. */
+  /* A framed exhibit's readout under the room card, and under Sound on / Enter VR when they show. */
   .touch .exhibit-index {
     top: calc(max(12px, env(safe-area-inset-top)) + var(--card-h, 90px) + 8px);
-    left: var(--gutter-l); right: calc(var(--gutter-r) + 110px);
+    left: var(--gutter-l); right: var(--gutter-r);
     transform: none; max-width: none; z-index: 3; border-radius: 0;
   }
+  #hud.touch:has(.top-right > .btn:not([hidden])) .exhibit-index { top: calc(max(12px, env(safe-area-inset-top)) + var(--card-h, 90px) + 60px); }
   .touch .top-left > .status {
     padding: 4px 14px 10px;
     background: transparent; border: 0; border-radius: 0; backdrop-filter: none;
@@ -630,6 +631,7 @@ noscript a { color: var(--accent); }
   .touch .scrubber { left: auto; right: var(--gutter-r); bottom: 12px; width: min(480px, calc(100vw - var(--rail) - 150px)); }
   .touch .atlas { left: auto; right: var(--gutter-r); bottom: 12px; transform: none; max-width: min(480px, calc(100vw - var(--rail) - 150px)); }
   .touch .chat { left: auto; right: var(--gutter-r); bottom: calc(var(--tape, 0px) + 24px); width: var(--side); }
+  .touch .exhibit-index { left: calc(var(--gutter-l) + var(--rail)); right: calc(var(--gutter-r) + var(--side) + 12px); }
   .touch .human-check { bottom: calc(var(--tape, 0px) + 24px); }
   .touch .panel-column {
     left: calc(var(--gutter-l) + var(--rail)); top: max(12px, env(safe-area-inset-top)); bottom: 12px;
@@ -821,6 +823,8 @@ noscript a { color: var(--accent); }
     flex-wrap: wrap;
   }
   #hud[data-panel]:not(.phone-layout) .hint { display: none; }
+  /* The framed readout keeps to the strip too, above the offer. */
+  #hud[data-panel]:not(.phone-layout) .exhibit-index { left: var(--beside); right: var(--margin); max-width: none; transform: none; white-space: normal; }
   /* Cloudflare's box is 300 px wide and must be clicked: over the column, not under it. */
   #hud[data-panel]:not(.phone-layout) .human-check { z-index: 3; }
 }
@@ -835,6 +839,8 @@ noscript a { color: var(--accent); }
   #hud[data-panel]:not(.phone-layout) .game-offer { left: var(--col-left); bottom: calc(var(--col-bottom) + 8px); z-index: 3; }
   /* It would lie on the chat's line and Say; G still opens the game. */
   #hud[data-panel="chat"]:not(.phone-layout) .game-offer { display: none; }
+  #hud[data-panel]:not(.phone-layout) .exhibit-index { left: var(--col-left); bottom: calc(var(--col-bottom) + 8px); }
+  #hud[data-panel]:not(.phone-layout):has(> .exhibit-index:not([hidden])) .game-offer { bottom: calc(var(--col-bottom) + 52px); }
 }
 #hud:not(.phone-layout) .hint { bottom: 104px; max-width: calc(100vw - var(--content-left) - 32px); border-radius: 0; }
 #hud:not(.phone-layout) .game-offer { bottom: 160px; border-radius: 0; }

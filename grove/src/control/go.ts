@@ -116,11 +116,16 @@ export class Go {
     const active = this.#glide !== null || this.#framed !== null;
     this.#glide = null;
     this.marker.visible = false;
-    if (!this.#framed) return active;
+    this.releaseFraming();
+    return active;
+  }
+
+  /** Walks on from a framed exhibit only; a glide under way keeps going. */
+  releaseFraming(): void {
+    if (!this.#framed) return;
     this.#framed = null;
     this.#readout.hidden = true;
     this.#options.provenance.close();
-    return active;
   }
 
   /** One frame. Walking ends it all; looking around gives the head back but keeps the glide. True while gliding. */
