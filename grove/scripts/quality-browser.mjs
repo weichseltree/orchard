@@ -64,6 +64,8 @@ const profiles = [
   { name: 'phone-landscape', width: 844, height: 390, touch: true },
   // Older 16:9 phones turned sideways: 640 wide, so only the height says landscape.
   { name: 'small-landscape', width: 640, height: 360, touch: true },
+  // An iPhone SE in Safari once its bars are counted.
+  { name: 'short-phone', width: 375, height: 553, touch: true },
 ];
 const android = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/153.0.0.0 Mobile Safari/537.36';
 const tags = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
@@ -272,6 +274,14 @@ async function appAudit(profile) {
       const chat = document.querySelector('.chat');
       const chatHidden = chat?.hidden;
       if (chat) chat.hidden = false;
+      // A room that has been talking: fill the log so the chat is measured at its cap.
+      const lines = [];
+      for (let i = 0; i < 12; i++) {
+        const line = document.createElement('li');
+        line.textContent = `line ${i} of a conversation that has been going on for a while`;
+        lines.push(line);
+      }
+      chat?.querySelector('.chat-log')?.append(...lines);
       const rect = (selector) => {
         const el = document.querySelector(selector);
         if (!el || !el.getClientRects().length) return null;
@@ -279,6 +289,7 @@ async function appAudit(profile) {
         return { x: r.x, y: r.y, right: r.right, bottom: r.bottom, width: r.width, height: r.height };
       };
       const measured = { width: innerWidth, height: innerHeight, transport: rect('.scrubber'), stick: rect('.stick'), top: rect('.top-right'), location: rect('.location'), notices: rect('.notices'), chat: rect('.chat'), dock: rect('.dock') };
+      for (const line of lines) line.remove();
       if (chat) chat.hidden = chatHidden;
       return measured;
     });
@@ -291,7 +302,8 @@ async function appAudit(profile) {
       check(`${name}: the dock is shown`, layout.dock !== null);
       check(`${name}: the room card clears the joystick`, overlapArea(layout.location, layout.stick) === 0);
       check(`${name}: the dock clears the joystick and tape controls`, overlapArea(layout.dock, layout.stick) === 0 && overlapArea(layout.dock, layout.transport) === 0);
-      if (layout.chat) check(`${name}: chat clears the joystick, tape controls and top buttons`, overlapArea(layout.chat, layout.stick) === 0 && overlapArea(layout.chat, layout.transport) === 0 && overlapArea(layout.chat, layout.top) === 0);
+      if (layout.chat) check(`${name}: chat clears the joystick, tape controls and top buttons`, overlapArea(layout.chat, layout.stick) === 0 && overlapArea(layout.chat, layout.transport) === 0 && overlapArea(layout.chat, layout.top) === 0 && overlapArea(layout.chat, layout.location) === 0);
+      check(`${name}: notices have room under the room card`, layout.notices !== null && layout.notices.height >= 40, layout.notices);
     }
     await page.getByRole('button', { name: 'Guide', exact: true }).focus();
     const playingBefore = await page.evaluate(() => window.grove.world.tape.playing);

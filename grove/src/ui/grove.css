@@ -544,18 +544,19 @@ noscript a { color: var(--accent); }
   /* The column under the room card ends above the stick and chat: notices
      fill the space between, oldest clipped first, and the game offer keeps
      its place at the bottom of that column. */
-  #hud.touch { grid-template-rows: auto auto minmax(0, 1fr) auto; }
+  #hud.touch { grid-template-rows: auto auto minmax(40px, 1fr) auto; }
   .touch .notices { grid-row: 3; align-self: stretch; min-height: 0; overflow: hidden; justify-content: flex-end; }
   .touch .game-offer { grid-row: 4; }
 }
 
 /* Portrait: the dock along the bottom edge. `--tape` is the height of the
    tape or planet controls showing, measured by hud.ts; 0 without either. */
-@media (max-width: 640px) and (min-height: 501px) {
+@media (max-width: 640px) and (min-height: 501px), (max-width: 640px) and (orientation: portrait) {
   #hud.touch {
     --dock: calc(78px + env(safe-area-inset-bottom));
     --lift: calc(var(--dock) + var(--tape, 0px) + 24px);
-    --chat: 236px;
+    /* Up to 236 px, less on a short phone so the card column keeps its room. */
+    --chat: clamp(118px, calc(100dvh - var(--lift) - 240px), 236px);
     padding-bottom: calc(var(--lift) + var(--chat) + 12px);
   }
   .touch .dock {
@@ -589,14 +590,14 @@ noscript a { color: var(--accent); }
 /* Landscape (and any phone too short for a bottom dock): a rail down the
    left edge; the stick bottom-left, the tape or planet controls bottom-right
    and the chat above them in a right-hand column. */
-@media (max-height: 500px) {
+@media (max-height: 500px) and (orientation: landscape) {
   #hud.touch {
     --rail: 62px;
     --side: min(300px, 40vw);
     --chat: calc(100dvh - var(--tape, 0px) - 48px - max(12px, env(safe-area-inset-top)));
     padding-left: calc(var(--gutter-l) + var(--rail));
     /* The column under the card stops above the stick. */
-    padding-bottom: 128px;
+    padding-bottom: max(128px, calc(var(--tape, 0px) + 24px));
     /* ...and left of the chat. */
     padding-right: calc(var(--gutter-r) + var(--side) + 12px);
   }
