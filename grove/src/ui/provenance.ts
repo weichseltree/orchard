@@ -121,6 +121,18 @@ export class Provenance {
     return this.#targets.find((t) => t.hanging === id && !t.id.startsWith("plaque:")) ?? null;
   }
 
+  /** What the open panel is about, for the heading over it. */
+  get title(): string {
+    return this.#title;
+  }
+
+  /**
+   * Told whenever a record is shown, by the view ray (P) or by a caller that
+   * chose it (a framed exhibit), so the HUD can open the panel it lives in.
+   */
+  onShow: () => void = () => undefined;
+  #title = "Nothing in view";
+
   toggle(camera: PerspectiveCamera): void {
     if (this.open) this.close();
     else this.show(camera);
@@ -134,11 +146,13 @@ export class Provenance {
   /** Opens the panel on a record the caller chose (a framed exhibit) rather than on the view ray. */
   showRecord(title: string, record: Record<string, unknown>, target: ProvenanceTarget | null = null): void {
     this.#current = target;
+    this.#title = target ? title : "Nothing in view";
     this.open = true;
     const entries = flatten(record);
     this.#renderDom(title, entries);
     this.#renderCanvas(title, entries);
     this.#dom.hidden = false;
+    this.onShow();
   }
 
   close(): void {

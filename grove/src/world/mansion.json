@@ -863,13 +863,13 @@
             "id": "1b2687bcef4bbd7d"
           },
           "position": [
-            -4.5,
+            4.5,
             1.5,
             24
           ],
           "rotationDeg": [
-            -120,
-            0,
+            60,
+            180,
             0
           ],
           "longSideMeters": 6,
@@ -884,7 +884,7 @@
           "pointSize": 120,
           "pedestal": {
             "position": [
-              -4.5,
+              4.5,
               0,
               21
             ],
@@ -908,13 +908,13 @@
             "id": "d02b3361a7c42fb3"
           },
           "position": [
-            4.5,
+            -4.5,
             1.5,
             24
           ],
           "rotationDeg": [
-            -120,
-            0,
+            60,
+            180,
             0
           ],
           "longSideMeters": 6,
@@ -929,7 +929,7 @@
           "pointSize": 120,
           "pedestal": {
             "position": [
-              4.5,
+              -4.5,
               0,
               21
             ],
@@ -1006,7 +1006,7 @@
           "position": [
             -6.5,
             1,
-            16
+            17
           ],
           "rotationDeg": [
             -90,
@@ -1018,7 +1018,7 @@
             "position": [
               -6.5,
               0,
-              14
+              14.5
             ],
             "rotationDeg": [
               0,

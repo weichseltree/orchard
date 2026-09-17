@@ -48,8 +48,9 @@ it is. The architecture is generated in the browser from one scene document
   pavilion at each end of the terrace descends to an undercroft that opens into
   a vaulted dance floor with a bar, booths, a DJ's desk and a raised stage. Its
   door opens only to a visitor whose microphone and sound are on; the stage
-  only to a headset. The lights pulse to the floor's music once its live
-  stream plays. [CLUB.md](docs/specs/CLUB.md) is the design and what it still
+  only to a headset. The floor plays a live stream, a seeded techno set
+  encoded on the host only while someone is in the club, and the lights pulse
+  to it. [CLUB.md](docs/specs/CLUB.md) is the design and what it still
   asks for.
 
 ## What you can do
@@ -78,8 +79,8 @@ it is. The architecture is generated in the browser from one scene document
 This is a working platform, not a finished one. Playback, rooms, media
 bundles, presence, chat, voice to the host, areas and the local dashboard are
 implemented and live. **Quest and iPhone hardware validation remains open.**
-Voice between visitors, the club's live stream and its karaoke queue, and
-room acoustics are the work ahead; [CLUB.md](docs/specs/CLUB.md) §5 to §7 and
+Voice between visitors, the club's karaoke queue and room acoustics are the
+work ahead; [CLUB.md](docs/specs/CLUB.md) §5 to §7 and
 [BACKLOG.md](docs/BACKLOG.md) say in what order.
 
 ## New in September 2026
@@ -114,7 +115,7 @@ room acoustics are the work ahead; [CLUB.md](docs/specs/CLUB.md) §5 to §7 and
   phones in both orientations; the walking stick stays bottom-left.
 - **Live audio exhibits.** A stream is a name with no bytes behind it, never
   cached; the per-tier ladder of positioned sources and the field behind it
-  are built and waiting for the first stream
+  are built, and the club's floor is the first stream
   ([AUDIO-STREAM.md](docs/specs/AUDIO-STREAM.md)).
 
 ## Run the local demo
@@ -234,7 +235,7 @@ what an area admin may and may not do.
 | [packages/tape/](packages/tape/README.md) | Shared particle tape format and Python reader/writer |
 | [packages/score/](packages/score/) | The score a live audio exhibit publishes beside its stream |
 | [spacetime/](spacetime/) | World state, presence, chat, exhibits, areas and moderation |
-| [deploy/](deploy/) | Faye's service and the host's sync timer and audit, as systemd user units |
+| [deploy/](deploy/) | Faye's service, the club's stream encoder, and the host's sync timer and audit, as systemd user units |
 | [trees/](trees/) | Draft manifests and mirrored research manifests |
 | [studio/](studio/README.md) | Planned shared episode production tools |
 | [docs/specs/](docs/specs/) | Design specs, the newer ones ending in the host's rulings |
