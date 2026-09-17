@@ -559,7 +559,7 @@
           ],
           "sizeMeters": 1.6,
           "plinth": {
-            "heightMeters": 2.0
+            "heightMeters": 0.442
           }
         },
         {
@@ -586,7 +586,7 @@
           ],
           "sizeMeters": 1.6,
           "plinth": {
-            "heightMeters": 4.237
+            "heightMeters": 0.937
           }
         },
         {
@@ -613,7 +613,7 @@
           ],
           "sizeMeters": 1.6,
           "plinth": {
-            "heightMeters": 4.895
+            "heightMeters": 1.082
           }
         },
         {
@@ -640,7 +640,7 @@
           ],
           "sizeMeters": 1.6,
           "plinth": {
-            "heightMeters": 4.895
+            "heightMeters": 1.082
           }
         },
         {
@@ -667,7 +667,7 @@
           ],
           "sizeMeters": 1.6,
           "plinth": {
-            "heightMeters": 6.349
+            "heightMeters": 1.403
           }
         },
         {
@@ -694,7 +694,7 @@
           ],
           "sizeMeters": 1.6,
           "plinth": {
-            "heightMeters": 7.0
+            "heightMeters": 1.547
           }
         },
         {
@@ -721,7 +721,7 @@
           ],
           "sizeMeters": 2.5,
           "plinth": {
-            "heightMeters": 0.6
+            "heightMeters": 0.3
           }
         },
         {
@@ -748,7 +748,7 @@
           ],
           "sizeMeters": 3.2,
           "plinth": {
-            "heightMeters": 0.7
+            "heightMeters": 0.3
           }
         },
         {
