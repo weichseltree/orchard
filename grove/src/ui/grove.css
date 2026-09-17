@@ -824,7 +824,9 @@ noscript a { color: var(--accent); }
   }
   #hud[data-panel]:not(.phone-layout) .hint { display: none; }
   /* The framed readout keeps to the strip too, above the offer. */
-  #hud[data-panel]:not(.phone-layout) .exhibit-index { left: var(--beside); right: var(--margin); max-width: none; transform: none; white-space: normal; }
+  #hud[data-panel]:not(.phone-layout) .exhibit-index { left: var(--beside); right: var(--margin); bottom: calc(var(--col-bottom) + 104px); max-width: none; transform: none; white-space: normal; }
+  /* The notices make room for the readout as well as the offer. */
+  #hud[data-panel]:not(.phone-layout):has(> .exhibit-index:not([hidden])) .notices { max-height: calc(100dvh - var(--col-top) - var(--col-bottom) - 152px); }
   /* Cloudflare's box is 300 px wide and must be clicked: over the column, not under it. */
   #hud[data-panel]:not(.phone-layout) .human-check { z-index: 3; }
 }
@@ -841,6 +843,9 @@ noscript a { color: var(--accent); }
   #hud[data-panel="chat"]:not(.phone-layout) .game-offer { display: none; }
   #hud[data-panel]:not(.phone-layout) .exhibit-index { left: var(--col-left); bottom: calc(var(--col-bottom) + 8px); }
   #hud[data-panel]:not(.phone-layout):has(> .exhibit-index:not([hidden])) .game-offer { bottom: calc(var(--col-bottom) + 52px); }
+  #hud[data-panel]:not(.phone-layout):has(> .exhibit-index:not([hidden])) .notices { bottom: calc(var(--col-bottom) + 116px); max-height: calc(40dvh - 44px); }
+  /* The record scrolls clear of the readout lying over the column's foot. */
+  #hud[data-panel]:not(.phone-layout):has(> .exhibit-index:not([hidden])) .panel-body { padding-bottom: 62px; }
 }
 #hud:not(.phone-layout) .hint { bottom: 104px; max-width: calc(100vw - var(--content-left) - 32px); border-radius: 0; }
 #hud:not(.phone-layout) .game-offer { bottom: 160px; border-radius: 0; }
