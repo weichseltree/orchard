@@ -208,40 +208,40 @@
       "limit": "Este es el episodio del profesor, no el de un agente entrenado, y la escala es un recurso para mirar; el agente nunca ve el lienzo como un lugar."
     },
     "quantumflow": {
-      "title": "La Galería de Tiro",
-      "kicker": "¿Por qué un electrón solo admite ciertas energías?",
-      "intro": "Gira el dial y una onda parte de la pared cercana, tanteando la sala. En casi todos los ajustes se dispersa antes de llegar a la pared del fondo. En unos pocos se tiende plana. Esos pocos no los eligió nadie: son los niveles permitidos.",
+      "title": "quantumflow",
+      "kicker": "¿Por qué un electrón solo puede tener ciertas energías?",
+      "intro": "Esta es la galería de tiro. Gire el dial y una onda parte de la pared cercana, tanteando la sala. En casi todos los ajustes se dispersa antes de llegar a la pared del fondo. En unos pocos se tiende plana. Esos pocos no los eligió nadie.",
       "lookFor": "Los pocos ajustes en que la onda queda plana en lugar de dispersarse."
     },
     "quantumflow/cloud": {
-      "title": "La Nube",
+      "title": "La nube",
       "kicker": "Entran seis ondas y sale una nube: ¿qué se pierde?",
-      "intro": "Cada orbital llega con su propio color y su propia forma. Se suman, y los colores se destiñen en una sola nube pálida. Todo lo que aquellos seis sabían sigue aquí dentro, y la pared del fondo lo demostrará sin añadir nada más.",
-      "lookFor": "El instante en que los colores desaparecen, y el pozo que después se rehace en la pared."
+      "intro": "Los orbitales llegan cada uno con su propio color y su propia forma. Se suman unos con otros, y los colores se destiñen hasta quedar en una sola nube pálida. Todo lo que aquellos seis sabían sigue aquí dentro, y la pared del fondo lo demostrará por sí sola.",
+      "lookFor": "El instante en que los colores desaparecen, y el pozo de potencial que después se rehace en la pared."
     },
     "quantumflow/bowl": {
-      "title": "El Cuenco",
-      "kicker": "¿Cómo se halla el punto más bajo de un paisaje que no puedes ver?",
-      "intro": "Dos superficies están una junto a otra. Una es un cuenco: empieces donde empieces, bajar lleva al único punto más bajo. La otra es abollada, y bajar puede dejarte varado en un hoyo que no es el fondo. Solo una merece confianza.",
+      "title": "El cuenco",
+      "kicker": "¿Cómo se halla el punto más bajo de un paisaje que no se ve?",
+      "intro": "Dos superficies están una junto a otra. Una es un cuenco: empiece donde empiece, bajar lleva al único punto más bajo. La otra está llena de bultos, y bajar puede dejarlo varado en un hoyo que no es el fondo. Solo de una de ellas se puede fiar.",
       "lookFor": "Los hoyos de la segunda superficie que no son su punto más bajo."
     },
     "quantumflow/inversion": {
-      "title": "La Inversión",
-      "kicker": "¿Basta la nube para revelar las fuerzas que la formaron?",
-      "intro": "Aquí se pone a prueba la tesis. En una pared, el pozo en que el electrón estuvo de verdad. En la otra, el pozo reconstruido solo a partir de la nube. Entre ambos cuelga la diferencia, a tamaño real, por grande que resulte.",
+      "title": "La inversión",
+      "kicker": "¿Basta la nube por sí sola para revelar las fuerzas que la formaron?",
+      "intro": "Aquí se pone a prueba la tesis. En una pared, el pozo de potencial en que el electrón estuvo de verdad. En la otra, el pozo reconstruido solo a partir de la nube, sin ver nunca las ondas. Entre ambos cuelga la diferencia, a tamaño real.",
       "lookFor": "La distancia entre los dos pozos, que es toda la medida de la tesis."
     },
     "quantumflow/flow": {
-      "title": "El Flujo",
-      "kicker": "¿Qué ocurrió cuando añadimos una regla que seguro ayudaría?",
-      "intro": "Una nube de partículas es llevada desde donde parte hasta donde debe terminar. Añadimos una restricción en la que creíamos por buenas razones, y medimos que empeoraba el viaje en todas las intensidades probadas. La curva contigua es ese resultado.",
-      "lookFor": "La curva de la pared, que sube donde esperábamos que bajara."
+      "title": "El flujo",
+      "kicker": "¿Qué ocurrió cuando el proyecto añadió una regla de la que estaba seguro que ayudaría?",
+      "intro": "Una nube de partículas es llevada desde donde parte hasta donde debe terminar. El proyecto añadió una restricción en la que creía por buenas razones, y midió que empeoraba el viaje en todas las intensidades probadas. La curva de al lado en la pared es ese resultado.",
+      "lookFor": "La curva de la pared, que sube donde debería bajar."
     },
     "quantumflow/inside": {
-      "title": "Dentro de la Nube",
-      "kicker": "¿Qué aspecto tiene un solo orbital visto desde dentro?",
-      "intro": "Has encogido hasta la escala de la nube. La bruma que te rodea es un orbital, dibujado donde su onda es más intensa. Cerca del centro hay una superficie que no puedes cruzar, porque allí la onda vale exactamente nada.",
-      "lookFor": "La superficie que no puedes atravesar, donde la onda cae a nada."
+      "title": "Dentro de la nube",
+      "kicker": "¿Qué aspecto tiene un solo orbital electrónico visto desde dentro?",
+      "intro": "Ha encogido hasta la escala de la nube. La bruma que le rodea es un orbital, dibujado donde su onda es más intensa. Cerca del centro hay una superficie que no puede cruzar, porque allí la onda es exactamente cero y nada puede estar ahí dentro.",
+      "lookFor": "La superficie que no puede atravesar, donde la onda cae a cero."
     }
   },
   "exhibits": {

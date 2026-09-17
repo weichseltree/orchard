@@ -307,3 +307,54 @@ area's furniture (its shelving) is not rendered; a visitor in the canvas
 room stands 400 m east at palace scale for the others in the area's one
 presence room, out of sight; the generator of TREE-AREAS.md §3 to §6 is
 still unbuilt, this is the authored path of §8.
+
+## The east wing: quantumflow (2026-09-17)
+
+Six rooms east of the orangery, entered by a 7 by 5.5 m opening in its east
+wall at z -55 — the widest in the palace, and thirteen metres clear of the
+orangery's other new door and eighteen of the FTL Chess table at z -73. The
+Shooting Gallery (`quantumflow`, x 10..52, z -70..-40) is the hall that door
+opens into and the hub the rest ring: the Cloud (52..90, -70..-40), the Bowl
+(52..90, -104..-70) and the Inversion (10..52, -104..-70) close a circuit back
+into it, and the Flow (10..52, -40..-20) returns the visitor to the orangery
+through a second door at z -37 rather than the length of the wing. All six
+stand at the orangery's floor of y 1.5, so no flight of steps is generated.
+Inside the Cloud (`quantumflow/inside`, 400..480, -160..-80) is a tenth of the
+palace's metre, reached by a portal in the Cloud.
+
+Why it is a hub and not an enfilade: the wing was first laid out as one line
+running to x 164. The light field is a single grid over every lit room with a
+budget of 1,500,000 bytes, and that laid out measured 1,728,496 — the palace
+growing eastward costs the whole grid, most of it the empty air between the
+palace and the wing. Folded back and capped at x 90 it is 1,199,016. Depth in
+z is free (the orchard cells already set that span); length in x is not. The
+fold is also the better reading of the brief: a hall the content is viewed
+from is a hub, not a corridor.
+
+Architecture: the wing's finish is indigo stone under cold white lamps, so
+what hangs carries the only warm colour in the rooms. The Shooting Gallery
+takes sconces by the standing rule (four open doorways); the Cloud, the Bowl
+and the Inversion have two each, so they are named in `SCONCED` directly —
+without that they bake to about a third of einstruct's light, being large
+rooms lit only by their door surrounds and one row of high halos. The portal
+stands at (80, 3.1, -46), off both the straight walk east from the orangery
+at z -55 and the run north to the Bowl door at x 71: a portal on a walking
+line is crossed by a visitor who never chose it.
+
+Presence: one room row "quantumflow" for the whole wing, in `SEED_ROOMS` and
+**set live with `set_room`** — `SEED_ROOMS` is read only by `init`, so an
+already-published database does not gain the row on a redeploy, and `join`
+refuses a room the server does not know, which shuts the door rather than
+merely emptying the room. `pnpm run deploy` catches this: `check:rooms --live`
+compares the mansion against the live table and prints the exact call.
+
+Stated limits: the rooms carry no hangings yet — a hanging needs a harvested
+bundle id, and quantumflow's harvest followed the wing; until they hang, five
+of the room texts describe objects that are not there. The equations cannot be
+wall lines: the relief type is Cinzel, 301 glyphs, Latin-1 and Latin Extended-A
+with no Greek and no operators, so they arrive as `still` plaques and the prose
+stays as translated lines. The big door raises the orangery's own springing
+from 6.9 to 7.15 m and drops three of its ten east columns, so that room's
+shape changes in this fold. The tenth-scale band is nearly full: arcedit's
+canvas holds x 400..470 and this one 400..480, against the ±500 m the presence
+module accepts, so the next such room needs another axis.

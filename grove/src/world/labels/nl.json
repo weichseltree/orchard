@@ -208,40 +208,40 @@
       "limit": "Dit is de episode van de leraar, niet die van een getrainde agent, en de schaal is een middel om te kijken; de agent ziet het canvas nooit als een plaats."
     },
     "quantumflow": {
-      "title": "De Schietbaan",
+      "title": "quantumflow",
       "kicker": "Waarom neemt een elektron alleen bepaalde energieën aan?",
-      "intro": "Draai aan de knop en een golf vertrekt van de dichtstbijzijnde muur, tastend door de zaal. Bij bijna elke stand vliegt hij uiteen voordat hij de verre wand bereikt. Bij een enkele stand gaat hij vlak liggen. Die paar heeft niemand gekozen.",
+      "intro": "Dit is de schietbaan. Draai aan de knop en een golf vertrekt van de dichtstbijzijnde muur, tastend door de zaal. Bij bijna elke stand vliegt hij uiteen voordat hij de verre wand bereikt. Bij een paar standen gaat hij vlak liggen. Dat handjevol standen heeft niemand gekozen.",
       "lookFor": "De paar standen waarbij de golf vlak blijft liggen in plaats van uiteen te vliegen."
     },
     "quantumflow/cloud": {
-      "title": "De Wolk",
+      "title": "De wolk",
       "kicker": "Zes golven erin, één wolk eruit: wat gaat er verloren?",
-      "intro": "Elk orbitaal komt binnen met een eigen kleur en een eigen vorm. Ze worden opgeteld, en de kleuren vervagen tot één bleke wolk. Alles wat die zes wisten zit hier nog in, en de muur erachter zal dat bewijzen.",
-      "lookFor": "Het moment waarop de kleuren verdwijnen, en de put die daarna op de muur ontstaat."
+      "intro": "Elk orbitaal komt binnen met een eigen kleur en een eigen vorm. Ze worden bij elkaar opgeteld, en de kleuren vervagen tot één bleke wolk. Alles wat die zes wisten zit hier nog in, en de wand erachter zal dat bewijzen.",
+      "lookFor": "Het moment waarop de kleuren verdwijnen, en de potentiaalput die daarna op de wand ontstaat."
     },
     "quantumflow/bowl": {
-      "title": "De Kom",
-      "kicker": "Hoe vind je het laagste punt van een landschap dat je niet kunt zien?",
-      "intro": "Twee oppervlakken staan naast elkaar. Het ene is een kom: waar je ook begint, bergafwaarts leidt naar het enige laagste punt. Het andere is hobbelig, en bergafwaarts kan je stranden in een kuil die niet de bodem is. Slechts één is te vertrouwen.",
+      "title": "De kom",
+      "kicker": "Hoe vindt u het laagste punt van een landschap dat u niet kunt zien?",
+      "intro": "Twee oppervlakken staan naast elkaar. Het ene is een kom: waar u ook begint, leidt de weg naar beneden naar het enige laagste punt. Het andere is hobbelig, en de weg naar beneden kan u laten stranden in een kuil die niet het laagste punt is.",
       "lookFor": "De kuilen in het tweede oppervlak die niet het laagste punt zijn."
     },
     "quantumflow/inversion": {
-      "title": "De Omkering",
-      "kicker": "Verraadt de wolk alleen de krachten die haar hebben gevormd?",
-      "intro": "Hier wordt de bewering beproefd. Op de ene muur de put waarin een elektron werkelijk zat. Op de andere de put, alleen uit de wolk herbouwd. Daartussen hangt het verschil, op ware grootte, hoe groot het ook uitvalt.",
+      "title": "De omkering",
+      "kicker": "Verraadt de wolk op zichzelf de krachten die haar hebben gevormd?",
+      "intro": "Hier wordt de bewering beproefd. Op de ene wand de potentiaalput waarin een elektron werkelijk zat. Op de andere de put, alleen uit de wolk herbouwd, zonder de golven ooit te zien. Daartussen hangt het verschil, op ware grootte, hoe groot het ook uitvalt.",
       "lookFor": "De kloof tussen beide putten, die de hele maat van de bewering is."
     },
     "quantumflow/flow": {
-      "title": "De Stroom",
-      "kicker": "Wat gebeurde er toen we een regel toevoegden die zeker zou helpen?",
-      "intro": "Een wolk van deeltjes wordt gedragen van waar zij begint naar waar zij eindigen moet. We voegden een voorwaarde toe waarin we met goede redenen geloofden, en maten hoe die de reis bij elke sterkte verslechterde. De kromme ernaast is dat resultaat.",
-      "lookFor": "De kromme op de muur, die stijgt waar wij een daling verwachtten."
+      "title": "De stroom",
+      "kicker": "Wat gebeurde er toen het project een regel toevoegde die zeker zou helpen?",
+      "intro": "Een wolk van deeltjes wordt gedragen van waar zij begint naar waar zij eindigen moet. Het project voegde een voorwaarde toe waarin het met goede redenen geloofde, en mat hoe die de reis bij elke sterkte verslechterde. De kromme ernaast is dat resultaat.",
+      "lookFor": "De kromme op de wand, die stijgt waar zij zou moeten dalen."
     },
     "quantumflow/inside": {
-      "title": "In de Wolk",
-      "kicker": "Hoe ziet een enkel orbitaal er van binnenuit uit?",
-      "intro": "Je bent geslonken tot de schaal van de wolk. De nevel om je heen is één orbitaal, getekend waar zijn golf het sterkst is. Ergens bij het midden ligt een vlak dat je niet kunt oversteken, want daar is de golf precies niets.",
-      "lookFor": "Het vlak waar je niet doorheen kunt lopen, waar de golf tot niets vervalt."
+      "title": "In de wolk",
+      "kicker": "Hoe ziet één elektronenorbitaal er van binnenuit uit?",
+      "intro": "U bent geslonken tot de schaal van de wolk. De nevel om u heen is één orbitaal, getekend waar zijn golf het sterkst is. Ergens bij het midden ligt een vlak waar u niet door kunt, want daar is de golf precies nul.",
+      "lookFor": "Het vlak waar u niet doorheen kunt, waar de golf tot nul daalt."
     }
   },
   "exhibits": {

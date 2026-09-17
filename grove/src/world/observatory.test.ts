@@ -55,7 +55,8 @@ describe("the designed observatory", () => {
     // Six primitives, one vault per chamber, one height field per cell.
     expect(geometries.size).toBeLessThanOrEqual(6 + shells.length);
     // Fifteen finishes, a few of them per-room variants; an area's rooms share
-    // their tree's. quantumflow's indigo wing brought six more on 2026-09-17.
+    // their tree's. quantumflow's indigo wing brought seven more on 2026-09-17,
+    // which is exactly the bound: 62.
     expect(materials.size).toBeLessThanOrEqual(62);
   });
 

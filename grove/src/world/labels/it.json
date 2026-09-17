@@ -208,40 +208,40 @@
       "limit": "Questo è l'episodio del maestro, non di un agente addestrato, e la scala è un espediente per guardare; l'agente non vede mai la tela come un luogo."
     },
     "quantumflow": {
-      "title": "Il Poligono",
+      "title": "quantumflow",
       "kicker": "Perché un elettrone assume soltanto certe energie?",
-      "intro": "Gira la manopola e un'onda parte dalla parete vicina, tastando la sala. Quasi a ogni impostazione si disperde prima di raggiungere la parete lontana. In poche si distende piatta. Quelle poche non le ha scelte nessuno, e sono esattamente i livelli permessi.",
+      "intro": "Questo è il poligono. Girate la manopola e un'onda parte dalla parete vicina, tastando la sala. A quasi ogni impostazione si disperde prima di raggiungere la parete lontana. In poche si distende piatta. Quelle poche non le ha scelte nessuno.",
       "lookFor": "Le poche impostazioni in cui l'onda resta piatta invece di disperdersi."
     },
     "quantumflow/cloud": {
-      "title": "La Nube",
+      "title": "La nube",
       "kicker": "Sei onde entrano e una nube esce: che cosa si perde?",
-      "intro": "Ogni orbitale arriva con un proprio colore e una propria forma. Vengono sommati, e i colori sbiadiscono in un'unica nube pallida. Tutto ciò che quei sei sapevano è ancora qui dentro, e la parete dietro lo dimostrerà senza aggiungere altro.",
-      "lookFor": "L'istante in cui i colori svaniscono, e la buca che poi si riforma sulla parete."
+      "intro": "Gli orbitali arrivano ciascuno con un proprio colore e una propria forma. Vengono sommati, e i colori sbiadiscono in un'unica nube pallida. Tutto ciò che quei sei sapevano è ancora qui dentro, e la parete dietro lo dimostrerà.",
+      "lookFor": "L'istante in cui i colori svaniscono, e la buca di potenziale che poi si riforma sulla parete."
     },
     "quantumflow/bowl": {
-      "title": "La Scodella",
+      "title": "La ciotola",
       "kicker": "Come si trova il punto più basso di un paesaggio che non si vede?",
-      "intro": "Due superfici stanno una accanto all'altra. Una è una scodella: ovunque tu cominci, scendere porta all'unico punto più basso. L'altra è bitorzoluta, e scendere può lasciarti in una conca che non è il fondo. Di una sola ci si può fidare.",
+      "intro": "Due superfici stanno una accanto all'altra. Una è una ciotola: ovunque cominciate, scendere porta all'unico punto più basso. L'altra è bitorzoluta, e scendere può lasciarvi in una conca che non è il fondo. Di una sola ci si può fidare.",
       "lookFor": "Le conche della seconda superficie che non sono il suo punto più basso."
     },
     "quantumflow/inversion": {
-      "title": "L'Inversione",
+      "title": "L'inversione",
       "kicker": "La nube da sola rivela le forze che l'hanno formata?",
-      "intro": "Qui la tesi viene messa alla prova. Su una parete la buca in cui l'elettrone stava davvero. Sull'altra la buca ricostruita dalla sola nube. In mezzo pende la differenza, a grandezza naturale, per quanto grande risulti essere.",
+      "intro": "Qui la tesi viene messa alla prova. Su una parete la buca di potenziale in cui l'elettrone stava davvero. Sull'altra la buca ricostruita dalla sola nube, senza mai vedere le onde. In mezzo pende la differenza, a grandezza naturale, per quanto grande risulti essere.",
       "lookFor": "Lo scarto fra le due buche, che è l'intera misura della tesi."
     },
     "quantumflow/flow": {
-      "title": "Il Flusso",
-      "kicker": "Che cosa accadde quando aggiungemmo una regola che doveva certamente aiutare?",
-      "intro": "Una nube di particelle viene portata da dove parte a dove deve finire. Aggiungemmo un vincolo in cui credevamo per buone ragioni, e misurammo che peggiorava il viaggio a ogni intensità provata. La curva accanto al flusso è quel risultato.",
-      "lookFor": "La curva sulla parete, che sale dove ci aspettavamo scendesse."
+      "title": "Il flusso",
+      "kicker": "Che cosa è accaduto quando il progetto ha aggiunto una regola di cui era certo che avrebbe aiutato?",
+      "intro": "Una nube di particelle viene portata da dove parte a dove deve finire. Il progetto ha aggiunto un vincolo in cui credeva per buone ragioni, e ha misurato che peggiorava il viaggio a ogni intensità provata. La curva accanto al flusso è quel risultato.",
+      "lookFor": "La curva sulla parete, che sale dove ci si aspettava scendesse."
     },
     "quantumflow/inside": {
-      "title": "Dentro la Nube",
-      "kicker": "Che aspetto ha un singolo orbitale visto da dentro?",
-      "intro": "Ti sei rimpicciolito fino alla scala della nube. La foschia intorno a te è un orbitale, disegnato dove la sua onda è più intensa. Vicino al centro c'è una superficie che non puoi attraversare, perché lì l'onda è esattamente nulla.",
-      "lookFor": "La superficie che non puoi attraversare, dove l'onda scende a nulla."
+      "title": "Dentro la nube",
+      "kicker": "Che aspetto ha un singolo orbitale elettronico visto da dentro?",
+      "intro": "Ora siete grandi come la nube. La foschia intorno a voi è un orbitale, disegnato dove la sua onda è più intensa. Vicino al centro c'è una superficie che non potete attraversare, perché lì l'onda è esattamente nulla.",
+      "lookFor": "La superficie che non potete attraversare, dove l'onda scende a zero."
     }
   },
   "exhibits": {

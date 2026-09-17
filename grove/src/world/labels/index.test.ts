@@ -34,6 +34,7 @@ const REPOSITORY_TITLES: Record<string, string> = {
   einstruct: "einstruct",
   "world-engine": "world-engine",
   phototroph: "phototroph",
+  quantumflow: "quantumflow",
 };
 
 describe.each(files)("labels/%s.json", (locale, raw) => {

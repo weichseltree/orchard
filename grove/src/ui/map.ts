@@ -66,6 +66,14 @@ export interface Floor {
  * grounds lie at -1.6, the hall at 0, the orangery at 1.5, the belvedere at
  * 1.8) while the cellar sits 2.4m under the lowest of them, so two metres
  * separates the storeys the building actually has.
+ *
+ * The banding is single-linkage: a chain of rooms less than this apart is one
+ * floor however tall the chain grows, and today's ground floor is such a chain
+ * (-1.6 to 0 to 1.5 to 1.8). One room with its floor between -3.5 and -2.1
+ * would therefore bridge the cellar into the ground floor and put the club back
+ * on top of the orangery. map.test.ts asserts the two stay apart, so that fails
+ * loudly rather than silently; a building with real storeys should declare them
+ * in mansion.json rather than let them be inferred.
  */
 const FLOOR_GAP_M = 2;
 
@@ -106,15 +114,19 @@ function floorLabel(level: number): string {
   return level < 0 ? `Cellar ${-level}` : `Upper ${level}`;
 }
 
-/** The level a room stands on, or 0 when it is not drawn at all. */
-export function floorOfRoom(floors: readonly Floor[], roomId: string): number {
-  return floors.find((floor) => floor.rooms.some((room) => room.id === roomId))?.level ?? 0;
+/**
+ * The level a room stands on, or undefined when these floors do not hold it.
+ * Undefined rather than a level, so a caller cannot mistake "not on the plan"
+ * for the ground floor and invent a storey change out of it.
+ */
+export function floorOfRoom(floors: readonly Floor[], roomId: string): number | undefined {
+  return floors.find((floor) => floor.rooms.some((room) => room.id === roomId))?.level;
 }
 
 /**
- * The rooms with a doorway to another floor — the stairs. They are the one
- * thing a visitor on the wrong storey needs to find, so they are drawn on both
- * floors they join and marked.
+ * The rooms with a doorway to another floor — the stairs and what they open
+ * into. They are marked, because they are the one thing a visitor on the wrong
+ * storey needs to find.
  */
 export function floorConnectors(mansion: Mansion, floors: readonly Floor[]): Map<string, number[]> {
   const connectors = new Map<string, number[]>();
@@ -126,12 +138,23 @@ export function floorConnectors(mansion: Mansion, floors: readonly Floor[]): Map
         const other = mansion.rooms.find((candidate) => candidate.id === door.to);
         if (!other || other.scale !== room.scale) continue;
         const level = floorOfRoom(floors, other.id);
-        if (level !== floor.level) levels.add(level);
+        // A room these floors do not hold says nothing about a storey change.
+        if (level !== undefined && level !== floor.level) levels.add(level);
       }
       if (levels.size > 0) connectors.set(room.id, [...levels].sort((a, b) => a - b));
     }
   }
   return connectors;
+}
+
+/**
+ * Whether a room is tall enough to be standing on this floor as well as its
+ * own. A stairwell spanning -5 to 2.6 is on the ground floor's plan because a
+ * visitor up its steps is on the ground floor; the orchard it opens into is
+ * not on the cellar's, though it is just as much a way between them.
+ */
+function reaches(room: Room, floor: Floor): boolean {
+  return room.bounds.min[1] <= floor.y && room.bounds.max[1] >= floor.y;
 }
 
 export interface Projection {
@@ -164,14 +187,16 @@ export interface MapState {
   mansion: Mansion;
   room: string;
   x: number;
+  /** The feet's height, which decides the storey when a room spans two. */
+  y: number;
   z: number;
   /** The rooms a walk from here reaches (navigation.ts `reachableRooms`). */
   reachable: ReadonlySet<string>;
   title(roomId: string): string;
 }
 
-/** A rectangle of the plan's own space, the window the SVG shows. */
-interface Viewport {
+/** A rectangle of the plan's own space: the window the SVG shows. */
+export interface Viewport {
   x: number;
   y: number;
   w: number;
@@ -182,6 +207,49 @@ const SVG = "http://www.w3.org/2000/svg";
 const SIZE = 320;
 /** Zoomed all the way in, a quarter of the plan fills the frame each way. */
 const MAX_ZOOM = 4;
+/** A press that travels this far in screen pixels is a drag, not a click. */
+const DRAG_SLOP_PX = 4;
+
+/** The window never leaves the plan; zoomed out it is the plan exactly. */
+export function clampView(view: Viewport): Viewport {
+  const w = Math.min(SIZE, view.w);
+  const h = Math.min(SIZE, view.h);
+  return {
+    w,
+    h,
+    x: Math.min(Math.max(0, view.x), SIZE - w),
+    y: Math.min(Math.max(0, view.y), SIZE - h),
+  };
+}
+
+/** Zoom `view` by `factor` about a point of the plan, which stays put under it. */
+export function zoomView(view: Viewport, factor: number, atX: number, atY: number): Viewport {
+  const w = Math.min(SIZE, Math.max(SIZE / MAX_ZOOM, view.w * factor));
+  const ratio = w / view.w;
+  return clampView({
+    x: atX - (atX - view.x) * ratio,
+    y: atY - (atY - view.y) * ratio,
+    w,
+    h: view.h * ratio,
+  });
+}
+
+/**
+ * Where a screen point falls in the plan's own coordinates, for an SVG whose
+ * square viewBox is letterboxed inside a box of another shape (`xMidYMid
+ * meet`, the default). Mapping straight across the box instead is right only
+ * at the exact centre: at 1280x620 the element is 382x322 and a point a tenth
+ * of the way across reads 32 where it should read 8.
+ */
+export function planPointOf(box: { width: number; height: number }, view: Viewport, offsetX: number, offsetY: number):
+  { x: number; y: number } | null {
+  if (!(box.width > 0) || !(box.height > 0)) return null;
+  const scale = Math.min(box.width / view.w, box.height / view.h);
+  return {
+    x: view.x + (offsetX - (box.width - view.w * scale) / 2) / scale,
+    y: view.y + (offsetY - (box.height - view.h * scale) / 2) / scale,
+  };
+}
 
 export class RoomMap {
   #dialog = document.createElement("dialog");
@@ -197,8 +265,10 @@ export class RoomMap {
   #connectors = new Map<string, number[]>();
   /** The floor being drawn, which the picker changes without moving the visitor. */
   #shown = 0;
+  #floorButtons = new Map<number, HTMLButtonElement>();
   #view: Viewport = { x: 0, y: 0, w: SIZE, h: SIZE };
-  #drag: { pointer: number; x: number; y: number } | null = null;
+  #drag: { pointer: number; x: number; y: number; fromX: number; fromY: number; panning: boolean } | null = null;
+  #redraw = 0;
 
   constructor(root: HTMLElement, onGo: (roomId: string) => boolean) {
     this.#onGo = onGo;
@@ -228,9 +298,18 @@ export class RoomMap {
 
     this.#dialog.append(this.#heading, frame, this.#note, this.#list, close);
     this.#dialog.addEventListener("keydown", (event) => {
-      if (event.code === "KeyL" && !(event.target instanceof HTMLInputElement)) this.#dialog.close();
+      // Ctrl+L and Cmd+L are the browser's; only a bare L closes the plan.
+      if (event.altKey || event.ctrlKey || event.metaKey) return;
+      const target = event.target;
+      if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) return;
+      if (event.code === "KeyL") this.#dialog.close();
     });
     this.#bindPanZoom();
+    // The letterbox changes with the window, and with it the plan's scale on
+    // screen: the labels and the marks are sized from it.
+    if (typeof ResizeObserver !== "undefined") {
+      new ResizeObserver(() => { if (this.#dialog.open) this.#drawPlan(); }).observe(this.#plan);
+    }
     root.append(this.#dialog);
   }
 
@@ -247,7 +326,7 @@ export class RoomMap {
     const rooms = planRooms(state.mansion, state.room);
     this.#floors = floorsOf(state.mansion, rooms);
     this.#connectors = floorConnectors(state.mansion, this.#floors);
-    this.#shown = floorOfRoom(this.#floors, state.room);
+    this.#shown = this.#standingOn(state);
     this.#view = { x: 0, y: 0, w: SIZE, h: SIZE };
     const here = rooms.find((room) => room.id === state.room);
     this.#heading.textContent = `Plan · ${here ? state.title(here.id) : state.room}`;
@@ -255,9 +334,32 @@ export class RoomMap {
       this.#floors.length > 1
         ? "Choose a room to go to its entrance. Rooms no open doorway leads to from here are dimmed; the stairs are marked. Drag to pan, scroll to zoom."
         : "Choose a room to go to its entrance. Rooms no open doorway leads to from here are dimmed. Drag to pan, scroll to zoom.";
-    this.#draw();
+    // The picker and the menu are built once a showing: neither the reachable
+    // set nor the room the visitor is in changes while the plan is open, and
+    // rebuilding them would throw away the focus of whoever is tabbing through.
+    this.#buildFloors();
+    this.#buildAreas(state);
+    this.#drawPlan();
     if (document.pointerLockElement) document.exitPointerLock();
     if (!this.#dialog.open) this.#dialog.showModal();
+  }
+
+  /**
+   * The storey the visitor is actually standing on. A room may span two — the
+   * stairwells run from the cellar to the grounds — so their feet decide, and
+   * the room's own floor is the fallback.
+   */
+  #standingOn(state: MapState): number {
+    const here = state.mansion.rooms.find((room) => room.id === state.room);
+    if (here && here.bounds.max[1] - here.bounds.min[1] > FLOOR_GAP_M) {
+      let best: Floor | null = null;
+      for (const floor of this.#floors) {
+        if (floor.y > state.y + 0.5) continue;
+        if (!best || floor.y > best.y) best = floor;
+      }
+      if (best && reaches(here, best)) return best.level;
+    }
+    return floorOfRoom(this.#floors, state.room) ?? this.#floors[0]?.level ?? 0;
   }
 
   #zoomBar(): HTMLElement {
@@ -273,12 +375,15 @@ export class RoomMap {
       element.addEventListener("click", run);
       return element;
     };
+    // About the middle of what is on screen, not the middle of the plan: from a
+    // panned view the latter hauls the visitor's own room out of the frame.
+    const middle = (): [number, number] => [this.#view.x + this.#view.w / 2, this.#view.y + this.#view.h / 2];
     bar.append(
-      button("+", "Zoom in", () => this.#zoomBy(1 / 1.4, SIZE / 2, SIZE / 2)),
-      button("−", "Zoom out", () => this.#zoomBy(1.4, SIZE / 2, SIZE / 2)),
+      button("+", "Zoom in", () => this.#zoomBy(1 / 1.4, ...middle())),
+      button("−", "Zoom out", () => this.#zoomBy(1.4, ...middle())),
       button("⤢", "Fit the whole plan", () => {
         this.#view = { x: 0, y: 0, w: SIZE, h: SIZE };
-        this.#draw();
+        this.#drawPlan();
       }),
     );
     return bar;
@@ -289,25 +394,34 @@ export class RoomMap {
       "wheel",
       (event) => {
         event.preventDefault();
-        const at = this.#planPoint(event.clientX, event.clientY);
-        this.#zoomBy(event.deltaY > 0 ? 1.15 : 1 / 1.15, at.x, at.y);
+        const at = this.#planPoint(event);
+        if (at) this.#zoomBy(event.deltaY > 0 ? 1.15 : 1 / 1.15, at.x, at.y);
       },
       { passive: false },
     );
     this.#plan.addEventListener("pointerdown", (event) => {
-      // Only a plain drag pans; a click on a room is that room's own.
-      if (event.button !== 0) return;
-      this.#drag = { pointer: event.pointerId, ...this.#planPoint(event.clientX, event.clientY) };
-      this.#plan.setPointerCapture(event.pointerId);
+      // One pointer pans; a second would steal the gesture from the first and
+      // leave it dead until every finger is lifted.
+      if (event.button !== 0 || this.#drag) return;
+      const at = this.#planPoint(event);
+      if (!at) return;
+      this.#drag = { pointer: event.pointerId, x: at.x, y: at.y, fromX: event.clientX, fromY: event.clientY, panning: false };
     });
     this.#plan.addEventListener("pointermove", (event) => {
       const drag = this.#drag;
       if (!drag || drag.pointer !== event.pointerId) return;
-      const at = this.#planPoint(event.clientX, event.clientY);
+      if (!drag.panning) {
+        if (Math.hypot(event.clientX - drag.fromX, event.clientY - drag.fromY) < DRAG_SLOP_PX) return;
+        // Captured only once the press is a drag. Capturing on pointerdown
+        // retargets the compatibility `click` to the SVG, so the room's own
+        // click never fires and the plan is dead to a mouse (2026-09-17).
+        drag.panning = true;
+        this.#plan.setPointerCapture(event.pointerId);
+      }
+      const at = this.#planPoint(event);
+      if (!at) return;
       // Panning moves the window the other way, so the plan follows the finger.
-      this.#view.x += drag.x - at.x;
-      this.#view.y += drag.y - at.y;
-      this.#clampView();
+      this.#view = clampView({ ...this.#view, x: this.#view.x + drag.x - at.x, y: this.#view.y + drag.y - at.y });
       this.#applyView();
     });
     const release = (event: PointerEvent): void => {
@@ -319,73 +433,66 @@ export class RoomMap {
     this.#plan.addEventListener("pointercancel", release);
   }
 
-  /** Where a screen point falls in the plan's own coordinates. */
-  #planPoint(clientX: number, clientY: number): { x: number; y: number } {
+  /** Where a pointer event falls in the plan's own coordinates. */
+  #planPoint(event: { clientX: number; clientY: number }): { x: number; y: number } | null {
     const box = this.#plan.getBoundingClientRect();
-    if (box.width === 0 || box.height === 0) return { x: this.#view.x, y: this.#view.y };
-    return {
-      x: this.#view.x + ((clientX - box.left) / box.width) * this.#view.w,
-      y: this.#view.y + ((clientY - box.top) / box.height) * this.#view.h,
-    };
+    return planPointOf(box, this.#view, event.clientX - box.left, event.clientY - box.top);
   }
 
   #zoomBy(factor: number, atX: number, atY: number): void {
-    const w = Math.min(SIZE, Math.max(SIZE / MAX_ZOOM, this.#view.w * factor));
-    const ratio = w / this.#view.w;
-    // The point under the cursor stays under it.
-    this.#view = {
-      x: atX - (atX - this.#view.x) * ratio,
-      y: atY - (atY - this.#view.y) * ratio,
-      w,
-      h: this.#view.h * ratio,
-    };
-    this.#clampView();
+    this.#view = zoomView(this.#view, factor, atX, atY);
+    // Which labels fit is decided at the zoom being shown, so the plan is
+    // redrawn rather than merely re-framed — once a frame, however fast a
+    // wheel turns.
     this.#applyView();
+    if (this.#redraw) return;
+    this.#redraw = requestAnimationFrame(() => { this.#redraw = 0; this.#drawPlan(); });
   }
 
-  /** The window never leaves the plan; zoomed out it is the plan exactly. */
-  #clampView(): void {
-    this.#view.x = Math.min(Math.max(0, this.#view.x), SIZE - this.#view.w);
-    this.#view.y = Math.min(Math.max(0, this.#view.y), SIZE - this.#view.h);
+  /** Screen pixels per plan unit, which is what a label's size must hold against. */
+  #pxPerUnit(): number {
+    const box = this.#plan.getBoundingClientRect();
+    if (!(box.width > 0) || !(box.height > 0)) return SIZE / this.#view.w;
+    return Math.min(box.width / this.#view.w, box.height / this.#view.h);
   }
 
   #applyView(): void {
     const { x, y, w, h } = this.#view;
     this.#plan.setAttribute("viewBox", `${x.toFixed(2)} ${y.toFixed(2)} ${w.toFixed(2)} ${h.toFixed(2)}`);
-    // Lines and glyphs keep their pixel weight as the plan grows under them.
-    this.#plan.style.setProperty("--plan-zoom", String(SIZE / w));
+    // Lines and glyphs keep their size on screen as the plan grows under them,
+    // so this counts the element's own scale, not just the zoom.
+    this.#plan.style.setProperty("--plan-zoom", String(this.#pxPerUnit()));
   }
 
-  #draw(): void {
+  #drawPlan(): void {
     const state = this.#state;
     if (!state) return;
+    const px = this.#pxPerUnit();
     // One projection for every floor, so a room does not move when the picker
     // changes: the storeys of a building stand over each other.
     const all = this.#floors.flatMap((floor) => floor.rooms);
     const project = planProjection(all, SIZE, SIZE);
+    const shown = this.#floors.find((floor) => floor.level === this.#shown);
+    const onShown = (room: Room): boolean =>
+      floorOfRoom(this.#floors, room.id) === this.#shown || (!!shown && this.#connectors.has(room.id) && reaches(room, shown));
     const shapes: Element[] = [];
 
     // The other storeys first and faint, the way a plan shows what is under it.
     for (const floor of this.#floors) {
       if (floor.level === this.#shown) continue;
-      for (const room of floor.rooms) {
-        if (this.#connectors.get(room.id)?.includes(this.#shown)) continue;
-        shapes.push(this.#roomRect(room, project, "ghost"));
-      }
+      for (const room of floor.rooms) if (!onShown(room)) shapes.push(this.#roomRect(room, project, "ghost"));
     }
 
-    const shown = this.#floors.find((floor) => floor.level === this.#shown);
     const drawn = [
       ...(shown?.rooms ?? []),
-      // The stairs from this floor to another stand on both.
+      // A stairwell tall enough to stand on this floor is drawn on it too.
       ...this.#floors
         .filter((floor) => floor.level !== this.#shown)
-        .flatMap((floor) => floor.rooms.filter((room) => this.#connectors.get(room.id)?.includes(this.#shown))),
+        .flatMap((floor) => floor.rooms.filter(onShown)),
     ];
     for (const room of drawn) {
       const current = room.id === state.room;
       const open = current || state.reachable.has(room.id);
-      const stair = this.#connectors.has(room.id);
       const rect = this.#roomRect(room, project, current ? "here" : open ? "open" : "shut");
       if (open) {
         rect.addEventListener("click", () => this.#go(room.id));
@@ -396,12 +503,12 @@ export class RoomMap {
       const h = (room.bounds.max[2] - room.bounds.min[2]) * project.scale;
       const cx = project.x((room.bounds.min[0] + room.bounds.max[0]) / 2);
       const cy = project.y((room.bounds.min[2] + room.bounds.max[2]) / 2);
-      // A label needs room at the zoom being shown, not at the plan's own size.
-      const zoom = SIZE / this.#view.w;
-      if (w * zoom > 34 && h * zoom > 12) {
+      const stair = this.#connectors.has(room.id);
+      // A label needs room at the size the plan is actually drawn on screen.
+      if (w * px > 34 && h * px > 12) {
         const label = document.createElementNS(SVG, "text");
         label.setAttribute("x", cx.toFixed(1));
-        label.setAttribute("y", (cy + 3).toFixed(1));
+        label.setAttribute("y", (cy + 3 / px).toFixed(2));
         const title = state.title(room.id);
         label.textContent = title.split("/").pop() ?? title;
         shapes.push(label);
@@ -409,7 +516,7 @@ export class RoomMap {
       if (stair) {
         const glyph = document.createElementNS(SVG, "text");
         glyph.setAttribute("x", cx.toFixed(1));
-        glyph.setAttribute("y", (cy - 4).toFixed(1));
+        glyph.setAttribute("y", (cy - 4 / px).toFixed(2));
         glyph.setAttribute("class", "stair");
         glyph.textContent = "⇕";
         shapes.push(glyph);
@@ -419,16 +526,15 @@ export class RoomMap {
     const dot = document.createElementNS(SVG, "circle");
     dot.setAttribute("cx", project.x(state.x).toFixed(1));
     dot.setAttribute("cy", project.y(state.z).toFixed(1));
-    dot.setAttribute("r", "4");
+    // Four pixels on screen, like every other mark, not four plan units.
+    dot.setAttribute("r", (4 / px).toFixed(2));
     dot.setAttribute("class", "you");
     // The visitor's own floor is the only one they stand on.
-    if (this.#shown !== floorOfRoom(this.#floors, state.room)) dot.setAttribute("opacity", "0.35");
+    if (this.#shown !== this.#standingOn(state)) dot.setAttribute("opacity", "0.35");
     shapes.push(dot);
 
     this.#plan.replaceChildren(...shapes);
     this.#applyView();
-    this.#drawFloors();
-    this.#drawAreas(state);
   }
 
   #roomRect(room: Room, project: Projection, cls: string): SVGRectElement {
@@ -442,7 +548,8 @@ export class RoomMap {
   }
 
   /** The floor picker: highest at the top, the way the building stands. */
-  #drawFloors(): void {
+  #buildFloors(): void {
+    this.#floorButtons.clear();
     if (this.#floors.length < 2) {
       this.#floorBar.replaceChildren();
       return;
@@ -450,16 +557,33 @@ export class RoomMap {
     const buttons = [...this.#floors].reverse().map((floor) => {
       const button = document.createElement("button");
       button.type = "button";
-      button.className = floor.level === this.#shown ? "btn small on" : "btn small";
       button.textContent = floor.label;
-      button.setAttribute("aria-pressed", String(floor.level === this.#shown));
-      button.addEventListener("click", () => {
-        this.#shown = floor.level;
-        this.#draw();
-      });
+      button.addEventListener("click", () => this.#setFloor(floor.level));
+      this.#floorButtons.set(floor.level, button);
       return button;
     });
     this.#floorBar.replaceChildren(...buttons);
+    this.#markFloor();
+  }
+
+  #markFloor(): void {
+    for (const [level, button] of this.#floorButtons) {
+      const on = level === this.#shown;
+      button.className = on ? "btn small on" : "btn small";
+      button.setAttribute("aria-pressed", String(on));
+    }
+  }
+
+  /**
+   * Changing storey redraws the plan but never the picker: rebuilding the
+   * button that was just clicked drops focus to the body, and with focus off
+   * the dialog the world's own keys are live again behind the open plan —
+   * pressing W would walk the visitor while they read it.
+   */
+  #setFloor(level: number): void {
+    this.#shown = level;
+    this.#markFloor();
+    this.#drawPlan();
   }
 
   /**
@@ -467,7 +591,7 @@ export class RoomMap {
    * what the flat list lacked: in a world of twenty-odd rooms it read as one
    * heap, and the way home was somewhere in the middle of it.
    */
-  #drawAreas(state: MapState): void {
+  #buildAreas(state: MapState): void {
     const groups = new Map<string, Room[]>();
     for (const floor of this.#floors) {
       for (const room of floor.rooms) {
@@ -477,7 +601,8 @@ export class RoomMap {
         else groups.set(area, [room]);
       }
     }
-    const here = areaOf(state.mansion, state.mansion.rooms.find((room) => room.id === state.room)!);
+    const standing = state.mansion.rooms.find((room) => room.id === state.room);
+    const here = standing ? areaOf(state.mansion, standing) : "";
     const order = [...groups.keys()].sort((a, b) => {
       // The palace first, then the area the visitor is in, then the rest by name.
       if (a === b) return 0;
@@ -504,7 +629,7 @@ export class RoomMap {
         button.textContent = current ? `${title} (you are here)` : title;
         const level = floorOfRoom(this.#floors, room.id);
         // Which storey a room is on, when there is more than one to be on.
-        if (this.#floors.length > 1) button.title = `${title} · ${floorLabel(level)}`;
+        if (this.#floors.length > 1 && level !== undefined) button.title = `${title} · ${floorLabel(level)}`;
         button.disabled = !open;
         button.addEventListener("click", () => this.#go(room.id));
         item.append(button);

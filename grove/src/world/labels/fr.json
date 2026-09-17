@@ -208,40 +208,40 @@
       "limit": "C'est l'épisode du professeur, non celui d'un agent entraîné, et l'échelle est un dispositif pour regarder ; l'agent ne voit jamais la toile comme un lieu."
     },
     "quantumflow": {
-      "title": "Le Stand de Tir",
+      "title": "quantumflow",
       "kicker": "Pourquoi un électron ne prend-il que certaines énergies ?",
-      "intro": "Tournez la molette et une onde part du mur le plus proche, tâtonnant à travers la salle. À presque chaque réglage elle se disperse avant d'atteindre le mur du fond. À quelques-uns, elle se couche à plat. Ces quelques-là, personne ne les a choisis : ce sont les niveaux permis.",
+      "intro": "Voici le stand de tir. Tournez la molette et une onde part du mur le plus proche, tâtonnant à travers la salle. À presque chaque réglage elle se disperse avant d'atteindre le mur du fond. À quelques-uns, elle se couche à plat. Ceux-là, personne ne les a choisis.",
       "lookFor": "Les rares réglages où l'onde reste couchée au lieu de se disperser."
     },
     "quantumflow/cloud": {
-      "title": "Le Nuage",
+      "title": "Le nuage",
       "kicker": "Six ondes entrent et un nuage sort : qu'est-ce qui se perd ?",
-      "intro": "Chaque orbitale arrive avec sa couleur et sa forme propres. On les additionne, et les couleurs se délavent en un seul nuage pâle. Tout ce que ces six-là savaient se trouve encore ici, et le mur derrière va le prouver sans rien ajouter d'autre.",
-      "lookFor": "L'instant où les couleurs disparaissent, et le puits qui se reforme ensuite sur le mur."
+      "intro": "Chaque orbitale arrive ici avec sa propre couleur et sa propre forme. On les additionne les unes aux autres, et les couleurs se fondent pour ne plus faire qu'un seul nuage pâle. Tout ce que ces six-là savaient se trouve encore à l'intérieur, et le mur derrière va le prouver.",
+      "lookFor": "L'instant où les couleurs disparaissent, et le puits de potentiel qui se reforme ensuite sur le mur."
     },
     "quantumflow/bowl": {
-      "title": "Le Bol",
+      "title": "Le bol",
       "kicker": "Comment trouver le point le plus bas d'un paysage qu'on ne voit pas ?",
-      "intro": "Deux surfaces se tiennent côte à côte. L'une est un bol : où que vous partiez, descendre mène à l'unique point le plus bas. L'autre est bosselée, et descendre peut vous échouer dans un creux qui n'est pas le fond. Une seule mérite confiance.",
+      "intro": "Deux surfaces se tiennent côte à côte. L'une est un bol : d'où que vous partiez, descendre mène à l'unique point le plus bas. L'autre est bosselée, et descendre peut vous laisser bloqué dans un creux qui n'est pas le fond. Une seule est digne de confiance.",
       "lookFor": "Les creux de la seconde surface qui ne sont pas son point le plus bas."
     },
     "quantumflow/inversion": {
-      "title": "L'Inversion",
-      "kicker": "Le nuage seul révèle-t-il les forces qui l'ont façonné ?",
-      "intro": "Ici la thèse est mise à l'épreuve. Sur un mur, le puits où l'électron s'est vraiment tenu. Sur l'autre, le puits reconstruit à partir du seul nuage. Entre les deux pend la différence, en vraie grandeur, si grande soit-elle.",
+      "title": "L'inversion",
+      "kicker": "Le nuage à lui seul révèle-t-il les forces qui l'ont façonné ?",
+      "intro": "Ici la thèse est mise à l'épreuve. Sur un mur, le puits de potentiel où l'électron se trouvait vraiment. Sur l'autre, le puits reconstruit à partir du seul nuage, sans jamais voir les ondes. Entre les deux pend la différence, en vraie grandeur, si grande soit-elle.",
       "lookFor": "L'écart entre les deux puits, qui est toute la mesure de la thèse."
     },
     "quantumflow/flow": {
-      "title": "L'Écoulement",
-      "kicker": "Qu'est-il arrivé quand nous avons ajouté une règle censée aider à coup sûr ?",
-      "intro": "Un nuage de particules est porté de son départ vers son arrivée. Nous avons ajouté une contrainte à laquelle nous croyions pour de bonnes raisons, et mesuré qu'elle dégradait le trajet à toutes les intensités essayées. La courbe à côté est ce résultat.",
-      "lookFor": "La courbe sur le mur, qui monte là où nous attendions qu'elle descende."
+      "title": "L'écoulement",
+      "kicker": "Qu'est-il arrivé quand le projet a ajouté une règle dont il était sûr qu'elle aiderait ?",
+      "intro": "Un nuage de particules est porté de son départ vers son arrivée. Le projet a ajouté une contrainte à laquelle il croyait pour de bonnes raisons, et il a mesuré qu'elle dégradait le trajet à toutes les intensités essayées. La courbe à côté est ce résultat.",
+      "lookFor": "La courbe sur le mur, qui monte là où elle devrait descendre."
     },
     "quantumflow/inside": {
-      "title": "Dans le Nuage",
-      "kicker": "À quoi ressemble une seule orbitale vue de l'intérieur ?",
-      "intro": "Vous avez rétréci jusqu'à l'échelle du nuage. La brume autour de vous est une orbitale, dessinée là où son onde est la plus forte. Près du centre se trouve une surface que vous ne pouvez franchir, car l'onde y vaut exactement rien.",
-      "lookFor": "La surface que vous ne pouvez traverser, où l'onde tombe à rien."
+      "title": "Dans le nuage",
+      "kicker": "À quoi ressemble une seule orbitale électronique vue de l'intérieur ?",
+      "intro": "Vous avez rétréci jusqu'à l'échelle du nuage. La brume autour de vous est une orbitale, dessinée là où son onde est la plus forte. Près du centre se trouve une surface que vous ne pouvez pas franchir, car l'onde y est exactement nulle, et rien ne peut se tenir là.",
+      "lookFor": "La surface que vous ne pouvez pas traverser, où l'onde tombe à zéro."
     }
   },
   "exhibits": {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import mansionDocument from "../world/mansion.json";
 import { parseMansion } from "../world/schema";
-import { areaOf, areaRooms, floorConnectors, floorOfRoom, floorsOf, planProjection, planRooms } from "./map";
+import { areaOf, areaRooms, clampView, floorConnectors, floorOfRoom, floorsOf, planPointOf, planProjection, planRooms, zoomView } from "./map";
 
 const mansion = parseMansion(mansionDocument);
 
@@ -45,6 +45,13 @@ describe("floors", () => {
     expect(new Set(placed).size).toBe(placed.length);
   });
 
+  it("answers undefined for a room it does not hold, rather than the ground floor", () => {
+    // `?? 0` here let floorConnectors read "not on this plan" as a storey
+    // change and hang a stair glyph on rooms that join nothing.
+    expect(floorOfRoom(floors, "nowhere")).toBeUndefined();
+    expect(floorOfRoom(floors, mansion.start)).toBe(0);
+  });
+
   it("separates the storeys the building has, and calls the start room's floor the ground", () => {
     // The cellar (the club and the stage) stacks under the orangery; drawn on
     // one plan they lay on top of each other, which is what the picker fixes.
@@ -59,8 +66,8 @@ describe("floors", () => {
   });
 
   it("keeps rooms of one storey together, and the stacked pair apart", () => {
-    const club = floorOfRoom(floors, "club");
-    const orangery = floorOfRoom(floors, "orangery");
+    const club = floorOfRoom(floors, "club")!;
+    const orangery = floorOfRoom(floors, "orangery")!;
     expect(club).toBeLessThan(orangery);
     // The orangery, the hall and the grounds are all one storey despite
     // standing at 1.5, 0 and -1.6 metres.
@@ -68,10 +75,22 @@ describe("floors", () => {
     expect(floorOfRoom(floors, "orchard-west")).toBe(orangery);
   });
 
-  it("marks the rooms that join two floors, and only those", () => {
+  it("marks exactly the rooms with a doorway to another storey", () => {
     const connectors = floorConnectors(mansion, floors);
-    // The two stair rooms are the only cross-floor doorways in the palace.
-    expect([...connectors.keys()].sort()).toEqual(["orchard-east", "orchard-west", "stair-north", "stair-south"]);
+    // Derived rather than named: which rooms join two storeys changes as the
+    // building does, and the rule is what this test is for.
+    const expected = rooms
+      .filter((room) => room.doorways.some((door) => {
+        if (door.closed) return false;
+        const other = mansion.rooms.find((candidate) => candidate.id === door.to);
+        return !!other && other.scale === room.scale
+          && floorOfRoom(floors, other.id) !== undefined
+          && floorOfRoom(floors, other.id) !== floorOfRoom(floors, room.id);
+      }))
+      .map((room) => room.id)
+      .sort();
+    expect([...connectors.keys()].sort()).toEqual(expected);
+    expect(expected.length).toBeGreaterThan(0);
     for (const [id, levels] of connectors) {
       expect(levels).not.toContain(floorOfRoom(floors, id));
       expect(levels.length).toBeGreaterThan(0);
@@ -109,5 +128,54 @@ describe("planProjection", () => {
     const orangery = mansion.rooms.find((room) => room.id === "orangery")!;
     // They stack, so on the plan they overlap — which is why they are drawn apart.
     expect(project.x(club.bounds.min[0])).toBeCloseTo(project.x(orangery.bounds.min[0]));
+  });
+});
+
+describe("the viewport", () => {
+  const full = { x: 0, y: 0, w: 320, h: 320 };
+
+  it("keeps the window inside the plan, and never larger than it", () => {
+    expect(clampView({ x: -50, y: -50, w: 320, h: 320 })).toEqual(full);
+    expect(clampView({ x: 900, y: 900, w: 160, h: 160 })).toEqual({ x: 160, y: 160, w: 160, h: 160 });
+    // A window taller than the plan is the plan, not a view off the top of it.
+    expect(clampView({ x: 0, y: -128, w: 160, h: 448 })).toEqual({ x: 0, y: 0, w: 160, h: 320 });
+  });
+
+  it("holds the point it zooms about still under the cursor", () => {
+    const zoomed = zoomView(full, 0.5, 80, 240);
+    expect(zoomed.w).toBeCloseTo(160);
+    // The plan point under the cursor before is the plan point under it after.
+    expect(80 - zoomed.x).toBeCloseTo((80 - full.x) * (zoomed.w / full.w));
+    expect(240 - zoomed.y).toBeCloseTo((240 - full.y) * (zoomed.h / full.h));
+  });
+
+  it("stops at four times in and at the whole plan out", () => {
+    let view = full;
+    for (let i = 0; i < 20; i += 1) view = zoomView(view, 0.5, 160, 160);
+    expect(view.w).toBeCloseTo(80);
+    for (let i = 0; i < 20; i += 1) view = zoomView(view, 2, 160, 160);
+    expect(view).toEqual(full);
+  });
+
+  it("reads a screen point through the letterbox, not straight across the box", () => {
+    // 382 x 322 is what `width:100%; max-height:52dvh` gives at 1280 x 620:
+    // the square viewBox is centred with bars either side, so only the exact
+    // middle maps the same either way.
+    const box = { width: 382, height: 322 };
+    const scale = Math.min(box.width / 320, box.height / 320);
+    const bar = (box.width - 320 * scale) / 2;
+    expect(planPointOf(box, full, box.width / 2, box.height / 2)!.x).toBeCloseTo(160);
+    expect(planPointOf(box, full, bar, box.height / 2)!.x).toBeCloseTo(0);
+    expect(planPointOf(box, full, box.width - bar, box.height / 2)!.x).toBeCloseTo(320);
+    // Mapping straight across would have called the left edge 0 and the tenth
+    // point 32; through the letterbox it is 8.3.
+    const tenth = planPointOf(box, full, box.width * 0.1, box.height / 2)!;
+    expect(tenth.x).toBeGreaterThan(0);
+    expect(tenth.x).toBeLessThan(12);
+  });
+
+  it("gives no point at all for a box that has not been laid out", () => {
+    // Guessing one would make the first move of a drag jump a whole window.
+    expect(planPointOf({ width: 0, height: 0 }, full, 10, 10)).toBeNull();
   });
 });

@@ -105,9 +105,10 @@ try {
     return { rooms, batches, instances, tapes: app.world.tapes.filter(Boolean).length };
   });
   report.world = world;
-  // The palace's seventeen with the cellar venue, and arcedit's six since its redesign (2026-09-17).
-  check('All 25 rooms use runtime architecture (24 Observatory, the Orrery in space)', world.rooms.length === 25
-    && world.rooms.filter((room) => room.architecture === 'observatory').length === 24
+  // The palace's seventeen with the cellar venue, arcedit's six since its
+  // redesign (2026-09-17), and quantumflow's six in the east wing.
+  check('All 31 rooms use runtime architecture (30 Observatory, the Orrery in space)', world.rooms.length === 31
+    && world.rooms.filter((room) => room.architecture === 'observatory').length === 30
     && world.rooms.filter((room) => room.architecture === 'space').length === 1, world.rooms);
   check('Architecture stays near fifteen draw batches a room across the whole world', world.batches < world.rooms.length * 16, world.batches);
   // Eight tapes: einstruct's two sheets, phototroph's three (the lit and dark

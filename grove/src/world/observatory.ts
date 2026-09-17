@@ -66,7 +66,10 @@ function finishKey(roomId: string): string {
   return ROOM_FINISH[id] ? id : id.split("/")[0]!;
 }
 /** Rooms whose walls carry brass sconces between the panels. */
-const SCONCED = ["hall", "gallery", "orangery", "belvedere", "world-engine", "foyer", "club"];
+const SCONCED = ["hall", "gallery", "orangery", "belvedere", "world-engine", "foyer", "club",
+  // quantumflow's three great chambers have two doorways each, so the rule
+  // below does not reach them and they baked at a third of einstruct's light.
+  "quantumflow/cloud", "quantumflow/bowl", "quantumflow/inversion"];
 /** Rooms with a colonnade along their long walls. */
 const COLONNADED = ["hall", "gallery", "orangery", "belvedere"];
 const materials = new Map<string, MeshBasicMaterial>();
