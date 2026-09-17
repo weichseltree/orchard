@@ -31,8 +31,9 @@
     "orangery": {
       "title": "orangery",
       "kicker": "Let your eyes travel.",
-      "intro": "The orangery joins the world-engine chamber to the terrace. It is a place between exhibits: follow the open doors, look back towards the chambers, or step out under the sky. At the far end stands a chess table: walk up to play, or open it from the Guide.",
-      "lookFor": "The three doors on the garden side all open onto the terrace."
+      "intro": "The orangery joins the world-engine chamber to the terrace. It is a place between exhibits: follow the open doors, look back towards the chambers, or step out under the sky. At the far end stands a chess table: walk up to play, or open it from the Guide. Six orbitals stand along the room, each on a plinth whose height is its own energy, at nine tenths of a metre to the Hartree. The second and third share a height because they share an energy.",
+      "lookFor": "The three doors on the garden side all open onto the terrace.",
+      "limit": "These are non-interacting electrons in a well we chose, not a measured molecule, and the colours are kinetic energy density rather than anything a camera could record."
     },
     "court-north": {
       "title": "north court",
@@ -222,38 +223,44 @@
     "quantumflow": {
       "title": "quantumflow",
       "kicker": "Why does an electron take only certain energies?",
-      "intro": "This is the Shooting Gallery. Turn the dial and a wave sets off from the near wall, feeling its way along the room. At almost every setting it flies apart before it reaches the far end. At a few, it lies flat. Nobody chose those few.",
-      "lookFor": "The handful of settings where the wave lies flat instead of flying apart."
+      "intro": "This is the Shooting Gallery. Turn the dial and a wave sets off from the near wall, feeling its way along the room. At almost every setting it flies apart before it reaches the far end. At a few, it lies flat. Nobody chose those few. The tape on its stand is the experiment itself. Drag the bar and you step through trial energies in order; at the far end the wave tears upward at almost every one of them.",
+      "lookFor": "The handful of settings where the wave lies flat instead of flying apart.",
+      "limit": "The bar is trial energy, not time. Nothing in the tape is moving; each frame is an independent guess, shown in increasing order."
     },
     "quantumflow/cloud": {
       "title": "The cloud",
       "kicker": "Six waves go in and one cloud comes out: what is lost?",
-      "intro": "Each orbital arrives with its own colour and its own shape. They are added together, and the colours wash out into a single pale cloud. Everything the six of them knew is still in here, and the wall behind will prove it.",
-      "lookFor": "The moment the colours vanish, and the potential well that re-forms on the wall afterwards."
+      "intro": "Each orbital arrives with its own colour and its own shape. They are added together, and the colours wash out into a single pale cloud. Everything the six of them knew is still in here, and the wall behind will prove it. The density lies here as a relief, in the valleys of the well that made it. Through the portal you can stand inside the same cloud at a tenth of this scale.",
+      "lookFor": "The moment the colours vanish, and the potential well that re-forms on the wall afterwards.",
+      "limit": "Each shell holds a stated share of the electrons, measured on the solved grid. The occupied set is a whole shell, so the cloud does not depend on a choice."
     },
     "quantumflow/bowl": {
       "title": "The bowl",
       "kicker": "How do you find the lowest point of a landscape you cannot see?",
-      "intro": "Two surfaces stand side by side. One is a bowl: wherever you start, going downhill finds the single lowest point. The other is lumpy, and downhill can strand you in a hollow that is not the bottom. Only one of them can be trusted.",
-      "lookFor": "The hollows in the second surface that are not its lowest point."
+      "intro": "Two surfaces stand side by side. One is a bowl: wherever you start, going downhill finds the single lowest point. The other is lumpy, and downhill can strand you in a hollow that is not the bottom. Only one of them can be trusted. Two surfaces stand side by side, the same network and the same seed with one constraint taken away. Green ribbons mark the chords that hold and red ones those that fail, and you can count them from where you stand.",
+      "lookFor": "The hollows in the second surface that are not its lowest point.",
+      "limit": "The slice through density space is a straight one, which is what lets the picture stand as proof. Neither network is trained; the guarantee is in how one of them is built."
     },
     "quantumflow/inversion": {
       "title": "The inversion",
       "kicker": "Can the cloud alone tell you the forces that shaped it?",
-      "intro": "Here the argument is tested. On one wall, the potential well an electron truly sat in. On the other, the well rebuilt from the cloud alone, without ever seeing the waves. Between them hangs the difference, at full size, however large it turns out to be.",
-      "lookFor": "The gap between the two wells, which is the whole measure of the claim."
+      "intro": "Here the argument is tested. On one wall, the potential well an electron truly sat in. On the other, the well rebuilt from the cloud alone, without ever seeing the waves. Between them hangs the difference, at full size, however large it turns out to be. Nothing hangs here yet but the equation. The number this room is built to report has not been measured: the functional is implemented and tested, and it has not yet been trained against the benchmark.",
+      "lookFor": "The gap between the two wells, which is the whole measure of the claim.",
+      "limit": "This room states a claim it cannot yet support with a number. If the reconstruction fails, the result hangs here as a negative one, with its figure on the plaque."
     },
     "quantumflow/flow": {
       "title": "The flow",
       "kicker": "What happened when the project added a rule it was sure would help?",
-      "intro": "A cloud of particles is carried from where it starts to where it must end. The project added a constraint it had good reason to believe in, and measured it making the journey worse at every strength tried. The curve beside the flow is that result.",
-      "lookFor": "The curve on the wall, which rises where it should have fallen."
+      "intro": "A cloud of particles is carried from where it starts to where it must end. The project added a constraint it had good reason to believe in, and measured it making the journey worse at every strength tried. The curve beside the flow is that result. The tape carries four thousand particles from where they start to where they must end, under the baseline that nothing was promoted over. The equation beside it names the penalty that did not pay.",
+      "lookFor": "The curve on the wall, which rises where it should have fallen.",
+      "limit": "The height of this flow is a potential fixed only up to an offset, so two flows from different runs cannot be compared by height. That is why only one hangs here."
     },
     "quantumflow/inside": {
       "title": "Inside the cloud",
       "kicker": "What does a single electron orbital look like from within?",
-      "intro": "You have shrunk to the scale of the cloud. The haze around you is one orbital, drawn where its wave is strongest. Somewhere near the middle is a surface you cannot cross, because there the wave is exactly zero.",
-      "lookFor": "The surface you cannot walk through, where the wave falls to zero."
+      "intro": "You have shrunk to the scale of the cloud. The haze around you is one orbital, drawn where its wave is strongest. Somewhere near the middle is a surface you cannot cross, because there the wave is exactly zero. You have come through the portal at a tenth of the palace's scale. The equation on the wall is the whole of what this room is for: a wave can vanish where its own cloud does not.",
+      "lookFor": "The surface you cannot walk through, where the wave falls to zero.",
+      "limit": "The cloud itself is not modelled here yet; what stands is the statement it rests on. A sum of waves that each vanish somewhere need not vanish anywhere."
     }
   },
   "exhibits": {
@@ -380,6 +387,86 @@
     "arcedit.inside.canvas": {
       "title": "The canvas at the scale of a cell",
       "caption": "The scripted teacher copies a five-by-five grid of many colours in 114 clicks: to the palette, to the cell, back to the palette. This shows the task by the program that defines it; no learned agent solves the many-coloured copy yet."
+    },
+    "quantumflow.orbital.0": {
+      "title": "The ground state",
+      "caption": "The lowest state a wave can take in this well. One lobe, no node anywhere, and the least curvature: gold where the wave is positive, and its height here is its energy."
+    },
+    "quantumflow.orbital.1": {
+      "title": "The first excited state",
+      "caption": "One nodal surface, where the wave passes through nothing at all and the two colours meet. That surface costs energy, which is why this state stands higher than the one before it."
+    },
+    "quantumflow.orbital.2": {
+      "title": "The second state",
+      "caption": "One of a degenerate pair: it shares its energy exactly with its neighbour, so the two stand at the same height. Its shape is measured; the direction it points is a choice."
+    },
+    "quantumflow.orbital.3": {
+      "title": "The third state",
+      "caption": "The twin of the one beside it, at the same energy to twelve figures. The same shape, turned. Which way each of them faces is not something this well decides."
+    },
+    "quantumflow.orbital.4": {
+      "title": "The fourth state",
+      "caption": "More nodes than the states below, and more curvature with them. The bright bands hug the nodal surfaces, because that is where a wave bends hardest and kinetic energy collects."
+    },
+    "quantumflow.orbital.5": {
+      "title": "The fifth state",
+      "caption": "The highest of the six that are occupied, with the most nodes and the greatest curvature. Every node below it has been paid for in energy, and this is the running total."
+    },
+    "quantumflow.density.shells": {
+      "title": "The density",
+      "caption": "All six waves, squared and added. The three surfaces hold half, four fifths and nineteen twentieths of the electrons; each was measured from the solved grid, not chosen for looks."
+    },
+    "quantumflow.potential.relief": {
+      "title": "The well",
+      "caption": "The well itself, laid out as ground you can walk around. Nothing else went into this room: every shape standing here was solved from this one surface and nothing more."
+    },
+    "quantumflow.density.relief": {
+      "title": "The cloud in the valleys",
+      "caption": "The same cloud again, lying in the valleys of the well that made it. Where the ground falls away the electrons gather, and where it rises they thin to nothing."
+    },
+    "quantumflow.bowl.convex": {
+      "title": "The bowl that cannot fail",
+      "caption": "Built so that this cannot fail: every chord between two points on the surface lies above it. Four thousand random chords were tested in double precision and not one came out negative."
+    },
+    "quantumflow.bowl.unconstrained": {
+      "title": "The same network, unconstrained",
+      "caption": "The same network, the same seed, one constraint removed. Ninety-three of the same chords now cut below the surface, and you can see the hollows they fall into from across the room."
+    },
+    "quantumflow.tape.shooting": {
+      "title": "Quantization, found by hand",
+      "caption": "Scrub it and you turn an energy dial, not a clock: each frame is one guess at the energy, in order. At almost every guess the wave runs away at the far wall."
+    },
+    "quantumflow.tape.flow": {
+      "title": "The flow, and its gauge",
+      "caption": "Four thousand particles carried from where they start to where they must end. Its height is a potential fixed only up to an offset, so no two flows can be compared by height."
+    },
+    "quantumflow.equation.orbitary": {
+      "title": "One well, one wave, one energy",
+      "caption": "One well, one wave, one energy. Every shape in this room is a solution of this single equation, and each floats at the energy it solved for, to a stated scale."
+    },
+    "quantumflow.equation.gallery": {
+      "title": "It must land on both walls",
+      "caption": "The wave has to land on both walls at once, and almost no energy lets it. The few that do are not chosen by anyone; they are what the well allows."
+    },
+    "quantumflow.equation.cloud": {
+      "title": "Every wave, squared and added",
+      "caption": "Every wave, squared and added, once. The sum is the whole of what this wing claims is enough: if the cloud carries everything, the waves need never be looked at again."
+    },
+    "quantumflow.equation.bowl": {
+      "title": "Never above its own chords",
+      "caption": "A surface never rises above its own chords. That is the whole of convexity, and it is the one property here you can check by eye rather than take on trust."
+    },
+    "quantumflow.equation.inversion": {
+      "title": "The cloud gives up the well",
+      "caption": "Run the argument backwards and the cloud gives up the well that shaped it. This is the claim the whole wing is built to test, and the number is not measured yet."
+    },
+    "quantumflow.equation.flow": {
+      "title": "A slope, and a penalty on it",
+      "caption": "Mass follows a slope, and the penalty on the right asks that slope to curve evenly everywhere. The project had good reason to believe it would help. It did not."
+    },
+    "quantumflow.equation.inside": {
+      "title": "Nothing, where the cloud is not",
+      "caption": "A single wave can be exactly nothing at a point where the cloud it belongs to is not. The sum keeps the total and forgets which wave paid for it."
     }
   }
 }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-  ANNOUNCE_BUDGET, EMPTY_CURSOR, accumulate, announce, eventNumber,
-  peerIsSilent, readFeed, treeLabel, type ComputeEvent,
+  ANNOUNCE_BUDGET, EMPTY_CURSOR, SPOKEN_MAX, accumulate, announce, eventNumber,
+  fitToRoom, peerIsSilent, readFeed, treeLabel, type ComputeEvent,
 } from "./events";
 
 function event(over: Partial<ComputeEvent> = {}): ComputeEvent {
@@ -209,6 +209,14 @@ describe("announce", () => {
     expect(said("balanced")).toBe("2 runs balanced in spectre.");
     expect(said("stalled")).toBe("2 runs stalled in spectre.");
     expect(said("plateau")).toBe("2 runs flagged a plateau in spectre.");
+    // A condition ending and a condition stopping being watched are not the
+    // same fact, and the engine names both from whatever the condition is
+    // called: `<name>-cleared` is over, `<name>-expired` is "no longer watched
+    // (no samples)". Announcing a resolution to a run that went quiet is the
+    // `completed`-is-not-success mistake in another coat.
+    expect(said("plateau-cleared")).toBe("2 runs cleared the plateau in spectre.");
+    expect(said("plateau-expired")).toBe("2 runs no longer watched for the plateau in spectre.");
+    expect(said("box-load-cleared")).toBe("2 runs cleared the box-load in spectre.");
     expect(said("cap")).toBe("2 runs flagged as unlikely to reach the cap in spectre.");
     // The box slowing a run is never a regression: box load has fooled us before.
     expect(said("slowdown")).toBe("2 runs flagged the box slowing them in spectre.");
@@ -246,6 +254,116 @@ describe("announce", () => {
   it("keeps a lone event's own title", () => {
     const [only] = announce([event({ id: "ev_1", type: "crashed", priority: 1, title: "Crashed: m06-planet-tests-a", detail: "exit code 1" })]);
     expect(only!.text).toBe("Crashed: m06-planet-tests-a - exit code 1.");
+  });
+
+  it("does not end a sentence its producer already ended", () => {
+    // The planet watcher's titles carry their own full stop; expdash's do not.
+    const [ended] = announce([event({ id: "ev_1", title: "s=0.95: crashed, as the record says.", detail: "" })]);
+    expect(ended!.text).toBe("s=0.95: crashed, as the record says.");
+    const [unended] = announce([event({ id: "ev_2", title: "Crashed: a-run", detail: "" })]);
+    expect(unended!.text).toBe("Crashed: a-run.");
+  });
+
+  it("drops an alert's arithmetic before the sentence it fired on", () => {
+    // Read off the live emulator feed, 2026-09-17: 178 characters, of which 83
+    // are the thresholds. The module would carry it and clip anything past 280
+    // silently and mid-word.
+    const [only] = announce([event({
+      id: "ev_1", type: "plateau", priority: 2, detail: "",
+      title: "m06-synthetic-c1-s0.96: spin-up plateau: |imbalance| not closing over 5 years while ice spreads (abs_imbalance 3.41 > 0.1, imbalance_trend 0.0798 > -0.02, ice_rise 0.068 > 0.005)",
+    })]);
+    expect(only!.text).toBe("m06-synthetic-c1-s0.96: spin-up plateau: |imbalance| not closing over 5 years while ice spreads.");
+    expect([...only!.text].length).toBeLessThanOrEqual(SPOKEN_MAX);
+  });
+
+  it("keeps the clause a slowdown must keep, and closes its brackets", () => {
+    // The live slowdown alert, 174 characters: its evidence is NOT at the end,
+    // and the clause after it is the one ANNOUNCE-FEED.md §3 requires -- box
+    // load, never a regression. A cut at the last word would have dropped
+    // exactly that and left the bracket open.
+    const [only] = announce([event({
+      id: "ev_1", type: "slowdown", priority: 2, detail: "",
+      // The adapter's own alert, 226 characters -- longer than the synthetic
+      // fold's 174, and the one that actually reaches the cut.
+      title: "m06-fold-s0.96: the box is slowing this run: 261 s per model year against 60 s median for this run so far (load 25.1 on 16 cores; top: chrome 310%, node 180%). Box load, not the code: only a same-load control can say otherwise",
+    })]);
+    expect(only!.text).toContain("Box load, not the code");
+    expect(only!.text).not.toContain("(");
+    expect(only!.text).not.toMatch(/regress/i);
+    expect([...only!.text].length).toBeLessThanOrEqual(SPOKEN_MAX);
+  });
+
+  it("keeps a producer's own ellipsis instead of calling it a full stop", () => {
+    // `...` is how a producer marks that it truncated a log line; turned into
+    // a stop, a cut-off line would read as a complete one.
+    const [only] = announce([event({
+      id: "ev_1", detail: "",
+      title: `m06-fold-s0.96: ${"tail ".repeat(26)}and then it said something... and more`,
+    })]);
+    expect(only!.text).not.toMatch(/\.\./);
+    expect(only!.text).toContain("…");
+  });
+
+  it("never says only punctuation, however much of the line was evidence", () => {
+    const [only] = announce([event({ id: "ev_1", type: "plateau", detail: "", title: `(${"z".repeat(200)})` })]);
+    expect(only!.text).not.toBe(".");
+    expect(only!.text).toMatch(/[\p{L}\p{N}]/u);
+    expect([...only!.text].length).toBeLessThanOrEqual(SPOKEN_MAX);
+  });
+
+  it("cuts on code points, so a line of emoji keeps its characters whole", () => {
+    // The module strips format and control characters but not a stray
+    // surrogate, so a cut in UTF-16 units would reach a visitor as U+FFFD.
+    const [only] = announce([event({ id: "ev_1", detail: "", title: "🌍".repeat(139) })]);
+    // No lone surrogate: a half pair reaches a visitor as U+FFFD, and the
+    // module's own cleaner strips format and control characters, not these.
+    expect(only!.text).not.toMatch(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/);
+    expect([...only!.text].length).toBeLessThanOrEqual(SPOKEN_MAX);
+  });
+
+  it("says something when a feed sends an event with no title at all", () => {
+    const [only] = announce([event({ id: "ev_1", type: "crashed", title: "", detail: "" })], new Map([["spectre", "coarsen"]]));
+    expect(only!.text).toBe("1 run crashed in coarsen.");
+  });
+
+  it("never says more in one line than the room can carry", () => {
+    const title = `${"unmistakable ".repeat(20)}end`;
+    const [only] = announce([event({ id: "ev_1", title, detail: "" })]);
+    expect([...only!.text].length).toBeLessThanOrEqual(SPOKEN_MAX);
+    // Visibly cut, and cut BETWEEN words: what she kept is a prefix of the
+    // title, and the title carries on with a space.
+    expect(only!.text.endsWith("…")).toBe(true);
+    const kept = only!.text.slice(0, -1);
+    expect(title.startsWith(kept)).toBe(true);
+    expect(title[kept.length]).toBe(" ");
+  });
+
+  it("leaves a line that fits exactly as its producer wrote it", () => {
+    // Three real lines from the live feed: 54, 68 and 127 characters.
+    for (const line of [
+      "s=0.96: hit the 60-year cap unbalanced at -3.2581 W/m²",
+      "s=0.95: won't make the cap: 60 more years projected, 54 remain of 60",
+      "m06-synthetic-c1-s0.96: spin-up plateau: |imbalance| not closing over 5 years while ice spreads: no longer watched (no samples)",
+    ]) {
+      expect(fitToRoom(line)).toBe(line);
+    }
+  });
+
+  it("ends a shortened list on a clause, not on a dangling separator", () => {
+    // Her own "what is running" answer is a list of clauses; cut inside one it
+    // would end "1 on legion-three:…", which reads as interrupted.
+    const listed = "When I last looked, 20 minutes ago, 12 runs — 9 on SirBase: 4 coarsen, 3 arcedit, 2 quantumflow; 1 on Legion: logswarm; 1 on legion-three: orchard.";
+    const cut = fitToRoom(listed);
+    expect([...cut].length).toBeLessThanOrEqual(SPOKEN_MAX);
+    expect(cut).toBe("When I last looked, 20 minutes ago, 12 runs — 9 on SirBase: 4 coarsen, 3 arcedit, 2 quantumflow; 1 on Legion: logswarm…");
+    expect(cut).not.toMatch(/[:;,]…$/);
+  });
+
+  it("cuts back rather than leaving a bracket it did not close", () => {
+    const opened = `s=0.94: ${"filler ".repeat(16)}(load 25.1 on 16 cores; top: chrome 310%, node 180%, python 95%, esbuild 40%)`;
+    const cut = fitToRoom(opened);
+    expect([...cut].length).toBeLessThanOrEqual(SPOKEN_MAX);
+    expect(cut).not.toContain("(");
   });
 
   it("leaves out a detail too long to be heard in passing", () => {

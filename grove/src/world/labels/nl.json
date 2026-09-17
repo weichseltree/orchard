@@ -31,8 +31,9 @@
     "orangery": {
       "title": "oranjerie",
       "kicker": "Laat uw ogen reizen.",
-      "intro": "De oranjerie verbindt de zaal van world-engine met het terras. Het is een plek tussen de werken: volg de open deuren, kijk terug naar de zalen, of stap naar buiten onder de hemel. Aan het verre einde staat een schaaktafel: loop ernaartoe om te spelen, of open het spel vanuit de Gids.",
-      "lookFor": "De drie deuren aan de tuinkant komen alle uit op het terras."
+      "intro": "De oranjerie verbindt de zaal van world-engine met het terras. Het is een plek tussen de werken: volg de open deuren, kijk terug naar de zalen, of stap naar buiten onder de hemel. Aan het verre einde staat een schaaktafel: loop ernaartoe om te spelen, of open het spel vanuit de Gids. Zes orbitalen staan in de lengte van de zaal, elk op een sokkel waarvan de hoogte zijn eigen energie is, op negen tiende meter per Hartree. Het tweede en het derde staan even hoog, omdat zij dezelfde energie hebben.",
+      "lookFor": "De drie deuren aan de tuinkant komen alle uit op het terras.",
+      "limit": "Dit zijn niet-wisselwerkende elektronen in een put die wij gekozen hebben, geen gemeten molecuul; de kleuren zijn dichtheid van bewegingsenergie en niets wat een camera zou kunnen vastleggen."
     },
     "court-north": {
       "title": "noordhof",
@@ -222,38 +223,44 @@
     "quantumflow": {
       "title": "quantumflow",
       "kicker": "Waarom neemt een elektron alleen bepaalde energieën aan?",
-      "intro": "Dit is de schietbaan. Draai aan de knop en een golf vertrekt van de nabije wand, tastend door de zaal. Bij bijna elke stand vliegt hij uiteen voordat hij de verre wand bereikt. Bij een paar standen gaat hij vlak liggen. Dat handjevol standen heeft niemand gekozen.",
-      "lookFor": "De paar standen waarbij de golf vlak blijft liggen in plaats van uiteen te vliegen."
+      "intro": "Dit is de schietbaan. Draai aan de knop en een golf vertrekt van de nabije wand, tastend door de zaal. Bij bijna elke stand vliegt hij uiteen voordat hij de verre wand bereikt. Bij een paar standen gaat hij vlak liggen. Dat handjevol standen heeft niemand gekozen. De band op zijn standaard is de proef zelf. Sleep aan de balk en u loopt op volgorde door proefenergieën; aan het verre eind scheurt de golf bij bijna elk van hen omhoog weg.",
+      "lookFor": "De paar standen waarbij de golf vlak blijft liggen in plaats van uiteen te vliegen.",
+      "limit": "De balk is proefenergie, geen tijd. Niets in deze band beweegt; elk beeld is een eigen gok, op oplopende volgorde getoond."
     },
     "quantumflow/cloud": {
       "title": "De wolk",
       "kicker": "Zes golven erin, één wolk eruit: wat gaat er verloren?",
-      "intro": "De orbitalen komen elk binnen met een eigen kleur en een eigen vorm. Ze worden bij elkaar opgeteld, en de kleuren vervagen tot één bleke wolk. Alles wat die zes wisten zit hier nog in, en de wand erachter zal dat bewijzen.",
-      "lookFor": "Het moment waarop de kleuren verdwijnen, en de potentiaalput die daarna op de wand ontstaat."
+      "intro": "De orbitalen komen elk binnen met een eigen kleur en een eigen vorm. Ze worden bij elkaar opgeteld, en de kleuren vervagen tot één bleke wolk. Alles wat die zes wisten zit hier nog in, en de wand erachter zal dat bewijzen. De dichtheid ligt hier als reliëf, in de dalen van de put die haar maakte. Door de poort kunt u in diezelfde wolk staan, op een tiende van deze schaal.",
+      "lookFor": "Het moment waarop de kleuren verdwijnen, en de potentiaalput die daarna op de wand ontstaat.",
+      "limit": "Elke schil bevat een aangegeven deel van de elektronen, gemeten aan het opgeloste rooster. De bezette verzameling is een hele schil, en daarom hangt de wolk van geen keuze af."
     },
     "quantumflow/bowl": {
       "title": "De kom",
       "kicker": "Hoe vindt u het laagste punt van een landschap dat u niet kunt zien?",
-      "intro": "Twee oppervlakken staan naast elkaar. Het ene is een kom: waar u ook begint, leidt de weg omlaag naar het enige laagste punt. Het andere is hobbelig, en de weg naar beneden kan u laten stranden in een kuil die niet de bodem is. Slechts één is te vertrouwen.",
-      "lookFor": "De kuilen in het tweede oppervlak die niet het laagste punt zijn."
+      "intro": "Twee oppervlakken staan naast elkaar. Het ene is een kom: waar u ook begint, leidt de weg omlaag naar het enige laagste punt. Het andere is hobbelig, en de weg naar beneden kan u laten stranden in een kuil die niet de bodem is. Slechts één is te vertrouwen. Twee oppervlakken staan naast elkaar, hetzelfde netwerk en dezelfde startwaarde, met één voorwaarde weggehaald. Groene linten tonen de koorden die houden en rode die falen, en u kunt ze vanaf uw plek tellen.",
+      "lookFor": "De kuilen in het tweede oppervlak die niet het laagste punt zijn.",
+      "limit": "De snede door de dichtheidsruimte is een rechte, en juist dat laat het beeld als bewijs gelden. Geen van beide netwerken is getraind; de garantie zit in de bouw van het ene."
     },
     "quantumflow/inversion": {
       "title": "De omkering",
       "kicker": "Verraadt de wolk op zichzelf de krachten die haar hebben gevormd?",
-      "intro": "Hier wordt de bewering beproefd. Op de ene wand de potentiaalput waarin een elektron werkelijk zat. Op de andere de put, alleen uit de wolk herbouwd, zonder de golven ooit te zien. Daartussen hangt het verschil, op ware grootte, hoe groot het ook uitvalt.",
-      "lookFor": "De kloof tussen beide putten, die de hele maat van de bewering is."
+      "intro": "Hier wordt de bewering beproefd. Op de ene wand de potentiaalput waarin een elektron werkelijk zat. Op de andere de put, alleen uit de wolk herbouwd, zonder de golven ooit te zien. Daartussen hangt het verschil, op ware grootte, hoe groot het ook uitvalt. Hier hangt nog niets dan de vergelijking. Het getal waarvoor deze zaal gebouwd is, is nog niet gemeten: het functionaal is gebouwd en getoetst, maar nog niet tegen de vergelijkingsverzameling getraind.",
+      "lookFor": "De kloof tussen beide putten, die de hele maat van de bewering is.",
+      "limit": "Deze zaal doet een bewering die zij nog niet met een getal kan staven. Mislukt de reconstructie, dan hangt de uitkomst hier als negatieve, met haar getal op het bordje."
     },
     "quantumflow/flow": {
       "title": "De stroom",
       "kicker": "Wat gebeurde er toen het project een regel toevoegde die zeker zou helpen?",
-      "intro": "Een wolk van deeltjes wordt gedragen van waar zij begint naar waar zij eindigen moet. Het project voegde een voorwaarde toe waarin het met goede redenen geloofde, en mat hoe die de reis bij elke sterkte verslechterde. De kromme ernaast is dat resultaat.",
-      "lookFor": "De kromme op de wand, die stijgt waar zij zou moeten dalen."
+      "intro": "Een wolk van deeltjes wordt gedragen van waar zij begint naar waar zij eindigen moet. Het project voegde een voorwaarde toe waarin het met goede redenen geloofde, en mat hoe die de reis bij elke sterkte verslechterde. De kromme ernaast is dat resultaat. De band draagt vierduizend deeltjes van waar zij beginnen naar waar zij eindigen moeten, onder de basisinstelling waarboven niets bevorderd werd. De vergelijking ernaast noemt de voorwaarde die niet loonde.",
+      "lookFor": "De kromme op de wand, die stijgt waar zij zou moeten dalen.",
+      "limit": "De hoogte van deze stroom is een potentiaal die slechts op een verschuiving na vastligt; twee stromen uit verschillende gangen zijn daarom niet naar hoogte te vergelijken. Daarom hangt er hier maar één."
     },
     "quantumflow/inside": {
       "title": "In de wolk",
       "kicker": "Hoe ziet één elektronenorbitaal er van binnenuit uit?",
-      "intro": "U bent geslonken tot de schaal van de wolk. De nevel om u heen is één orbitaal, getekend waar zijn golf het sterkst is. Ergens bij het midden ligt een vlak waar u niet door kunt, want daar is de golf precies nul.",
-      "lookFor": "Het vlak waar u niet doorheen kunt, waar de golf tot nul daalt."
+      "intro": "U bent geslonken tot de schaal van de wolk. De nevel om u heen is één orbitaal, getekend waar zijn golf het sterkst is. Ergens bij het midden ligt een vlak waar u niet door kunt, want daar is de golf precies nul. U bent door de poort gekomen, op een tiende van de schaal van het paleis. De vergelijking aan de wand is alles waar deze zaal voor is: een golf kan verdwijnen waar zijn eigen wolk dat niet doet.",
+      "lookFor": "Het vlak waar u niet doorheen kunt, waar de golf tot nul daalt.",
+      "limit": "De wolk zelf is hier nog niet gemodelleerd; wat er staat is de stelling waarop zij rust. Een som van golven die elk ergens verdwijnen hoeft nergens te verdwijnen."
     }
   },
   "exhibits": {
@@ -380,6 +387,86 @@
     "arcedit.inside.canvas": {
       "title": "Het canvas op celschaal",
       "caption": "De gescripte leraar kopieert een veelkleurig raster van vijf bij vijf in 114 klikken: naar het palet, naar de cel, terug naar het palet. Dit toont de taak via het programma dat haar definieert; geen getrainde agent lost de veelkleurige kopie al op."
+    },
+    "quantumflow.orbital.0": {
+      "title": "De grondtoestand",
+      "caption": "De laagste toestand die een golf in deze put kan aannemen. Eén lob, nergens een knoop, en de minste kromming: goud waar de golf positief is, en haar hoogte hier is haar energie. Opgelost op achtenveertig punten per as; de kleur is de dichtheid van bewegingsenergie."
+    },
+    "quantumflow.orbital.1": {
+      "title": "De eerste aangeslagen toestand",
+      "caption": "Eén knoopvlak, waar de golf door helemaal niets heen gaat en de twee kleuren elkaar raken. Dat vlak kost energie, en daarom staat deze toestand hoger dan de vorige. Opgelost op achtenveertig punten per as; de kleur is de dichtheid van bewegingsenergie."
+    },
+    "quantumflow.orbital.2": {
+      "title": "De tweede toestand",
+      "caption": "Eén van een ontaard paar: hij deelt zijn energie precies met zijn buur, en daarom staan de twee even hoog. Zijn vorm is gemeten; de richting waarin hij wijst is een keuze. Opgelost op achtenveertig punten per as; de kleur is de dichtheid van bewegingsenergie."
+    },
+    "quantumflow.orbital.3": {
+      "title": "De derde toestand",
+      "caption": "De tweelingbroer van zijn buur, op twaalf cijfers bij dezelfde energie. Dezelfde vorm, gedraaid. Welke kant elk van beide op wijst, bepaalt deze put niet. Opgelost op achtenveertig punten per as; de kleur is de dichtheid van bewegingsenergie."
+    },
+    "quantumflow.orbital.4": {
+      "title": "De vierde toestand",
+      "caption": "Meer knopen dan de toestanden eronder, en daarmee meer kromming. De heldere banden vlijen zich tegen de knoopvlakken, want daar buigt een golf het sterkst en daar verzamelt zich bewegingsenergie. Opgelost op achtenveertig punten per as; de kleur is de dichtheid van bewegingsenergie."
+    },
+    "quantumflow.orbital.5": {
+      "title": "De vijfde toestand",
+      "caption": "De hoogste van de zes bezette toestanden, met de meeste knopen en de grootste kromming. Elke knoop eronder is met energie betaald, en dit is de lopende som. Opgelost op achtenveertig punten per as; de kleur is de dichtheid van bewegingsenergie."
+    },
+    "quantumflow.density.shells": {
+      "title": "De dichtheid",
+      "caption": "Alle zes golven, gekwadrateerd en opgeteld. De drie vlakken bevatten de helft, vier vijfde en negentien twintigste van de elektronen; elk is gemeten aan het opgeloste rooster, niet gekozen om het aanzien. Elk getal hier komt van het opgeloste rooster, niet van het oog."
+    },
+    "quantumflow.potential.relief": {
+      "title": "De put",
+      "caption": "De put zelf, uitgelegd als grond waar u omheen kunt lopen. Meer ging er niet in deze zaal: elke vorm die hier staat is uit dit ene oppervlak opgelost en uit niets anders. Elk getal hier komt van het opgeloste rooster, niet van het oog."
+    },
+    "quantumflow.density.relief": {
+      "title": "De wolk in de dalen",
+      "caption": "Dezelfde wolk opnieuw, liggend in de dalen van de put die haar maakte. Waar de grond wegvalt verzamelen de elektronen zich, en waar hij stijgt worden ze dun tot niets. Elk getal hier komt van het opgeloste rooster, niet van het oog."
+    },
+    "quantumflow.bowl.convex": {
+      "title": "De kom die niet kan falen",
+      "caption": "Zo gebouwd dat dit niet mis kan gaan: elke koorde tussen twee punten op het oppervlak ligt erboven. Vierduizend willekeurige koorden zijn in dubbele precisie getoetst en niet één kwam negatief uit. Vierduizend koorden in dubbele precisie, voor beide oppervlakken vanuit dezelfde startwaarde."
+    },
+    "quantumflow.bowl.unconstrained": {
+      "title": "Hetzelfde netwerk, zonder voorwaarde",
+      "caption": "Hetzelfde netwerk, dezelfde startwaarde, één voorwaarde weggehaald. Drieënnegentig van diezelfde koorden snijden nu onder het oppervlak, en de kuilen waarin ze vallen ziet u dwars door de zaal. Vierduizend koorden in dubbele precisie, voor beide oppervlakken vanuit dezelfde startwaarde."
+    },
+    "quantumflow.tape.shooting": {
+      "title": "Kwantisatie, met de hand gevonden",
+      "caption": "Wie hier spoelt draait aan een energieknop, niet aan een klok: elk beeld is één gok naar de energie, op volgorde. Bij bijna elke gok loopt de golf bij de verre wand weg. Wat de schuifbalk verplaatst staat in het verslag van de band zelf."
+    },
+    "quantumflow.tape.flow": {
+      "title": "De stroom en zijn ijking",
+      "caption": "Vierduizend deeltjes, gedragen van waar zij beginnen naar waar zij eindigen moeten. De hoogte is een potentiaal die slechts op een verschuiving na vastligt; twee stromen zijn daarom niet naar hoogte te vergelijken. Wat de schuifbalk verplaatst staat in het verslag van de band zelf."
+    },
+    "quantumflow.equation.orbitary": {
+      "title": "Eén put, één golf, één energie",
+      "caption": "Eén put, één golf, één energie. Elke vorm in deze zaal is een oplossing van deze ene vergelijking, en elk zweeft op de energie waarvoor hij is opgelost, op een aangegeven schaal. De zaal die ervoor ligt is precies datgene waarover de vergelijking gaat."
+    },
+    "quantumflow.equation.gallery": {
+      "title": "Zij moet op beide wanden landen",
+      "caption": "De golf moet op beide wanden tegelijk landen, en bijna geen enkele energie laat dat toe. De weinige die het doen heeft niemand gekozen; zij zijn wat de put toelaat. De zaal die ervoor ligt is precies datgene waarover de vergelijking gaat."
+    },
+    "quantumflow.equation.cloud": {
+      "title": "Elke golf, gekwadrateerd en opgeteld",
+      "caption": "Elke golf, gekwadrateerd en opgeteld, één keer. Die som is alles wat deze vleugel genoeg noemt: draagt de wolk alles, dan hoeven de golven nooit meer bekeken te worden. De zaal die ervoor ligt is precies datgene waarover de vergelijking gaat."
+    },
+    "quantumflow.equation.bowl": {
+      "title": "Nooit boven de eigen koorden",
+      "caption": "Een oppervlak stijgt nooit boven zijn eigen koorden uit. Dat is de hele convexiteit, en het is de ene eigenschap hier die u met het oog kunt toetsen in plaats van te geloven. De zaal die ervoor ligt is precies datgene waarover de vergelijking gaat."
+    },
+    "quantumflow.equation.inversion": {
+      "title": "De wolk geeft de put prijs",
+      "caption": "Voer de redenering achterstevoren uit en de wolk geeft de put prijs die haar vormde. Op die bewering is de hele vleugel gebouwd, en het getal erbij is nog niet gemeten. De zaal die ervoor ligt is precies datgene waarover de vergelijking gaat."
+    },
+    "quantumflow.equation.flow": {
+      "title": "Een helling, met een voorwaarde erop",
+      "caption": "Massa volgt een helling, en de voorwaarde rechts vraagt die helling overal gelijkmatig te krommen. Het project had goede reden te geloven dat het zou helpen. Het hielp niet. De zaal die ervoor ligt is precies datgene waarover de vergelijking gaat."
+    },
+    "quantumflow.equation.inside": {
+      "title": "Niets, waar de wolk dat niet is",
+      "caption": "Eén enkele golf kan op een punt precies nul zijn waar de wolk waartoe zij behoort dat niet is. De som houdt het geheel en vergeet welke golf ervoor betaalde. De zaal die ervoor ligt is precies datgene waarover de vergelijking gaat."
     }
   }
 }
