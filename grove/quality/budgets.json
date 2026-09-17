@@ -1,9 +1,9 @@
 {
-  "description": "Observatory regression limits: all 15 areas use runtime architecture. Total build measured at 3.43 MB after replacing palace bakes; 4.3 MB cap prevents retired assets re-entering the release, with headroom for the optional, dynamically-imported three/webgpu chunk (~162 KB gzip) added alongside the WebGL2 fallback renderer. Source media is streamed and measured separately. Startup JS rose to ~220 KB gzip with the palace's second pass (terrain, stairs, the plaque loader and the portal's intent and shader); the cap is 230 KB. On 2026-09-17 the club and phone dock brought main to 230.3 KB, and the grove-wide controls (point, glide, frame, the plan of rooms; their bodies load on demand, their bindings and the Guide's shared move do not) added 2.6 KB more: startup is ~232.9 KB against a cap of 234 KB, and all JS ~703 KB (the lazy glide, framing, map and repository-model chunks) against 706 KB.",
+  "description": "Observatory regression limits: all 15 areas use runtime architecture. Total build measured at 3.43 MB after replacing palace bakes; 4.3 MB cap prevents retired assets re-entering the release, with headroom for the optional, dynamically-imported three/webgpu chunk (~162 KB gzip) added alongside the WebGL2 fallback renderer. Source media is streamed and measured separately. Startup JS rose to ~220 KB gzip with the palace's second pass (terrain, stairs, the plaque loader and the portal's intent and shader); the cap is 230 KB. On 2026-09-17 the club and phone dock brought main to 230.3 KB, and the grove-wide controls (point, glide, frame, the plan of rooms; their bodies load on demand, their bindings and the Guide's shared move do not) added 2.6 KB more: startup is ~232.9 KB against a cap of 234 KB, and all JS ~703 KB (the lazy glide, framing, map and repository-model chunks) against 706 KB. Later on 2026-09-17 the club floor's stream added its lazy chunks (the way back from silence in the exhibit player, the sound gate, the beat follower, the door curtains): all JS ~709 KB against a cap of 712 KB; startup is unchanged.",
   "maximum": {
     "deferredModuleViolations": 0,
     "startupJsGzipBytes": 234000,
-    "allJsGzipBytes": 706000,
+    "allJsGzipBytes": 712000,
     "largestJsGzipBytes": 240000,
     "cssGzipBytes": 10000,
     "siteImageBytes": 700000,

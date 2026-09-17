@@ -52,6 +52,8 @@ export interface BuildWorldOptions {
   exhibits?: () => Promise<ExhibitRow[] | null>;
   /** The AudioContext a live audio exhibit joins (audio/gate.ts); each makes its own when absent. */
   audioContext?: () => Promise<AudioContext>;
+  /** False leaves live audio exhibits unloaded: the demo has no network, and a stream is nothing but one. */
+  liveExhibits?: boolean;
   /** The room the visitor starts in; `mansion.start` when absent. */
   startRoom?: string;
   scheduler?: ChunkScheduler;
@@ -366,6 +368,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
       // about it. An archived `audio` bundle still carries a bundle ref and
       // takes the ordinary path below.
       if (hanging.kind === "audio") {
+        if (hanging.live && options.liveExhibits === false) continue;
         const archived = hanging.bundle ? bundleUrl(hanging.bundle, exhibits) : null;
         if (hanging.bundle && archived === null) {
           const ref = hanging.bundle.exhibit;

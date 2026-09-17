@@ -1,4 +1,13 @@
 import { describe, expect, it } from "vitest";
+import { playlistHasMedia } from "./stream";
+
+describe("playlistHasMedia", () => {
+  it("is false for a header-only playlist and true once a segment is listed", () => {
+    expect(playlistHasMedia("#EXTM3U\n#EXT-X-VERSION:7\n#EXT-X-TARGETDURATION:2\n#EXT-X-MEDIA-SEQUENCE:4\n")).toBe(false);
+    expect(playlistHasMedia("#EXTM3U\n#EXT-X-MAP:URI=\"init.mp4\"\n#EXTINF:2.0,\nseg000004.m4s\n")).toBe(true);
+    expect(playlistHasMedia("")).toBe(false);
+  });
+});
 import { DEFAULT_MAX_LAG_SECONDS, lagSeconds, shouldFallSilent } from "./stream";
 
 describe("lagSeconds", () => {

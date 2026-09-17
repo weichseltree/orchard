@@ -17,6 +17,24 @@ export function lagSeconds(liveEdgeSeconds: number, currentTimeSeconds: number):
   return Math.max(0, liveEdgeSeconds - currentTimeSeconds);
 }
 
+/**
+ * Whether a playlist has anything to play: a media line, not just its
+ * header. An idle floor publishes an empty live playlist (orchard/stream.py),
+ * so a silent player polls the playlist and comes back the moment a segment
+ * appears, without a 404 for every poll.
+ */
+export function playlistHasMedia(text: string): boolean {
+  return text.split("\n").some((line) => {
+    const t = line.trim();
+    return t.length > 0 && !t.startsWith("#");
+  });
+}
+
+/** How often a silent stream looks for its playlist to fill again, in ms. */
+export const RETRY_MS = 8000;
+/** Behind the live edge by more than this, playback jumps back to it (budget: two segments). */
+export const SEEK_LAG_SECONDS = 4;
+
 /** Whether that lag is past the fall-behind budget and the stream must drop to silence. */
 export function shouldFallSilent(lag: number, maxLagSeconds: number = DEFAULT_MAX_LAG_SECONDS): boolean {
   return lag > maxLagSeconds;

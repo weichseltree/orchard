@@ -657,6 +657,7 @@ function boot(): void {
     // pinned ids: a slow link costs seconds, a dead one costs nothing.
     exhibits: demo ? undefined : () => presence.whenExhibits(EXHIBIT_WAIT_MS),
     audioContext: () => loadGear().then((g) => g.gate.context),
+    liveExhibits: !demo,
     onAudio: () => syncVenueSound(),
     onRoomReady: (room, shell) => {
       // The sealed lenses over this room's closed doors may show now that their recesses stand.
@@ -1171,7 +1172,9 @@ view.start((dt, time, rawDt) => {
   // music's low end when there is music, a slow breath when there is not
   // (audio/beat.ts); and the curtains over the doors barred to this visitor.
   if (pulseActive) {
-    const gain = pulseGain(beat && gear?.gate.enabled ? beat.level() : null, time / 1000);
+    // A stream that is on but silent (the floor idle) breathes like no stream at all.
+    const level = beat && gear?.gate.enabled ? beat.level() : null;
+    const gain = pulseGain(level !== null && level > 0.02 ? level : null, time / 1000);
     setPulse(gain);
     // Re-derived only when a switch changed: nothing allocated on a quiet frame.
     const key = (gear?.microphone.live ? 1 : 0) | (gear?.gate.enabled ? 2 : 0) | (view.renderer.xr.isPresenting ? 4 : 0);

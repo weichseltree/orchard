@@ -1,0 +1,29 @@
+[Unit]
+Description=The club floor's live stream: the seeded set, or the venue's tracks, encoded while someone is in the club
+# It counts listeners through the SpacetimeDB CLI and uploads to R2 over the
+# Cloudflare API; without either it idles and retries, it never stops the box.
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=600
+StartLimitBurst=10
+
+[Service]
+Type=simple
+# Its own worktree, pinned to origin/main by deploy/stream/install.sh -- never
+# the main checkout, whose branch changes under whoever is working in it.
+WorkingDirectory=@STREAM@
+# The systemd user manager inherits neither ~/.local/bin (uv, spacetime) nor /usr/bin's ffmpeg by default on WSL.
+Environment=PATH=@HOME@/.local/bin:/usr/local/bin:/usr/bin:/bin
+Environment=PYTHONUNBUFFERED=1
+ExecStart=@UV@ run --project @STREAM@ orchard stream run --provider club --stream floor
+# SIGINT, not SIGTERM: the loop leaves an empty playlist and removes its segments on the way out.
+KillSignal=SIGINT
+TimeoutStopSec=20
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=orchard-stream
+
+[Install]
+WantedBy=default.target
