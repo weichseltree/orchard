@@ -45,8 +45,7 @@ import type { VenueGear } from "./audio/venue-gear";
 import type { BeatFollower } from "./audio/beat";
 import { frameAt } from "./tape/time";
 import mansionDocument from "./world/mansion.json";
-import { parseMansion, roomById, type GameSurface as GameSurfaceConfig, type RepoModel } from "./world/schema";
-import type { RepoBlock } from "./world/repo-model";
+import { parseMansion, roomById, type GameSurface as GameSurfaceConfig, type Room } from "./world/schema";
 import { buildWorld, exhibitRoom, neighbourhood, type BuiltWorld } from "./world/world";
 import { PortalSystem } from "./world/portal";
 import { pickLocale } from "./ui/locale";
@@ -904,47 +903,18 @@ function offerGameTable(): void {
   hud.setGameOffer(surface ? { title: surface.title, key: device.touch ? null : "G" } : null);
 }
 
-// A repository's tabletop model (repo-model.ts): standing at the table, the
-// district under the gaze reads out below the crosshair. The layout is pure
-// and cached per model; the gaze is the camera's own ray, a few times a second.
-/** How far beyond the model's own half-diagonal counts as standing at it: an arm and a step. */
-const REPO_TABLE_REACH_M = 1.6;
-const repoLayouts = new WeakMap<RepoModel, RepoBlock[]>();
-let readBlock: RepoBlock | null = null;
-let nextModelCheck = 0;
-/** The layout code, fetched the first time a room with a model is entered; most rooms never need it. */
-let repoModule: (typeof import("./world/repo-model") & { reading: import("./ui/model-reading").ModelReading }) | null = null;
-let repoModuleLoading = false;
+// A repository's tabletop model: its reader (ui/model-reading.ts) loads the
+// first time the visitor enters a room that has one; most rooms never need it.
+let modelReader: ((room: Room | undefined) => void) | null = null;
+let modelReaderLoading = false;
 function readRepoModel(): void {
-  const now = performance.now();
-  if (now < nextModelCheck) return;
-  nextModelCheck = now + 150;
-  const models = roomById(mansion, body.room)?.repoModels ?? [];
-  if (models.length > 0 && !repoModule) {
-    if (!repoModuleLoading) {
-      repoModuleLoading = true;
-      void Promise.all([import("./world/repo-model"), import("./ui/model-reading")]).then(
-        ([layout, ui]) => { repoModule = { ...layout, reading: ui.attachModelReading(hud.root) }; },
-        () => { repoModuleLoading = false; },
-      );
-    }
-    return;
-  }
-  const { gazeBlock, layoutRepoModel } = repoModule ?? {};
-  let found: RepoBlock | null = null;
-  for (const model of gazeBlock && layoutRepoModel ? models : []) {
-    const reach = Math.hypot(model.size[0], model.size[1]) / 2 + REPO_TABLE_REACH_M;
-    if (Math.hypot(model.position[0] - body.x, model.position[2] - body.z) > reach) continue;
-    let blocks = repoLayouts.get(model);
-    if (!blocks) repoLayouts.set(model, blocks = layoutRepoModel!(model));
-    view.camera.getWorldPosition(headWorld);
-    view.camera.getWorldDirection(_forward);
-    found = gazeBlock!(model, blocks, headWorld, _forward);
-    if (found) break;
-  }
-  if (found === readBlock) return;
-  readBlock = found;
-  repoModule?.reading.set(found ? { path: found.path, sentence: found.sentence, room: found.room ? roomById(mansion, found.room)?.title || found.room : "" } : null);
+  if (modelReader) return modelReader(roomById(mansion, body.room));
+  if (modelReaderLoading || !roomById(mansion, body.room)?.repoModels.length) return;
+  modelReaderLoading = true;
+  void import("./ui/model-reading").then(
+    ({ attachModelReader }) => { modelReader = attachModelReader(hud.root, mansion, body, view.camera); },
+    () => { modelReaderLoading = false; },
+  );
 }
 
 /** The mode buttons follow the screen that holds the decoder: a planet's modes, or nothing. */
