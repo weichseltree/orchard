@@ -266,19 +266,27 @@ async function appAudit(profile) {
     await page.keyboard.press('Escape');
     await page.locator('.scrubber:not([hidden])').waitFor({ timeout: 30000 });
     const layout = await page.evaluate(() => {
+      // The demo has no link, so the chat stays hidden; show it to measure where it would sit.
+      const chat = document.querySelector('.chat');
+      if (chat) chat.hidden = false;
       const rect = (selector) => {
         const el = document.querySelector(selector);
         if (!el || !el.getClientRects().length) return null;
         const r = el.getBoundingClientRect();
         return { x: r.x, y: r.y, right: r.right, bottom: r.bottom, width: r.width, height: r.height };
       };
-      return { width: innerWidth, height: innerHeight, transport: rect('.scrubber'), stick: rect('.stick'), top: rect('.top-right'), location: rect('.location'), notices: rect('.notices') };
+      return { width: innerWidth, height: innerHeight, transport: rect('.scrubber'), stick: rect('.stick'), top: rect('.top-right'), location: rect('.location'), notices: rect('.notices'), chat: rect('.chat'), dock: rect('.dock') };
     });
     report.measurements.push({ kind: 'app-layout', profile: profile.name, ...layout });
     for (const [part, rect] of Object.entries(layout).filter(([, value]) => value && typeof value === 'object')) {
       check(`${name}: ${part} stays in viewport`, rect.x >= -1 && rect.y >= -1 && rect.right <= layout.width + 1 && rect.bottom <= layout.height + 1, rect);
     }
-    if (profile.touch) check(`${name}: tape controls clear the joystick`, overlapArea(layout.transport, layout.stick) === 0);
+    if (profile.touch) {
+      check(`${name}: tape controls clear the joystick`, overlapArea(layout.transport, layout.stick) === 0);
+      check(`${name}: the dock is shown`, layout.dock !== null);
+      check(`${name}: the dock clears the joystick and tape controls`, overlapArea(layout.dock, layout.stick) === 0 && overlapArea(layout.dock, layout.transport) === 0);
+      if (layout.chat) check(`${name}: chat clears the joystick and tape controls`, overlapArea(layout.chat, layout.stick) === 0 && overlapArea(layout.chat, layout.transport) === 0);
+    }
     await page.getByRole('button', { name: 'Guide', exact: true }).focus();
     const playingBefore = await page.evaluate(() => window.grove.world.tape.playing);
     await page.keyboard.press('Space');
@@ -473,7 +481,9 @@ async function gameSurfaceAudit() {
     await surface.waitFor();
     await page.getByText('Game ready', { exact: true }).waitFor();
     const frame = page.frameLocator('.game-surface-frame');
-    await frame.getByRole('button', { name: 'Start game' }).evaluate((button) => button.click());
+    // A real click, not element.click(): the overlay once inherited
+    // pointer-events: none from #hud, and only a hit-tested click sees that.
+    await frame.getByRole('button', { name: 'Start game' }).click({ timeout: 10000 });
     await page.getByText('Game ended', { exact: true }).waitFor();
     check('game surface: lifecycle events reach the exact parent', (await page.evaluate(() => window.grove.metrics().gameSurface.lastEvent)) === 'game-ended');
     await axeAudit(page, 'FTL Chess game surface');

@@ -18,6 +18,19 @@ export type HudModeration =
   | { kind: "kick" }
   | { kind: "ban"; minutes: number; network: boolean; reason: string };
 
+/** The phone dock's tabs, in order; Leave is a link and is added after them. */
+export type DockTab = "guide" | "sources" | "people" | "chat";
+
+// Line icons from the overlay redesign (Claude Design handoff, "weichselmind
+// Overlays"). Static markup, never built from data.
+const ICONS: Record<DockTab | "leave", string> = {
+  guide: '<circle cx="10" cy="10" r="7.2"></circle><path d="M10 6.4v.1M10 9v4.6"></path>',
+  sources: '<rect x="3.2" y="3.2" width="13.6" height="13.6"></rect><path d="M6.4 7.6h7.2M6.4 10.4h7.2M6.4 13.2h4"></path>',
+  people: '<circle cx="7.6" cy="8" r="3"></circle><circle cx="13.4" cy="9.4" r="2.2"></circle><path d="M2.8 16.4c.8-2.6 2.5-3.9 4.8-3.9s4 1.3 4.8 3.9"></path>',
+  chat: '<path d="M3.2 4h13.6v9.2H8.4L4.6 16.4v-3.2H3.2z"></path>',
+  leave: '<path d="M8 4H4v12h4M9.6 10h7.2M14 7l3 3-3 3"></path>',
+};
+
 /** How long a ban from the panel lasts; 0 is for good, as the server has it. */
 const BAN_CHOICES: Array<[string, number]> = [
   ["1 hour", 60],
@@ -36,6 +49,10 @@ export interface HudCallbacks {
   onAtlas(mode: string): void;
   onUnmute(): void;
   onProvenance(): void;
+  /** The dock's Guide tab (phones): the same dialog the top bar opens. */
+  onGuide(): void;
+  /** The dock's Chat tab: fold the room chat away or bring it back. */
+  onToggleChat(): void;
   /** The game whose table the visitor stands at. */
   onOpenGame(): void;
   /** Resolves when the server took the report; rejects with its reason. */
@@ -81,6 +98,7 @@ export class Hud {
   #legend: HTMLImageElement;
   #onAtlas: (mode: string) => void;
   #perf: HTMLElement;
+  #dock = new Map<DockTab, HTMLButtonElement>();
   #scrubbing = false;
 
   constructor(root: HTMLElement, callbacks: HudCallbacks) {
@@ -158,10 +176,10 @@ export class Hud {
     this.#vrButton.hidden = true;
     this.#unmuteButton = button("Sound on", "btn", callbacks.onUnmute);
     this.#unmuteButton.hidden = true;
-    const provenanceButton = button("About this view", "btn", callbacks.onProvenance);
+    const provenanceButton = button("About this view", "btn hud-sources", callbacks.onProvenance);
     provenanceButton.title = "Where this view came from (P)";
     const home = document.createElement("a");
-    home.className = "btn";
+    home.className = "btn hud-leave";
     home.href = "/";
     home.textContent = "Leave";
     topRight.append(this.#vrButton, this.#unmuteButton, provenanceButton, home);
@@ -246,6 +264,42 @@ export class Hud {
     this.#perf.tabIndex = 0;
     this.#perf.hidden = true;
     root.append(this.#perf);
+
+    // Phones: one dock along the bottom edge (a rail on the left when the
+    // phone is turned), so every panel opens from the same place and nothing
+    // sits on top of the walking stick. The CSS shows it on touch screens
+    // only; the top bar's buttons stand in for it everywhere else.
+    const dock = document.createElement("nav");
+    dock.className = "dock";
+    dock.setAttribute("aria-label", "Panels");
+    const tabs: Array<[DockTab, string, () => void]> = [
+      ["guide", "Guide", callbacks.onGuide],
+      ["sources", "Sources", callbacks.onProvenance],
+      ["people", "People", () => this.#togglePeople()],
+      ["chat", "Chat", callbacks.onToggleChat],
+    ];
+    for (const [id, label, onClick] of tabs) {
+      const tab = button("", `dock-tab dock-${id}`, onClick);
+      tab.setAttribute("aria-label", label);
+      tab.setAttribute("aria-pressed", "false");
+      tab.innerHTML = dockFace(id, label);
+      this.#dock.set(id, tab);
+      dock.append(tab);
+    }
+    const leave = document.createElement("a");
+    leave.className = "dock-tab dock-leave";
+    leave.href = "/";
+    leave.setAttribute("aria-label", "Leave");
+    leave.innerHTML = dockFace("leave", "Leave");
+    dock.append(leave);
+    root.append(dock);
+  }
+
+  /** Marks a dock tab as showing its panel. Cheap to call every frame. */
+  setDockOpen(tab: DockTab, open: boolean): void {
+    const element = this.#dock.get(tab);
+    const value = String(open);
+    if (element && element.getAttribute("aria-pressed") !== value) element.setAttribute("aria-pressed", value);
   }
 
   setHere(count: number): void {
@@ -281,6 +335,7 @@ export class Hud {
   #togglePeople(): void {
     this.#people.hidden = !this.#people.hidden;
     this.#here.setAttribute("aria-expanded", String(!this.#people.hidden));
+    this.setDockOpen("people", !this.#people.hidden);
     if (!this.#people.hidden) {
       this.#form = null;
       this.#renderPeople();
@@ -513,6 +568,10 @@ export class Hud {
     this.#notices.append(element);
     return element;
   }
+}
+
+function dockFace(icon: DockTab | "leave", label: string): string {
+  return `<svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true">${ICONS[icon]}</svg><span class="dock-label" aria-hidden="true">${label}</span>`;
 }
 
 function div(className: string): HTMLElement {

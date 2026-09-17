@@ -246,7 +246,7 @@ html, body {
 
 /* Who you are: your name, and "host" when the server says you are one. */
 .status .me { color: var(--text); margin-right: 8px; }
-.status .me[hidden] { display: none; }
+.status .me[hidden], .status .me:empty { display: none; }
 .host-tag {
   color: var(--accent); font-size: 11.5px; border: 1px solid var(--accent);
   border-radius: 4px; padding: 0 5px; margin-right: 8px; vertical-align: 1px;
@@ -404,3 +404,199 @@ noscript a { color: var(--accent); }
   min-height: 1em;
 }
 .touch .chat { width: min(30ch, calc(100vw - 24px)); }
+
+/* ---------------------------------------------------------------------------
+   Phones: one dock, panels on demand (the overlay redesign's phone frames).
+   The dock runs along the bottom edge in portrait and becomes a rail on the
+   left when the phone is turned. The room card sits on top, the tape card
+   above the dock, the walking stick on the left and the room chat on the
+   right, so nothing lies on top of the stick. Tablets and desktops keep the
+   top bar; the dock's tabs duplicate its buttons there and stay hidden. */
+.dock, .guide-close, .location-kicker, .location-question { display: none; }
+.chat.chat-folded { display: none; }
+/* A tablet has the stick bottom-left too: the chat moves out of its way. */
+.touch .chat { left: auto; right: 14px; bottom: 96px; }
+
+.dock-tab {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  min-width: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-top: 2px solid transparent;
+  color: #97a6b6;
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.dock-tab:hover { color: var(--text); }
+.dock-tab[aria-pressed="true"] { background: rgba(225, 189, 130, 0.12); border-top-color: var(--accent); color: var(--accent); }
+.dock-tab:focus-visible { outline: 2px solid var(--accent); outline-offset: -4px; }
+.dock-label { font-size: 10px; letter-spacing: .06em; }
+.guide-close {
+  place-items: center;
+  float: right;
+  width: 44px; height: 44px;
+  margin: -8px -8px 8px 12px;
+  background: transparent;
+  border: 1px solid rgba(225, 189, 130, 0.2);
+  color: #97a6b6;
+  cursor: pointer;
+}
+.guide-close:hover { color: var(--text); border-color: var(--accent); }
+.location-kicker { color: var(--accent); font-size: 10px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; }
+.location-question { margin-top: 6px; color: var(--text); font: 400 16px/1.25 "Iowan Old Style", "Palatino Linotype", Georgia, serif; }
+
+@media (max-width: 640px), (max-height: 500px) {
+  #hud.touch {
+    --gutter-l: max(12px, env(safe-area-inset-left));
+    --gutter-r: max(12px, env(safe-area-inset-right));
+    --glass: rgba(9, 17, 28, 0.92);
+    --hairline: rgba(225, 189, 130, 0.2);
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+  .touch .dock {
+    display: grid;
+    position: absolute;
+    z-index: 3;
+    pointer-events: auto;
+    background: rgba(9, 17, 28, 0.96);
+    border: 0 solid var(--hairline);
+    backdrop-filter: blur(10px);
+  }
+  /* The room card: the guide's location button, kicker over question, with
+     who is here underneath. No backdrop filter on the card's box: it would
+     become the containing block of the people sheet inside it. */
+  .touch .top-left {
+    grid-column: 1; grid-row: 1;
+    gap: 0;
+    background: var(--glass);
+    border: 1px solid var(--hairline);
+  }
+  .touch .top-left > .location {
+    display: flex; flex-direction: column; align-items: stretch;
+    width: 100%; min-height: 0;
+    padding: 10px 14px 0;
+    background: transparent; border: 0; border-radius: 0;
+    text-align: left;
+  }
+  .touch .top-left > .location:hover { color: inherit; }
+  .touch .location-line { display: none; }
+  .touch .location-kicker, .touch .location-question { display: block; }
+  .touch .top-left > .status {
+    padding: 4px 14px 10px;
+    background: transparent; border: 0; border-radius: 0; backdrop-filter: none;
+    color: var(--dim); font-size: 11.5px;
+  }
+  /* Guide, About this view and Leave are dock tabs now; Sound on and Enter
+     VR stay as chips under the card, and the bar goes when neither shows. */
+  .touch .top-right { grid-column: 1; grid-row: 2; justify-self: end; padding: 0; gap: 1px; background: transparent; border: 0; backdrop-filter: none; }
+  .touch .top-right .guide-open, .touch .top-right .hud-sources, .touch .top-right .hud-leave { display: none; }
+  .touch .top-right:not(:has(> .btn:not([hidden]):not(.guide-open):not(.hud-sources):not(.hud-leave))) { display: none; }
+  .touch .top-right .btn { min-height: 44px; padding: 10px 14px; background: var(--glass); border-radius: 0; font-size: 12px; }
+  /* Notices and the game offer read in order under the card, not over the stick. */
+  .touch .notices, .touch .game-offer { position: static; grid-column: 1; justify-self: start; transform: none; max-width: 100%; }
+  .touch .panel { border-radius: 0; }
+
+  .touch .stick { width: 112px; height: 112px; border-color: rgba(225, 189, 130, 0.28); background: rgba(9, 17, 28, 0.55); }
+  .touch .stick-knob { width: 52px; height: 52px; margin: -26px 0 0 -26px; }
+
+  .touch .scrubber {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 6px 12px;
+    padding: 10px 14px;
+    transform: none;
+    background: rgba(9, 17, 28, 0.94);
+    border-color: var(--hairline);
+  }
+  .touch .scrubber[hidden] { display: none; }
+  .touch .scrubber .btn { grid-column: 1; grid-row: 1; min-width: 48px; min-height: 48px; border-radius: 0; background: rgba(225, 189, 130, 0.12); border-color: var(--accent); color: var(--accent); }
+  .touch .scrubber input[type="range"] { grid-column: 2; grid-row: 1; width: 100%; height: 44px; }
+  .touch .scrubber select { grid-column: 3; grid-row: 1; min-height: 44px; border-radius: 0; font-size: 12px; }
+  .touch .scrubber .time { grid-column: 1 / 4; grid-row: 2; min-width: 0; color: #7e8b9b; font-size: 11px; }
+
+  .touch .chat { width: auto; border-radius: 0; border-color: var(--hairline); padding: 8px; }
+  .touch .chat-form { flex-wrap: wrap; }
+  .touch .chat-input { flex: 1 1 100%; min-height: 44px; border-radius: 0; background: #070c12; }
+  .touch .chat-send, .touch .chat-mic { flex: 1 1 auto; min-height: 44px; border-radius: 0; }
+
+  /* Who is here and About this view open as sheets from the dock. */
+  .touch .people, .touch .provenance {
+    position: fixed;
+    z-index: 2;
+    width: auto; max-width: none;
+    padding: 16px 20px;
+    background: rgba(9, 17, 28, 0.98);
+    border: 0 solid rgba(225, 189, 130, 0.28);
+    border-radius: 0;
+    overscroll-behavior: contain;
+  }
+  .touch .visitor-guide.observatory-guide { border-radius: 0; }
+  .touch .guide-close { display: grid; }
+}
+
+/* Portrait: the dock along the bottom edge. */
+@media (max-width: 640px) {
+  #hud.touch { --dock: calc(78px + env(safe-area-inset-bottom)); --tape: 104px; }
+  /* No tape and no planet modes in this room: the stick and chat sit on the dock. */
+  #hud.touch:not(:has(> .scrubber:not([hidden]), > .atlas:not([hidden]))) { --tape: 0px; }
+  .touch .dock {
+    left: 0; right: 0; bottom: 0;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    border-top-width: 1px;
+  }
+  .touch .dock-tab { height: 78px; }
+  .touch .scrubber { left: var(--gutter-l); right: var(--gutter-r); bottom: calc(var(--dock) + 12px); width: auto; }
+  .touch .atlas { bottom: calc(var(--dock) + 12px); }
+  .touch .stick { left: var(--gutter-l); bottom: calc(var(--dock) + var(--tape) + 12px); }
+  .touch .chat { left: calc(var(--gutter-l) + 124px); right: var(--gutter-r); bottom: calc(var(--dock) + var(--tape) + 12px); }
+  .touch .chat-log { max-height: 14dvh; }
+  .touch .human-check { bottom: calc(var(--dock) + var(--tape) + 136px); }
+  .touch .perf { right: var(--gutter-r); bottom: calc(var(--dock) + var(--tape) + 136px); max-width: calc(100vw - 24px); }
+  .touch .people, .touch .provenance {
+    left: 0; right: 0; top: auto; bottom: var(--dock);
+    max-height: calc(100dvh - var(--dock) - 120px);
+    border-top-width: 1px;
+  }
+  /* The guide rises from the bottom edge as a sheet over the dock. */
+  .touch .visitor-guide.observatory-guide {
+    width: 100%; max-width: 100%;
+    margin: auto 0 0;
+    max-height: min(86dvh, 46rem);
+    padding: 20px 20px calc(22px + env(safe-area-inset-bottom));
+    border-width: 1px 0 0;
+  }
+}
+
+/* Landscape: the dock returns as a rail down the left edge. */
+@media (min-width: 641px) and (max-height: 500px) {
+  #hud.touch { --rail: 62px; padding-left: calc(var(--gutter-l) + var(--rail)); }
+  .touch .dock {
+    display: flex; flex-direction: column;
+    top: max(12px, env(safe-area-inset-top)); bottom: max(12px, env(safe-area-inset-bottom)); left: var(--gutter-l);
+    width: 50px;
+    border-width: 1px;
+    overflow-y: auto;
+  }
+  .touch .dock-tab { flex: none; height: 50px; border-top: 0; border-bottom: 1px solid rgba(225, 189, 130, 0.14); }
+  .touch .dock-leave { margin-top: auto; border-bottom: 0; border-top: 1px solid rgba(225, 189, 130, 0.14); }
+  .touch .dock-label { display: none; }
+  .touch .top-left { max-width: min(420px, calc(100vw - var(--rail) - 360px)); }
+  .touch .notices { max-width: min(34rem, calc(100vw - var(--rail) - 360px)); }
+  .touch .stick { left: calc(var(--gutter-l) + var(--rail)); bottom: 12px; width: 104px; height: 104px; }
+  .touch .stick-knob { width: 48px; height: 48px; margin: -24px 0 0 -24px; }
+  .touch .scrubber { left: auto; right: var(--gutter-r); bottom: 12px; width: min(480px, calc(100vw - var(--rail) - 150px)); }
+  .touch .atlas { left: auto; right: var(--gutter-r); bottom: 12px; transform: none; }
+  .touch .chat { left: auto; right: var(--gutter-r); bottom: 120px; width: min(320px, calc(100vw - var(--rail) - 150px)); }
+  .touch .chat-log { max-height: 18dvh; }
+  .touch .people, .touch .provenance {
+    left: calc(var(--gutter-l) + var(--rail)); top: max(12px, env(safe-area-inset-top)); bottom: 12px; right: auto;
+    width: min(396px, calc(100vw - var(--rail) - 36px)); max-height: none;
+    border-width: 1px;
+  }
+}
