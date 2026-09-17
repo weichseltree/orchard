@@ -1089,7 +1089,14 @@ view.start((dt, time, rawDt) => {
       // Tapes advance only in the room the visitor is in; the others freeze
       // where they are and cost no frame time. Scrubbing moves them all, so
       // tapes that share a clock stay in step when the visitor comes back.
-      if (exhibitRoom(each) === body.room) each.update(dt);
+      if (exhibitRoom(each) === body.room && !each.hanging.clockWith) each.update(dt);
+    }
+    // A tape that follows another's clock lands on the frame its leader shows.
+    for (const each of world?.tapes ?? []) {
+      if (!each?.hanging.clockWith || exhibitRoom(each) !== body.room) continue;
+      const leader = world?.tapes.find((other) => other?.hanging.id === each.hanging.clockWith);
+      if (leader) each.scrubToFraction(leader.fraction);
+      each.update(leader ? 0 : dt);
     }
     if (!tape.waiting) visitMetrics.tapeReady();
     if (performance.now() > scrubbingUntil) {
