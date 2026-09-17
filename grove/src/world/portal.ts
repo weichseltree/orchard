@@ -408,15 +408,6 @@ export class PortalSystem {
   }
 
   /**
-   * The last far view's own pixels, RGBA, the used viewport only — the far
-   * room as the far camera saw it, before the lens tints it and before the
-   * near room's own brass stands in front of it. Null when no far view has
-   * been rendered. It is what the world check reads: on screen a portal's
-   * disc always carries something (the armillary's own hoops cross it, the
-   * lens shimmers whether or not a view is behind it), and a check that
-   * reads the disc can call all of that a rendered room. This cannot.
-   */
-  /**
    * The target the last far view was rendered into, or null before there was
    * one. Its used viewport is `viewScale` of its size. The world check reads
    * it back (quality-world.mjs): on screen a portal's disc always carries

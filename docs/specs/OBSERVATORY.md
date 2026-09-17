@@ -134,10 +134,12 @@ records cameras and image hashes, checks the shell and draw-batch budget,
 waits for every synthetic tape to upload a frame, and detects legacy asset
 downloads and browser errors. Playback stops before each camera is rendered
 once for inspection; this is not a frame-rate benchmark. Since 2026-09-17 it
-also stands at the garden's spawn and photographs the armillary: the lens
-must change when its far view goes, and the far view's own target must hold
-the Orrery — a sky above black with star points far above it — which a
-cleared buffer never does. Interaction and
+also stands at the garden's spawn and photographs the armillary: taking the
+Orrery away must change the lens, and the far view's own target must hold
+star points far above its sky, centred on the portal's axis, rendered for
+that photograph. The sky alone is no evidence — a cleared target carries the
+page's own background at the luminance the Orrery's sky has, which is how the
+first draft of the check passed a clipped far view. Interaction and
 production-transfer checks are separate; see [QUALITY.md](../QUALITY.md).
 
 The site hero is a lossless encoding of an actual local-demo browser capture

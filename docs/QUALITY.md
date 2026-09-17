@@ -13,7 +13,7 @@ From `grove/`, after `pnpm install --frozen-lockfile`:
 pnpm quality                         # tests, types, build, size budgets
 pnpm exec playwright install chromium
 pnpm quality:all                     # adds desktop/touch and production browser checks
-pnpm quality:world --screenshots     # every room, camera records, and the armillary's far view
+pnpm quality:world --screenshots     # 18 stations, camera records, the armillary's far view
 ```
 
 The world check ends by photographing a portal, because nothing else here
@@ -21,13 +21,26 @@ does. Its other checks count work that was asked for — a render call that
 returned, a shell that stands — and on 2026-09-17 the Orrery was empty
 through the garden's armillary with all of them green: a far view WAS
 rendered, into a black rectangle, past a frustum that stopped short of the
-room. So the portal check reads pixels, and reads them where they cannot be
-faked: not the lens's disc on screen, which carries the armillary's own brass
-and a shimmer whether or not a room is behind it, but the far view's own
-render target. The far room is drawn when its sky stands above black and star
-points stand far above that sky; a cleared buffer has the first and never the
-second. The floors were measured both ways, with the depth-range fix in and
-with it taken back out.
+room.
+
+So the portal check reads pixels, and takes care where it reads them. Not by
+comparing the lens with its far view switched off: the shader gates the whole
+far layer on one uniform, so that disc changes because its alpha changed,
+whether or not a far texel was ever sampled — measured identical, to sixteen
+digits, with a far view and with a black one. It takes two shots WITH the far
+view and removes the far room between them, so only what came through the
+lens can differ, and a third shot to prove the floor has no noise under it.
+Then it reads the far view's own render target, where nothing of the near
+room can stand in for the far one, and asks three things of it: star points
+far above its sky (the sky alone proves nothing — a cleared buffer carries
+the scene's background at the same luminance the Orrery's sky has), the
+bright points centred where the portal's axis points, and the view rendered
+for this photograph rather than kept from an earlier frame.
+
+Floors measured in the shipping state and in three broken ones: the
+depth-range fix taken back out, the far view rendered but never composited,
+and the far camera turned away. Each fails at least one check; the first two
+were invisible to the check's first draft.
 
 Linux CI uses `pnpm exec playwright install --with-deps chromium` to install
 browser system libraries. `quality:browser` generates its own synthetic demo
