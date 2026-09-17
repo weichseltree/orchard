@@ -1,4 +1,4 @@
-import { BackSide, FrontSide, Group, PerspectiveCamera, Scene, ShaderMaterial, Vector2, Vector3, type WebGLRenderTarget } from "three";
+import { BackSide, FrontSide, Frustum, Group, Matrix4, PerspectiveCamera, Scene, ShaderMaterial, Sphere, Vector2, Vector3, type WebGLRenderTarget } from "three";
 import { describe, expect, it } from "vitest";
 import type { Renderer } from "../render/types";
 import mansionDocument from "./mansion.json";
@@ -10,6 +10,7 @@ import {
   PortalSystem,
   blendAt,
   crossPortal,
+  farDepthScale,
   farEye,
   portalEnds,
   type PortalEnd,
@@ -34,6 +35,7 @@ import {
   type IntentState,
 } from "./portal-intent";
 import { PORTAL_FRAGMENT, PORTAL_VERTEX } from "./portal-shader";
+import { STAR_DOME_RADIUS } from "./space";
 import { neighbourhood } from "./world";
 
 // A portal is a blend between two scales, entered only from the room and the
@@ -141,6 +143,19 @@ describe("farEye", () => {
     const eye = orrery.center.clone().add(new Vector3(2, 0, 0));
     expect(farEye(orrery, eye, 0).x).toBeCloseTo(garden.center.x + 2 * orrery.ratio);
     expect(farEye(orrery, eye, 0).z).toBeCloseTo(garden.center.z);
+  });
+});
+
+describe("farDepthScale", () => {
+  it("stretches the frustum by the same fifty the far camera's offset is stretched by, and slides to one at the core", () => {
+    expect(farDepthScale(garden, 0)).toBeCloseTo(garden.ratio);
+    expect(farDepthScale(garden, 0.5)).toBeCloseTo(Math.sqrt(garden.ratio));
+    expect(farDepthScale(garden, 1)).toBe(1);
+  });
+
+  it("never shortens it: from the Orrery the garden is the larger room and keeps this room's range", () => {
+    expect(farDepthScale(orrery, 0)).toBe(1);
+    expect(farDepthScale(orrery, 1)).toBe(1);
   });
 });
 
@@ -377,6 +392,8 @@ interface StubRenderer {
   target: WebGLRenderTarget | null;
   targets: Set<WebGLRenderTarget>;
   live: boolean;
+  /** The camera the last far view was rendered from: its pose and its frustum. */
+  farCamera: PerspectiveCamera | null;
 }
 
 function stubRenderer(live: boolean): Renderer & StubRenderer {
@@ -385,6 +402,7 @@ function stubRenderer(live: boolean): Renderer & StubRenderer {
     target: null as WebGLRenderTarget | null,
     targets: new Set<WebGLRenderTarget>(),
     live,
+    farCamera: null as PerspectiveCamera | null,
     toneMapping: 0,
     toneMappingExposure: 1,
     xr: {} as Renderer["xr"],
@@ -392,8 +410,9 @@ function stubRenderer(live: boolean): Renderer & StubRenderer {
     setPixelRatio() {},
     setSize() {},
     setAnimationLoop() {},
-    render() {
+    render(_scene: Scene, camera: PerspectiveCamera) {
       stub.renders += 1;
+      stub.farCamera = camera;
     },
     getPixelRatio: () => 1,
     dispose() {},
@@ -617,6 +636,41 @@ describe("PortalSystem", () => {
     expect(rig.scaleShown.slice(-2)).toEqual([orreryRoom.scale, gardenRoom.scale]);
     // The portals hid themselves from their own far view (depth one) and are back.
     expect(rig.portals.group.visible).toBe(true);
+  });
+
+  it("gives the far view the far room's depth range, so the worlds and their stars are in it from across the garden", () => {
+    const rig = new Rig();
+    // Where the garden sets a visitor down: 33 m from the armillary, facing it.
+    const spawn = gardenRoom.spawn.position;
+    rig.place(new Vector3(spawn[0], spawn[1] + 1.6, spawn[2]), new Vector3(-1, 0, 0));
+    rig.frame();
+    expect(rig.renderer.renders).toBe(1);
+    const far = rig.renderer.farCamera!;
+    expect(far.far).toBeCloseTo(rig.camera.far * garden.ratio);
+    expect(far.near).toBeCloseTo(rig.camera.near * garden.ratio);
+    // The same lens: a different depth range changes a projection's z terms
+    // and nothing else, so the far view still lines up with the near one.
+    expect(far.projectionMatrix.elements[0]).toBeCloseTo(rig.camera.projectionMatrix.elements[0]);
+    expect(far.projectionMatrix.elements[5]).toBeCloseTo(rig.camera.projectionMatrix.elements[5]);
+
+    far.updateMatrixWorld(true);
+    far.matrixWorldInverse.copy(far.matrixWorld).invert();
+    const frustum = new Frustum().setFromProjectionMatrix(
+      new Matrix4().multiplyMatrices(far.projectionMatrix, far.matrixWorldInverse),
+    );
+    const planet = orreryRoom.hangings.find((hanging) => hanging.kind === "planet")!;
+    // A thousand seven hundred Orrery metres out: with the garden's own six
+    // hundred the frustum stopped short of every one of them and the
+    // armillary was a black dome (the Orrery empty through the portal).
+    for (const world of planet.worlds) {
+      const centre = new Vector3(...world.position);
+      expect(far.position.distanceTo(centre)).toBeGreaterThan(rig.camera.far);
+      expect(frustum.intersectsSphere(new Sphere(centre, planet.radiusMeters))).toBe(true);
+    }
+    // And the star field behind them, which is drawn inside the room's dome.
+    const bounds = orreryRoom.bounds;
+    const dome = new Vector3((bounds.min[0] + bounds.max[0]) / 2, 0, (bounds.min[2] + bounds.max[2]) / 2);
+    expect(far.position.distanceTo(dome) + STAR_DOME_RADIUS).toBeLessThan(far.far);
   });
 
   it("blends by the eased, intent-shaped depth once armed", () => {

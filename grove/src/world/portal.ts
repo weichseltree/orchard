@@ -166,6 +166,20 @@ export function farEye(end: PortalEnd, eye: Vector3, t: number, out = new Vector
   return out.copy(eye).sub(end.center).multiplyScalar(k).add(end.exit);
 }
 
+/**
+ * What the far view's near and far planes are multiplied by at blend `t`.
+ * The far camera stands ratio^(1-t) times further out than the eye does
+ * here, and the room it looks at is that much bigger, so its depth range is
+ * too: a camera a thousand Orrery metres out behind a frustum that stops at
+ * the garden's six hundred sees nothing at all, which is what emptied the
+ * Orrery seen through the armillary from more than nine metres away. Never
+ * shorter than this room's range: looking back from the Orrery the far room
+ * is the larger one, and the garden must still be seen to its horizon.
+ */
+export function farDepthScale(end: Pick<PortalEnd, "ratio">, t: number): number {
+  return Math.max(Math.pow(end.ratio, 1 - t), 1);
+}
+
 const _eye = new Vector3();
 const _far = new Vector3();
 const _forward = new Vector3();
@@ -579,8 +593,26 @@ export class PortalSystem {
     farEye(end, eye, t, _far);
     far.position.copy(_far);
     camera.getWorldQuaternion(far.quaternion);
-    far.projectionMatrix.copy((camera as PerspectiveCamera).projectionMatrix);
-    far.projectionMatrixInverse.copy((camera as PerspectiveCamera).projectionMatrixInverse);
+    // The same lens, so the far view lines up with the near one pixel for
+    // pixel and the lens keeps no edge: fov, aspect and zoom are the eye's,
+    // and only the depth range is the far room's (`farDepthScale`). A
+    // projection differs from the eye's in its z terms alone, which the
+    // shader never reads, and the slide to one at the crossing is smooth.
+    const source = camera as PerspectiveCamera;
+    if (source.isPerspectiveCamera) {
+      const depth = farDepthScale(end, t);
+      far.fov = source.fov;
+      far.aspect = source.aspect;
+      far.zoom = source.zoom;
+      far.filmGauge = source.filmGauge;
+      far.filmOffset = source.filmOffset;
+      far.near = source.near * depth;
+      far.far = source.far * depth;
+      far.updateProjectionMatrix();
+    } else {
+      far.projectionMatrix.copy(source.projectionMatrix);
+      far.projectionMatrixInverse.copy(source.projectionMatrixInverse);
+    }
     far.updateMatrixWorld(true);
 
     // Only the world, and only the far room's scale; never the portals
