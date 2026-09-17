@@ -38,11 +38,12 @@ it is. The architecture is generated in the browser from one scene document
 - **The orrery**, reached through the garden's armillary: a portal between
   scales, where coarsen's cut-open worlds hang as planets at solar scale. Step
   through and you shrink fifty times.
-- **arcedit's area**: five rooms off the gallery's east door, each with
-  something of that repository's to see, and in its workshop the repository's
-  folders as a table model, a small city read by looking. Any public
-  repository under a redistributable licence can be linked as an area, with
-  its own admins.
+- **arcedit's area**: six rooms off the gallery's east door, five at walking
+  scale with something of that repository's to see, and in its workshop the
+  repository's folders as a table model, a small city read by looking; the
+  sixth is inside the task's canvas, through a portal. Any public repository
+  under a redistributable licence can be linked as an area, with its own
+  admins.
 - **The club**, a cellar under the north wing (September 2026): a stair
   pavilion at each end of the terrace descends to an undercroft that opens into
   a vaulted dance floor with a bar, booths, a DJ's desk and a raised stage. Its
@@ -62,7 +63,8 @@ it is. The architecture is generated in the browser from one scene document
 - **Be there with others.** Visitors share rooms live: avatars, a room chat,
   a host who answers when named (Faye, the palace's spirit, who also reads the
   compute running on the host's machines), hold-to-talk voice, and cues the
-  host can fire into a room. Moderation is per room and per area.
+  host can fire into a room. Moderation is the host's across the world and
+  an area admin's inside their area.
 - **Show your research.** Bundle particle tapes, videos, stills and planets
   with content hashes and provenance. Hang approved outputs without rebuilding
   the client: a room follows the live exhibit table.
@@ -82,7 +84,7 @@ room acoustics are the work ahead; [CLUB.md](docs/specs/CLUB.md) §5 to §7 and
 
 ## New in September 2026
 
-- **Runtime architecture.** The Blender bake is gone. Walls, vaults, stairs,
+- **Runtime architecture.** The Blender bake is retired. Walls, vaults, stairs,
   colonnades and lamps are generated from the scene document and lit by a
   light field baked in the browser from the architecture's own lamps
   ([OBSERVATORY.md](docs/specs/OBSERVATORY.md)). Floors at different heights
@@ -106,10 +108,10 @@ room acoustics are the work ahead; [CLUB.md](docs/specs/CLUB.md) §5 to §7 and
   the same clamp a walk uses; an exhibit or its plaque frames itself; N steps
   to the next; L opens a plan of the area
   ([INTERACTION.md](docs/specs/INTERACTION.md)).
-- **arcedit redesigned.** Five rooms with something to see instead of a
+- **arcedit redesigned.** Six rooms with something to see instead of a
   corridor per folder, and the repository itself as a tabletop model.
-- **A phone dock.** Touch controls and the chat move into a dock that fits
-  short phones in both orientations.
+- **A phone dock.** The panels and the chat open from a dock that fits short
+  phones in both orientations; the walking stick stays bottom-left.
 - **Live audio exhibits.** A stream is a name with no bytes behind it, never
   cached; the per-tier ladder of positioned sources and the field behind it
   are built and waiting for the first stream
@@ -130,7 +132,8 @@ Open [localhost:5173/mind/?demo](http://localhost:5173/mind/?demo). You land
 in the hall. Click the view, use **WASD** or the arrow keys to walk, move the
 mouse to look, and press **Space** to pause a tape. **Esc** releases the
 pointer so you can use the on-screen controls. The demo has no server behind
-it, so every door is open, including the club's.
+it, so every door that leads to a room is open, including the club's; the
+sealed doors to repositories without rooms stay sealed.
 
 The demo generates its own synthetic particles and runs without API keys,
 a database, production media or a headset. It is a playback demonstration,
@@ -142,7 +145,7 @@ see [grove/README.md](grove/README.md).
 
 For repeatable checks, run `pnpm quality` from `grove/`. It tests playback,
 checks types, builds the site and enforces size budgets; `pnpm quality:world`
-photographs every room from a fixed camera and checks the draw budget.
+photographs the palace's rooms from fixed cameras and checks the draw budget.
 [Quality measurements](docs/QUALITY.md) adds automated browser checks and
 explains the local performance reports.
 
@@ -231,10 +234,10 @@ what an area admin may and may not do.
 | [packages/tape/](packages/tape/README.md) | Shared particle tape format and Python reader/writer |
 | [packages/score/](packages/score/) | The score a live audio exhibit publishes beside its stream |
 | [spacetime/](spacetime/) | World state, presence, chat, exhibits, areas and moderation |
-| [deploy/](deploy/) | Faye's service and the host's timers, as systemd user units |
+| [deploy/](deploy/) | Faye's service and the host's sync timer and audit, as systemd user units |
 | [trees/](trees/) | Draft manifests and mirrored research manifests |
 | [studio/](studio/README.md) | Planned shared episode production tools |
-| [docs/specs/](docs/specs/) | Design specs, each ending in the host's rulings |
+| [docs/specs/](docs/specs/) | Design specs, the newer ones ending in the host's rulings |
 | [docs/](docs/) | Implementation notes, hosting, security and validation evidence |
 | [brand/](brand/README.md) | Visual identity and [writing voice](brand/VOICE.md) |
 

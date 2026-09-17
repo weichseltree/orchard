@@ -33,13 +33,14 @@ optional: when available, the generator adds a short test video; otherwise
 the demo shows tapes alone. Generated files live in gitignored `dev/`, are
 served only in development, and are excluded from `dist/`. The `?demo` flag
 has no effect in a production build. The demo has no server, so there are no
-locks: every door opens, including the club's.
+locks: every door that leads to a room opens, including the club's; the sealed
+doors to repositories without rooms stay sealed.
 
 ## Controls
 
 | Action | Desktop | Touch | WebXR controllers |
 | --- | --- | --- | --- |
-| Walk | WASD or arrow keys | Stick in the dock | Left stick |
+| Walk | WASD or arrow keys | On-screen stick, bottom-left | Left stick |
 | Look | Click the view, then move the mouse | Drag the view | Turn your head |
 | Pause or play | Space or play button | Play button | Trigger |
 | Scrub time | `[` / `]` or time slider | Time slider | Right stick |
@@ -95,7 +96,7 @@ VITE_SPACETIME_URI=ws://127.0.0.1:3000 VITE_SPACETIME_DB=orchard-check pnpm dev
 | `VITE_AUTH_URL` | Visitor token service URL; empty disables it |
 | `VITE_VOICE_URL` | Voice grant route (Deepgram); empty hides hold-to-talk |
 | `VITE_TURNSTILE_SITEKEY` | Public human-check site key |
-| `VITE_FTL_CHESS_ENABLED` | `1` shows the chess table's game surface |
+| `VITE_FTL_CHESS_ENABLED` | `0` hides the chess table's game surface (on by default) |
 
 These settings are embedded in the browser build. Keep signing keys and
 service tokens in the server-side configuration described in
@@ -136,8 +137,9 @@ For automated browser checks, run `pnpm exec playwright install chromium`
 once, then `pnpm quality:all`. This adds desktop/touch layout, keyboard,
 accessibility and cold/warm production loading checks with local fixtures,
 a room tour that visits every room three times and counts what it leaks,
-and `pnpm quality:world`, which photographs every room from a fixed camera
-on its own floor and holds the world to sixteen draw batches a room.
+and `pnpm quality:world`, which photographs eighteen rooms from a fixed
+camera on each one's own floor and holds the world's architecture under
+sixteen draw batches a room, averaged across every room.
 [Quality measurements](../docs/QUALITY.md) defines each metric and the JSON
 reports under `../results/quality/`. Press **F** while the world has focus
 to see frame percentiles; `window.grove.metrics()` returns a local diagnostic
@@ -145,7 +147,8 @@ snapshot from browser developer tools.
 
 `pnpm check:bindings` checks generated database bindings and requires the
 SpacetimeDB CLI; `pnpm check:rooms` checks that every presence room the
-scene joins exists in the module and, with `--live`, in the live database.
+scene joins exists in the module and in the live database (it needs the
+admin identity; `node scripts/check-rooms.mjs` alone checks the module).
 Before changing the database module, read
 [spacetime/AGENTS.md](../spacetime/AGENTS.md) and run
 [`scripts/module-check.ts`](scripts/module-check.ts) against a local
