@@ -197,7 +197,7 @@
       "title": "De werkplaats",
       "kicker": "Waaruit bestaat de repository, en hoe ziet de editor eruit als voorwerp?",
       "intro": "De werkplaats toont twee modellen. Op de tafel staat de repository: elk blok een map, zo groot als de bytes die ze bevat; de motor, de instrumenten, de controles en de verslagen zijn er allemaal, en een paar ervan hangen in de andere zalen. Op een sokkel ernaast staat de editor als model, stilgezet bij een stap uit de episode van de gescripte leraar: cellen als tegels, de cursor een zuil van licht, het zicht van de agent als glazen platen boven het canvas gestapeld, elke twee keer zo breed als die eronder. Loop eromheen en zie hoe snel het zicht breder wordt, weg van de cursor.",
-      "lookFor": "Op de tafel stellen de verslagen de motor in de schaduw; op de sokkel draagt het onderste lichtkader geen glas: bij deze stap ziet het scherpe deel van het zicht alleen leeg canvas.",
+      "lookFor": "Op de tafel stellen de verslagen de motor in de schaduw; volg op de sokkel de lichtkaders omhoog vanaf de voet van de cursor: elk is twee keer zo breed als het kader eronder, en er hangt alleen glas waar dat niveau iets anders ziet dan leeg canvas.",
       "limit": "Het model toont de gescripte leraar op één moment, geen getrainde agent. Posities en kleuren komen uit de episode; de verhoudingen zijn ontworpen. De blokken op de tafel tonen grootte, geen belang."
     },
     "arcedit/inside": {

@@ -197,7 +197,7 @@
       "title": "The workshop",
       "kicker": "What is the repository made of, and what does the editor look like as a thing?",
       "intro": "The workshop holds two models. On the table is the repository: each block a directory, sized by the bytes it holds; the engine, the instruments, the checks and the records are all here, and a few of them are what hangs in the other rooms. On a plinth beside it stands the editor as a model, frozen at one step of the scripted teacher's episode: cells as tiles, the cursor a column of light, and the agent's view as glass plates stacked above the canvas, each twice as wide as the one below. Walk around it to see how fast the view widens away from the cursor.",
-      "lookFor": "On the table the records dwarf the engine; on the plinth, the lowest frame of light holds no glass: at this step the sharp part of the view sees only empty canvas.",
+      "lookFor": "On the table the records dwarf the engine; on the plinth, follow the frames of light up from the foot of the cursor: each is twice as wide as the one below, and glass hangs only where that level sees something other than empty canvas.",
       "limit": "The model shows the scripted teacher at one moment, not a learned agent. Positions and colours are the episode's; the proportions are designed. The blocks on the table show size, not importance."
     },
     "arcedit/inside": {

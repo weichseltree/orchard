@@ -197,7 +197,7 @@
       "title": "Il laboratorio",
       "kicker": "Di che cosa è fatto il repository, e che aspetto ha l'editor come oggetto?",
       "intro": "Il laboratorio mostra due modelli. Sul tavolo c'è il repository: ogni blocco è una cartella, grande quanto i byte che contiene; il motore, gli strumenti, le verifiche e i resoconti sono tutti qui, e alcuni sono ciò che è appeso nelle altre sale. Su un basamento lì accanto si trova l'editor come modello, fermo in uno dei passi dell'episodio del maestro programmato: le celle come piastrelle, il cursore come una colonna di luce, la vista dell'agente come lastre di vetro impilate sopra la tela, ognuna larga il doppio di quella sotto. Girategli intorno per vedere quanto in fretta la vista si allarga lontano dal cursore.",
-      "lookFor": "Sul tavolo i resoconti sovrastano il motore; sul basamento, la cornice di luce più bassa non ha vetro: a questo passo la parte nitida della vista vede solo tela vuota.",
+      "lookFor": "Sul tavolo i resoconti sovrastano il motore; sul basamento, seguite le cornici di luce salendo dal piede del cursore: ognuna è larga il doppio di quella sotto, e c'è vetro solo dove quel livello vede qualcosa di diverso dalla tela vuota.",
       "limit": "Il modello mostra il maestro programmato in un istante, non un agente addestrato. Posizioni e colori sono quelli dell'episodio; le proporzioni sono disegnate. I blocchi sul tavolo mostrano la dimensione, non l'importanza."
     },
     "arcedit/inside": {
