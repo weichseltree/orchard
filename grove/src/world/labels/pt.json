@@ -30,10 +30,10 @@
     },
     "phototroph": {
       "title": "phototroph",
-      "kicker": "O que permite a dois átomos ficarem juntos?",
-      "intro": "phototroph é a investigação aberta de uma só pessoa sobre se a matéria, sob um feixe constante de luz de uma só cor, se organiza em estruturas que absorvem essa cor. Essa pergunta continua em aberto. O que aqui está pendurado é a única coisa honesta que o repositório tem para mostrar: um encontro gravado entre três átomos. Dois átomos que caem um para o outro não conseguem prender-se; afastam-se exactamente à velocidade a que vieram. Só ficam quando um terceiro chega e leva consigo a velocidade a mais. A fita contém 801 fotogramas de oito átomos numa pequena caixa periódica, convertidos do próprio registo da simulação sem nada acrescentado.",
-      "lookFor": "Pause à volta da captura, siga o átomo que se afasta, depois recue e reproduza o mesmo encontro devagar; é um único evento gravado, não um novo de cada vez que carrega em reproduzir.",
-      "limit": "Uma só captura não estabelece nem equilíbrio nem taxas de ligação, e não testa a selecção pela luz; a luz de que trata esta investigação não está de todo na fita."
+      "kicker": "O que faz um feixe de luz constante a uma sopa de átomos?",
+      "intro": "phototroph pergunta se a matéria, sob um feixe constante de uma só cor, se organiza em estruturas que absorvem essa cor. As duas plataformas no centro da sala partiram do mesmo mundo de 432 átomos de seis espécies. Uma esteve iluminada durante 500 unidades de tempo; a outra ficou às escuras. Reproduzem-se em perfeita sincronia. Os átomos para os quais o feixe está sintonizado usam a sua cor em ambas as plataformas. O gráfico na parede mede quão raramente um aglomerado apanha alguma luz, e a pequena fita junto à entrada mostra como dois átomos acabam por ficar juntos.",
+      "lookFor": "Compare as plataformas: a escura congelou-se em manchas cristalinas, enquanto sob o feixe os átomos continuam a ser um gás inquieto.",
+      "limit": "A plataforma iluminada é diferente porque o feixe a aquece, não porque os seus aglomerados tenham aprendido a usar a luz: pela nossa medida, estão menos sintonizados com a cor do feixe do que os aglomerados da plataforma escura, e o próprio feixe não está desenhado."
     },
     "orangery": {
       "title": "laranjal",
@@ -311,6 +311,22 @@
     "club-floor": {
       "title": "A pista",
       "caption": "O set próprio do clube, feito na máquina do palácio a partir de uma semente e trazido aqui como emissão em directo: bombo, baixo, pratos e uma camada de fundo que mudam a cada oito compassos. Nada fica gravado; quando o último visitante sai, o codificador pára e a pista fica em silêncio."
+    },
+    "phototroph-lit": {
+      "title": "Iluminada: o mundo sob o feixe",
+      "caption": "432 átomos após 500 unidades de tempo sob um feixe constante sintonizado para uma espécie, mostrados durante mais 60. Cerca de um terço está ligado e a caixa mantém-se quente; os aglomerados formam-se e desfazem-se em poucas dezenas de unidades de tempo."
+    },
+    "phototroph-dark": {
+      "title": "Escura: o mesmo mundo sem o feixe",
+      "caption": "Os mesmos 432 átomos a partir do mesmo início, nunca iluminados, em sincronia com a plataforma iluminada. Quatro em cada cinco estão ligados, a caixa está a menos de metade da temperatura da plataforma iluminada e os aglomerados assentaram em manchas cristalinas."
+    },
+    "phototroph-walkup": {
+      "title": "A plataforma iluminada e a plataforma escura",
+      "caption": "Um instante de ambos os mundos, dispostos na horizontal lado a lado. Os átomos da espécie para a qual o feixe está sintonizado são violeta em ambas as plataformas; a névoa violeta sobre a plataforma iluminada é encenação do feixe, não uma grandeza medida."
+    },
+    "phototroph-starved": {
+      "title": "Banhados em luz, quase nada apanham",
+      "caption": "Quantos fotões um aglomerado absorve durante a sua própria vida, medido com três intensidades de feixe e três taxas de transferência internas. Para a luz moldar os aglomerados, a resposta tem de se aproximar de um; a melhor de nove simulações chega a 0,08, doze vezes e meia aquém."
     }
   }
 }

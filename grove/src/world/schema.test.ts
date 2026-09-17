@@ -149,6 +149,18 @@ describe("MansionSchema", () => {
     expect(() => MansionSchema.parse(broken)).toThrow();
   });
 
+  it("lets a tape follow only a leading tape of its own room", () => {
+    const tape = (id: string, clockWith = "") => ({ id, kind: "tape", bundle: { path: "/x/" }, position: [0, 1, 0], clockWith });
+    const good = doc();
+    (good.rooms as Array<{ hangings: unknown[] }>)[1]!.hangings = [tape("lit"), tape("dark", "lit")];
+    expect(() => MansionSchema.parse(good)).not.toThrow();
+    for (const hangings of [[tape("dark", "lit")], [tape("lit", "dark"), tape("dark", "lit")], [tape("lit", "lit")]]) {
+      const broken = doc();
+      (broken.rooms as Array<{ hangings: unknown[] }>)[1]!.hangings = hangings;
+      expect(() => MansionSchema.parse(broken)).toThrow(/not a leading tape/);
+    }
+  });
+
   it("keeps fields it does not know about, so a newer document still loads", () => {
     const forward = doc();
     (forward.rooms as Array<Record<string, unknown>>)[0]!.ambience = "rain.opus";
