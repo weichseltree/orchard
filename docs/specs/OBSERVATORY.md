@@ -129,11 +129,15 @@ pnpm quality:browser --screenshots
 pnpm quality:world --screenshots
 ```
 
-The world check captures all 14 rooms at native 1600 × 900 resolution,
+The world check captures every station at native 1600 × 900 resolution,
 records cameras and image hashes, checks the shell and draw-batch budget,
 waits for every synthetic tape to upload a frame, and detects legacy asset
 downloads and browser errors. Playback stops before each camera is rendered
-once for inspection; this is not a frame-rate benchmark. Interaction and
+once for inspection; this is not a frame-rate benchmark. Since 2026-09-17 it
+also stands at the garden's spawn and photographs the armillary: the lens
+must change when its far view goes, and the far view's own target must hold
+the Orrery — a sky above black with star points far above it — which a
+cleared buffer never does. Interaction and
 production-transfer checks are separate; see [QUALITY.md](../QUALITY.md).
 
 The site hero is a lossless encoding of an actual local-demo browser capture

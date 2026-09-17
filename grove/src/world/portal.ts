@@ -407,6 +407,29 @@ export class PortalSystem {
     return this.#meshes.get(this.#own(end))!;
   }
 
+  /**
+   * The last far view's own pixels, RGBA, the used viewport only — the far
+   * room as the far camera saw it, before the lens tints it and before the
+   * near room's own brass stands in front of it. Null when no far view has
+   * been rendered. It is what the world check reads: on screen a portal's
+   * disc always carries something (the armillary's own hoops cross it, the
+   * lens shimmers whether or not a view is behind it), and a check that
+   * reads the disc can call all of that a rendered room. This cannot.
+   */
+  /**
+   * The target the last far view was rendered into, or null before there was
+   * one. Its used viewport is `viewScale` of its size. The world check reads
+   * it back (quality-world.mjs): on screen a portal's disc always carries
+   * something — the armillary's own hoops cross it, the lens shimmers
+   * whether or not a view is behind it — so a check that reads the disc can
+   * call all of that a rendered room. The far room's own pixels cannot lie
+   * about that. Reading and decoding are the check's, so that none of the
+   * arithmetic ships to a visitor.
+   */
+  get farTarget(): WebGLRenderTarget | null {
+    return this.#farRenders === 0 ? null : this.#target;
+  }
+
   /** Per frame, after the camera pose is set: render a far view, blend, and report a crossing. */
   update(frame: PortalFrame): Crossing | null {
     const { body, camera, dt } = frame;

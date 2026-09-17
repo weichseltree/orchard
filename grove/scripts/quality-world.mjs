@@ -151,6 +151,134 @@ try {
     }
     report.stations.push(station);
   }
+  // The armillary's far view, photographed. Every other check here counts
+  // work that was ASKED for — a render call that returned, a shell that
+  // stands — and on 2026-09-17 the Orrery was empty through the portal with
+  // all of them green, because a far view WAS rendered: into a black
+  // rectangle, past a frustum that stopped short of the room. So this one
+  // reads pixels, and only the lens's own disc: a bright landing ring in an
+  // otherwise black room would carry a whole-frame difference on its own.
+  const portal = await page.evaluate(() => {
+    const app = window.grove;
+    const room = app.mansion.rooms.find((r) => r.id === 'parterre');
+    const end = room.portals.find((p) => p.to === 'orrery');
+    // Where the garden sets a visitor down, facing the armillary: the view
+    // that was black, 33 m out, and the one the guide tells a visitor to take.
+    const [sx, , sz] = room.spawn.position;
+    const yaw = room.spawn.yawDeg * Math.PI / 180;
+    const floor = room.bounds.min[1];
+    Object.assign(app.body, { room: room.id, x: sx, y: floor, z: sz, yaw, pitch: 0 });
+    app.view.rig.position.set(sx, floor, sz);
+    app.view.rig.rotation.y = yaw;
+    app.view.camera.rotation.set(0, 0, 0);
+    app.view.rig.updateMatrixWorld(true);
+
+    const gl = app.view.renderer.getContext();
+    const width = gl.drawingBufferWidth, height = gl.drawingBufferHeight;
+    // The lens on the screen, from the eye's own matrices: its centre in
+    // pixels and its radius, read at 0.8 of the way out so the rim the
+    // shader refracts and fades is left out of the count.
+    const view = app.view.camera.matrixWorldInverse.elements, lens = app.view.camera.projectionMatrix.elements;
+    const [ex, ey, ez] = end.position;
+    const vz = view[2] * ex + view[6] * ey + view[10] * ez + view[14];
+    const vx = view[0] * ex + view[4] * ey + view[8] * ez + view[12];
+    const vy = view[1] * ex + view[5] * ey + view[9] * ez + view[13];
+    const w = -vz;
+    const ndcX = (lens[0] * vx + lens[8] * vz) / w, ndcY = (lens[5] * vy + lens[9] * vz) / w;
+    const cx = (ndcX * 0.5 + 0.5) * width, cy = (ndcY * 0.5 + 0.5) * height;
+    const radiusPx = (end.radius * lens[5] * 0.5 * height) / w * 0.8;
+    const x0 = Math.max(0, Math.floor(cx - radiusPx)), y0 = Math.max(0, Math.floor(cy - radiusPx));
+    const x1 = Math.min(width, Math.ceil(cx + radiusPx)), y1 = Math.min(height, Math.ceil(cy + radiusPx));
+    const boxW = x1 - x0, boxH = y1 - y0;
+
+    const shoot = (live) => {
+      app.portalFrame(live);
+      app.view.renderer.render(app.view.scene, app.view.camera);
+      const pixels = new Uint8Array(boxW * boxH * 4);
+      gl.readPixels(x0, y0, boxW, boxH, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+      return pixels;
+    };
+    const offsets = [];
+    for (let y = 0; y < boxH; y++) {
+      for (let x = 0; x < boxW; x++) {
+        const dx = x0 + x + 0.5 - cx, dy = y0 + y + 0.5 - cy;
+        if (dx * dx + dy * dy <= radiusPx * radiusPx) offsets.push((y * boxW + x) * 4);
+      }
+    }
+    const luminance = (pixels, i) => 0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2];
+    /**
+     * A field of luminance, described the only way that tells a rendered
+     * room from a cleared buffer: where its floor sits and how far above it
+     * the brightest points stand. A flat fill has a floor and no points; the
+     * Orrery's sky is darker than the page's own ground and its stars stand
+     * far above it. Averages cannot see the difference and neither can a
+     * per-pixel diff, because the lens changes with `live` whether or not
+     * anything is behind it.
+     */
+    const describe = (values) => {
+      const sorted = [...values].sort((a, b) => a - b);
+      const at = (q) => sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))];
+      const median = at(0.5);
+      return {
+        median: Math.round(median), p99: Math.round(at(0.99)), max: Math.round(sorted[sorted.length - 1]),
+        brightFraction: values.filter((value) => value > median + 24).length / values.length,
+      };
+    };
+
+    // The disc on screen, with the far view and without it: this says the
+    // lens composites something, not what.
+    const lit = shoot(true), dark = shoot(false);
+    let changed = 0;
+    for (const i of offsets) {
+      const delta = Math.max(Math.abs(lit[i] - dark[i]), Math.abs(lit[i + 1] - dark[i + 1]), Math.abs(lit[i + 2] - dark[i + 2]));
+      if (delta > 8) changed++;
+    }
+    // And the far view itself, which says what. It comes back as the target
+    // holds it — half-float and linear, tone mapping run and the transfer
+    // function not — so the decode is here rather than in the client, where
+    // every visitor would have shipped it.
+    shoot(true);
+    const target = app.farTarget;
+    const farLuma = [];
+    let farSize = null;
+    if (target) {
+      const fw = Math.max(1, Math.round(target.width * app.farViewScale));
+      const fh = Math.max(1, Math.round(target.height * app.farViewScale));
+      farSize = { width: fw, height: fh };
+      // The target is half-float (a byte buffer reads back as zeros) and
+      // linear: tone mapping has run on it, the transfer function has not.
+      const raw = new Uint16Array(fw * fh * 4);
+      app.view.renderer.readRenderTargetPixels(target, 0, 0, fw, fh, raw);
+      const half = (h) => {
+        const sign = h & 0x8000 ? -1 : 1, exponent = (h & 0x7c00) >> 10, fraction = h & 0x03ff;
+        if (exponent === 0) return sign * 2 ** -14 * (fraction / 1024);
+        if (exponent === 0x1f) return fraction ? NaN : sign * Infinity;
+        return sign * 2 ** (exponent - 15) * (1 + fraction / 1024);
+      };
+      const encoded = new Uint8ClampedArray(raw.length);
+      for (let i = 0; i < raw.length; i++) {
+        const linear = Math.max(0, Math.min(1, half(raw[i])));
+        encoded[i] = Math.round(255 * (i % 4 === 3 ? linear : linear ** (1 / 2.2)));
+      }
+      for (let i = 0; i < encoded.length; i += 4) farLuma.push(luminance(encoded, i));
+    }
+
+    return {
+      disc: { x: Math.round(cx), y: Math.round(cy), radius: Math.round(radiusPx), pixels: offsets.length },
+      changedFraction: changed / offsets.length,
+      farView: farSize ? { ...farSize, ...describe(farLuma) } : null,
+    };
+  });
+  report.portal = portal;
+  // Measured both ways on 2026-09-17, with the depth-range fix and with it
+  // taken back out: drawn, the far view reads median 23, max 219, a bright
+  // fraction of 1.5 in ten thousand; clipped, it reads zero for all three.
+  // The floors sit between, nearer the bug.
+  check('The armillary composites a far view: its disc changes when the view goes', portal.changedFraction > 0.2, portal);
+  check('The far view is drawn: its sky stands above black', Boolean(portal.farView) && portal.farView.median > 4, portal);
+  check('And it holds the Orrery: star points stand far above that sky', Boolean(portal.farView)
+    && portal.farView.max - portal.farView.median > 80 && portal.farView.brightFraction > 0.00003, portal);
+
   check('No legacy palace or lightmap downloads', events.legacy.length === 0, events.legacy);
   check('No legacy GLTF or KTX2 decoder code downloads', events.decoderCode.length === 0, events.decoderCode);
   check('No external requests', events.external.length === 0, events.external);
