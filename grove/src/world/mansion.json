@@ -554,6 +554,57 @@
       ]
     },
     {
+      "id": "court-north",
+      "title": "north court",
+      "presence": "club",
+      "fallback": {
+        "kind": "ground",
+        "color": "#101c2b"
+      },
+      "bounds": {
+        "min": [
+          -20,
+          -1.6,
+          -104
+        ],
+        "max": [
+          -10,
+          6.4,
+          -90
+        ]
+      },
+      "spawn": {
+        "position": [
+          -15,
+          -1.6,
+          -97.0
+        ],
+        "yawDeg": 180
+      },
+      "doorways": [
+        {
+          "to": "orchard-west",
+          "axis": "x",
+          "at": -20,
+          "center": -97,
+          "width": 10,
+          "height": 8
+        },
+        {
+          "to": "stair-north",
+          "axis": "z",
+          "at": -90,
+          "center": -15,
+          "width": 6,
+          "height": 3.6,
+          "signRoom": "club"
+        }
+      ],
+      "hangings": [],
+      "architecture": "observatory",
+      "exposure": 1
+    },
+    {
       "id": "stair-north",
       "title": "stair",
       "presence": "club",
@@ -561,38 +612,40 @@
         "min": [
           -20,
           -5,
-          -84
+          -90
         ],
         "max": [
-          -11,
+          -10,
           2.6,
           -76
         ]
       },
       "spawn": {
         "position": [
-          -13,
+          -15,
           -5,
-          -80
+          -78
         ],
-        "yawDeg": 90
+        "yawDeg": 180
       },
       "doorways": [
         {
-          "to": "orchard-west",
-          "axis": "x",
-          "at": -20,
-          "center": -80,
-          "width": 2.4,
-          "height": 3.2
+          "to": "court-north",
+          "axis": "z",
+          "at": -90,
+          "center": -15,
+          "width": 6,
+          "height": 3.6,
+          "treadMeters": 0.42
         },
         {
           "to": "foyer",
           "axis": "z",
           "at": -76,
-          "center": -15.5,
-          "width": 2.4,
-          "height": 3
+          "center": -15,
+          "width": 6,
+          "height": 3.2,
+          "signRoom": "club"
         }
       ],
       "hangings": [],
@@ -609,39 +662,92 @@
           72
         ],
         "max": [
-          -11,
+          -10,
           2.6,
-          80
+          86
         ]
       },
       "spawn": {
         "position": [
-          -13,
+          -15,
           -5,
-          76
+          74
         ],
-        "yawDeg": 90
+        "yawDeg": 0
+      },
+      "doorways": [
+        {
+          "to": "court-south",
+          "axis": "z",
+          "at": 86,
+          "center": -15,
+          "width": 6,
+          "height": 3.6,
+          "treadMeters": 0.42
+        },
+        {
+          "to": "foyer",
+          "axis": "z",
+          "at": 72,
+          "center": -15,
+          "width": 6,
+          "height": 3.2,
+          "signRoom": "club"
+        }
+      ],
+      "hangings": [],
+      "architecture": "observatory"
+    },
+    {
+      "id": "court-south",
+      "title": "south court",
+      "presence": "club",
+      "fallback": {
+        "kind": "ground",
+        "color": "#101c2b"
+      },
+      "bounds": {
+        "min": [
+          -20,
+          -1.6,
+          86
+        ],
+        "max": [
+          -10,
+          6.4,
+          100
+        ]
+      },
+      "spawn": {
+        "position": [
+          -15,
+          -1.6,
+          93.0
+        ],
+        "yawDeg": 0
       },
       "doorways": [
         {
           "to": "orchard-east",
           "axis": "x",
           "at": -20,
-          "center": 76,
-          "width": 2.4,
-          "height": 3.2
+          "center": 93,
+          "width": 10,
+          "height": 8
         },
         {
-          "to": "foyer",
+          "to": "stair-south",
           "axis": "z",
-          "at": 72,
-          "center": -15.5,
-          "width": 2.4,
-          "height": 3
+          "at": 86,
+          "center": -15,
+          "width": 6,
+          "height": 3.6,
+          "signRoom": "club"
         }
       ],
       "hangings": [],
-      "architecture": "observatory"
+      "architecture": "observatory",
+      "exposure": 1
     },
     {
       "id": "foyer",
@@ -672,17 +778,19 @@
           "to": "stair-north",
           "axis": "z",
           "at": -76,
-          "center": -15.5,
-          "width": 2.4,
-          "height": 3
+          "center": -15,
+          "width": 6,
+          "height": 3.2,
+          "signRoom": "court-north"
         },
         {
           "to": "stair-south",
           "axis": "z",
           "at": 72,
-          "center": -15.5,
-          "width": 2.4,
-          "height": 3
+          "center": -15,
+          "width": 6,
+          "height": 3.2,
+          "signRoom": "court-south"
         },
         {
           "to": "club",
@@ -1515,12 +1623,12 @@
           "height": 8
         },
         {
-          "to": "stair-north",
+          "to": "court-north",
           "axis": "x",
           "at": -20,
-          "center": -80,
-          "width": 2.4,
-          "height": 3.2
+          "center": -97,
+          "width": 10,
+          "height": 8
         }
       ],
       "hangings": [],
@@ -1631,12 +1739,12 @@
           "height": 8
         },
         {
-          "to": "stair-south",
+          "to": "court-south",
           "axis": "x",
           "at": -20,
-          "center": 76,
-          "width": 2.4,
-          "height": 3.2
+          "center": 93,
+          "width": 10,
+          "height": 8
         }
       ],
       "hangings": [],
@@ -2600,7 +2708,7 @@
             "id": "84ee7ea2f6d5cb36"
           },
           "position": [
-            13,
+            13.2,
             0,
             66
           ],

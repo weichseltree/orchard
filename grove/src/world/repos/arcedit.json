@@ -25,13 +25,13 @@
   },
   {
     "path": "results",
-    "bytes": 22858398,
+    "bytes": 22858402,
     "sentence": "The evidence of record: one directory per experiment, each with its dated account.",
     "room": ""
   },
   {
     "path": "results/grove",
-    "bytes": 5315790,
+    "bytes": 5315794,
     "sentence": "The exhibits: recorded episodes, films, stills, charts and the environment as a 3D model.",
     "room": "arcedit"
   },
@@ -91,7 +91,7 @@
   },
   {
     "path": "scripts",
-    "bytes": 531652,
+    "bytes": 531656,
     "sentence": "The instruments: one script per experiment, and the ones that make these exhibits.",
     "room": ""
   },

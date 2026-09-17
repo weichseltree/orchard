@@ -44,9 +44,10 @@ it is. The architecture is generated in the browser from one scene document
   sixth is inside the task's canvas, through a portal. Any public repository
   under a redistributable licence can be linked as an area, with its own
   admins.
-- **The club**, a cellar under the north wing (September 2026): a stair
-  pavilion at each end of the terrace descends to an undercroft that opens into
-  a vaulted dance floor with a bar, booths, a DJ's desk and a raised stage. Its
+- **The club**, a cellar under the north wing (September 2026): a garden court
+  at each end of the terrace opens on a pavilion whose single broad flight goes
+  straight down, without a turn, into an undercroft that opens into a vaulted
+  dance floor with a bar, booths, a DJ's desk and a raised stage. Its
   door opens only to a visitor whose microphone and sound are on; the stage
   only to a headset. The floor plays a live stream, a seeded techno set
   encoded on the host only while someone is in the club, and the lights pulse

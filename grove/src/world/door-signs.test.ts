@@ -32,10 +32,24 @@ describe("planDoorSigns over mansion.json", () => {
         expect(door.axis === "x" ? normal.x : normal.z).toBeCloseTo(inward, 6);
         // Above the door's head, within the room.
         expect(plan.position.y).toBeGreaterThan(r.bounds.min[1] + door.height);
-        expect(plan.position.y).toBeLessThan(r.bounds.max[1]);
+        // The whole cap height stays under the ceiling, not just its middle.
+        expect(plan.position.y + plan.size / 2).toBeLessThanOrEqual(r.bounds.max[1]);
       }
     });
   }
+
+  it("names the room a door points at, not the one it opens on", () => {
+    // The stairs are signed for the club; nobody walks down for the stair's own sake.
+    const court = room("court-north");
+    const door = court.doorways.find((d) => d.to === "stair-north")!;
+    expect(door.signRoom).toBe("club");
+    const plan = planDoorSigns(court, labels, mansion).find((p) => p.to === "stair-north")!;
+    expect(plan.text).toBe(labels.rooms.club!.title);
+    expect(plan.fallback).toBe("club");
+    // Without the field the sign would name the room behind the door.
+    const plain = planDoorSigns({ ...court, doorways: [{ ...door, signRoom: "" }] }, labels, mansion)[0]!;
+    expect(plain.text).toBe(labels.rooms["stair-north"]!.title);
+  });
 
   it("names the room beyond as the visitor reads it, and a sealed room by its repository", () => {
     const hall = planDoorSigns(room("hall"), labelsDe, mansion);

@@ -121,6 +121,6 @@ describe("neighbourhood", () => {
     // ...and the rooms stacked under them: the club and its stage under the wing, the undercroft under the terrace.
     // ...and, since 2026-09-17, quantumflow's wing: the two rooms its east wall
     // opens into, and the two more that are a second door beyond them.
-    expect(fromOrangery.sort()).toEqual(["club", "foyer", "gallery", "hall", "orangery", "orchard-east", "orchard-south", "orchard-west", "parterre", "quantumflow", "quantumflow/cloud", "quantumflow/flow", "quantumflow/inversion", "stage", "terrace", "world-engine"]);
+    expect(fromOrangery.sort()).toEqual(["club", "court-north", "court-south", "foyer", "gallery", "hall", "orangery", "orchard-east", "orchard-south", "orchard-west", "parterre", "quantumflow", "quantumflow/cloud", "quantumflow/flow", "quantumflow/inversion", "stage", "terrace", "world-engine"]);
   });
 });

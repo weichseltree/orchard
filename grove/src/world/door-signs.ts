@@ -2,9 +2,9 @@ import { BufferGeometry, Float32BufferAttribute, Group, Mesh, MeshBasicMaterial,
 import earcut from "earcut";
 import type { Doorway, Mansion, Room } from "./schema";
 import type { Labels } from "./labels/index";
-import { OBSERVATORY_PALETTE } from "./observatory";
+import { OBSERVATORY_PALETTE, finishColour } from "./observatory";
 
-// The name over every door, in brass letters standing off the lintel: the
+// The name over every door, standing off the lintel's stone band: the
 // room the door leads to, as the visitor reads it in their language, or its
 // repository's name when it has no wall text yet (the sealed doors). The
 // letters are extruded here from Cinzel's outlines (fonts/cinzel.json, SIL
@@ -24,9 +24,16 @@ import { OBSERVATORY_PALETTE } from "./observatory";
  * of the cap height. 0.4 m reads from across a chamber (raised from 0.2 on
  * 2026-09-16); a low room scales them to its headroom (`signSize`).
  */
-export const SIGN = { size: 0.4, depth: 0.05, lintelFace: 0.4, lift: 0.9, standoff: 0.004 } as const;
+export const SIGN = { size: 0.26, depth: 0.05, lintelFace: 0.4, band: 0.28, standoff: 0.004 } as const;
 
-/** The cap height a door's sign gets: the full size where the ceiling allows, less over a door close under it (arcedit's chambers). */
+/**
+ * The cap height a door's sign gets: the full size where the ceiling allows,
+ * less over a door close under it (arcedit's chambers). The letters are cut
+ * into the lintel's own stone band, 0.44 m deep and centred 0.28 m over the
+ * opening (observatory.ts's `surrounds`), so the cap height leaves that band
+ * a margin; letters set over the band floated against the dark wall above it
+ * (ruled 2026-09-17).
+ */
 export function signSize(headroom: number): number {
   return Math.min(SIGN.size, headroom * 0.4);
 }
@@ -83,13 +90,18 @@ export function planDoorSigns(room: Room, labels: Labels | null, mansion: Mansio
     if (inward === 0) continue;
     const top = doorBase(room, door, mansion) + door.height;
     const size = signSize(room.bounds.max[1] - top);
-    const y = top + SIGN.lift * size + size / 2;
+    // On the lintel's band, not floating over it.
+    const y = top + SIGN.band;
     const across = door.at + inward * (SIGN.lintelFace + SIGN.standoff);
     const position = door.axis === "x" ? new Vector3(across, y, door.center) : new Vector3(door.center, y, across);
     const normal = door.axis === "x" ? new Vector3(inward, 0, 0) : new Vector3(0, 0, inward);
     const quaternion = new Quaternion().setFromUnitVectors(OUT, normal);
-    const title = labels?.rooms[door.to]?.title?.trim();
-    out.push({ text: title || door.to, fallback: door.to, position, quaternion, maxWidth: door.width + 0.8, size, to: door.to });
+    // A door may name what lies beyond the room it opens on: the stairs down
+    // are signed for the club, since no one walks down for the stair's own
+    // sake (Manuel, 2026-09-17).
+    const names = door.signRoom || door.to;
+    const title = labels?.rooms[names]?.title?.trim();
+    out.push({ text: title || names, fallback: names, position, quaternion, maxWidth: door.width + 0.8, size, to: door.to });
   }
   return out;
 }
@@ -105,12 +117,19 @@ export function canSet(font: Typeface, text: string): boolean {
   return [...text].every((c) => c === " " || c in font.glyphs);
 }
 
-let brass: MeshBasicMaterial | null = null;
-function signMaterial(): MeshBasicMaterial {
-  // The pale brass of the lamps rather than the dark brass of the rails: the
-  // letters have no light of their own, and the dull finish read as too dim
-  // over a door (ruled 2026-09-16).
-  return (brass ??= new MeshBasicMaterial({ color: OBSERVATORY_PALETTE.light, vertexColors: true }));
+const inks = new Map<string, MeshBasicMaterial>();
+/**
+ * Dark letters on the lit stone of a lintel indoors, in the room's OWN deep
+ * inset colour, since its stone is its own too (spectre's is nearly black);
+ * brass letters in the open air, where a door has no band behind it and the
+ * night is the only ground. Brass indoors (2026-09-16) was pale on a pale
+ * band (ruled 2026-09-17).
+ */
+function signMaterial(roomId: string, outdoors: boolean): MeshBasicMaterial {
+  const colour = outdoors ? OBSERVATORY_PALETTE.light : finishColour(roomId, "inset");
+  let material = inks.get(colour);
+  if (!material) inks.set(colour, (material = new MeshBasicMaterial({ color: colour, vertexColors: true })));
+  return material;
 }
 
 /** A closed outline of a glyph, flattened: x, y pairs in the sign's metres. */
@@ -242,19 +261,24 @@ export function extrudeText(text: string, font: Typeface, size: number, depth: n
   return { position, normal };
 }
 
-/** Fixed face shading: the faces toward the reader bright, the returns dark, so the letters read without a light. */
-function shadeLetters(geometry: BufferGeometry): void {
+/**
+ * Fixed face shading, so the letters read without a light of their own: cut
+ * letters take the band's light on their returns and stay dark on the face,
+ * brass ones the other way round.
+ */
+function shadeLetters(geometry: BufferGeometry, outdoors: boolean): void {
   const normals = geometry.getAttribute("normal");
   const colours: number[] = [];
   for (let i = 0; i < normals.count; i++) {
-    const shade = 0.72 + 0.28 * Math.max(0, normals.getZ(i)) + 0.1 * Math.max(0, normals.getY(i));
+    const face = Math.max(0, normals.getZ(i)), up = Math.max(0, normals.getY(i));
+    const shade = outdoors ? 0.72 + 0.28 * face + 0.1 * up : 2.2 - 1.2 * face - 0.4 * up;
     colours.push(shade, shade, shade);
   }
   geometry.setAttribute("color", new Float32BufferAttribute(colours, 3));
 }
 
 /** The letters of one sign, in the sign's frame: centred, facing +z, no wider than the lintel. */
-export function letterGeometry(sign: DoorSign, font: Typeface): BufferGeometry {
+export function letterGeometry(sign: DoorSign, font: Typeface, outdoors = false): BufferGeometry {
   const text = canSet(font, sign.text) ? sign.text : sign.fallback;
   const { position, normal } = extrudeText(text, font, sign.size, SIGN.depth);
   const geometry = new BufferGeometry();
@@ -266,7 +290,7 @@ export function letterGeometry(sign: DoorSign, font: Typeface): BufferGeometry {
   geometry.translate(-(box.max.x + box.min.x) / 2, -(box.max.y + box.min.y) / 2, 0);
   const fit = sign.maxWidth - 0.3;
   if (width > fit) geometry.scale(fit / width, fit / width, 1);
-  shadeLetters(geometry);
+  shadeLetters(geometry, outdoors);
   return geometry;
 }
 
@@ -274,9 +298,11 @@ export function letterGeometry(sign: DoorSign, font: Typeface): BufferGeometry {
 export function buildDoorSigns(room: Room, signs: readonly DoorSign[], font: Typeface): Group {
   const group = new Group();
   group.name = `door-signs-${room.id}`;
+  // A room open to the sky has no lintel band to cut into.
+  const outdoors = room.fallback.kind === "ground";
   const position: number[] = [], normal: number[] = [], color: number[] = [];
   for (const sign of signs) {
-    const letters = letterGeometry(sign, font);
+    const letters = letterGeometry(sign, font, outdoors);
     letters.applyQuaternion(sign.quaternion);
     letters.translate(sign.position.x, sign.position.y, sign.position.z);
     position.push(...(letters.getAttribute("position").array as Float32Array));
@@ -290,7 +316,7 @@ export function buildDoorSigns(room: Room, signs: readonly DoorSign[], font: Typ
     merged.setAttribute("position", new Float32BufferAttribute(position, 3));
     merged.setAttribute("normal", new Float32BufferAttribute(normal, 3));
     merged.setAttribute("color", new Float32BufferAttribute(color, 3));
-    const mesh = new Mesh(merged, signMaterial());
+    const mesh = new Mesh(merged, signMaterial(room.id, outdoors));
     mesh.name = "door-signs";
     mesh.userData = { signs: signs.map((s) => s.to) };
     group.add(mesh);

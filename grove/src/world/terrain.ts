@@ -20,8 +20,8 @@ export function stairSteps(rise: number): number {
 }
 
 /** The horizontal length a flight takes, metres, measured from the doorway plane into the lower room. */
-export function stairRun(rise: number): number {
-  return stairSteps(rise) * STAIR_TREAD;
+export function stairRun(rise: number, tread: number = STAIR_TREAD): number {
+  return stairSteps(rise) * tread;
 }
 
 /**
@@ -66,7 +66,8 @@ export function flightsOf(mansion: Mansion, room: Room): Flight[] {
     if (rise <= 1e-6) continue;
     const axis = door.axis === "x" ? 0 : 2;
     const direction: 1 | -1 = Math.abs(door.at - room.bounds.min[axis]) < 1e-6 ? 1 : -1;
-    out.push({ door, rise, run: stairRun(rise), direction });
+    // A door may ask for a longer going: the cellar's descents are gentler than the terrace's steps.
+    out.push({ door, rise, run: stairRun(rise, door.treadMeters ?? STAIR_TREAD), direction });
   }
   return out;
 }

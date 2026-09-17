@@ -1,4 +1,4 @@
-node_modules/
+node_modules
 dist/
 # copied out of node_modules by scripts/copy-basis.mjs
 public/basis/

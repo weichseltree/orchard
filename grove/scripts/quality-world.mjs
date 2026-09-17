@@ -26,7 +26,8 @@ const stations = [
   ['phototroph', 0, 14, 180, -8],
   ['world-engine', 0, -14, 0, 5],
   ['orangery', 0, -36, 0, 12],
-  ['stair-north', -13, -80, 90, 6],
+  ['court-north', -15, -97, 180, 2],
+  ['stair-north', -15, -78, 0, 6],
   ['foyer', -15, -41, -90, 3],
   ['club', 0, -20, 0, 4],
   ['stage', 2.2, -74.5, 180, 4],
@@ -37,6 +38,7 @@ const stations = [
   ['parterre', -26, 0, 90, 4],
   ['orchard-west', -45, -60, 0, 5],
   ['orchard-south', -80, 0, 90, 5],
+  ['court-south', -15, 93, 0, 2],
   ['orchard-east', -45, 60, 180, 5],
   ['orrery', 0, -400, 0, 8],
 ];
@@ -105,10 +107,11 @@ try {
     return { rooms, batches, instances, tapes: app.world.tapes.filter(Boolean).length };
   });
   report.world = world;
-  // The palace's seventeen with the cellar venue, arcedit's six since its
-  // redesign (2026-09-17), and quantumflow's six in the east wing.
-  check('All 31 rooms use runtime architecture (30 Observatory, the Orrery in space)', world.rooms.length === 31
-    && world.rooms.filter((room) => room.architecture === 'observatory').length === 30
+  // The palace's seventeen with the cellar venue and its two garden courts,
+  // arcedit's six since its redesign (2026-09-17), and quantumflow's six in the
+  // east wing.
+  check('All 33 rooms use runtime architecture (32 Observatory, the Orrery in space)', world.rooms.length === 33
+    && world.rooms.filter((room) => room.architecture === 'observatory').length === 32
     && world.rooms.filter((room) => room.architecture === 'space').length === 1, world.rooms);
   check('Architecture stays near fifteen draw batches a room across the whole world', world.batches < world.rooms.length * 16, world.batches);
   // Eight tapes: einstruct's two sheets, phototroph's three (the lit and dark
