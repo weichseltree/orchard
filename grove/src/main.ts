@@ -140,15 +140,13 @@ const hud = new Hud(hudRoot, {
   },
   onUnmute: () => void toggleAudio(),
   onAtlas: (mode) => void chooseAtlas(mode),
-  onProvenance: () => provenance.toggle(view.camera),
-  onGuide: () => guide.show(),
   onToggleChat: () => {
     if (!chat.open) {
       notice("Chat opens once you are connected to the room.");
       return;
     }
     chat.setFolded(!chat.folded);
-    hud.setDockOpen("chat", !chat.folded);
+    hud.setChatShown(!chat.folded);
   },
   onOpenGame: () => commands.openGame(),
   onReport: (identity, reason) =>
@@ -199,7 +197,19 @@ const guide = new VisitorGuide(hudRoot, mansion, device, () => {
   canvas.focus();
   if (!device.headset) desktopControls?.requestLock();
 }, (surface) => openGameSurface(surface));
-guide.onOpenChange = (open) => hud.setDockOpen("guide", open);
+guide.onShow = () => hud.openPanel("guide");
+guide.onHide = () => {
+  if (hud.panel === "guide") hud.closePanel();
+};
+hud.definePanel("guide", { element: guide.element, heading: () => guide.heading, onClose: () => guide.markSeen() });
+hud.definePanel("sources", {
+  element: hud.provenancePanel,
+  heading: () => ["About this view", provenance.title],
+  onOpen: () => {
+    if (!provenance.open) provenance.show(view.camera);
+  },
+  onClose: () => provenance.close(),
+});
 
 /** A browser game over the world: from the Guide anywhere in its room, or at its table (G, or the offer). */
 function openGameSurface(surface: GameSurfaceConfig): void {
@@ -264,6 +274,7 @@ const chat = new ChatPanel(hudRoot, {
   onLinesChanged: (lines) => {
     chatLines = lines;
     worldChat?.setLines(lines);
+    hud.noteChatLine();
   },
   voice: canSpeak
     ? {
@@ -278,6 +289,26 @@ const chat = new ChatPanel(hudRoot, {
         },
       }
     : undefined,
+});
+
+// Outside the phone layout the chat is a panel on the rail: its slot says so
+// while there is no link, and the chat itself moves in while the panel shows.
+const chatSlot = document.createElement("div");
+chatSlot.className = "chat-slot";
+const chatOffline = document.createElement("p");
+chatOffline.className = "chat-offline";
+chatOffline.textContent = "Chat opens once you are connected to the room.";
+chatSlot.append(chatOffline);
+hud.definePanel("chat", {
+  element: chatSlot,
+  adopt: chat.root,
+  heading: () => ["Room chat", roomTitle(labelsLoaded(locale), body.room) ?? roomById(mansion, body.room)?.title ?? body.room],
+  onOpen: () => {
+    if (!chat.open) return false;
+    chat.show(true);
+    return true;
+  },
+  onClose: () => chat.close(),
 });
 
 /**
@@ -314,7 +345,7 @@ const presence = new Presence(
       // speak into, and a dead input is worse than no input.
       if (status === "online") chat.show();
       else chat.hide();
-      hud.setDockOpen("chat", chat.open && !chat.folded);
+      hud.setChatShown(chat.open && !chat.folded);
       if (status === "online") hud.setLink("connected");
       else if (status === "connecting") hud.setLink("connecting…");
       else {
@@ -404,7 +435,6 @@ view.renderer.xr.addEventListener("sessionstart", () => {
   );
 });
 
-let perfOpen = false;
 let nextPerfReport = 0;
 const pulseActive = venueBox(mansion) !== null;
 let barredKey = -1;
@@ -445,10 +475,9 @@ const commands: Commands = {
     const next = screen.atlases[(screen.atlases.indexOf(screen.atlas) + 1) % screen.atlases.length]!;
     void chooseAtlas(next);
   },
-  toggleProvenance: () => provenance.toggle(view.camera),
+  toggleProvenance: () => hud.togglePanel("sources"),
   togglePerf: () => {
-    perfOpen = !perfOpen;
-    if (!perfOpen) hud.setPerf(null);
+    hud.togglePanel("timing");
   },
   toggleUnmute: () => void toggleAudio(),
   // In a headset the offers are not on any screen: the trigger takes them.
@@ -996,6 +1025,7 @@ view.start((dt, time, rawDt) => {
       chat.noteJoined();
     }
     guide.setRoom(body.crossedInto);
+    hud.refreshPanelHeading();
     notice(roomTitle(labelsLoaded(locale), body.crossedInto) ?? roomById(mansion, body.crossedInto)?.title ?? body.crossedInto);
     // Arriving in the foyer is when the club's door is worth explaining.
     offerVenue();
@@ -1015,7 +1045,8 @@ view.start((dt, time, rawDt) => {
   hud.setHere(presence.here);
 
   provenance.update(view.camera, presenting);
-  hud.setDockOpen("sources", provenance.open);
+  // The target can go away under an open Sources panel (a room unloads).
+  if (hud.panel === "sources" && !provenance.open) hud.closePanel();
   if (turnstile.opened(performance.now())) {
     // Said once, so a visitor who stopped trying the door knows they can go.
     toldAboutLock = null;
@@ -1057,7 +1088,7 @@ view.start((dt, time, rawDt) => {
     curtains?.update(time / 1000, barred);
   }
 
-  if (perfOpen && time >= nextPerfReport) {
+  if (hud.panel === "timing" && time >= nextPerfReport) {
     nextPerfReport = time + 500;
     hud.setPerf(
       perf.report(view.renderer, {

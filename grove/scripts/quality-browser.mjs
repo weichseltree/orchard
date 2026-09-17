@@ -61,6 +61,7 @@ const profiles = [
   { name: 'desktop', width: 1440, height: 1000, touch: false },
   { name: 'phone', width: 390, height: 844, touch: true },
   { name: 'small-phone', width: 320, height: 780, touch: true },
+  { name: 'tablet', width: 1024, height: 768, touch: true },
   { name: 'phone-landscape', width: 844, height: 390, touch: true },
   // Older 16:9 phones turned sideways: 640 wide, so only the height says landscape.
   { name: 'small-landscape', width: 640, height: 360, touch: true },
@@ -263,11 +264,12 @@ async function appAudit(profile) {
   const name = `demo ${profile.name}`;
   try {
     await ready(page, '/mind/?demo');
-    await page.locator('dialog[open]').waitFor();
-    if (profile.name === 'phone') await screenshot(page, 'guide-phone');
-    check(`${name}: guide starts at its heading`, await page.locator('#guide-title').evaluate((el) => document.activeElement === el));
+    await page.locator('#panel-column[data-panel=guide]').waitFor();
+    await screenshot(page, `guide-${profile.name}`);
+    check(`${name}: guide starts at its heading`, await page.locator('#panel-title').evaluate((el) => document.activeElement === el));
     await axeAudit(page, `${name} guide`);
     await page.keyboard.press('Escape');
+    await page.locator('#panel-column').waitFor({ state: 'hidden' });
     await page.locator('.scrubber:not([hidden])').waitFor({ timeout: 30000 });
     const layout = await page.evaluate(() => {
       // The demo has no link, so the chat stays hidden; show it to measure where it would sit.
@@ -294,7 +296,7 @@ async function appAudit(profile) {
         const r = el.getBoundingClientRect();
         return { x: r.x, y: r.y, right: r.right, bottom: r.bottom, width: r.width, height: r.height };
       };
-      const measured = { width: innerWidth, height: innerHeight, transport: rect('.scrubber'), stick: rect('.stick'), top: rect('.top-right'), location: rect('.location'), notices: rect('.notices'), chat: rect('.chat'), dock: rect('.dock') };
+      const measured = { width: innerWidth, height: innerHeight, phone: document.querySelector('#hud').classList.contains('phone-layout'), transport: rect('.scrubber'), stick: rect('.stick'), top: rect('.top-right'), location: rect('.location'), status: rect('.status'), notices: rect('.notices'), chat: rect('.chat'), dock: rect('.dock') };
       measured.chatLogHeight = chat?.querySelector('.chat-log')?.clientHeight ?? null;
       for (const line of lines) line.remove();
       mic.remove();
@@ -305,11 +307,36 @@ async function appAudit(profile) {
     for (const [part, rect] of Object.entries(layout).filter(([, value]) => value && typeof value === 'object')) {
       check(`${name}: ${part} stays in viewport`, rect.x >= -1 && rect.y >= -1 && rect.right <= layout.width + 1 && rect.bottom <= layout.height + 1, rect);
     }
+    check(`${name}: the rail or dock is shown`, layout.dock !== null);
+    check(`${name}: the rail or dock clears the tape controls and the room card`, overlapArea(layout.dock, layout.transport) === 0 && overlapArea(layout.dock, layout.location) === 0 && overlapArea(layout.dock, layout.status) === 0);
+    check(`${name}: the room card clears the notices and the far-end buttons`, overlapArea(layout.location, layout.notices) === 0 && overlapArea(layout.status, layout.notices) === 0 && overlapArea(layout.transport, layout.top) === 0);
     if (profile.touch) {
       check(`${name}: tape controls clear the joystick`, overlapArea(layout.transport, layout.stick) === 0);
-      check(`${name}: the dock is shown`, layout.dock !== null);
       check(`${name}: the room card clears the joystick`, overlapArea(layout.location, layout.stick) === 0);
-      check(`${name}: the dock clears the joystick and tape controls`, overlapArea(layout.dock, layout.stick) === 0 && overlapArea(layout.dock, layout.transport) === 0);
+      check(`${name}: the dock clears the joystick`, overlapArea(layout.dock, layout.stick) === 0);
+    }
+    if (!layout.phone) {
+      check(`${name}: outside a phone the chat lives on the rail, not over the view`, layout.chat === null);
+      // Every panel opens in the one column, clear of the rail, the card, the tape and the stick.
+      for (const [panel, label] of [['guide', 'Guide'], ['sources', 'Sources'], ['people', 'Who is here'], ['chat', 'Room chat'], ...(profile.touch ? [] : [['timing', 'Frame timing']])]) {
+        await page.getByRole('button', { name: label, exact: true }).click();
+        await page.locator(`#panel-column[data-panel=${panel}]`).waitFor();
+        const column = await page.evaluate(() => {
+          const rect = (el) => {
+            if (!el || !el.getClientRects().length) return null;
+            const r = el.getBoundingClientRect();
+            return { x: r.x, y: r.y, right: r.right, bottom: r.bottom, width: r.width, height: r.height };
+          };
+          return { column: rect(document.querySelector('#panel-column')), transport: rect(document.querySelector('.scrubber')) };
+        });
+        check(`${name}: the ${panel} panel stays in viewport`, column.column && column.column.x >= 0 && column.column.y >= 0 && column.column.right <= layout.width + 1 && column.column.bottom <= layout.height + 1, column.column);
+        check(`${name}: the ${panel} panel clears the rail, the card, the tape and the stick`, overlapArea(column.column, layout.dock) === 0 && overlapArea(column.column, layout.location) === 0 && overlapArea(column.column, column.transport) === 0 && overlapArea(column.column, layout.stick) === 0, column);
+        if (panel === 'chat') check(`${name}: the chat panel says it needs a link`, await page.locator('#panel-column .chat-offline').isVisible());
+        await page.getByRole('button', { name: label, exact: true }).click();
+        await page.locator('#panel-column').waitFor({ state: 'hidden' });
+      }
+    }
+    if (layout.phone) {
       if (layout.chat) check(`${name}: chat clears the joystick, tape controls and top buttons`, overlapArea(layout.chat, layout.stick) === 0 && overlapArea(layout.chat, layout.transport) === 0 && overlapArea(layout.chat, layout.top) === 0 && overlapArea(layout.chat, layout.location) === 0);
       if (layout.chat) check(`${name}: a full chat still shows lines`, layout.chatLogHeight >= 50, layout.chatLogHeight);
       check(`${name}: notices have room under the room card`, layout.notices !== null && layout.notices.height >= 40, layout.notices);
@@ -317,9 +344,9 @@ async function appAudit(profile) {
     await page.getByRole('button', { name: 'Guide', exact: true }).focus();
     const playingBefore = await page.evaluate(() => window.grove.world.tape.playing);
     await page.keyboard.press('Space');
-    check(`${name}: Space opens Guide without toggling playback`, await page.locator('.visitor-guide[open]').evaluate((el) => el.open) && await page.evaluate(() => window.grove.world.tape.playing) === playingBefore);
+    check(`${name}: Space opens Guide without toggling playback`, await page.locator('#panel-column[data-panel=guide]').isVisible() && await page.evaluate(() => window.grove.world.tape.playing) === playingBefore);
     await page.keyboard.press('Escape');
-    check(`${name}: dialog returns focus to its trigger`, await page.getByRole('button', { name: 'Guide', exact: true }).evaluate((el) => document.activeElement === el));
+    check(`${name}: the panel returns focus to its trigger`, await page.getByRole('button', { name: 'Guide', exact: true }).evaluate((el) => document.activeElement === el));
     if (!profile.touch) {
       const pause = page.locator('.scrubber button');
       if (await page.evaluate(() => window.grove.world.tape.playing)) await pause.click();
@@ -458,7 +485,7 @@ async function roomTourAudit() {
   const name = 'room tour';
   try {
     await ready(page, '/mind/?demo');
-    if (await page.locator('dialog[open]').count()) await page.keyboard.press('Escape');
+    if (await page.locator('#panel-column:not([hidden])').count()) await page.keyboard.press('Escape');
     const rooms = await page.evaluate(() => window.grove.mansion.rooms.map((room) => room.id));
     const start = await page.evaluate(() => window.grove.body.room);
     const laps = [];

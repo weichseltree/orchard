@@ -107,6 +107,11 @@ export class Provenance {
     return best ?? containing;
   }
 
+  /** What the open panel is about, for the heading over it. */
+  get title(): string {
+    return this.#current?.title ?? "Nothing in view";
+  }
+
   toggle(camera: PerspectiveCamera): void {
     if (this.open) this.close();
     else this.show(camera);
