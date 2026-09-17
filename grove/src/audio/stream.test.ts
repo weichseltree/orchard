@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { playlistHasMedia, playlistIsFresh } from "./stream";
+import { DEFAULT_MAX_LAG_SECONDS, lagSeconds, playlistHasMedia, playlistIsFresh, shouldFallSilent } from "./stream";
 
 describe("playlistHasMedia", () => {
   it("is false for a header-only playlist and true once a segment is listed", () => {
@@ -20,8 +20,11 @@ describe("playlistIsFresh", () => {
   it("takes an undated playlist at its word", () => {
     expect(playlistIsFresh("#EXTM3U\n#EXTINF:2.0,\nseg000004.m4s\n", at)).toBe(true);
   });
+  it("reads ffmpeg's offset without a colon, as every engine reads the colon form", () => {
+    expect(playlistIsFresh(dated("2026-09-17T16:59:50.000+0200"), at)).toBe(true);
+    expect(playlistIsFresh(dated("2026-09-17T16:59:20.000+0200"), at)).toBe(false);
+  });
 });
-import { DEFAULT_MAX_LAG_SECONDS, lagSeconds, shouldFallSilent } from "./stream";
 
 describe("lagSeconds", () => {
   it("is the live edge minus current time", () => {

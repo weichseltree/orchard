@@ -169,7 +169,13 @@ export class ExhibitStream {
     this.#hls = null;
     this.audio.pause();
     this.audio.muted = true;
+    if (this.audio.src) {
+      // The native player keeps a live playlist attached while paused: let it go.
+      this.audio.removeAttribute("src");
+      this.audio.load();
+    }
     this.#state = "silent";
+    this.#saidQuiet = false;
   }
 
   async #start(): Promise<void> {
@@ -177,7 +183,8 @@ export class ExhibitStream {
       const platform = globalThis as { MediaSource?: unknown; ManagedMediaSource?: unknown };
       if (platform.MediaSource || platform.ManagedMediaSource) {
         const { default: Hls } = await loadHls();
-        if (this.#disposed) return;
+        // Put to sleep or disposed while the player loaded: a sleeping stream does not attach.
+        if (this.#disposed || this.#dormant) return;
         if (Hls.isSupported()) {
           // Low-latency mode, for a provider that publishes parts; the floor's
           // encoder publishes plain two-second segments (CLUB.md §5), on which

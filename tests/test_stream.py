@@ -106,6 +106,54 @@ def test_a_publisher_failure_is_logged_and_the_loop_goes_on(tmp_path):
     assert int((tmp_path / "work" / "sequence.txt").read_text()) > 0
 
 
+def test_an_outage_of_the_host_is_waited_out_without_the_watchdog_restarting_the_encoder(tmp_path, monkeypatch):
+    if shutil.which("ffmpeg") is None:
+        pytest.skip("ffmpeg is not installed")
+    # Half-second segments make the stall threshold four seconds; the backoff between tries grows past it.
+    monkeypatch.setattr(stream, "SEGMENT_S", 0.5)
+    lines = []
+    out = tmp_path / "public"
+    t0 = time.time()
+
+    class Down(stream.LocalPublisher):
+        def put(self, rel, data, ctype, cache):
+            if rel.endswith(".m4s") and time.time() - t0 < 10:
+                raise ConnectionError("the host is away")
+            super().put(rel, data, ctype, cache)
+
+    real = stream.Encoder.__init__
+
+    def quick(self, *args, **kwargs):
+        kwargs["realtime"] = False
+        real(self, *args, **kwargs)
+
+    stream.Encoder.__init__ = quick
+    run = stream.StreamRun("club", "floor", Down(out), tmp_path / "work", poll_s=0.5, idle_s=5, always=True,
+                           ledger=tmp_path / "u.jsonl", log=lines.append)
+    stop = threading.Event()
+    try:
+        worker = threading.Thread(target=run.run, args=(stop,), daemon=True)
+        worker.start()
+        deadline = time.time() + 40
+        while time.time() < deadline:
+            text = (out / stream.PLAYLIST).read_text() if (out / stream.PLAYLIST).exists() else ""
+            if len(stream.playlist_media(text)) > 3:
+                break
+            time.sleep(0.25)
+        assert len(stream.playlist_media((out / stream.PLAYLIST).read_text())) > 3, lines
+    finally:
+        stop.set()
+        worker.join(timeout=15)
+        stream.Encoder.__init__ = real
+    assert not any("stalled" in line or "died" in line for line in lines), lines
+    assert sum("failed" in line for line in lines) >= 3, lines
+
+
+def test_a_feeder_started_after_the_encoder_stopped_returns_quietly(tmp_path):
+    enc = stream.Encoder(tmp_path / "work", start_number=3, start_bar=1)
+    enc._feed()  # no process, no stdin: nothing to feed, no traceback
+
+
 def test_the_idle_rule_starts_on_the_first_listener_and_stops_a_minute_after_the_last_leaves():
     rule = stream.IdleRule(stop_after_s=60)
     assert rule.update(0, 0) is None

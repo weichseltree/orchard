@@ -48,7 +48,9 @@ export function playlistIsFresh(text: string, nowMs: number, staleMs = STALE_PLA
   for (const raw of text.split("\n")) {
     const line = raw.trim();
     if (line.startsWith("#EXT-X-PROGRAM-DATE-TIME:")) {
-      const t = Date.parse(line.slice("#EXT-X-PROGRAM-DATE-TIME:".length));
+      // ffmpeg writes the offset as +0200; the colon form is the one every engine parses.
+      const stamp = line.slice("#EXT-X-PROGRAM-DATE-TIME:".length).replace(/([+-]\d\d)(\d\d)$/, "$1:$2");
+      const t = Date.parse(stamp);
       pendingDate = Number.isFinite(t) ? t : null;
     } else if (line.startsWith("#EXTINF:")) {
       const d = Number.parseFloat(line.slice("#EXTINF:".length));

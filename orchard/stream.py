@@ -278,7 +278,7 @@ class Encoder:
         self._stop.clear()
         stdin = subprocess.PIPE if not self.tracks else subprocess.DEVNULL
         # stderr to a file, never a pipe nobody drains: a chatty ffmpeg would block on a full pipe and stall the floor.
-        self._stderr = (self.workdir / "ffmpeg.log").open("ab")
+        self._stderr = (self.workdir / "ffmpeg.log").open("wb")
         self.process = subprocess.Popen(self.command(), stdin=stdin, stdout=subprocess.DEVNULL, stderr=self._stderr)
         if not self.tracks:
             self._feeder = threading.Thread(target=self._feed, name="setgen-feeder", daemon=True)
@@ -287,12 +287,15 @@ class Encoder:
     def _feed(self) -> None:
         from .setgen import SetGenerator
         gen = SetGenerator(self.seed)
-        assert self.process is not None and self.process.stdin is not None
+        process = self.process
+        stdin = process.stdin if process else None
+        if stdin is None:
+            return  # stopped before the feeder got going
         # The set goes on from where the sequence says it is, so a restart is not the opening again.
         bar = self.start_bar
         try:
             while not self._stop.is_set():
-                self.process.stdin.write(gen.pcm16(bar))
+                stdin.write(gen.pcm16(bar))
                 bar += 1
                 self.bars_fed = bar
         except (BrokenPipeError, ValueError, OSError):
@@ -364,11 +367,13 @@ class Counter:
         self.failures = 0
         self._thread: threading.Thread | None = None
 
-    def poll(self) -> None:
+    def poll(self, wait_s: float = 0.0) -> None:
         if self._thread and self._thread.is_alive():
             return
         self._thread = threading.Thread(target=self._run, name="listener-count", daemon=True)
         self._thread.start()
+        if wait_s > 0:
+            self._thread.join(wait_s)
 
     def _run(self) -> None:
         n = self._count()
@@ -446,6 +451,8 @@ class StreamRun:
         self._publish("the idle playlist", lambda: self.publisher.put(PLAYLIST, empty_playlist(next_seq).encode(), CONTENT_TYPES[".m3u8"], CACHE_PLAYLIST))
         self.log(f"stream {self.provider}/{self.stream}: idle playlist at {self.publisher.describe()}"
                  f" ({'tracks: ' + str(len(self.tracks)) if self.tracks else 'the seeded set'}), sequence {next_seq}")
+        if not self.always:
+            counter.poll(wait_s=min(self.poll_s, 6.0))  # the first pass counts, so a full floor is not kept waiting a poll
         try:
             while not stop.is_set():
                 now = time.monotonic()
@@ -478,20 +485,26 @@ class StreamRun:
                         deaths += 1
                         wait = min(30.0, 2.0 ** min(deaths, 5))
                         self.log(f"stream: encoder {'stalled' if stalled else 'died'} ({err or 'no message'}); restarting in {wait:.0f}s")
-                        stop.wait(wait)
+                        if stop.wait(wait):
+                            encoder = None  # stopped meanwhile: nothing to retire, the idle playlist goes out below
+                            break
                         encoder = self._encoder(next_seq)
                         encoder.start()
-                        uploaded = set()
+                        # `uploaded` is kept: the names are unique across restarts, so the old run's segments are
+                        # deleted by the next sync as no longer listed. The init segment is put again, to be sure.
+                        uploaded.discard(INIT)
                         last_advance, last_seq_seen = time.monotonic(), -1
                         continue
                     text = encoder.read_playlist()
-                    if text is not None and now >= next_try:
+                    if text is not None:
+                        # The watchdog reads the playlist every pass; only the host is waited for during a backoff.
                         seq, count = playlist_sequence(text)
                         if seq + count != last_seq_seen:
                             last_seq_seen, last_advance = seq + count, now
                         if seq + count > next_seq:
                             next_seq = seq + count
                             self._write_sequence(next_seq)
+                    if text is not None and now >= next_try:
                         listed = playlist_media(text)
                         to_put, to_delete = plan_sync(listed, uploaded)
                         ok = True
@@ -524,6 +537,13 @@ class StreamRun:
             if encoder:
                 self._account(time.monotonic() - usage_since, self.publisher.operations - usage_ops)
                 self._retire(encoder, uploaded, next_seq)
+                self.log("stream: stopped; idle playlist left in place")
+            elif uploaded:
+                # Stopped while waiting to restart a dead encoder: its segments are still on the host.
+                self._write_sequence(next_seq)
+                self._publish("the idle playlist", lambda: self.publisher.put(PLAYLIST, empty_playlist(next_seq).encode(), CONTENT_TYPES[".m3u8"], CACHE_PLAYLIST))
+                for name in sorted(uploaded, key=segment_number):
+                    self._publish(f"delete {name}", lambda: self.publisher.delete(name))
                 self.log("stream: stopped; idle playlist left in place")
 
     def _retire(self, encoder: Encoder, uploaded: set[str], known_seq: int) -> int:
