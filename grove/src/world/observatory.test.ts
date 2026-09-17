@@ -134,7 +134,7 @@ describe("the designed observatory", () => {
             if (!onX && !onZ) outside.push(`${child.name}[${i}] off the walls at ${p.x.toFixed(2)}, ${p.z.toFixed(2)}`);
             continue;
           }
-          if (p.x < x0 - margin || p.x > x1 + margin || p.y < y0 - margin || p.z < z0 - margin || p.z > z1 + margin) {
+          if (p.x < x0 - margin || p.x > x1 + margin || p.y < y0 - margin || p.y > y1 + margin || p.z < z0 - margin || p.z > z1 + margin) {
             outside.push(`${child.name}[${i}] at ${p.x.toFixed(2)}, ${p.y.toFixed(2)}, ${p.z.toFixed(2)}`);
           }
         }

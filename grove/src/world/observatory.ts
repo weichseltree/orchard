@@ -303,10 +303,14 @@ function cladding(b: Builder): void {
       const px = wall.axis === "x" ? at - wall.inward * 0.05 : mid, pz = wall.axis === "x" ? mid : at - wall.inward * 0.05, py = top - 0.18;
       const outside = grounds.find(r => px >= r.bounds.min[0] && px <= r.bounds.max[0] && py >= r.bounds.min[1] && py <= r.bounds.max[1] && pz >= r.bounds.min[2] && pz <= r.bounds.max[2]);
       if (!outside) return;
-      // Dashes in the cornice's blue: each is one lamp of a cornice's power, one per bay.
+      // Dashes in the cornice's blue: each is one lamp of a cornice's power, one per bay,
+      // skipping the neighbours' doorways in this wall plane, whose flights would bury them.
       const l = at - wall.inward * 0.07;
+      const buried = [cover, outside].flatMap(r => r.doorways.filter(d => d.axis === wall.axis && Math.abs(d.at - wall.at) < 0.001)
+        .map(d => [d.center - d.width / 2 - STAIR_MARGIN, d.center + d.width / 2 + STAIR_MARGIN] as const));
       for (let s = from + 0.6; s + STRING_COURSE.dash < to - 0.3; s += STRING_COURSE.bay) {
         const c = s + STRING_COURSE.dash / 2;
+        if (buried.some(([a, z]) => s < z && s + STRING_COURSE.dash > a)) continue;
         if (wall.axis === "x") b.add("box", "blue", l, py, c, 0.04, 0.04, STRING_COURSE.dash, undefined, cover.id, outside.id);
         else b.add("box", "blue", c, py, l, STRING_COURSE.dash, 0.04, 0.04, undefined, cover.id, outside.id);
       }
@@ -851,7 +855,8 @@ function terrainMesh(b: Builder): void {
     // The material multiplies its own earth colour in as well, which made the
     // lawn nearly black (the tint darkened twice); divide it out so what is
     // drawn is the tint that was designed.
-    colors.push(tint.r / earth.r, tint.g / earth.g, tint.b / earth.b);
+    const base = material("earth", room.id).color;
+    colors.push(tint.r / base.r, tint.g / base.g, tint.b / base.b);
   }
   geometry.setAttribute("color", new Float32BufferAttribute(colors, 3));
   geometry.computeVertexNormals();

@@ -152,7 +152,7 @@ itself never changes.
 - The west and east groves each gained a door to a stair pavilion; door
   signs and plaques come from the label files (eight languages, all written).
 - Presence: one live row `club` (`set_room`), one line in the module's
-  `SEED_ROOMS`. Chat and avatars are shared by the three rooms, as arcedit's
+  `SEED_ROOMS`. Chat and avatars are shared by the five rooms, as arcedit's
   eighteen share theirs.
 - The quality stations now stand on each room's own floor (they stood at
   y = 0 everywhere, which put the raised wing's camera at ankle height and
