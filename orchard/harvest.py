@@ -169,7 +169,7 @@ def harvest(name: str, *, only=None, out_root=None, dry_run: bool = False,
     A row refused because the tree is dirty has `status == DIRTY`, on a dry
     run too, and carries `dirty`, the paths.
     """
-    from .bundle import tracked_changes
+    from .bundle import ModelRefused, tracked_changes
     from .portfolio import get
     tree = get(name)
     out_root = Path(out_root) if out_root else RESULTS / "bundles"
@@ -223,8 +223,17 @@ def harvest(name: str, *, only=None, out_root=None, dry_run: bool = False,
             commit = artefact_commit(tree, src)
         else:
             commit = art.commit
-        dest = _bundler(art.kind)(src, tree=name, title=art.title or src.name,
-                                  out_root=out_root, verbose=verbose, commit=commit)
+        try:
+            dest = _bundler(art.kind)(src, tree=name, title=art.title or src.name,
+                                      out_root=out_root, verbose=verbose, commit=commit)
+        except ModelRefused as exc:
+            # One glb the grove will not show must not cost the tree the rest
+            # of its harvest, nor the ids already written back this run.
+            row["status"] = f"refused: {exc}"
+            rows.append(row)
+            if verbose:
+                print(f"harvest {name}: refused {art.path}: {exc}", flush=True)
+            continue
         art.commit, art.bundle, art.sha256 = commit, dest.name, digest
         changed = True
         row.update({"status": "bundled", "bundle": dest.name,

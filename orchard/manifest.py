@@ -87,12 +87,14 @@ class Producers(BaseModel):
     tape: str = ""
     render: str = ""
     figure: str = ""
+    model: str = ""                # makes a glb for `orchard bundle model` (arcedit's environment)
     lane: Literal["gpu", "cpu", "none"] = "cpu"
     env: dict[str, str] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def local_launches_use_expdash_lanes(self) -> "Producers":
-        commands = {"tape": self.tape, "render": self.render, "figure": self.figure}
+        commands = {"tape": self.tape, "render": self.render, "figure": self.figure,
+                    "model": self.model}
         for key, cmd in commands.items():
             if not cmd:
                 continue

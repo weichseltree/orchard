@@ -1153,13 +1153,19 @@ class ModelRefused(ValueError):
     """A glb the grove will not show: malformed, external, or over budget."""
 
 
-def _node_matrix(node: dict) -> np.ndarray:
-    """A node's local transform: `matrix` (column-major) or T * R * S."""
+def _node_matrix(node: dict, where: str) -> np.ndarray:
+    """A node's local transform: `matrix` (column-major) or T * R * S, checked."""
+    def vec(key, n, default):
+        v = node.get(key, default)
+        if not isinstance(v, list) or len(v) != n or not all(
+                isinstance(x, (int, float)) and not isinstance(x, bool) for x in v):
+            raise ModelRefused(f"{where}.{key} must be {n} numbers, not {v!r}")
+        return [float(x) for x in v]
     if "matrix" in node:
-        return np.asarray(node["matrix"], dtype=np.float64).reshape(4, 4).T
-    t = np.asarray(node.get("translation", [0, 0, 0]), dtype=np.float64)
-    x, y, z, w = (float(v) for v in node.get("rotation", [0, 0, 0, 1]))
-    s = np.asarray(node.get("scale", [1, 1, 1]), dtype=np.float64)
+        return np.asarray(vec("matrix", 16, None), dtype=np.float64).reshape(4, 4).T
+    t = np.asarray(vec("translation", 3, [0, 0, 0]), dtype=np.float64)
+    x, y, z, w = vec("rotation", 4, [0, 0, 0, 1])
+    s = np.asarray(vec("scale", 3, [1, 1, 1]), dtype=np.float64)
     r = np.array([
         [1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w)],
         [2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w)],
@@ -1207,81 +1213,144 @@ def _read_glb(data: bytes) -> tuple[dict, bytes | None]:
     return doc, binary
 
 
+#: Extensions refused wherever they appear, used or required: the grove's
+#: loader throws on the first (no Draco decoder is hosted), and the second
+#: moves geometry by per-instance transforms the bbox does not follow.
+MODEL_EXTENSIONS_REFUSED = {
+    "KHR_draco_mesh_compression": "re-export with EXT_meshopt_compression",
+    "EXT_mesh_gpu_instancing": "the bbox would ignore the instance transforms; bake the instances into nodes",
+}
+
+
 def inspect_glb(path) -> dict:
     """What a glb costs and how large it stands, from its header and JSON alone.
 
     `triangles` and `draws` count every primitive once per node that places its
-    mesh in the default scene (a mesh placed twice is drawn twice); instances
-    of `EXT_mesh_gpu_instancing` multiply the triangles, not the draws. `bbox`
-    is the POSITION accessors' min/max carried through each node's world
+    mesh in the default scene (a mesh placed twice is drawn twice). `bbox` is
+    the POSITION accessors' min/max carried through each node's world
     transform, so it is the model's extent as the file places it, in the
-    file's metres. No vertex is read. Raises `ModelRefused` for anything the
-    grove could not load by itself (a malformed container, an external
-    buffer or image, a required extension it has no decoder for).
+    file's metres. No vertex is read. Raises `ModelRefused`, never a raw
+    exception, for anything the grove could not load by itself: a malformed
+    container or JSON, a buffer view past the BIN chunk, an external buffer or
+    image, no scene, Draco or GPU instancing, a required extension it has no
+    decoder for.
     """
     data = Path(path).read_bytes()
     doc, binary = _read_glb(data)
-    asset = doc.get("asset") or {}
+    try:
+        return _inspect_doc(doc, binary, len(data))
+    except ModelRefused:
+        raise
+    except (KeyError, IndexError, TypeError, ValueError, AttributeError) as e:
+        # A shape the checks below did not name: still a refusal, not a crash.
+        raise ModelRefused(f"malformed glTF JSON ({type(e).__name__}: {e})") from e
+
+
+def _inspect_doc(doc: dict, binary: bytes | None, nbytes: int) -> dict:
+    def listed(key):
+        v = doc.get(key) or []
+        if not isinstance(v, list) or not all(isinstance(x, dict) for x in v):
+            raise ModelRefused(f"{key} must be a list of objects")
+        return v
+
+    def count_of(i, why):
+        a = accessor(i, why)
+        c = a.get("count")
+        if not isinstance(c, int) or isinstance(c, bool) or c < 0:
+            raise ModelRefused(f"{why}: accessor {i} has no valid count ({c!r})")
+        return c
+
+    asset = doc.get("asset") if isinstance(doc.get("asset"), dict) else {}
     if not str(asset.get("version", "")).startswith("2."):
         raise ModelRefused(f"asset.version is {asset.get('version')!r}; only glTF 2.x is read")
-    for what in ("buffers", "images"):
-        for i, item in enumerate(doc.get(what) or []):
+    buffers, views, images = listed("buffers"), listed("bufferViews"), listed("images")
+    accessors, meshes, nodes, scenes = listed("accessors"), listed("meshes"), listed("nodes"), listed("scenes")
+    for what, items in (("buffers", buffers), ("images", images)):
+        for i, item in enumerate(items):
             uri = item.get("uri")
             if uri is not None and not str(uri).startswith("data:"):
                 raise ModelRefused(f"{what}[{i}] points outside the file ({uri!r}); "
                                    "pack everything into the glb")
-    buffers = doc.get("buffers") or []
     if buffers and "uri" not in buffers[0] and binary is None:
         raise ModelRefused("buffers[0] names the BIN chunk and the file has none")
-    required = sorted(doc.get("extensionsRequired") or [])
+
+    used = [str(e) for e in doc.get("extensionsUsed") or []]
+    required = sorted(str(e) for e in doc.get("extensionsRequired") or [])
+    instanced = any("EXT_mesh_gpu_instancing" in (n.get("extensions") or {}) for n in nodes)
+    for ext, why in MODEL_EXTENSIONS_REFUSED.items():
+        if ext in used or ext in required or (ext == "EXT_mesh_gpu_instancing" and instanced):
+            raise ModelRefused(f"uses {ext}, which the grove does not show: {why}")
     unsupported = [e for e in required if e not in MODEL_EXTENSIONS_REQUIRED_OK]
     if unsupported:
-        hint = " (Draco: re-export with EXT_meshopt_compression)" if "KHR_draco_mesh_compression" in unsupported else ""
-        raise ModelRefused(f"requires {', '.join(unsupported)}, which the grove cannot decode{hint}")
+        raise ModelRefused(f"requires {', '.join(unsupported)}, which the grove cannot decode")
 
-    accessors = doc.get("accessors") or []
-    meshes = doc.get("meshes") or []
-    nodes = doc.get("nodes") or []
+    # Every byte range on the BIN chunk must lie inside it; a meshopt fallback
+    # buffer carries no bytes of its own and is not checked.
+    def bin_buffer(b):
+        if not isinstance(b, int) or not 0 <= b < len(buffers):
+            raise ModelRefused(f"a buffer view names buffer {b!r}, which does not exist")
+        buf = buffers[b]
+        fallback = ((buf.get("extensions") or {}).get("EXT_meshopt_compression") or {}).get("fallback")
+        return b == 0 and "uri" not in buf and not fallback
+
+    def check_range(where, rng):
+        off, n = rng.get("byteOffset", 0), rng.get("byteLength")
+        if not all(isinstance(v, int) and not isinstance(v, bool) and v >= 0 for v in (off, n)):
+            raise ModelRefused(f"{where} needs a byteOffset and byteLength that are counts")
+        if bin_buffer(rng.get("buffer")) and off + n > len(binary or b""):
+            raise ModelRefused(f"{where} spans bytes {off}..{off + n}, past the BIN chunk's {len(binary or b'')}")
+
+    for i, view in enumerate(views):
+        check_range(f"bufferViews[{i}]", view)
+        meshopt = (view.get("extensions") or {}).get("EXT_meshopt_compression")
+        if isinstance(meshopt, dict):
+            check_range(f"bufferViews[{i}].EXT_meshopt_compression", meshopt)
 
     def accessor(i, why):
-        if not isinstance(i, int) or not 0 <= i < len(accessors):
+        if not isinstance(i, int) or isinstance(i, bool) or not 0 <= i < len(accessors):
             raise ModelRefused(f"{why} names accessor {i!r}, which does not exist")
         return accessors[i]
 
+    if not scenes:
+        raise ModelRefused("the glb has no scenes; the grove shows its default scene")
+    scene_i = doc.get("scene", 0)
+    if not isinstance(scene_i, int) or isinstance(scene_i, bool) or not 0 <= scene_i < len(scenes):
+        raise ModelRefused(f"scene {scene_i!r} does not exist ({len(scenes)} scene(s))")
+
     def placements():
-        """(mesh index, world matrix, instances) for every mesh the scene draws."""
-        scenes = doc.get("scenes") or []
-        if scenes:
-            roots = scenes[doc.get("scene", 0)].get("nodes") or []
-        elif nodes:
-            children = {c for n in nodes for c in n.get("children") or []}
-            roots = [i for i in range(len(nodes)) if i not in children]
-        else:
-            yield from ((m, np.eye(4), 1) for m in range(len(meshes)))
-            return
-        stack, seen = [(r, np.eye(4)) for r in roots], set()
+        """(mesh index, world matrix) for every mesh the default scene draws."""
+        stack, seen = [(r, np.eye(4)) for r in scenes[scene_i].get("nodes") or []], set()
         while stack:
             i, parent = stack.pop()
-            if not isinstance(i, int) or not 0 <= i < len(nodes) or i in seen:
+            if not isinstance(i, int) or isinstance(i, bool) or not 0 <= i < len(nodes) or i in seen:
                 raise ModelRefused(f"node {i!r} does not exist or is reached twice (a cycle)")
             seen.add(i)
             node = nodes[i]
-            world = parent @ _node_matrix(node)
+            world = parent @ _node_matrix(node, f"nodes[{i}]")
             if "mesh" in node:
-                inst = (node.get("extensions") or {}).get("EXT_mesh_gpu_instancing")
-                n = 1
-                if inst and inst.get("attributes"):
-                    n = int(accessor(next(iter(inst["attributes"].values())), f"node {i} instancing")["count"])
-                yield node["mesh"], world, n
-            stack.extend((c, world) for c in node.get("children") or [])
+                yield node["mesh"], world
+            children = node.get("children") or []
+            if not isinstance(children, list):
+                raise ModelRefused(f"nodes[{i}].children must be a list")
+            stack.extend((c, world) for c in children)
+
+    def bound(pos, key, where):
+        v = pos.get(key)
+        if not isinstance(v, list) or len(v) < 3 or not all(
+                isinstance(x, (int, float)) and not isinstance(x, bool) for x in v[:3]):
+            raise ModelRefused(f"{where}: POSITION {key} must be 3 numbers (glTF requires min and max), not {v!r}")
+        return np.asarray(v[:3], dtype=np.float64)
 
     triangles = draws = 0
     lo = np.full(3, np.inf)
     hi = np.full(3, -np.inf)
-    for m, world, instances in placements():
-        if not isinstance(m, int) or not 0 <= m < len(meshes):
+    for m, world in placements():
+        if not isinstance(m, int) or isinstance(m, bool) or not 0 <= m < len(meshes):
             raise ModelRefused(f"a node names mesh {m!r}, which does not exist")
-        for p, prim in enumerate(meshes[m].get("primitives") or []):
+        prims = meshes[m].get("primitives") or []
+        if not isinstance(prims, list) or not all(isinstance(p, dict) for p in prims):
+            raise ModelRefused(f"meshes[{m}].primitives must be a list of objects")
+        for p, prim in enumerate(prims):
             draws += 1
             where = f"meshes[{m}].primitives[{p}]"
             pos_i = (prim.get("attributes") or {}).get("POSITION")
@@ -1289,13 +1358,10 @@ def inspect_glb(path) -> dict:
                 raise ModelRefused(f"{where} has no POSITION")
             pos = accessor(pos_i, where)
             mode = prim.get("mode", 4)
-            count = int(accessor(prim["indices"], where)["count"]) if "indices" in prim else int(pos["count"])
+            count = count_of(prim["indices"], f"{where} indices") if "indices" in prim else count_of(pos_i, where)
             if mode in _TRIANGLE_MODES:
-                triangles += instances * (count // 3 if mode == 4 else max(count - 2, 0))
-            if "min" not in pos or "max" not in pos:
-                raise ModelRefused(f"{where}: POSITION accessor {pos_i} has no min/max (glTF requires them)")
-            amin = np.asarray(pos["min"][:3], dtype=np.float64)
-            amax = np.asarray(pos["max"][:3], dtype=np.float64)
+                triangles += count // 3 if mode == 4 else max(count - 2, 0)
+            amin, amax = bound(pos, "min", where), bound(pos, "max", where)
             if pos.get("normalized"):
                 scale = _NORMALIZED_MAX.get(pos.get("componentType"), 1.0)
                 amin, amax = np.maximum(amin / scale, -1.0), np.maximum(amax / scale, -1.0)
@@ -1308,7 +1374,7 @@ def inspect_glb(path) -> dict:
         raise ModelRefused("the default scene draws nothing: no node places a mesh")
     rnd = lambda v: [round(float(x), 6) for x in v]           # noqa: E731
     return {
-        "bytes": len(data),
+        "bytes": nbytes,
         "triangles": triangles,
         "draws": draws,
         "bbox": {"min": rnd(lo), "max": rnd(hi)},
@@ -1318,7 +1384,7 @@ def inspect_glb(path) -> dict:
         "materials": len(doc.get("materials") or []),
         "textures": len(doc.get("textures") or []),
         "animations": len(doc.get("animations") or []),
-        "extensions_used": sorted(doc.get("extensionsUsed") or []),
+        "extensions_used": sorted(used),
         "extensions_required": required,
         "generator": str(asset.get("generator", "")),
     }

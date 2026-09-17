@@ -120,3 +120,17 @@ def test_manifest_producer_templates_must_use_exp_run_lanes():
                   render="exp run tree-render --prio 5 --lane gpu -- uv run python render.py")
     with pytest.raises(ValidationError, match="--lane gpu"):
         Producers(lane="gpu", render="exp run tree-render --prio 5 -- uv run python render.py")
+
+
+def test_a_model_producer_is_kept_through_a_dump_and_launches_on_a_lane(tmp_path):
+    from orchard.manifest import Tree, dump
+    cmd = "exp run arcedit-env --prio 10 --lane cpu -- uv run python export_env.py"
+    tree = Tree(name="arcedit", path=str(tmp_path), question="q?",
+                producers=Producers(lane="cpu", model=cmd))
+    dump(tree, tmp_path / "orchard.yaml")
+    assert yaml.safe_load((tmp_path / "orchard.yaml").read_text())["producers"]["model"] == cmd
+    assert load(tmp_path / "orchard.yaml").producers.model == cmd
+    with pytest.raises(ValidationError, match="producers.model must launch"):
+        Producers(lane="cpu", model="uv run python export_env.py")
+    with pytest.raises(ValidationError, match="producers.model needs an exp run lane"):
+        Producers(lane="none", model=cmd)
