@@ -399,7 +399,11 @@ export function takeReadings(
     if (take.baseline) notes.push(`baseline from ${feed} at ${reading.events.length} event(s)`);
     // A feed answering with nothing she can number is not an outage -- the
     // fetch worked -- and would otherwise be silent in the journal forever.
-    else if (!take.state.baselined) notes.push(`${feed} answered with no usable event; still waiting for its baseline`);
+    // Once per feed: a permanently mis-pointed URL is a line to find, not
+    // 2 880 lines a day.
+    else if (!take.state.baselined && !state.feeds.has(feed)) {
+      notes.push(`${feed} answered with no usable event; still waiting for its baseline`);
+    }
     if (take.rebaselined) notes.push(`${feed} restarted its numbering; re-baselined`);
     takes.push({ feed, primary: feed === primaryFeed, fresh: take.fresh });
   }
@@ -451,7 +455,16 @@ export function takeReadings(
   };
 }
 
-/** How long ago the lane feed last answered, in seconds; 0 when it never has. */
+/**
+ * How long ago the lane feed last answered, in seconds; 0 when it never has.
+ *
+ * Wall time, unlike the `Speaker`'s gap in `listen.ts`, which is monotonic
+ * because a clock stepped forward would end a gap early. Here a step is
+ * harmless in the direction that matters: `Math.max` makes a backward step
+ * under-claim the staleness rather than invent freshness, and a forward step
+ * (this box resuming from the host's sleep) states a silence that really did
+ * pass without her looking.
+ */
 function agedSince(seenAt: number | null, now: number): number {
   return seenAt === null ? 0 : Math.max(0, (now - seenAt) / 1000);
 }

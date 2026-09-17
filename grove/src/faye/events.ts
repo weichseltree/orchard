@@ -243,7 +243,10 @@ export function announce(fresh: readonly ComputeEvent[], titles?: TreeTitles): A
   // sentence rather than eight.
   const groups = new Map<string, ComputeEvent[]>();
   for (const event of fresh) {
-    const key = JSON.stringify([event.type, event.repo]);
+    // By the PHRASE, not the producer's spelling: expdash's `started` and a
+    // run's own `running` are one kind of thing, and grouping them apart says
+    // "2 runs started in coarsen" twice where four runs started once.
+    const key = JSON.stringify([saidAs(event.type), event.repo]);
     const bucket = groups.get(key);
     if (bucket) bucket.push(event);
     else groups.set(key, [event]);

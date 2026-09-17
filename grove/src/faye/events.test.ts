@@ -230,6 +230,19 @@ describe("announce", () => {
     expect(said).not.toMatch(/success|succeeded|worked|passed|verified/i);
   });
 
+  it("counts one kind of thing once, however the feeds spell it", () => {
+    // The planet watcher follows the fold members and expdash sees every job
+    // in the tree, so a partial overlap is the normal case: two starts seen
+    // only by one and two only by the other are four starts, not two twice.
+    const said = announce([
+      event({ id: "ev_1", type: "started", priority: 3, exp: "a" }),
+      event({ id: "ev_2", type: "started", priority: 3, exp: "b" }),
+      event({ id: "ev_3", type: "running", priority: 3, exp: "c" }),
+      event({ id: "ev_4", type: "running", priority: 3, exp: "d" }),
+    ], new Map([["spectre", "coarsen"]]));
+    expect(said.map((a) => a.text)).toEqual(["4 runs started in coarsen."]);
+  });
+
   it("keeps a lone event's own title", () => {
     const [only] = announce([event({ id: "ev_1", type: "crashed", priority: 1, title: "Crashed: m06-planet-tests-a", detail: "exit code 1" })]);
     expect(only!.text).toBe("Crashed: m06-planet-tests-a - exit code 1.");
