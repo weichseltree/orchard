@@ -215,7 +215,7 @@ describe("announce", () => {
     // (no samples)". Announcing a resolution to a run that went quiet is the
     // `completed`-is-not-success mistake in another coat.
     expect(said("plateau-cleared")).toBe("2 runs cleared the plateau in spectre.");
-    expect(said("plateau-expired")).toBe("2 runs are no longer watched for the plateau in spectre.");
+    expect(said("plateau-expired")).toBe("2 runs no longer watched for the plateau in spectre.");
     expect(said("box-load-cleared")).toBe("2 runs cleared the box-load in spectre.");
     expect(said("cap")).toBe("2 runs flagged as unlikely to reach the cap in spectre.");
     // The box slowing a run is never a regression: box load has fooled us before.
@@ -333,6 +333,16 @@ describe("announce", () => {
     ]) {
       expect(fitToRoom(line)).toBe(line);
     }
+  });
+
+  it("ends a shortened list on a clause, not on a dangling separator", () => {
+    // Her own "what is running" answer is a list of clauses; cut inside one it
+    // would end "1 on legion-three:…", which reads as interrupted.
+    const listed = "When I last looked, 20 minutes ago, 12 runs — 9 on SirBase: 4 coarsen, 3 arcedit, 2 quantumflow; 1 on Legion: logswarm; 1 on legion-three: orchard.";
+    const cut = fitToRoom(listed);
+    expect([...cut].length).toBeLessThanOrEqual(SPOKEN_MAX);
+    expect(cut).toBe("When I last looked, 20 minutes ago, 12 runs — 9 on SirBase: 4 coarsen, 3 arcedit, 2 quantumflow; 1 on Legion: logswarm…");
+    expect(cut).not.toMatch(/[:;,]…$/);
   });
 
   it("cuts back rather than leaving a bracket it did not close", () => {

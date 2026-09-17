@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { fitToRoom } from "./events";
 import { EMPTY_STATE, describeAge, intentOf, replyTo, type FayeState } from "./reply";
 
 const titles = new Map([["spectre", "coarsen"]]);
@@ -103,7 +104,7 @@ describe("replyTo", () => {
       running: [{ host: "SirBase", tree: "spectre" }],
     });
     expect(replyTo("faye what is running", stale, titles))
-      .toBe("When I last looked, 20 minutes ago, 1 run: 1 on SirBase (coarsen).");
+      .toBe("When I last looked, 20 minutes ago, 1 run on SirBase: coarsen.");
     expect(replyTo("faye what is running", state({ lanesFresh: false, lanesAgeSeconds: 45 })))
       .toBe("When I last looked, 45 seconds ago, nothing was running.");
     // The mirror's age is the age of a reading she is no longer getting, so it
@@ -123,9 +124,9 @@ describe("replyTo", () => {
 
   it("names the tree's label, never its identity", () => {
     const busy = state({ running: [run("SirBase", "spectre"), run("SirBase", "spectre")] });
-    expect(replyTo("faye what is running", busy, titles)).toBe("2 runs: 2 on SirBase (2 coarsen).");
+    expect(replyTo("faye what is running", busy, titles)).toBe("2 runs on SirBase: 2 coarsen.");
     // Without a title a tree is shown by its name, as it always has been.
-    expect(replyTo("faye what is running", busy)).toBe("2 runs: 2 on SirBase (2 spectre).");
+    expect(replyTo("faye what is running", busy)).toBe("2 runs on SirBase: 2 spectre.");
   });
 
   it("says which box each run is on, busiest box first", () => {
@@ -133,12 +134,12 @@ describe("replyTo", () => {
       running: [run("Legion", "arcedit"), run("SirBase", "arcedit"), run("SirBase", "spectre")],
     });
     expect(replyTo("faye what is running", busy, titles))
-      .toBe("3 runs: 2 on SirBase (arcedit, coarsen), 1 on Legion (arcedit).");
+      .toBe("3 runs — 2 on SirBase: arcedit, coarsen; 1 on Legion: arcedit.");
   });
 
   it("never says the card: a cpu-lane run holds no GPU", () => {
     const busy = state({ running: [run("SirBase", "spectre")] });
-    expect(replyTo("faye runs", busy, titles)).toBe("1 run: 1 on SirBase (coarsen).");
+    expect(replyTo("faye runs", busy, titles)).toBe("1 run on SirBase: coarsen.");
     expect(replyTo("faye runs", busy, titles)).not.toContain("card");
   });
 
@@ -152,14 +153,14 @@ describe("replyTo", () => {
       ],
     });
     expect(replyTo("faye runs", busy, titles))
-      .toBe("11 runs: 11 on SirBase (5 coarsen, 3 b, 2 c, 1 more).");
+      .toBe("11 runs on SirBase: 5 coarsen, 3 b, 2 c, 1 more.");
   });
 
   it("is deterministic when two trees or two boxes are equally busy", () => {
     const tied = state({ running: [run("SirBase", "zulu"), run("Legion", "alpha")] });
     const reordered = state({ running: [run("Legion", "alpha"), run("SirBase", "zulu")] });
     expect(replyTo("faye runs", tied)).toBe(replyTo("faye runs", reordered));
-    expect(replyTo("faye runs", tied)).toBe("2 runs: 1 on Legion (alpha), 1 on SirBase (zulu).");
+    expect(replyTo("faye runs", tied)).toBe("2 runs — 1 on Legion: alpha; 1 on SirBase: zulu.");
   });
 
   it("never claims anything succeeded", () => {
@@ -173,6 +174,49 @@ describe("replyTo", () => {
     const busy = state({ running: [run("SirBase", "spectre")] });
     for (const ask of ["faye status", "faye peer", "hi faye", "faye help"]) {
       expect(replyTo(ask, busy, titles)).not.toContain("\n");
+    }
+  });
+});
+
+describe("what survives the room's length", () => {
+  // Every line she says goes through `fitToRoom` at the speaker
+  // (scripts/faye.ts), and its first move is to drop parentheticals, because
+  // in a producer's line a bracket holds an alert's arithmetic. Her own
+  // answers must therefore not keep their subject in brackets.
+  const run = (host: string, tree: string) => ({ host, tree });
+  const busy = state({
+    running: [
+      ...Array.from({ length: 4 }, () => run("SirBase", "spectre")),
+      ...Array.from({ length: 3 }, () => run("SirBase", "arcedit")),
+      ...Array.from({ length: 2 }, () => run("SirBase", "quantumflow")),
+      run("Legion", "logswarm"),
+      run("legion-two", "ftlchess"),
+    ],
+  });
+
+  it("keeps every tree name a three-box answer names", () => {
+    const answer = replyTo("faye what is running", busy, titles)!;
+    for (const tree of ["coarsen", "arcedit", "quantumflow", "logswarm", "ftlchess"]) {
+      expect(answer).toContain(tree);
+    }
+    // And it goes out whole: nothing in it looks like an alert's evidence.
+    expect(fitToRoom(answer)).toBe(answer);
+  });
+
+  it("counts the boxes it cannot name rather than being cut mid-name", () => {
+    const everywhere = state({
+      running: ["SirBase", "Legion", "legion-two", "legion-three", "legion-four"]
+        .map((host) => run(host, "spectre")),
+    });
+    const answer = replyTo("faye what is running", everywhere, titles)!;
+    expect(answer).toContain("and 2 more boxes");
+    expect(fitToRoom(answer)).toBe(answer);
+  });
+
+  it("keeps the peer's answer and the greeting whole", () => {
+    for (const question of ["faye how is the peer", "faye hello", "faye help"]) {
+      const answer = replyTo(question, busy, titles)!;
+      expect(fitToRoom(answer)).toBe(answer);
     }
   });
 });

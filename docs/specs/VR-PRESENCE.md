@@ -346,13 +346,16 @@ mirror, so an announcement feed would run beside it rather than replacing it:
   so the trim is hers: over 140 characters the parenthetical evidence goes
   first, **wherever in the sentence it sits**, and only then the sentence
   itself, at a word boundary, counted in code points so a cut cannot split a
-  surrogate pair, and never leaving a bracket she did not close. Dropping only
+  surrogate pair, and never leaving a bracket it would not close. Dropping only
   a *trailing* parenthesis was the first attempt and was wrong: the slowdown
   alert reads "…so far (load 25.1 on 16 cores; top: chrome 310%, node 180%).
   Box load, not the code", and a cut at the last word would have dropped the
   one clause ANNOUNCE-FEED.md §3 requires it to keep while leaving the numbers
   that invite the reading it forbids. Every line she says goes through this,
-  not only the ones `announce` built.
+  not only the ones `announce` built — which is also why her own answers put
+  no subject in brackets: "9 on SirBase: 4 coarsen, 3 arcedit" survives the
+  trim where "9 on SirBase (4 coarsen, 3 arcedit)" would lose every tree name,
+  and a fourth box is counted ("and 2 more boxes") rather than cut mid-name.
 - **A condition ending and a condition going unwatched are different facts.**
   The metric engine names both from whatever a person called the condition:
   `<name>-cleared` is the condition genuinely over, `<name>-expired` is the

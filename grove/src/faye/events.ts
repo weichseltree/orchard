@@ -206,12 +206,13 @@ export interface Announcement {
  *
  * Not the module's limit, which is 280 and is applied silently and mid-word
  * (`CHAT_MAX` and `clip` in spacetime/spacetimedb/src/index.ts), but what a
- * person can take in from a room. Measured against the live emulator feed on
+ * person can take in from a room. Read off the live emulator feed on
  * 2026-09-17: a run's own feed writes much longer titles than expdash ever
- * did -- the planet watcher's plateau alert is 179 characters, of which 83 are
- * the thresholds it fired on, while its cap and finish lines are 53 and 69.
- * So 140 keeps every sentence that says something and takes the arithmetic
- * off the longest one.
+ * did -- the planet watcher's plateau alert is 178 characters, 83 of them the
+ * thresholds it fired on, and its slowdown alert 174 -- while its cap, finish
+ * and "no longer watched" lines are 68, 66 and 127. So 140 leaves every
+ * sentence that says something untouched and takes the arithmetic off the two
+ * that carry it.
  */
 export const SPOKEN_MAX = 140;
 
@@ -227,13 +228,19 @@ export const SPOKEN_MAX = 140;
  * wherever it sits, and only then is the sentence cut.
  *
  * Counted in code points, the way the module counts them, so a cut can never
- * split a surrogate pair -- and never left with a bracket she did not close.
+ * split a surrogate pair; a bracket she would not have closed is dropped, and
+ * a line that was nothing but evidence is cut instead of emptied.
  */
 export function fitToRoom(text: string): string {
   if (Array.from(text).length <= SPOKEN_MAX) return text;
   const withoutEvidence = text
     .replace(/\s*\([^()]*\)/g, "")
-    .replace(/\s+([.,;:!?])/g, "$1")
+    // What the evidence leaves behind: a space before punctuation, a separator
+    // that now introduces nothing, and two terminators where the sentence
+    // ended before the bracket did.
+    .replace(/\s+([.,;:!?…])/g, "$1")
+    .replace(/\s*([:;,])\s*([.!?…])/g, "$2")
+    .replace(/([.!?…])\s*[.,;:!?…]+/g, "$1")
     .trim();
   // Unless the evidence WAS the message: a line of punctuation says nothing,
   // and saying nothing is not the same as saying it shortly.
@@ -241,11 +248,22 @@ export function fitToRoom(text: string): string {
   if (Array.from(shortened).length <= SPOKEN_MAX) return shortened;
 
   let cut = Array.from(shortened).slice(0, SPOKEN_MAX - 1).join("");
+  // A clause boundary if there is one past the halfway mark -- her own answers
+  // are lists of clauses, and ending on one reads as shortened rather than as
+  // interrupted -- and a word boundary otherwise.
+  const clause = Math.max(cut.lastIndexOf("; "), cut.lastIndexOf(". "));
   const space = cut.lastIndexOf(" ");
-  if (space > SPOKEN_MAX / 2) cut = cut.slice(0, space);
+  if (clause > SPOKEN_MAX / 2) cut = cut.slice(0, clause);
+  else if (space > SPOKEN_MAX / 2) cut = cut.slice(0, space);
   const open = cut.lastIndexOf("(");
-  if (open > 0 && !cut.slice(open).includes(")")) cut = cut.slice(0, open);
-  return `${cut.trimEnd()}…`;
+  if (open >= 0 && !cut.slice(open).includes(")")) {
+    const before = cut.slice(0, open).trimEnd();
+    // Cut back to before the bracket -- unless that is everything she had, in
+    // which case the bracket itself goes and the words stay.
+    cut = says(before) ? before : `${cut.slice(0, open)}${cut.slice(open + 1)}`;
+  }
+  // Never an ellipsis hanging off a separator that now introduces nothing.
+  return `${cut.replace(/[\s:;,—–-]+$/u, "")}…`;
 }
 
 /** Whether a line has anything in it a person would read. */
@@ -332,7 +350,9 @@ export function announce(fresh: readonly ComputeEvent[], titles?: TreeTitles): A
       const detail = first.detail && first.detail.length <= 40 ? ` - ${first.detail}` : "";
       body = says(first.title)
         ? `${first.title}${detail}`
-        : `1 ${plural(first.type, 1)}${where}`;
+        : first.type
+          ? `1 ${plural(first.type, 1)}${where}`
+          : `1 event${where}`;
     }
     const text = fitToRoom(asSentence(body));
     out.push({ text, priority, count: events.length, ids: events.map((e) => e.id) });
@@ -411,11 +431,16 @@ const EXPIRED = /^(.+)-expired$/;
 
 /** What a type is said as, whoever spelled it: the phrase above, or the type. */
 export function saidAs(type: string): string {
+  // The map first: its own names are hyphenated (`live-stalled`,
+  // `hit-cap-unbalanced`), and one ending in -cleared would otherwise be
+  // shadowed by the pattern below.
+  const phrase = COLLAPSED_PHRASES[type];
+  if (phrase) return phrase;
   const cleared = CLEARED.exec(type);
   if (cleared) return `cleared the ${cleared[1]}`;
   const expired = EXPIRED.exec(type);
-  if (expired) return `are no longer watched for the ${expired[1]}`;
-  return COLLAPSED_PHRASES[type] ?? (type || "events");
+  if (expired) return `no longer watched for the ${expired[1]}`;
+  return type || "events";
 }
 
 function plural(type: string, n: number): string {

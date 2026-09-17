@@ -128,20 +128,39 @@ export function replyTo(text: string, state: FayeState, titles?: TreeTitles): st
   // first and ties by name at both levels, so the same state always reads the
   // same way.
   const boxes = busiestFirst(groupCount(state.running.map((r) => r.host)));
-  const parts = boxes.map(({ key: host, n }) => {
+  const named = (host: string): string => {
     const trees = busiestFirst(groupCount(
       state.running.filter((r) => r.host === host).map((r) => treeLabel(r.tree, titles)),
     ));
-    const named = trees.slice(0, TREES_PER_BOX).map(({ key, n: k }) => (k > 1 ? `${k} ${key}` : key));
-    const rest = trees.length - named.length;
-    if (rest > 0) named.push(`${rest} more`);
-    return `${n} on ${host} (${named.join(", ")})`;
-  });
-  return `${when}${total} run${total === 1 ? "" : "s"}: ${parts.join(", ")}.`;
+    const shown = trees.slice(0, TREES_PER_BOX).map(({ key, n: k }) => (k > 1 ? `${k} ${key}` : key));
+    const rest = trees.length - shown.length;
+    if (rest > 0) shown.push(`${rest} more`);
+    return shown.join(", ");
+  };
+  // Not "9 on SirBase (4 spectre, …)": the trees are the answer, and a bracket
+  // is where `fitToRoom` looks for an alert's arithmetic when a line runs long
+  // (src/faye/events.ts). Putting the subject in brackets would have a third
+  // box silently cost a visitor every tree name.
+  const runs = `${total} run${total === 1 ? "" : "s"}`;
+  if (boxes.length === 1) {
+    // One box needs no tally of boxes: "2 runs on SirBase: 2 coarsen."
+    const only = boxes[0]!.key;
+    return `${when}${runs} on ${only}: ${named(only)}.`;
+  }
+  const parts = boxes.slice(0, BOXES_NAMED).map(({ key: host, n }) => `${n} on ${host}: ${named(host)}`);
+  const restBoxes = boxes.length - parts.length;
+  // A box she cannot fit is counted, not cut: the trim at the speaker would
+  // otherwise end the sentence mid-name, and "and 2 more boxes" is the honest
+  // form of the same shortening.
+  if (restBoxes > 0) parts.push(`and ${restBoxes} more box${restBoxes === 1 ? "" : "es"}`);
+  return `${when}${runs} — ${parts.join("; ")}.`;
 }
 
 /** How many trees one box's answer names before it says "and N more". One line, not a list. */
 const TREES_PER_BOX = 3;
+
+/** And how many boxes, for the same reason: a lane can be added to a room's answer. */
+const BOXES_NAMED = 3;
 
 function groupCount(keys: readonly string[]): Map<string, number> {
   const out = new Map<string, number>();
