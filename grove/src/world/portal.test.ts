@@ -687,6 +687,21 @@ describe("PortalSystem", () => {
     expect(far.position.distanceTo(starDomeCentre(orreryRoom)) + STAR_DOME_RADIUS).toBeLessThan(far.far);
   });
 
+  it("offers the far view's target only once one has been rendered, and never on a backend without them", () => {
+    const rig = new Rig();
+    expect(rig.portals.farTarget).toBeNull();
+    rig.place(at(garden, 6), new Vector3(-1, 0, 0));
+    rig.frame();
+    expect(rig.renderer.renders).toBe(1);
+    expect(rig.portals.farTarget).toBe([...rig.renderer.targets][0]);
+    expect(rig.portals.viewScale).toBe(0.5);
+    // A renderer without render targets renders no far view and offers none.
+    const fading = new Rig(false);
+    fading.place(at(garden, 6), new Vector3(-1, 0, 0));
+    fading.frame();
+    expect(fading.portals.farTarget).toBeNull();
+  });
+
   it("blends by the eased, intent-shaped depth once armed", () => {
     const rig = new Rig();
     rig.place(at(garden, 1.3), new Vector3(-1, 0, 0));
