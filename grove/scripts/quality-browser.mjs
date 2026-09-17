@@ -282,6 +282,12 @@ async function appAudit(profile) {
         lines.push(line);
       }
       chat?.querySelector('.chat-log')?.append(...lines);
+      // The demo has no voice; a stand-in Hold to talk button measures the chat with its second row.
+      const mic = document.createElement('button');
+      mic.type = 'button';
+      mic.className = 'chat-mic';
+      mic.textContent = 'Hold to talk';
+      chat?.querySelector('.chat-form')?.append(mic);
       const rect = (selector) => {
         const el = document.querySelector(selector);
         if (!el || !el.getClientRects().length) return null;
@@ -291,6 +297,7 @@ async function appAudit(profile) {
       const measured = { width: innerWidth, height: innerHeight, transport: rect('.scrubber'), stick: rect('.stick'), top: rect('.top-right'), location: rect('.location'), notices: rect('.notices'), chat: rect('.chat'), dock: rect('.dock') };
       measured.chatLogHeight = chat?.querySelector('.chat-log')?.clientHeight ?? null;
       for (const line of lines) line.remove();
+      mic.remove();
       if (chat) chat.hidden = chatHidden;
       return measured;
     });
