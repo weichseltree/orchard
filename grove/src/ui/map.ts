@@ -74,6 +74,10 @@ export interface Floor {
  * on top of the orangery. map.test.ts asserts the two stay apart, so that fails
  * loudly rather than silently; a building with real storeys should declare them
  * in mansion.json rather than let them be inferred.
+ *
+ * This gap and the half-metre tolerance in `#standingOn` are also what keep
+ * that method's feet clause slack: change either and read it again, because it
+ * can begin to bind.
  */
 const FLOOR_GAP_M = 2;
 
