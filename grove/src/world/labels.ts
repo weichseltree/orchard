@@ -364,10 +364,11 @@ function footprint(h: Hanging): { min: Vector3; max: Vector3 } {
     }
     return { min, max };
   }
-  // A model's plinth reaches past the model, and past the circle a turning one
-  // sweeps (model-placement.ts); its lectern stands clear of both.
+  // A model's plinth reaches past the model (model-placement.ts). Its lectern
+  // stands clear of the circle round the model's longest side: whatever the
+  // yaw or the turntable, no corner of model or plinth reaches past it.
   const half = h.kind === "tape" ? h.longSideMeters / 2
-    : h.kind === "model" ? h.sizeMeters * (h.yawSpinDegPerSec !== 0 ? Math.SQRT1_2 : 0.5) + PLINTH_MARGIN_M
+    : h.kind === "model" ? h.sizeMeters * Math.SQRT1_2 + PLINTH_MARGIN_M
     : h.kind === "audio" ? h.sizeMeters / 2 : 0.5;
   return { min: new Vector3(p.x - half, 0, p.z - half), max: new Vector3(p.x + half, 0, p.z + half) };
 }

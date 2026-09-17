@@ -14,6 +14,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import type { Renderer } from "../render/types";
 import type { DeviceTier } from "../tape/bundle";
 import { ModelBundleSchema, type ModelBundle } from "../tape/model-bundle";
+import { acquireEnvironment, releaseEnvironment, type BuildEnvironment } from "./model-environment";
 import { modelPlacement, spinRate, type ModelPlacement } from "./model-placement";
 import type { ModelHanging } from "./schema";
 
@@ -31,6 +32,8 @@ export interface ModelExhibitOptions {
   tier: DeviceTier;
   /** Fetches the glb's bytes; the loader's own fetch when absent. */
   bytes?: (url: string) => Promise<ArrayBuffer>;
+  /** Builds the environment map the model's materials reflect; a test's seam. */
+  environment?: BuildEnvironment;
   onNotice?: (message: string) => void;
 }
 
@@ -41,7 +44,10 @@ const PLINTH_COLOUR = "#53616c";
 
 export class ModelExhibit {
   readonly group = new Group();
+  /** The whole exhibit, plinth included: what a pointer picks. */
   readonly bounds = new Box3();
+  /** The model alone, and the circle a turning one sweeps: what framing looks at. */
+  readonly modelBounds = new Box3();
   readonly bundle: ModelBundle;
   readonly placement: ModelPlacement;
   /** The turntable: turns about the pivot over `position`, on the plinth's top. */
@@ -50,12 +56,33 @@ export class ModelExhibit {
   readonly #plinth: Mesh<BoxGeometry, MeshStandardMaterial> | null;
   readonly #spin: number;
   readonly #baseUrl: string;
+  /** The shared RoomEnvironment PMREM this exhibit holds (model-environment.ts); null off WebGL. */
+  readonly #environment: Texture | null;
   #disposed = false;
 
-  private constructor(hanging: ModelHanging, bundle: ModelBundle, model: Object3D, baseUrl: string, tier: DeviceTier) {
+  private constructor(
+    hanging: ModelHanging,
+    bundle: ModelBundle,
+    model: Object3D,
+    baseUrl: string,
+    tier: DeviceTier,
+    environment: Texture | null,
+  ) {
     this.bundle = bundle;
     this.#model = model;
     this.#baseUrl = baseUrl;
+    this.#environment = environment;
+    if (environment) {
+      // Only materials that reflect, and only where the file brought no map of its own.
+      model.traverse((node) => {
+        for (const material of materialsOf(node)) {
+          const pbr = material as MeshStandardMaterial;
+          if (!pbr.isMeshStandardMaterial || pbr.envMap) continue;
+          pbr.envMap = environment;
+          pbr.needsUpdate = true;
+        }
+      });
+    }
     this.placement = modelPlacement(bundle.bbox, hanging);
     const { scale, offset, plinthHeight, plinthSize } = this.placement;
     this.group.name = `model-${hanging.id}`;
@@ -82,7 +109,7 @@ export class ModelExhibit {
   }
 
   static async load(options: ModelExhibitOptions): Promise<ModelExhibit> {
-    const { hanging, baseUrl, renderer, tier, bytes } = options;
+    const { hanging, baseUrl, renderer, tier, bytes, environment } = options;
     const response = await fetch(`${baseUrl}bundle.json`);
     if (!response.ok) throw new Error(`bundle.json: HTTP ${response.status}`);
     const bundle = ModelBundleSchema.parse(await response.json());
@@ -101,9 +128,18 @@ export class ModelExhibit {
     // Not through the chunk scheduler: its 2 MiB chunk limit is a tape's, and a
     // model may be up to the bundler's 8 MB. `bytes` is a test's seam.
     const url = baseUrl + bundle.model;
-    const gltf = bytes ? await loader.parseAsync(await bytes(url), baseUrl) : await loader.loadAsync(url);
+    let gltf: Awaited<ReturnType<GLTFLoader["loadAsync"]>>;
+    try {
+      gltf = bytes ? await loader.parseAsync(await bytes(url), baseUrl) : await loader.loadAsync(url);
+    } catch (error) {
+      throw new Error(`${bundle.model} could not load (${error instanceof Error ? error.message : String(error)})`);
+    }
+    // A glb with no default scene: the bundler refuses one, but a bundle made
+    // before it did, or by hand, fails here with a reason and not in a render.
+    const scene = (gltf.scene as Group | undefined) ?? gltf.scenes?.[0];
+    if (!scene) throw new Error(`${bundle.model} has no scene to show`);
     if (gltf.animations.length) options.onNotice?.(`${hanging.id}: the model's ${gltf.animations.length} animation(s) are not played`);
-    return new ModelExhibit(hanging, bundle, gltf.scene, baseUrl, tier);
+    return new ModelExhibit(hanging, bundle, scene, baseUrl, tier, acquireEnvironment(renderer, environment));
   }
 
   /** Turn the turntable; a still model (or any on a phone) costs nothing. */
@@ -135,15 +171,16 @@ export class ModelExhibit {
 
   #recomputeBounds(): void {
     this.group.updateMatrixWorld(true);
-    this.bounds.setFromObject(this.group);
-    if (this.#spin === 0) return;
-    // A turning model sweeps a circle about the pivot: the box holds all of it.
-    const centre = new Vector3();
-    this.group.localToWorld(centre.set(0, 0, 0));
-    const [sx, , sz] = this.placement.size;
-    const r = Math.hypot(sx, sz) / 2;
-    this.bounds.expandByPoint(new Vector3(centre.x - r, this.bounds.min.y, centre.z - r));
-    this.bounds.expandByPoint(new Vector3(centre.x + r, this.bounds.max.y, centre.z + r));
+    this.modelBounds.setFromObject(this.#pivot);
+    if (this.#spin !== 0) {
+      // A turning model sweeps a circle about the pivot: the box holds all of it.
+      const centre = this.group.localToWorld(new Vector3(0, 0, 0));
+      const [sx, , sz] = this.placement.size;
+      const r = Math.hypot(sx, sz) / 2;
+      this.modelBounds.expandByPoint(new Vector3(centre.x - r, this.modelBounds.min.y, centre.z - r));
+      this.modelBounds.expandByPoint(new Vector3(centre.x + r, this.modelBounds.max.y, centre.z + r));
+    }
+    this.bounds.setFromObject(this.group).union(this.modelBounds);
   }
 
   dispose(): void {
@@ -152,19 +189,23 @@ export class ModelExhibit {
     this.group.removeFromParent();
     const materials = new Set<Material>();
     this.#model.traverse((node) => {
-      const mesh = node as Partial<Mesh>;
-      mesh.geometry?.dispose();
-      const own = mesh.material;
-      if (Array.isArray(own)) own.forEach((m) => materials.add(m));
-      else if (own) materials.add(own);
+      (node as Partial<Mesh>).geometry?.dispose();
+      for (const material of materialsOf(node)) materials.add(material);
     });
     for (const material of materials) {
-      for (const value of Object.values(material)) if (value instanceof Texture) value.dispose();
+      // The environment map is shared: released below, never disposed here.
+      for (const value of Object.values(material)) if (value instanceof Texture && value !== this.#environment) value.dispose();
       material.dispose();
     }
+    releaseEnvironment(this.#environment);
     if (this.#plinth) {
       this.#plinth.geometry.dispose();
       this.#plinth.material.dispose();
     }
   }
+}
+
+function materialsOf(node: Object3D): Material[] {
+  const own = (node as Partial<Mesh>).material;
+  return Array.isArray(own) ? own : own ? [own] : [];
 }

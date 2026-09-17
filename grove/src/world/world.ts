@@ -328,6 +328,8 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
 
   /** Every load in flight; a load that starts another adds it here too, so `settled` follows the chain. */
   const inflight = new Set<Promise<unknown>>();
+  /** Set by `dispose`; a model that lands after it is freed, not hung. */
+  let disposed = false;
   function track<T>(load: Promise<T>): Promise<T> {
     inflight.add(load);
     load.finally(() => inflight.delete(load)).catch(() => undefined);
@@ -476,6 +478,8 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
             hanging, baseUrl: base, renderer, tier: device.tier, onNotice,
           }))
             .then((model) => {
+              // The world went while the glb was downloading: nothing may hold it now.
+              if (disposed) return model.dispose();
               world.models.push(model);
               roomOf.set(model, room.id);
               groupFor(room).add(model.group);
@@ -484,6 +488,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
                 hanging: hanging.id,
                 title: hanging.title || model.bundle.title,
                 bounds: model.bounds,
+                frame: model.modelBounds,
                 read: () => model.provenance(),
               });
             })
@@ -555,6 +560,7 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
       if (sky) sky.mesh.visible = scale === skyScale;
     },
     dispose() {
+      disposed = true;
       sky?.dispose();
       for (const tape of world.tapes) tape?.dispose();
       for (const video of world.videos) video.dispose();

@@ -25,6 +25,8 @@ export interface ProvenanceTarget {
   title: string;
   /** World-space box the ray has to hit. */
   bounds: Box3;
+  /** What framing looks at, when a loaded exhibit knows better than its document (a model without its plinth). */
+  frame?: Box3;
   /**
    * Lower wins when two boxes are both in the way. An exhibit is what you
    * meant; the room it hangs in is the answer only when nothing is in view.

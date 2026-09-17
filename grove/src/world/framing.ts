@@ -1,3 +1,4 @@
+import type { Box3 } from "three";
 import type { Hanging, Room } from "./schema";
 import { BODY_RADIUS } from "./navigation";
 import { standFoot } from "./stand";
@@ -27,8 +28,12 @@ const MARGIN = 1.25;
 /** Nearer than this a viewer is reading the canvas weave, not the picture. */
 const NEAREST_M = 1.4;
 
-/** The face of a hanging, from mansion.json alone. */
-export function hangingFace(room: Room, hanging: Hanging): Face {
+/**
+ * The face of a hanging, from mansion.json alone; `loaded` is the box an
+ * exhibit registered to be framed by (`ProvenanceTarget.frame`), which only
+ * a model reads, since only its proportions are unknown to the document.
+ */
+export function hangingFace(room: Room, hanging: Hanging, loaded?: Box3): Face {
   const spawn = room.spawn.position;
   const toward = (from: readonly [number, number, number], to: readonly [number, number, number]): [number, number] =>
     unit(to[0] - from[0], to[2] - from[2]);
@@ -56,9 +61,15 @@ export function hangingFace(room: Room, hanging: Hanging): Face {
       return { centre, normal: toward(centre, spawn), width: 2 * (spread + radius), height: 2 * radius };
     }
     case "model": {
-      // Read from where the visitor lands, like its lectern (labels.ts); the
-      // model's height is not known before its bundle, so its longest side
-      // stands in for it, over the plinth.
+      // Read from where the visitor lands, like its lectern (labels.ts). Once
+      // the model has loaded its own box says how tall it really stands (a
+      // floor plan is a tenth as tall as it is long); before that, its longest
+      // side stands in for its height, over the plinth.
+      if (loaded && !loaded.isEmpty()) {
+        const { min, max } = loaded;
+        const centre: [number, number, number] = [(min.x + max.x) / 2, (min.y + max.y) / 2, (min.z + max.z) / 2];
+        return { centre, normal: toward(centre, spawn), width: Math.max(max.x - min.x, max.z - min.z), height: max.y - min.y };
+      }
       const [x, y, z] = hanging.position;
       const size = hanging.sizeMeters;
       const centre: [number, number, number] = [x, y + (hanging.plinth?.heightMeters ?? 0) + size / 2, z];

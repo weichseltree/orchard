@@ -1,3 +1,4 @@
+import { Box3, Vector3 } from "three";
 import { describe, expect, it } from "vitest";
 import mansionDocument from "./mansion.json";
 import en from "./labels/en.json";
@@ -131,6 +132,30 @@ describe("where a model stands", () => {
     const pose = framingPose(face, hall, 72, 16 / 9, 1.6);
     expect(insideRoom(hall, pose.x, pose.z)).toBe(true);
     expect(pose.z).toBeGreaterThan(h.position[2]);
+  });
+
+  it("frames a flat model that has loaded by its real height, not at the air above it", () => {
+    // arcedit's env.glb stands 0.11 of its longest side: 4 m long, 0.44 m tall, on no plinth.
+    const h = modelHanging({ sizeMeters: 4 });
+    const floor = hall.bounds.min[1];
+    const loaded = new Box3(new Vector3(h.position[0] - 2, floor, h.position[2] - 1), new Vector3(h.position[0] + 2, floor + 0.44, h.position[2] + 1));
+    const guess = hangingFace(hall, h);
+    const face = hangingFace(hall, h, loaded);
+    expect(guess.centre[1]).toBeCloseTo(floor + 2);
+    expect(face.centre[1]).toBeCloseTo(floor + 0.22);
+    expect(face.height).toBeCloseTo(0.44);
+    expect(face.width).toBeCloseTo(4);
+    expect(hangingFace(hall, h, new Box3()).centre[1]).toBeCloseTo(floor + 2);
+  });
+
+  it("gets its lectern clear of a still model turned 45 degrees", () => {
+    const h = modelHanging({ sizeMeters: 1.2, plinth: {}, rotationDeg: [0, 45, 0] });
+    const room: Room = { ...hall, hangings: [h], wallLines: [] };
+    const words = parseLabels({ ...en, exhibits: { ...en.exhibits, chair: { title: "A chair", caption: "Sat in." } } });
+    const [plan] = planRoomLabels(room, words, mansion).filter((p) => p.hangingId === "chair");
+    // A square footprint of side 1.2 turned 45 degrees reaches 0.85 m toward
+    // the visitor; the lectern's 1.2 m standoff is measured from past that.
+    expect(plan!.foot!.z - h.position[2]).toBeCloseTo(1.2 * Math.SQRT1_2 + PLINTH_MARGIN_M + 1.2);
   });
 
   it("gets its lectern clear of the plinth, on the visitor's side", () => {

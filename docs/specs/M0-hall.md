@@ -197,14 +197,19 @@ records what the bundler read from the GLB header and JSON chunk alone:
 mesh in the default scene), `bbox` (the POSITION accessors' min/max through
 the node hierarchy, in the file's units) and `size`, plus the extensions it
 uses and requires. Refused: a bad container (magic, version 2, total
-length), an external buffer or image, Draco (re-export with
-`EXT_meshopt_compression`, which the grove decodes lazily, like
-`KHR_texture_basisu`), and anything over 8 MB, 150,000 triangles or 256 draw
-calls. The exhibit row's `url` is `bundle.json`. In `mansion.json` a `model`
-hanging stands over `position` on the floor, scaled so the bbox's longest
-side measures `sizeMeters`, on an optional `plinth` (`heightMeters`, 0.9)
-and turning at `yawSpinDegPerSec` (0 is still; phones stay still). Its
-animations are not played.
+length), malformed JSON (always as a refusal, never a crash), a buffer view
+past the BIN chunk, an external buffer or image, a glb with no scene, Draco
+used or required (re-export with `EXT_meshopt_compression`, which the grove
+decodes lazily, like `KHR_texture_basisu`), `EXT_mesh_gpu_instancing` (the
+bbox would miss the instance transforms), and anything over 8 MB, 150,000
+triangles or 256 draw calls. `orchard harvest` records a refused model in
+its row and goes on. The exhibit row's `url` is `bundle.json`. In
+`mansion.json` a `model` hanging stands over `position` on the floor, scaled
+so the bbox's longest side measures `sizeMeters`, on an optional `plinth`
+(`heightMeters`, 0.9) and turning at `yawSpinDegPerSec` (0 is still; phones
+stay still). Its materials reflect a shared, prefiltered studio room so a
+metallic one is not black; it is framed by its loaded box, so a flat model
+is framed low. Its animations are not played.
 
 ## The world (WP2)
 
