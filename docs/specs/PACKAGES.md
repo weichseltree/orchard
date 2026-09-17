@@ -102,8 +102,8 @@ repo is private and the consumer is public, so a consumer fetching it by URL
 would need credentials the public box does not have. That code is **copied**,
 and the copy carries a manifest.
 
-- The copy lives under the consumer, named for its upstream
-  (`grove/src/vendor/<name>/`), and the **source of truth stays upstream**. An
+- The copy lives under the consumer, named for its upstream (the cats are at
+  `grove/src/vendor/cat-proxy/`), and the **source of truth stays upstream**. An
   edit made in the copy is a defect, not a change: it is lost at the next sync
   and, until then, the two disagree with nothing saying so. Fix it upstream and
   re-sync.
@@ -116,10 +116,10 @@ and the copy carries a manifest.
 - **Drift is a failure, in both directions**, and they are checked in different
   places because only one of them can be checked publicly. That a copy has been
   edited is decidable from the copy alone — re-hash the files against the
-  manifest — so the audit's `vendored` rule does it on this box, and the
-  consumer's own CI may too (`pnpm -C grove run check:vendor`). That a copy is
-  *behind* its upstream needs the upstream checkout, so it stays with whoever
-  owns the source.
+  manifest — so the audit's `vendored` rule does it on this box, and a
+  consumer that ships its own checker can run the same test in its own CI. That
+  a copy is *behind* its upstream needs the upstream checkout, so it stays with
+  whoever owns the source.
 - A licence that requires corresponding source to travel with the code (AGPL)
   is satisfied by vendoring **source, not a built bundle**, into a public repo.
   Copy the upstream `LICENSE` and a README naming the upstream into the same
@@ -324,7 +324,7 @@ blocks nothing; it names the repo, the rule and the file within 15 minutes.
 | manifest-dirty | an artefact `commit` ending in `-dirty` in `<repo>/orchard.yaml` (warn) |
 | fund-copies | each `trees/<name>.yaml` whose repo is on the box is byte-equal to what `orchard trees refresh` writes |
 | pinned-tags | a git pin (`[tool.uv.sources]`, a PEP 723 header, or a direct `git+…@ref`) on a repo the audit knows names a tag that exists in that checkout and on its origin. The pin's URL (github.com, a `github.com-*` alias, or an ssh config Host whose HostName is github.com; https, `ssh://` or `git@host:` form) is matched by owner/name, ignoring case, to a checkout's `remote.origin.url`, archived repos included. One `git ls-remote --tags origin` per pinned repo per run, 10 s; unreachable is a skip. A branch or rev pin warns; a pin on a repo not on this box is not checked |
-| vendored | every file listed in a tracked `VENDORED.json` still hashes to what it says, nothing tracked beside them is missing from it, and the manifest parses. Fails, because an edit made in a copy is lost at the next sync and until then the two disagree with nothing saying so; a sync recorded from a dirty upstream tree warns. Whether the copy is BEHIND its upstream is not checked here — that needs the upstream checkout, which for a private producer this box may not have |
+| vendored | every file listed in a tracked `VENDORED.json` still hashes to what it says (case-insensitively), and every tracked file in the copy's subtree is listed in it — attributed to the nearest enclosing manifest, so a copy that vendors something itself is not read as strays of the outer one. The manifest must parse and name an upstream and a commit; a listed path reaching outside the copy, a symlink, and a file that cannot be read each cost one finding, not the rule. Fails, because an edit made in a copy is lost at the next sync and until then the two disagree with nothing saying so; a sync recorded from a dirty upstream tree warns. Whether the copy is BEHIND its upstream is not checked here — that needs the upstream checkout, which for a private producer this box may not have |
 | toolchain | `orchard doctor`'s tools: a mismatch fails, a missing tool warns |
 | bindings | `pnpm -C grove run check:bindings` |
 

@@ -836,6 +836,8 @@ def check_fund_copies(ctx: Context, repo: Repo) -> list[Finding]:
 
 #: The manifest beside a vendored copy (PACKAGES.md section 2).
 VENDORED = "VENDORED.json"
+#: A sha256 as the manifest must spell it; compared case-insensitively.
+SHA256 = re.compile(r"[0-9a-fA-F]{64}")
 
 
 def _sha256(path: Path) -> str:
@@ -844,6 +846,16 @@ def _sha256(path: Path) -> str:
         for block in iter(lambda: fh.read(1 << 20), b""):
             h.update(block)
     return h.hexdigest()
+
+
+def _manifest_home(homes: list[PurePosixPath], p: PurePosixPath) -> PurePosixPath | None:
+    """The deepest vendored copy `p` is inside, so a copy that vendors something itself
+    does not have its inner copy's files read as strays of the outer one."""
+    best = None
+    for h in homes:
+        if p.is_relative_to(h) and (best is None or len(h.parts) > len(best.parts)):
+            best = h
+    return best
 
 
 def check_vendored(repo: Repo, tracked: list[str]) -> list[Finding]:
@@ -859,39 +871,73 @@ def check_vendored(repo: Repo, tracked: list[str]) -> list[Finding]:
     the two disagree with nothing saying so -- hence fail, not warn.
     """
     rule, out = "vendored", []
-    for rel in tracked:
-        if PurePosixPath(rel).name != VENDORED:
-            continue
-        home = PurePosixPath(rel).parent
+    manifests = [PurePosixPath(rel) for rel in tracked if PurePosixPath(rel).name == VENDORED]
+    if not manifests:
+        return out
+    homes = [m.parent for m in manifests]
+    # Each tracked file belongs to the deepest copy holding it, resolved once for every
+    # manifest rather than per manifest.
+    owner = {rel: _manifest_home(homes, PurePosixPath(rel)) for rel in tracked}
+    for rel_path in manifests:
+        rel, home = rel_path.as_posix(), rel_path.parent
         try:
             doc = json.loads((repo.path / rel).read_text())
-        except (OSError, ValueError) as exc:
+        except FileNotFoundError:
+            out.append(fail(rule, f"{VENDORED} is tracked but not in the working tree", rel))
+            continue
+        except OSError as exc:
+            out.append(fail(rule, f"{VENDORED} could not be read ({type(exc).__name__})", rel))
+            continue
+        except ValueError as exc:
             out.append(fail(rule, f"{VENDORED} does not parse ({type(exc).__name__})", rel))
             continue
         files = doc.get("files")
-        if not isinstance(files, dict) or not files:
+        if not isinstance(files, dict):
+            kind = "is missing" if files is None else f"is a {type(files).__name__}, not an object of path -> sha256"
+            out.append(fail(rule, f"{VENDORED}'s file list {kind}, so nothing about the copy is checkable", rel))
+            continue
+        if not files:
             out.append(fail(rule, f"{VENDORED} lists no files, so nothing about the copy is checkable", rel))
             continue
-        upstream = str(doc.get("upstream") or doc.get("repo") or "?")
-        commit = str(doc.get("commit") or "?")
+        upstream = str(doc.get("upstream") or doc.get("source_repo") or doc.get("repo") or "")
+        commit = str(doc.get("commit") or "")
         listed, bad = set(), 0
+        if not upstream or not commit:
+            missing = " and ".join(w for w, got in (("an upstream", upstream), ("a commit", commit)) if not got)
+            out.append(fail(rule, f"{VENDORED} records {missing}, so the copy cannot be traced to what it came from", rel))
+            bad += 1
         for name, entry in sorted(files.items()):
             want = entry.get("sha256") if isinstance(entry, dict) else entry
-            here = (home / name).as_posix()
-            listed.add(here)
-            if ".." in PurePosixPath(name).parts or PurePosixPath(name).is_absolute():
+            named = PurePosixPath(name)
+            if named.is_absolute() or ".." in named.parts:
                 out.append(fail(rule, f"{VENDORED} lists {name}, which is outside the copy", rel)); bad += 1
                 continue
+            here = (home / name).as_posix()
+            listed.add(here)
             path = repo.path / here
-            if not path.is_file():
-                out.append(fail(rule, f"{name} is in {VENDORED} but not on disk; re-sync from {upstream}", here)); bad += 1
-            elif not isinstance(want, str) or _sha256(path) != want:
-                out.append(fail(rule, f"differs from {VENDORED}: an edit here is lost at the next sync, "
-                                      f"so make it in {upstream} and re-sync", here)); bad += 1
-        for other in tracked:
-            if other != rel and PurePosixPath(other).is_relative_to(home) and other not in listed:
-                out.append(fail(rule, f"is in the copy but not in {VENDORED}; add it upstream or delete it", other)); bad += 1
-        if doc.get("dirty"):
+            if not isinstance(want, str) or not SHA256.fullmatch(want.strip()):
+                out.append(fail(rule, f"{VENDORED} records no usable sha256 for it, so it is not checkable", here))
+            elif path.is_symlink():
+                out.append(fail(rule, "is a symlink; a vendored copy holds regular files, and a link "
+                                      "hashes differently on every box", here))
+            elif not path.is_file():
+                out.append(fail(rule, f"is in {VENDORED} but is not a file here; re-sync from {upstream}", here))
+            else:
+                try:
+                    got = _sha256(path)
+                except OSError as exc:
+                    out.append(fail(rule, f"could not be read ({type(exc).__name__}), so the copy is unchecked", here))
+                else:
+                    if got == want.strip().lower():
+                        continue
+                    out.append(fail(rule, f"differs from {VENDORED}: an edit here is lost at the next sync, "
+                                          f"so make it in {upstream} and re-sync", here))
+            bad += 1
+        for other, belongs in owner.items():
+            if belongs == home and other != rel and other not in listed:
+                out.append(fail(rule, f"is in the copy but not in {VENDORED}; add it upstream or delete it", other))
+                bad += 1
+        if doc.get("dirty") is True:
             out.append(warn(rule, f"synced from {upstream} at {commit} with a dirty tree: not reproducible "
                                   "from that sha; re-sync from a clean one", rel))
         if not bad:

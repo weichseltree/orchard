@@ -199,6 +199,66 @@ def test_vendored_fails_a_manifest_that_does_not_parse(tree):
     assert f["status"] == "fail" and "does not parse" in f["detail"]
 
 
+def test_vendored_does_not_read_a_nested_copy_as_strays_of_the_outer_one(tree):
+    files = vendored({"cat.ts": "export const a = 1;\n"})
+    files |= {f"src/vendor/pkg/inner/{k.split('/')[-1]}": v
+              for k, v in vendored({"dog.ts": "export const b = 2;\n"}).items()}
+    make_repo(tree.root, "consumer", files)
+    got = findings(tree(), "consumer", "vendored")
+    assert [f["status"] for f in got] == ["ok", "ok"], got
+    assert {f["where"] for f in got} == {"src/vendor/pkg/VENDORED.json", "src/vendor/pkg/inner/VENDORED.json"}
+
+
+def test_vendored_refuses_a_manifest_reaching_outside_the_copy(tree):
+    manifest = {"upstream": "u", "commit": "c",
+                "files": {"../../../etc/passwd": {"sha256": "0" * 64}}}
+    make_repo(tree.root, "consumer", {"src/vendor/pkg/VENDORED.json": json.dumps(manifest)})
+    [f] = findings(tree(), "consumer", "vendored")
+    assert f["status"] == "fail" and "outside the copy" in f["detail"]
+
+
+def test_vendored_refuses_a_symlink_rather_than_hashing_its_target(tree):
+    repo = make_repo(tree.root, "consumer", vendored({"cat.ts": "export const a = 1;\n"}), commit=False)
+    link = repo / "src/vendor/pkg/cat.ts"
+    link.unlink(); link.symlink_to("/etc/hostname")
+    commit_all(repo)
+    [f] = findings(tree(), "consumer", "vendored")
+    assert f["status"] == "fail" and "symlink" in f["detail"]
+
+
+def test_vendored_costs_one_finding_when_a_file_cannot_be_read(tree):
+    repo = make_repo(tree.root, "consumer", vendored({"cat.ts": "export const a = 1;\n",
+                                                      "b.ts": "export const b = 2;\n"}))
+    locked = repo / "src/vendor/pkg/cat.ts"
+    locked.chmod(0o000)
+    try:
+        got = findings(tree(), "consumer", "vendored")
+    finally:
+        locked.chmod(0o644)
+    assert [f["status"] for f in got] == ["fail"] and got[0]["where"] == "src/vendor/pkg/cat.ts"
+    assert "could not be read" in got[0]["detail"]
+
+
+def test_vendored_accepts_an_uppercase_digest(tree):
+    files = vendored({"cat.ts": "export const a = 1;\n"})
+    doc = json.loads(files["src/vendor/pkg/VENDORED.json"])
+    doc["files"]["cat.ts"]["sha256"] = doc["files"]["cat.ts"]["sha256"].upper()
+    files["src/vendor/pkg/VENDORED.json"] = json.dumps(doc)
+    make_repo(tree.root, "consumer", files)
+    [f] = findings(tree(), "consumer", "vendored")
+    assert f["status"] == "ok", f
+
+
+def test_vendored_fails_a_manifest_with_no_provenance(tree):
+    files = vendored({"cat.ts": "export const a = 1;\n"})
+    doc = json.loads(files["src/vendor/pkg/VENDORED.json"]); del doc["commit"]
+    files["src/vendor/pkg/VENDORED.json"] = json.dumps(doc)
+    make_repo(tree.root, "consumer", files)
+    got = findings(tree(), "consumer", "vendored")
+    assert [f["status"] for f in got] == ["fail"]
+    assert "a commit" in got[0]["detail"] and "traced" in got[0]["detail"]
+
+
 def test_a_pep723_script_needs_its_lock_beside_it(tree):
     locked = make_repo(tree.root, "locked", {"tools/x.py": SCRIPT}, commit=False)
     uv(locked, "lock", "--script", "tools/x.py"); commit_all(locked)
@@ -591,4 +651,3 @@ def test_the_unit_is_installed_for_the_main_checkout_even_from_a_worktree(tree, 
     assert "Wants=orchard-audit.service" in sync
     assert "After=orchard-sync.service" in audit and "ExecStart=-" in audit   # never stops sync
     assert set(S.UNITS) == {p.name for p in units.iterdir()}
-
