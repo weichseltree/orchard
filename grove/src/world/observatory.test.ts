@@ -133,7 +133,7 @@ describe("the designed observatory", () => {
   it("keeps the venue's fittings inside their rooms", () => {
     // The foyer's lanterns once stood in a wall and inside a stair's cheek; every placed element's centre stays in its room's box.
     const margin = 0.12;
-    for (const { room, shell } of shells.filter(s => ["stair-north", "stair-south", "foyer", "club", "stage"].includes(s.room.id))) {
+    for (const { room, shell } of shells.filter(s => ["stair-north", "stair-south", "foyer", "foyer-south", "stair-court", "club", "stage"].includes(s.room.id))) {
       const [x0, y0, z0] = room.bounds.min, [x1, , z1] = room.bounds.max;
       // A covered room's lid fills the void up to just inside the slab of the floor above -- never to the
       // floor itself, where the visitor walks -- and its cladding stands a hand outside its walls.
@@ -149,14 +149,21 @@ describe("the designed observatory", () => {
           s.setFromMatrixScale(m);
           // An upright box's top; a bar is a column turned on its side, whose scale says nothing about height.
           const e = m.elements, upright = Math.abs(e[1]!) < 1e-6 && Math.abs(e[4]!) < 1e-6 && Math.abs(e[6]!) < 1e-6 && Math.abs(e[9]!) < 1e-6;
-          if (child.name.startsWith("observatory-box") && upright && p.y + s.y / 2 > y1 + 0.01) outside.push(`${child.name}[${i}] tops at ${(p.y + s.y / 2).toFixed(2)} over ${y1.toFixed(2)}`);
+          // A room with no lid has no ceiling to stay under: the cheek walls of
+          // the court's three flights stand above its rim on purpose, as the
+          // rail beside steps coming up out of the ground.
+          if (!room.openToSky && child.name.startsWith("observatory-box") && upright && p.y + s.y / 2 > y1 + 0.01) outside.push(`${child.name}[${i}] tops at ${(p.y + s.y / 2).toFixed(2)} over ${y1.toFixed(2)}`);
           if (child.name.includes("@")) {
             // Cladding and its string course: on a wall's outside, within a hand of it, never in the room.
             const onX = Math.abs(p.x - x0) < 0.16 || Math.abs(p.x - x1) < 0.16, onZ = Math.abs(p.z - z0) < 0.16 || Math.abs(p.z - z1) < 0.16;
             if (!onX && !onZ) outside.push(`${child.name}[${i}] off the walls at ${p.x.toFixed(2)}, ${p.z.toFixed(2)}`);
             continue;
           }
-          if (p.x < x0 - margin || p.x > x1 + margin || p.y < y0 - margin || p.y > y1 + margin || p.z < z0 - margin || p.z > z1 + margin) {
+          // A court with no lid has nothing overhead to stay under: its doors
+          // open at the rim, so their surrounds — and the cheeks of the
+          // flights coming up through it — stand in the room above by design.
+          const overhead = room.openToSky ? Infinity : y1 + margin;
+          if (p.x < x0 - margin || p.x > x1 + margin || p.y < y0 - margin || p.y > overhead || p.z < z0 - margin || p.z > z1 + margin) {
             outside.push(`${child.name}[${i}] at ${p.x.toFixed(2)}, ${p.y.toFixed(2)}, ${p.z.toFixed(2)}`);
           }
         }
@@ -209,30 +216,69 @@ describe("the terrace's two arms and the court between them", () => {
         for (let i = 0; i < node.count; i++) {
           node.getMatrixAt(i, matrix);
           at.setFromMatrixPosition(matrix);
-          // The parapet's own height band: a door's surround stands above it.
+          // The balustrade's own three courses — balusters, piers and the rail
+          // between them. A door's surround stands in the same span of wall
+          // and would otherwise meet the count on its own.
           const over = at.y - arm.bounds.min[1];
-          if (Math.abs(at.z - rim) < 0.6 && over > 0.2 && over < 2) stones.push(at.clone());
+          const course = [0.5, 0.62, 1.06].some(h => Math.abs(over - h) < 0.02);
+          if (Math.abs(at.z - rim) < 0.6 && course) stones.push(at.clone());
         }
       });
-      // Piers, balusters and the rail between them.
-      expect(stones.length, `${id} parapet`).toBeGreaterThan(10);
+      // Piers, balusters and the rail between them. The rim is 10 m and the
+      // flight with its cheeks takes 6, so what is left is two short runs
+      // flanking the steps, the longer one on the palace side.
+      expect(stones.length, `${id} parapet`).toBeGreaterThan(4);
+      const palaceSide = stones.filter(p => p.x > door.center);
+      expect(palaceSide.length, `${id} parapet east of the steps`).toBeGreaterThan(2);
       // ...and nothing standing in the opening the steps come up through.
       expect(stones.filter(p => Math.abs(p.x - door.center) < door.width / 2), `${id} gap`).toHaveLength(0);
     }
   });
 
-  it("paves the north arm as a promenade, not as open grove", () => {
+  it("gives the north arm the south arm's arcade and its garden balustrade", () => {
     // The arm was drawn by the grounds' default branch until 2026-09-18: lawn,
-    // scattered trees and no stone at all where the south arm has a walk.
-    const counts = new Map<string, number>();
-    for (const id of ["terrace", "terrace-north"]) {
-      let arches = 0;
+    // scattered trees, and none of the stone the south arm has.
+    const parts = (id: string) => {
+      const found = { arch: 0, column: 0, crown: 0 };
       shellOf(id).group.traverse(node => {
-        if (node instanceof InstancedMesh && node.name.includes("arch")) arches += node.count;
+        if (!(node instanceof InstancedMesh)) return;
+        for (const kind of ["arch", "column", "crown"] as const) {
+          if (node.name.includes(kind)) found[kind] += node.count;
+        }
       });
-      counts.set(id, arches);
+      return found;
+    };
+    const north = parts("terrace-north"), south = parts("terrace");
+    // The arcade over the walk, its columns, and the urns on the balustrade's
+    // every fourth pier: the arm is 35 m to the south arm's 83, so compare
+    // that each is there at all, not that the counts match.
+    for (const kind of ["arch", "column", "crown"] as const) {
+      expect(south[kind], `terrace ${kind}`).toBeGreaterThan(0);
+      expect(north[kind], `terrace-north ${kind}`).toBeGreaterThan(0);
     }
-    expect(counts.get("terrace-north")).toBeGreaterThan(0);
-    expect(counts.get("terrace")).toBeGreaterThan(0);
+  });
+
+  it("lights both halves of the undercroft down their length", () => {
+    // foyerFittings lit the club's doors only, and the south half has none of
+    // those: its eighty-three metres were dark under wall text promising
+    // lanterns the length of the vault (reviewed 2026-09-18).
+    for (const id of ["foyer", "foyer-south"]) {
+      const room = mansion.rooms.find(r => r.id === id)!;
+      const lamps: number[] = [];
+      shellOf(id).group.traverse(node => {
+        if (!(node instanceof InstancedMesh)) return;
+        const matrix = new Matrix4(), at = new Vector3();
+        for (let i = 0; i < node.count; i++) {
+          node.getMatrixAt(i, matrix);
+          at.setFromMatrixPosition(matrix);
+          // A lantern's lamp: head height, hard against the east wall.
+          if (Math.abs(at.y - (room.bounds.min[1] + 2.75)) < 0.02 && Math.abs(at.x - (room.bounds.max[0] - 0.6)) < 0.02) lamps.push(at.z);
+        }
+      });
+      expect(lamps.length, `${id} lanterns`).toBeGreaterThan(1);
+      // Spread down the vault, not huddled at one end.
+      const span = Math.max(...lamps) - Math.min(...lamps);
+      expect(span, `${id} lantern span`).toBeGreaterThan((room.bounds.max[2] - room.bounds.min[2]) * 0.4);
+    }
   });
 });

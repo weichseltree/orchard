@@ -497,6 +497,14 @@
           "to": "terrace-north",
           "axis": "x",
           "at": -10,
+          "center": -42,
+          "width": 3,
+          "height": 5
+        },
+        {
+          "to": "terrace-north",
+          "axis": "x",
+          "at": -10,
           "center": -55,
           "width": 3,
           "height": 5
@@ -1104,7 +1112,7 @@
           "axis": "x",
           "at": -20,
           "center": -24.5,
-          "width": 5,
+          "width": 4,
           "height": 3.6,
           "treadMeters": 0.35
         },
@@ -1750,6 +1758,14 @@
           "to": "orangery",
           "axis": "x",
           "at": -10,
+          "center": -42,
+          "width": 3,
+          "height": 5
+        },
+        {
+          "to": "orangery",
+          "axis": "x",
+          "at": -10,
           "center": -55,
           "width": 3,
           "height": 5
@@ -1957,7 +1973,7 @@
           "axis": "x",
           "at": -20,
           "center": -24.5,
-          "width": 5,
+          "width": 4,
           "height": 3.6,
           "signRoom": "club"
         }

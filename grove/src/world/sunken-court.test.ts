@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import mansionDocument from "./mansion.json";
 import { BODY_RADIUS, resolveMove } from "./navigation";
-import { flightsOf, floorAt } from "./terrain";
+import { STAIR_MARGIN, flightsOf, floorAt } from "./terrain";
 import { parseMansion } from "./schema";
 
 // The sunken court is the one place in the palace where three flights come
@@ -102,19 +102,36 @@ describe("the sunken court", () => {
   });
 
   it("lets a visitor climb back out of the court onto both arms of the terrace", () => {
-    const up = walk("stair-court", { x: -16, z: -19 }, [{ x: -16, z: -9 }]);
+    // From the east walk, where a visitor coming out of the club stands: onto
+    // the flight from the paving is the half of the bug that stopped a body
+    // ENTERING a flight whose foot lay in another's cheek band.
+    // Round the garden flight's foot, not diagonally across it: cut the corner
+    // and you step onto its bottom tread, where its cheeks hold you, which is
+    // what the drawn stone says should happen.
+    const up = walk("stair-court", { x: -11.5, z: -24 }, [{ x: -11.5, z: -20.8 }, { x: -16, z: -20.8 }, { x: -16, z: -9 }]);
     expect(up.room).toBe("terrace");
-    const north = walk("stair-court", { x: -16, z: -30 }, [{ x: -16, z: -40 }]);
+    const north = walk("stair-court", { x: -11.5, z: -24 }, [{ x: -11.5, z: -28 }, { x: -16, z: -28 }, { x: -16, z: -40 }]);
     expect(north.room).toBe("terrace-north");
   });
 
-  it("walks the north arm past the orangery without being pulled into a flight", () => {
+  it("walks the north arm past the orangery's flights without being pulled sideways", () => {
     // The walk that found the cheek-wall bug in the first place (Manuel,
-    // 2026-09-17): along the arm, past the orangery's two doors and their
-    // flights, from the court's rim to the arm's far end.
+    // 2026-09-17): along the arm, past the orangery's three doors and the
+    // flights up to them, from the court's rim to the arm's far end.
     const along = walk("terrace-north", { x: -15, z: -40 }, [{ x: -15, z: -74 }]);
     expect(along.room).toBe("terrace-north");
     expect(along.x).toBeCloseTo(-15, 1);
     expect(along.z).toBeLessThan(-73);
+    // Closer in, inside the 2.9 m the flights reach out from the wall, a cheek
+    // is a wall: the body stops at its face on the side it came from, and is
+    // NOT pulled across the flight and held against the far cheek.
+    const door = room("terrace-north").doorways
+      .filter((d) => d.to === "orangery").sort((a, b) => b.center - a.center)[0]!;
+    const close = walk("terrace-north", { x: -12.5, z: door.center + 3 }, [{ x: -12.5, z: -74 }]);
+    const cheek = door.center + door.width / 2 + STAIR_MARGIN;
+    expect(close.x).toBeCloseTo(-12.5, 1);
+    // Held against the cheek it walked up to, on the side it came from.
+    expect(close.z).toBeGreaterThan(cheek);
+    expect(close.z).toBeLessThan(cheek + 0.6);
   });
 });

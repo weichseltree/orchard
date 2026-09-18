@@ -51,9 +51,11 @@ describe("stairs", () => {
     expect(flightsOf(mansion, wing).map((f) => f.door.to)).toEqual([]);
     // The garden climbs to both arms of the terrace and goes down into the court between them.
     expect(flightsOf(mansion, parterre).map((f) => f.door.to)).toEqual(["terrace", "terrace-north", "terrace"]);
-    // The orangery's doors are on the terrace's north arm, and one of the three went with the court (2026-09-17).
+    // The orangery's doors are on the terrace's north arm. All three: the
+    // southernmost went with the court on 2026-09-17 and came back on
+    // 2026-09-18, the orangery's own wall text having counted three all along.
     const north = roomById(mansion, "terrace-north")!;
-    expect(flightsOf(mansion, north).filter((f) => f.door.to === "orangery")).toHaveLength(2);
+    expect(flightsOf(mansion, north).filter((f) => f.door.to === "orangery")).toHaveLength(3);
   });
 
   it("ramps the floor from the foot of the flight to the doorway plane", () => {

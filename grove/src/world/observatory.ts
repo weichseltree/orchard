@@ -946,7 +946,9 @@ function grounds(b: Builder): void {
       const down = room.doorways.filter(d => d.axis === "z" && Math.abs(d.at - wall.at) < 0.001
         && (b.mansion?.rooms.find(r => r.id === d.to)?.openToSky ?? false));
       if (!down.length) continue;
-      balustrade(b, wall, down.map(d => ({ center: d.center, width: d.width + 2 * STAIR_MARGIN })));
+      // Held off the corners, where the garden edge's own run already stands.
+      const rim = { ...wall, min: wall.min + 0.5 };
+      balustrade(b, rim, down.map(d => ({ center: d.center, width: d.width + 2 * STAIR_MARGIN })));
     }
   } else if (room.id.startsWith("court-")) {
     // A club's forecourt: a walled garden room on the grove's edge, paved
@@ -982,12 +984,15 @@ function grounds(b: Builder): void {
     const sideWalks = room.doorways.filter(d => d.axis === "x" && Math.abs(d.at - x1) < 0.001 && Math.abs(d.center) > 8).map(d => d.center);
     for (const z of sideWalks) path(b, (cx + x1) / 2, z, x1 - cx, 4);
     // Four quarters edged in box hedge, each holding its grove of sculptures, ending short of the side walks.
-    const quarterEnd = sideWalks.length ? Math.min(...sideWalks.map(Math.abs)) - 4.5 : Math.min(z1, -z0) - 3.5;
+    const quarterEnd = (qz: number): number => {
+      const thisSide = sideWalks.filter(s => Math.sign(s) === qz);
+      return thisSide.length ? Math.min(...thisSide.map(Math.abs)) - 4.5 : Math.min(z1, -z0) - 3.5;
+    };
     for (const qx of [-1, 1]) for (const qz of [-1, 1]) {
       const hx0 = cx + qx * 4.5, hx1 = qx > 0 ? x1 - 3.5 : x0 + 3.5;
       // The quarters beyond the crossing stand back from the court; those before it edge the axis walk.
       const courtSide = Math.sign(px - cx) === qx;
-      const hz0 = qz * (courtSide ? court + 2.5 : 4.5), hz1 = qz * quarterEnd;
+      const hz0 = qz * (courtSide ? court + 2.5 : 4.5), hz1 = qz * quarterEnd(qz);
       const hcx = (hx0 + hx1) / 2, hcz = (hz0 + hz1) / 2;
       const hw = Math.abs(hx1 - hx0), hd = Math.abs(hz1 - hz0);
       b.box("hedge", hcx, y0 + 0.32, hz0, hw, 0.64, 0.5);
@@ -1191,14 +1196,25 @@ function courtFittings(b: Builder): void {
   b.box("path", (x0 + x1) / 2, y0 + 0.006, (z0 + z1) / 2, x1 - x0 - 1.2, 0.012, z1 - z0 - 1.2);
 }
 
-/** Either undercroft under a terrace arm: a lantern each side of every club door. */
+/**
+ * Either undercroft under a terrace arm: a lantern each side of every club
+ * door, and a lantern every fourteen metres down the vault besides. The south
+ * half has no club door at all — its way into the club is at the court — so
+ * the pairs alone left eighty-three metres of vault lit by nothing, under wall
+ * text that promises the lanterns run its length (reviewed 2026-09-18).
+ */
 function foyerFittings(b: Builder): void {
   const room = b.room, [, , z0] = room.bounds.min, [x1, , z1] = room.bounds.max;
-  for (const door of room.doorways.filter(d => d.to === "club")) {
+  const doors = room.doorways.filter(d => d.to === "club");
+  for (const door of doors) {
     for (const side of [-1, 1]) {
       const z = door.center + side * (door.width / 2 + 0.6);
       if (z > z0 + 0.6 && z < z1 - 0.6) lantern(b, x1 - 0.6, z);
     }
+  }
+  for (let z = z0 + 8; z < z1 - 6; z += 14) {
+    if (doors.some(d => Math.abs(z - d.center) < 4)) continue;
+    lantern(b, x1 - 0.6, z);
   }
 }
 
