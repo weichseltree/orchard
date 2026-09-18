@@ -66,10 +66,10 @@
       "lookFor": "Die Laternen beiderseits der Clubtür und das Licht dahinter: Das Untergeschoss ist warm, der Club ist kalt."
     },
     "stair-court": {
-      "title": "Senkhof",
-      "kicker": "Wo die Terrasse in die Tiefe geht.",
-      "intro": "Ein Hof, fünf Meter tief in die Terrasse geschnitten, zwischen Halle und Orangerie. Aus jedem Arm der Terrasse führt ein Lauf herunter, ein dritter aus dem Garten, und am Fuß steht die Tür des Clubs.",
-      "lookFor": "Schauen Sie vom Pflaster zurück nach oben: Drei steinerne Läufe treffen hier zusammen, und zu beiden Seiten öffnet sich das Untergeschoss."
+      "title": "Versunkener Hof",
+      "kicker": "Wo die Terrasse unter die Erde taucht.",
+      "intro": "Ein abgesenkter Hof, fünf Meter tief in die Terrasse zwischen Saal und Orangerie geschnitten. Eine halboktagrammförmige Freitreppe aus facettiertem Stein führt von Terrasse und Garten zum Pflaster vor der Clubtür hinab.",
+      "lookFor": "Blicken Sie vom Pflaster auf die sternförmig facettierten Steinstufen hinauf, die zum Garten und Abendhimmel emporsteigen; zu beiden Seiten öffnet sich die Krypta."
     },
     "foyer-south": {
       "title": "südliches Untergeschoss",
@@ -119,7 +119,7 @@
       "title": "Nordterrasse",
       "kicker": "Der Wandelgang zur Orangerie.",
       "intro": "Der nördliche Arm der Terrasse, vom Senkhof bis zum Treppenpavillon an seinem Ende. Die Türen der Orangerie gehen von ihm ab, im Westen liegt das Tor zum Hain, und der Hof schneidet ihn dort, wo die Treppen zum Club hinabführen.",
-      "lookFor": "Die Brüstung um den Hof und die drei steinernen Läufe darin."
+      "lookFor": "Die Brüstung um den Hof und die halbkreisförmige Prachtstiege darin."
     },
     "terrace": {
       "title": "Terrasse",

@@ -189,7 +189,7 @@ describe("the designed observatory", () => {
         if (Math.abs(p.x + 10.6) < 0.05 && Math.abs(s.x - 0.26) < 0.01) lamps.push(Number(p.z.toFixed(2)));
       }
     }
-    expect(lamps.sort((a, b) => a - b)).toEqual([-29.6, -24.4]);
+    expect(lamps.sort((a, b) => a - b)).toEqual([-27.1, -21.9]);
   });
 
   it("honours the architecture switch before considering a legacy asset URL", async () => {

@@ -1069,7 +1069,7 @@
         "position": [
           -11.5,
           -5,
-          -31
+          -24.5
         ],
         "yawDeg": 180
       },
@@ -1112,15 +1112,14 @@
           "axis": "x",
           "at": -20,
           "center": -24.5,
-          "width": 4,
-          "height": 3.6,
-          "treadMeters": 0.35
+          "width": 8,
+          "height": 8
         },
         {
           "to": "club",
           "axis": "x",
           "at": -10,
-          "center": -27,
+          "center": -24.5,
           "width": 4,
           "height": 3.2
         }
@@ -1213,7 +1212,7 @@
           "to": "stair-court",
           "axis": "x",
           "at": -10,
-          "center": -27,
+          "center": -24.5,
           "width": 4,
           "height": 3.2
         },
@@ -1973,8 +1972,8 @@
           "axis": "x",
           "at": -20,
           "center": -24.5,
-          "width": 4,
-          "height": 3.6,
+          "width": 8,
+          "height": 8,
           "signRoom": "club"
         }
       ],

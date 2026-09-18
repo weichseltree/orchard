@@ -68,8 +68,8 @@
     "stair-court": {
       "title": "cour en contrebas",
       "kicker": "Là où la terrasse descend sous terre.",
-      "intro": "Une cour creusée dans la terrasse entre la salle et l'orangerie, cinq mètres plus bas. Une volée y descend de chaque bras de la terrasse, une troisième du jardin, et la porte du club se tient à leur pied.",
-      "lookFor": "Depuis le pavage, regardez d'où vous venez : trois volées de pierre se rejoignent ici, et le souterrain s'ouvre de part et d'autre."
+      "intro": "Une cour anglaise taillée dans la terrasse entre la grande salle et l'orangerie, cinq mètres plus bas. Un escalier magistral en demi-octogramme aux gradins de pierre biseautée descend de la terrasse et du parterre vers le pavage devant le club.",
+      "lookFor": "Depuis le pavage, admirez les gradins étoilés qui montent vers le jardin et le crépuscule ; la crypte s'ouvre de part et d'autre."
     },
     "foyer-south": {
       "title": "souterrain sud",
@@ -119,7 +119,7 @@
       "title": "terrasse nord",
       "kicker": "La promenade vers l'orangerie.",
       "intro": "Le bras nord de la terrasse, de la cour en contrebas au pavillon d'escalier qui la termine. Les portes de l'orangerie y donnent, la grille du bosquet est à l'ouest, et la cour la coupe là où descendent les escaliers du club.",
-      "lookFor": "Le parapet autour de la cour, et les trois volées de pierre qu'elle contient."
+      "lookFor": "Le parapet autour de la cour, et le grand escalier semi-circulaire à l'intérieur."
     },
     "terrace": {
       "title": "terrasse",

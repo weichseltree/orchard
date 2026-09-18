@@ -56,6 +56,7 @@ export interface Flight {
  * is higher. The higher room carries none; its doorway is level with its floor.
  */
 export function flightsOf(mansion: Mansion, room: Room): Flight[] {
+  if (room.id === "stair-court") return [];
   const out: Flight[] = [];
   const base = room.bounds.min[1];
   for (const door of room.doorways) {
@@ -83,6 +84,40 @@ export function flightFraction(flight: Flight, x: number, z: number): number | n
   return 1 - dist / flight.run;
 }
 
+const STAR_ANGLES = [
+  -Math.PI / 2,
+  -3 * Math.PI / 8,
+  -Math.PI / 4,
+  -Math.PI / 8,
+  0,
+  Math.PI / 8,
+  Math.PI / 4,
+  3 * Math.PI / 8,
+  Math.PI / 2,
+];
+
+/** Outer radius of the half-octagram (8-pointed star) staircase at a given angle. */
+function starOuterRadius(angle: number): number {
+  const a = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, angle));
+  let k = 0;
+  for (let i = 0; i < 8; i++) {
+    if (a >= STAR_ANGLES[i]! && a <= STAR_ANGLES[i + 1]! + 1e-9) {
+      k = i;
+      break;
+    }
+  }
+  const a0 = STAR_ANGLES[k]!, a1 = STAR_ANGLES[k + 1]!;
+  const r0_max = Math.min(7.5 / Math.max(0.01, Math.cos(a0)), 13.5 / Math.max(0.01, Math.abs(Math.sin(a0))));
+  const r1_max = Math.min(7.5 / Math.max(0.01, Math.cos(a1)), 13.5 / Math.max(0.01, Math.abs(Math.sin(a1))));
+  const r0 = r0_max * (k % 2 === 1 ? 0.765367 : 1.0);
+  const r1 = r1_max * ((k + 1) % 2 === 1 ? 0.765367 : 1.0);
+  const x0 = r0 * Math.cos(a0), z0 = r0 * Math.sin(a0);
+  const x1 = r1 * Math.cos(a1), z1 = r1 * Math.sin(a1);
+  const cross = x0 * z1 - z0 * x1;
+  const denom = (z1 - z0) * Math.cos(a) - (x1 - x0) * Math.sin(a);
+  return Math.abs(denom) > 1e-6 ? Math.abs(cross / denom) : r0;
+}
+
 /**
  * The height of the floor under a point of this room. Steps are a smooth
  * ramp for the body, so the eye glides rather than hops; the steps you see
@@ -93,6 +128,20 @@ export function floorAt(mansion: Mansion, room: Room, x: number, z: number): num
   const base = room.bounds.min[1];
   let h = base;
   if (room.fallback.kind === "ground") h += moundHeight(mansion.terrain.mounds, x, z);
+  if (room.id === "stair-court") {
+    const y0 = base;
+    if (x >= -12.5) return y0;
+    const cx = -12.5, cz = -24.5;
+    const dx = cx - x, dz = z - cz;
+    const r = Math.hypot(dx, dz);
+    const angle = Math.atan2(dz, dx); // [-PI/2, PI/2]
+    const sinA = Math.abs(Math.sin(angle));
+    const t_terrace = Math.min(1, Math.max(0, (sinA - 0.5) / 0.366));
+    const y_top = -1.6 + t_terrace * 1.6;
+    const R_max = starOuterRadius(angle);
+    const t_r = Math.min(1, Math.max(0, r / R_max));
+    return y0 + t_r * (y_top - y0);
+  }
   for (const flight of flightsOf(mansion, room)) {
     const t = flightFraction(flight, x, z);
     if (t === null) continue;

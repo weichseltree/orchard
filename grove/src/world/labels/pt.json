@@ -68,8 +68,8 @@
     "stair-court": {
       "title": "pátio encaixado",
       "kicker": "Onde o terraço desce sob a terra.",
-      "intro": "Um pátio aberto no terraço entre o salão e a estufa, cinco metros mais abaixo. De cada braço do terraço desce um lanço, um terceiro vem do jardim, e ao pé deles está a porta do clube.",
-      "lookFor": "Do pavimento, olhe para o caminho por onde veio: aqui juntam-se três lanços de pedra, e a cave abre-se de ambos os lados."
+      "intro": "Um pátio rebaixado escavado no terraço entre o salão e a estufa de laranjeiras, cinco metros abaixo. Uma majestosa escadaria em meio octagrama com degraus de pedra facetada desce do terraço e do jardim até o pavimento em frente ao clube.",
+      "lookFor": "Do pavimento, contemple os degraus estrelados que sobem em direção ao jardim e ao crepúsculo; a cripta se abre de cada lado."
     },
     "foyer-south": {
       "title": "cave sul",
@@ -119,7 +119,7 @@
       "title": "terraço norte",
       "kicker": "O passeio até à estufa.",
       "intro": "O braço norte do terraço, do pátio encaixado ao pavilhão de escada que o fecha. As portas da estufa abrem para ele, o portão do bosque fica a oeste, e o pátio corta-o onde descem as escadas do clube.",
-      "lookFor": "O parapeito à volta do pátio e os três lanços de pedra lá dentro."
+      "lookFor": "O parapeito à volta do pátio e a grande escadaria semicircular no seu interior."
     },
     "terrace": {
       "title": "terraço",

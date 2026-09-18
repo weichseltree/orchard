@@ -68,8 +68,8 @@
     "stair-court": {
       "title": "patio hundido",
       "kicker": "Donde la terraza baja bajo tierra.",
-      "intro": "Un patio abierto en la terraza entre el vestíbulo y la orangerie, cinco metros más abajo. Un tramo baja desde cada brazo de la terraza, un tercero desde el jardín, y al pie de ellos está la puerta del club.",
-      "lookFor": "Desde el pavimento, mire hacia donde vino: aquí se juntan tres tramos de piedra, y el subterráneo se abre a ambos lados."
+      "intro": "Un patio inglés excavado en la terraza entre el gran salón y la orangerie, cinco metros abajo. Una majestuosa escalinata en medio octagrama con gradas de piedra facetada desciende desde la terraza y el jardín hasta el pavimento frente al club.",
+      "lookFor": "Desde el pavimento, contemple las gradas estrelladas que ascienden hacia el jardín y el cielo crepuscular; la cripta se abre a ambos lados."
     },
     "foyer-south": {
       "title": "subterráneo sur",
@@ -119,7 +119,7 @@
       "title": "terraza norte",
       "kicker": "El paseo hacia la orangerie.",
       "intro": "El brazo norte de la terraza, del patio hundido al pabellón de escalera que la cierra. Las puertas de la orangerie dan a ella, la verja de la arboleda queda al oeste, y el patio la corta donde bajan las escaleras del club.",
-      "lookFor": "El pretil alrededor del patio y los tres tramos de piedra que contiene."
+      "lookFor": "El pretil alrededor del patio y la gran escalera semicircular en su interior."
     },
     "terrace": {
       "title": "terraza",

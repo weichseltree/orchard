@@ -68,8 +68,8 @@
     "stair-court": {
       "title": "sunken court",
       "kicker": "Where the terrace dips underground.",
-      "intro": "A court cut into the terrace between the hall and the orangery, five metres down. A flight comes into it from each arm of the terrace, a third from the garden, and the club's door stands at the foot of them, across the paving.",
-      "lookFor": "From the paving, look up the way you came: three flights of stone meet here, and the undercroft opens either side."
+      "intro": "A sunken court cut into the terrace between the hall and the orangery, five metres down. A grand half-octagram flight of faceted stone steps sweeps down from the terrace and garden to the paving in front of the club's door.",
+      "lookFor": "From the paving, look up at the star-faceted tiers of steps rising toward the garden and the twilight sky; the undercroft opens either side."
     },
     "foyer-south": {
       "title": "south undercroft",
@@ -119,7 +119,7 @@
       "title": "north terrace",
       "kicker": "The promenade toward the orangery.",
       "intro": "The northern arm of the terrace, from the sunken court to the stair pavilion at its end. The orangery's doors open off it, the grove's gate lies west, and the court cuts across it where the club's stairs go down.",
-      "lookFor": "The parapet round the court, and the three flights of stone inside it."
+      "lookFor": "The parapet round the court, and the grand semi-circular staircase inside it."
     },
     "terrace": {
       "title": "terrace",

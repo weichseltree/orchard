@@ -68,8 +68,8 @@
     "stair-court": {
       "title": "corte incassata",
       "kicker": "Dove la terrazza scende sottoterra.",
-      "intro": "Una corte tagliata nella terrazza fra la sala e l'aranciera, cinque metri più in basso. Una rampa vi scende da ciascun braccio della terrazza, una terza dal giardino, e ai loro piedi si apre la porta del club.",
-      "lookFor": "Dal selciato guardate da dove siete venuti: qui si incontrano tre rampe di pietra, e il sotterraneo si apre da entrambi i lati."
+      "intro": "Una corte ribassata scavata nella terrazza tra il salone e l'aranciera, cinque metri più in basso. Una maestosa scalinata a semiottagramma con gradinate in pietra sfaccettata scende dalla terrazza e dal giardino fino alla pavimentazione davanti al club.",
+      "lookFor": "Dal pavimento, osservate le gradinate a stella che risalgono verso il giardino e il cielo crepuscolare; la cripta si apre su entrambi i lati."
     },
     "foyer-south": {
       "title": "sotterraneo sud",
@@ -119,7 +119,7 @@
       "title": "terrazza nord",
       "kicker": "La passeggiata verso l'aranciera.",
       "intro": "Il braccio nord della terrazza, dalla corte incassata al padiglione della scala che la chiude. Le porte dell'aranciera vi si aprono, il cancello del bosco è a ovest, e la corte la taglia dove scendono le scale del club.",
-      "lookFor": "Il parapetto attorno alla corte e le tre rampe di pietra che vi stanno dentro."
+      "lookFor": "Il parapetto attorno alla corte e la grande scalinata semicircolare al suo interno."
     },
     "terrace": {
       "title": "terrazza",

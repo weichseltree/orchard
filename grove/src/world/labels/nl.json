@@ -68,8 +68,8 @@
     "stair-court": {
       "title": "verdiepte hof",
       "kicker": "Waar het terras de grond in gaat.",
-      "intro": "Een hof, vijf meter diep in het terras uitgesneden, tussen de hal en de orangerie. Uit elke arm van het terras daalt een trap af, een derde uit de tuin, en aan hun voet staat de deur van de club.",
-      "lookFor": "Kijk vanaf de bestrating terug omhoog: hier komen drie stenen trappen samen, en aan weerszijden opent zich de onderbouw."
+      "intro": "Een verzonken hof, vijf meter diep uitgesneden in het terras tussen de zaal en de oranjerie. Een monumentale trap in half-octagramvorm met gefacetteerde stenen treden daalt af van het terras en de tuin naar het plaveisel voor de clubdeur.",
+      "lookFor": "Kijk vanaf het plaveisel omhoog naar de stervormig gefacetteerde treden die oprijzen naar de tuin en het avondlicht; aan weerszijden opent het gewelf."
     },
     "foyer-south": {
       "title": "zuidelijke onderbouw",
@@ -119,7 +119,7 @@
       "title": "noordterras",
       "kicker": "De wandeling naar de orangerie.",
       "intro": "De noordelijke arm van het terras, van de verdiepte hof tot het trappaviljoen aan het eind. De deuren van de orangerie komen erop uit, het hek naar het bosje ligt westwaarts, en de hof snijdt hem waar de trappen naar de club afdalen.",
-      "lookFor": "De borstwering rond de hof en de drie stenen trappen daarin."
+      "lookFor": "De borstwering rond de hof en de grote halfronde trap daarbinnen."
     },
     "terrace": {
       "title": "terras",
