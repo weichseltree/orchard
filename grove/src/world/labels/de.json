@@ -32,7 +32,7 @@
       "title": "Orangerie",
       "kicker": "Lassen Sie den Blick wandern.",
       "intro": "Die Orangerie verbindet die Kammer von world-engine mit der Terrasse. Sie ist ein Ort zwischen den Exponaten: Folgen Sie den offenen Türen, blicken Sie zu den Kammern zurück oder treten Sie hinaus unter den Himmel. Hinten steht ein Schachtisch: Treten Sie heran, oder öffnen Sie es über den Guide. Sechs Orbitale stehen der Länge nach im Raum, jedes auf einem Sockel, dessen Höhe seine eigene Energie ist, zu einem Fünftel eines Meters je Hartree. Das zweite und das dritte stehen gleich hoch, weil sie dieselbe Energie haben.",
-      "lookFor": "Die drei Türen zur Gartenseite führen alle auf die Terrasse.",
+      "lookFor": "Die drei Türen zur Gartenseite führen alle auf die Nordterrasse.",
       "limit": "Dies sind wechselwirkungsfreie Elektronen in einem von uns gewählten Topf, kein gemessenes Molekül; die Farben sind Bewegungsenergiedichte und nichts, was eine Kamera aufnehmen könnte."
     },
     "court-north": {
@@ -62,8 +62,20 @@
     "foyer": {
       "title": "Foyer",
       "kicker": "Welcher Weg hinunter?",
-      "intro": "Das Untergeschoss läuft die ganze Länge der Terrasse entlang, ein niedriges Gewölbe unter ihren Platten. Zwei Treppen führen aus den Gärten hinunter, eine an jedem Ende, und zwei Türen gehen weiter in den Club, der sich nur öffnet, wenn Mikrofon und Ton eingeschaltet sind.",
-      "lookFor": "Die Laternen an den beiden Clubtüren und das Licht dahinter: Das Untergeschoss ist warm, der Club ist kalt."
+      "intro": "Das Untergeschoss läuft die nördliche Hälfte der Terrasse entlang, ein niedriges Gewölbe unter ihren Platten. Am fernen Ende führt eine Treppe aus den Gärten hinunter, am anderen öffnet sich der Senkhof, und eine Tür geht weiter in den Club, der sich nur bei eingeschaltetem Mikrofon und Ton öffnet.",
+      "lookFor": "Die Laternen beiderseits der Clubtür und das Licht dahinter: Das Untergeschoss ist warm, der Club ist kalt."
+    },
+    "stair-court": {
+      "title": "Senkhof",
+      "kicker": "Wo die Terrasse in die Tiefe geht.",
+      "intro": "Ein Hof, fünf Meter tief in die Terrasse geschnitten, zwischen Halle und Orangerie. Aus jedem Arm der Terrasse führt ein Lauf herunter, ein dritter aus dem Garten, und am Fuß steht die Tür des Clubs.",
+      "lookFor": "Schauen Sie vom Pflaster zurück nach oben: Drei steinerne Läufe treffen hier zusammen, und zu beiden Seiten öffnet sich das Untergeschoss."
+    },
+    "foyer-south": {
+      "title": "südliches Untergeschoss",
+      "kicker": "Der lange Weg zur fernen Treppe.",
+      "intro": "Die südliche Hälfte des Gewölbes unter der Terrasse, vom Senkhof bis zur Treppe am Südende. Sie hat keine eigene Tür in den Club: Diese Tür liegt am Hof, wenige Schritte hinter Ihnen.",
+      "lookFor": "Die Laternen ziehen sich durch das ganze Gewölbe; das hellere Ende ist der Hof."
     },
     "club": {
       "title": "Club",
@@ -103,11 +115,17 @@
       "intro": "Die Werkstatt ist der Raum des Gastgebers, neben der Halle hinter einer Tür, die sich nur für ihn öffnet. Von hier aus werden Exponate gehängt, geprüft und abgenommen, und was Besucher in den Kammern sehen, wurde zuerst in diesem Raum freigegeben. Sie gehört nicht zum öffentlichen Rundgang.",
       "lookFor": "Wenn Sie diese Tafel lesen können, sind Sie der Gastgeber."
     },
+    "terrace-north": {
+      "title": "Nordterrasse",
+      "kicker": "Der Wandelgang zur Orangerie.",
+      "intro": "Der nördliche Arm der Terrasse, vom Senkhof bis zum Treppenpavillon an seinem Ende. Die Türen der Orangerie gehen von ihm ab, im Westen liegt das Tor zum Hain, und der Hof schneidet ihn dort, wo die Treppen zum Club hinabführen.",
+      "lookFor": "Die Brüstung um den Hof und die drei steinernen Läufe darin."
+    },
     "terrace": {
       "title": "Terrasse",
       "kicker": "Treten Sie hinaus unter den Himmel.",
-      "intro": "Die Terrasse zieht sich über die ganze Gartenseite des Gebäudes. Türen führen zurück in die Halle, in die Orangerie und in die Galerie; voraus liegt der Garten, dahinter die Haine. Der Himmel ist ein gestaltetes Zwielicht, kein astronomischer.",
-      "lookFor": "Folgen Sie der Terrasse in eine der beiden Richtungen zu einer Tür nach innen, oder gehen Sie hinüber in den Garten."
+      "intro": "Der südliche Arm der Terrasse, vom Senkhof bis zum fernen Ende der Galerie. Türen führen zurück in die Halle und in die Galerie; voraus liegt der Garten, dahinter die Haine. Der Himmel ist ein gestaltetes Zwielicht, kein astronomischer.",
+      "lookFor": "Folgen Sie der Terrasse nach Süden zu einer Tür nach innen, nach Norden zum Senkhof, oder gehen Sie hinüber in den Garten."
     },
     "parterre": {
       "title": "Garten",

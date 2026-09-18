@@ -32,7 +32,7 @@
       "title": "orangerie",
       "kicker": "Deje que sus ojos viajen.",
       "intro": "La orangerie une la sala de world-engine con la terraza. Es un lugar entre piezas: siga las puertas abiertas, mire hacia las salas, o salga bajo el cielo. Al fondo hay una mesa de ajedrez: acérquese para jugar, o abra la partida desde la Guía. Seis orbitales se alzan a lo largo de la sala, cada uno sobre un plinto cuya altura es su propia energía, a un quinto de metro por Hartree. El segundo y el tercero están a la misma altura porque tienen la misma energía, y la densidad que entre todos componen se alza un poco más allá.",
-      "lookFor": "Las tres puertas del lado del jardín dan todas a la terraza.",
+      "lookFor": "Las tres puertas del lado del jardín dan todas a la terraza norte.",
       "limit": "Son electrones sin interacción en un pozo que elegimos nosotros, no una molécula medida; los colores son densidad de energía cinética y no algo que una cámara pudiera registrar."
     },
     "court-north": {
@@ -62,8 +62,20 @@
     "foyer": {
       "title": "foyer",
       "kicker": "¿Por dónde se baja?",
-      "intro": "El sótano recorre toda la longitud de la terraza, una bóveda baja bajo sus losas. Dos escaleras bajan hasta él desde los jardines, una en cada extremo de la terraza, y dos puertas siguen adelante hacia el club, que solo se abre al visitante que tiene el micrófono y el sonido encendidos.",
-      "lookFor": "Los faroles en las dos puertas del club, y la luz que entra por ellas: el sótano es cálido, el club es frío."
+      "intro": "El sótano recorre la mitad norte de la terraza, una bóveda baja bajo sus losas. En el extremo lejano baja una escalera desde los jardines, en el otro se abre el patio hundido, y una puerta sigue hacia el club, que solo se abre con el micrófono y el sonido encendidos.",
+      "lookFor": "Los faroles a ambos lados de la puerta del club, y la luz que entra por ella: el sótano es cálido, el club es frío."
+    },
+    "stair-court": {
+      "title": "patio hundido",
+      "kicker": "Donde la terraza baja bajo tierra.",
+      "intro": "Un patio abierto en la terraza entre el vestíbulo y la orangerie, cinco metros más abajo. Un tramo baja desde cada brazo de la terraza, un tercero desde el jardín, y al pie de ellos está la puerta del club.",
+      "lookFor": "Desde el pavimento, mire hacia donde vino: aquí se juntan tres tramos de piedra, y el subterráneo se abre a ambos lados."
+    },
+    "foyer-south": {
+      "title": "subterráneo sur",
+      "kicker": "El camino largo a la escalera lejana.",
+      "intro": "La mitad sur de la bóveda bajo la terraza, del patio hundido a la escalera del extremo sur. No tiene puerta propia al club: esa puerta está en el patio, a unos pasos detrás de usted.",
+      "lookFor": "Las linternas recorren toda la bóveda; el extremo más claro es el patio."
     },
     "club": {
       "title": "club",
@@ -103,11 +115,17 @@
       "intro": "El taller es la habitación del anfitrión, junto al hall, tras una puerta que solo se abre para él. Desde aquí se cuelgan, revisan y retiran las piezas, y lo que un visitante ve en las salas fue aprobado primero en esta habitación. No forma parte del recorrido público.",
       "lookFor": "Si puede leer este panel, usted es el anfitrión."
     },
+    "terrace-north": {
+      "title": "terraza norte",
+      "kicker": "El paseo hacia la orangerie.",
+      "intro": "El brazo norte de la terraza, del patio hundido al pabellón de escalera que la cierra. Las puertas de la orangerie dan a ella, la verja de la arboleda queda al oeste, y el patio la corta donde bajan las escaleras del club.",
+      "lookFor": "El pretil alrededor del patio y los tres tramos de piedra que contiene."
+    },
     "terrace": {
       "title": "terraza",
       "kicker": "Salga bajo el cielo.",
-      "intro": "La terraza recorre todo el lado del jardín del edificio. Las puertas devuelven al hall, la orangerie y la galería; delante se extiende el jardín, y más allá las arboledas. El cielo es un crepúsculo diseñado, no uno astronómico.",
-      "lookFor": "Siga la terraza en cualquier dirección hasta una puerta de vuelta al interior, o cruce al jardín."
+      "intro": "El brazo sur de la terraza, desde el patio hundido hasta el extremo lejano de la galería. Las puertas devuelven al hall y a la galería; delante se extiende el jardín, y más allá las arboledas. El cielo es un crepúsculo diseñado, no uno astronómico.",
+      "lookFor": "Siga la terraza hacia el sur hasta una puerta de vuelta al interior, hacia el norte hasta el patio hundido, o cruce al jardín."
     },
     "parterre": {
       "title": "jardín",

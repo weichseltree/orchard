@@ -118,9 +118,11 @@ describe("neighbourhood", () => {
     expect(fromHall).not.toContain("greenhouse");
     // The orangery is two doors from the hall and the gallery, and its terrace doors bring every cell of the grounds.
     const fromOrangery = neighbourhood(mansion, "orangery");
-    // ...and the rooms stacked under them: the club and its stage under the wing, the undercroft under the terrace.
-    // ...and, since 2026-09-17, quantumflow's wing: the two rooms its east wall
-    // opens into, and the two more that are a second door beyond them.
-    expect(fromOrangery.sort()).toEqual(["club", "court-north", "court-south", "foyer", "gallery", "hall", "orangery", "orchard-east", "orchard-south", "orchard-west", "parterre", "quantumflow", "quantumflow/cloud", "quantumflow/flow", "quantumflow/inversion", "stage", "terrace", "world-engine"]);
+    // ...and the rooms stacked under them: the club and its stage under the
+    // wing, the undercroft under the terrace; and quantumflow's wing, the two
+    // rooms its east wall opens into and the two a second door beyond them.
+    // The gallery is no longer two doors away: the terrace's arms are
+    // separate rooms since the court was sunk between them (2026-09-17).
+    expect(fromOrangery.sort()).toEqual(["club", "court-north", "court-south", "foyer", "foyer-south", "hall", "orangery", "orchard-east", "orchard-south", "orchard-west", "parterre", "quantumflow", "quantumflow/cloud", "quantumflow/flow", "quantumflow/inversion", "stage", "stair-court", "terrace", "terrace-north", "world-engine"]);
   });
 });

@@ -32,7 +32,7 @@
       "title": "orangery",
       "kicker": "Let your eyes travel.",
       "intro": "The orangery joins the world-engine chamber to the terrace. It is a place between exhibits: follow the open doors, look back towards the chambers, or step out under the sky. At the far end stands a chess table: walk up to play, or open it from the Guide. Six orbitals stand along the room, each on a plinth whose height is its own energy, at a fifth of a metre to the Hartree. The second and third share a height because they share an energy.",
-      "lookFor": "The three doors on the garden side all open onto the terrace.",
+      "lookFor": "The three doors on the garden side all open onto the north terrace.",
       "limit": "These are non-interacting electrons in a well we chose, not a measured molecule, and the colours are kinetic energy density rather than anything a camera could record."
     },
     "court-north": {
@@ -62,8 +62,20 @@
     "foyer": {
       "title": "foyer",
       "kicker": "Which way down?",
-      "intro": "The undercroft runs the length of the terrace, a low vault under its flagstones. Two stairs come down into it from the grounds, one at each end of the terrace, and two doors lead on into the club, which opens only to a visitor whose microphone and sound are on.",
-      "lookFor": "The lanterns at the club's two doors, and the light through them: the undercroft is warm, the club is cold."
+      "intro": "The undercroft runs the northern half of the terrace, a low vault under its flagstones. A stair comes down from the grounds at its far end, the sunken court opens at the other, and one door leads into the club, which opens only with microphone and sound on.",
+      "lookFor": "The lanterns either side of the club's door, and the light through it: the undercroft is warm, the club is cold."
+    },
+    "stair-court": {
+      "title": "sunken court",
+      "kicker": "Where the terrace dips underground.",
+      "intro": "A court cut into the terrace between the hall and the orangery, five metres down. A flight comes into it from each arm of the terrace, a third from the garden, and the club's door stands at the foot of them, across the paving.",
+      "lookFor": "From the paving, look up the way you came: three flights of stone meet here, and the undercroft opens either side."
+    },
+    "foyer-south": {
+      "title": "south undercroft",
+      "kicker": "The long way to the far stair.",
+      "intro": "The southern half of the vault under the terrace, from the sunken court to the stair at the terrace's south end. It carries no doors of its own into the club: that door is at the court, a few steps behind you.",
+      "lookFor": "The lanterns run the length of the vault; the court's light is the brighter end."
     },
     "club": {
       "title": "club",
@@ -103,11 +115,17 @@
       "intro": "The workshop is the host's room, off the hall behind a door that opens only for them. Exhibits are hung, checked and taken down from here, and what a visitor sees in the chambers was approved in this room first. It is not part of the public tour.",
       "lookFor": "If you can read this panel, you are the host."
     },
+    "terrace-north": {
+      "title": "north terrace",
+      "kicker": "The promenade toward the orangery.",
+      "intro": "The northern arm of the terrace, from the sunken court to the stair pavilion at its end. The orangery's doors open off it, the grove's gate lies west, and the court cuts across it where the club's stairs go down.",
+      "lookFor": "The parapet round the court, and the three flights of stone inside it."
+    },
     "terrace": {
       "title": "terrace",
       "kicker": "Step out under the sky.",
-      "intro": "The terrace runs the whole garden side of the building. Doors lead back into the hall, the orangery and the gallery; ahead lies the garden, and beyond it the groves. The sky is a designed twilight, not an astronomical one.",
-      "lookFor": "Follow the terrace either way for a door back inside, or cross into the garden."
+      "intro": "The southern arm of the terrace, from the sunken court to the gallery's far end. Doors lead back into the hall and the gallery; ahead lies the garden, and beyond it the groves. The sky is a designed twilight, not an astronomical one.",
+      "lookFor": "Follow the terrace south for a door back inside, north for the sunken court, or cross into the garden."
     },
     "parterre": {
       "title": "garden",

@@ -32,7 +32,7 @@
       "title": "orangerie",
       "kicker": "Laissez vos yeux voyager.",
       "intro": "L'orangerie relie la salle de world-engine à la terrasse. C'est un lieu entre les expositions : suivez les portes ouvertes, regardez vers les salles, ou sortez sous le ciel. Au fond se trouve une table d'échecs : approchez-vous pour jouer, ou ouvrez la partie depuis le Guide. Six orbitales se tiennent dans la longueur de la salle, chacune sur un socle dont la hauteur est sa propre énergie, à un cinquième de mètre par Hartree. La deuxième et la troisième sont à la même hauteur parce qu'elles ont la même énergie, et la densité qu'elles composent toutes ensemble se tient un peu plus loin.",
-      "lookFor": "Les trois portes côté jardin donnent toutes sur la terrasse.",
+      "lookFor": "Les trois portes côté jardin donnent toutes sur la terrasse nord.",
       "limit": "Ce sont des électrons sans interaction dans un puits que nous avons choisi, non une molécule mesurée ; les couleurs sont une densité d'énergie cinétique et non quelque chose qu'un appareil photographique pourrait enregistrer."
     },
     "court-north": {
@@ -62,8 +62,20 @@
     "foyer": {
       "title": "foyer",
       "kicker": "Par où descendre ?",
-      "intro": "Le sous-sol court sur toute la longueur de la terrasse, une voûte basse sous ses dalles. Deux escaliers y descendent depuis le domaine, un à chaque extrémité de la terrasse, et deux portes mènent plus loin dans le club, qui ne s'ouvre qu'au visiteur dont le micro et le son sont allumés.",
-      "lookFor": "Les lanternes aux deux portes du club, et la lumière qui en vient : le sous-sol est chaud, le club est froid."
+      "intro": "Le sous-sol court sur la moitié nord de la terrasse, une voûte basse sous ses dalles. À l'extrémité lointaine, un escalier y descend depuis le domaine ; à l'autre s'ouvre la cour en contrebas, et une porte mène dans le club, qui ne s'ouvre qu'avec le micro et le son allumés.",
+      "lookFor": "Les lanternes de part et d'autre de la porte du club, et la lumière qui en vient : le sous-sol est chaud, le club est froid."
+    },
+    "stair-court": {
+      "title": "cour en contrebas",
+      "kicker": "Là où la terrasse descend sous terre.",
+      "intro": "Une cour creusée dans la terrasse entre la salle et l'orangerie, cinq mètres plus bas. Une volée y descend de chaque bras de la terrasse, une troisième du jardin, et la porte du club se tient à leur pied.",
+      "lookFor": "Depuis le pavage, regardez d'où vous venez : trois volées de pierre se rejoignent ici, et le souterrain s'ouvre de part et d'autre."
+    },
+    "foyer-south": {
+      "title": "souterrain sud",
+      "kicker": "Le long chemin vers l'escalier du bout.",
+      "intro": "La moitié sud de la voûte sous la terrasse, de la cour en contrebas à l'escalier de l'extrémité sud. Elle n'a pas de porte propre vers le club : cette porte est à la cour, quelques pas derrière vous.",
+      "lookFor": "Les lanternes courent sur toute la voûte ; l'extrémité la plus claire est la cour."
     },
     "club": {
       "title": "club",
@@ -103,11 +115,17 @@
       "intro": "L'atelier est la pièce de l'hôte, à côté du hall, derrière une porte qui ne s'ouvre que pour lui. C'est d'ici que les expositions sont accrochées, vérifiées et retirées, et ce qu'un visiteur voit dans les salles a d'abord été approuvé dans cette pièce. Elle ne fait pas partie de la visite publique.",
       "lookFor": "Si vous pouvez lire ce panneau, vous êtes l'hôte."
     },
+    "terrace-north": {
+      "title": "terrasse nord",
+      "kicker": "La promenade vers l'orangerie.",
+      "intro": "Le bras nord de la terrasse, de la cour en contrebas au pavillon d'escalier qui la termine. Les portes de l'orangerie y donnent, la grille du bosquet est à l'ouest, et la cour la coupe là où descendent les escaliers du club.",
+      "lookFor": "Le parapet autour de la cour, et les trois volées de pierre qu'elle contient."
+    },
     "terrace": {
       "title": "terrasse",
       "kicker": "Sortez sous le ciel.",
-      "intro": "La terrasse longe tout le côté jardin du bâtiment. Des portes ramènent dans le hall, l'orangerie et la galerie ; devant s'étend le jardin, et au-delà les bosquets. Le ciel est un crépuscule dessiné, non un ciel astronomique.",
-      "lookFor": "Suivez la terrasse dans un sens ou l'autre pour trouver une porte vers l'intérieur, ou traversez vers le jardin."
+      "intro": "Le bras sud de la terrasse, de la cour en contrebas à l'extrémité lointaine de la galerie. Des portes ramènent dans le hall et la galerie ; devant s'étend le jardin, et au-delà les bosquets. Le ciel est un crépuscule dessiné, non un ciel astronomique.",
+      "lookFor": "Suivez la terrasse vers le sud pour une porte vers l'intérieur, vers le nord pour la cour en contrebas, ou traversez vers le jardin."
     },
     "parterre": {
       "title": "jardin",

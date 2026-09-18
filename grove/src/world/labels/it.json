@@ -32,7 +32,7 @@
       "title": "orangerie",
       "kicker": "Lasci viaggiare lo sguardo.",
       "intro": "L'orangerie collega la sala di world-engine alla terrazza. È un luogo tra le opere: segua le porte aperte, guardi verso le sale, o esca sotto il cielo. In fondo c'è un tavolo da scacchi: si avvicini per giocare, o apra la partita dalla Guida. Sei orbitali stanno lungo la sala, ciascuno su un plinto la cui altezza è la sua stessa energia, a un quinto di metro per Hartree. Il secondo e il terzo stanno alla stessa altezza perché hanno la stessa energia, e la densità che tutti insieme compongono sta poco più in là.",
-      "lookFor": "Le tre porte sul lato del giardino danno tutte sulla terrazza.",
+      "lookFor": "Le tre porte sul lato del giardino danno tutte sulla terrazza nord.",
       "limit": "Sono elettroni non interagenti in una buca scelta da noi, non una molecola misurata; i colori sono densità di energia cinetica e non qualcosa che una macchina fotografica potrebbe riprendere."
     },
     "court-north": {
@@ -62,8 +62,20 @@
     "foyer": {
       "title": "foyer",
       "kicker": "Da che parte si scende?",
-      "intro": "Il sotterraneo corre per tutta la lunghezza della terrazza, una volta bassa sotto le sue lastre. Due scale vi scendono dai giardini, una a ciascuna estremità della terrazza, e due porte proseguono nel club, che si apre solo al visitatore con microfono e audio accesi.",
-      "lookFor": "Le lanterne alle due porte del club, e la luce che ne viene: il sotterraneo è caldo, il club è freddo."
+      "intro": "Il sotterraneo corre lungo la metà settentrionale della terrazza, una volta bassa sotto le sue lastre. All'estremità lontana una scala scende dai giardini, all'altra si apre la corte incassata, e una porta prosegue nel club, che si apre solo con microfono e audio accesi.",
+      "lookFor": "Le lanterne ai due lati della porta del club, e la luce che ne viene: il sotterraneo è caldo, il club è freddo."
+    },
+    "stair-court": {
+      "title": "corte incassata",
+      "kicker": "Dove la terrazza scende sottoterra.",
+      "intro": "Una corte tagliata nella terrazza fra la sala e l'aranciera, cinque metri più in basso. Una rampa vi scende da ciascun braccio della terrazza, una terza dal giardino, e ai loro piedi si apre la porta del club.",
+      "lookFor": "Dal selciato guardate da dove siete venuti: qui si incontrano tre rampe di pietra, e il sotterraneo si apre da entrambi i lati."
+    },
+    "foyer-south": {
+      "title": "sotterraneo sud",
+      "kicker": "La via lunga alla scala in fondo.",
+      "intro": "La metà sud della volta sotto la terrazza, dalla corte incassata alla scala all'estremità meridionale. Non ha una porta propria verso il club: quella porta è alla corte, pochi passi dietro di voi.",
+      "lookFor": "Le lanterne corrono per tutta la volta; l'estremità più chiara è la corte."
     },
     "club": {
       "title": "club",
@@ -103,11 +115,17 @@
       "intro": "L'officina è la stanza dell'ospite, accanto all'hall, dietro una porta che si apre solo per lui. Da qui le opere vengono appese, controllate e rimosse, e ciò che un visitatore vede nelle sale è stato approvato prima in questa stanza. Non fa parte del percorso pubblico.",
       "lookFor": "Se può leggere questo pannello, lei è l'ospite."
     },
+    "terrace-north": {
+      "title": "terrazza nord",
+      "kicker": "La passeggiata verso l'aranciera.",
+      "intro": "Il braccio nord della terrazza, dalla corte incassata al padiglione della scala che la chiude. Le porte dell'aranciera vi si aprono, il cancello del bosco è a ovest, e la corte la taglia dove scendono le scale del club.",
+      "lookFor": "Il parapetto attorno alla corte e le tre rampe di pietra che vi stanno dentro."
+    },
     "terrace": {
       "title": "terrazza",
       "kicker": "Esca sotto il cielo.",
-      "intro": "La terrazza corre lungo tutto il lato del giardino dell'edificio. Le porte riportano nell'hall, nell'orangerie e nella galleria; davanti si stende il giardino, e oltre i boschetti. Il cielo è un crepuscolo disegnato, non astronomico.",
-      "lookFor": "Segua la terrazza in una direzione o nell'altra fino a una porta verso l'interno, o attraversi verso il giardino."
+      "intro": "Il braccio meridionale della terrazza, dalla corte incassata all'estremità lontana della galleria. Le porte riportano nell'hall e nella galleria; davanti si stende il giardino, e oltre i boschetti. Il cielo è un crepuscolo disegnato, non astronomico.",
+      "lookFor": "Segua la terrazza verso sud fino a una porta verso l'interno, verso nord fino alla corte incassata, o attraversi verso il giardino."
     },
     "parterre": {
       "title": "giardino",

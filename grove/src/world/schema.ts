@@ -322,6 +322,15 @@ export const RoomSchema = z.looseObject({
   /** Designed runtime geometry ("observatory" rooms, "space" for the Orrery) or the original asset/fallback loader. */
   architecture: z.enum(["legacy", "observatory", "space"]).default("legacy"),
   /**
+   * A room with no lid: a court sunk between the rooms around it, open to the
+   * sky instead of vaulted. Its rim is the floor of its neighbours above, so
+   * each of them draws the parapet along the wall it shares with the court
+   * (observatory.ts's `grounds`) — without that a walker meets the drop with
+   * nothing to see and nothing to lean on. The club's sunken court between
+   * the terrace's two arms is the first (2026-09-17).
+   */
+  openToSky: z.boolean().default(false),
+  /**
    * How large this room's metre is, seen from the palace, whose rooms are 1.
    * The Orrery is 0.02: through the portal its eighty-metre worlds are globes
    * a metre and a half across, hanging inside the armillary, and a visitor
