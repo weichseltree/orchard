@@ -162,7 +162,12 @@ describe("the designed observatory", () => {
           // A court with no lid has nothing overhead to stay under: its doors
           // open at the rim, so their surrounds — and the cheeks of the
           // flights coming up through it — stand in the room above by design.
-          const overhead = room.openToSky ? Infinity : y1 + margin;
+          const overhead = room.openToSky
+            ? Math.max(y1, ...room.doorways.map(d => {
+              const next = mansion.rooms.find(r => r.id === d.to);
+              return Math.max(y0, next ? next.bounds.min[1] : y0) + d.height + 0.7;
+            })) + margin
+            : y1 + margin;
           if (p.x < x0 - margin || p.x > x1 + margin || p.y < y0 - margin || p.y > overhead || p.z < z0 - margin || p.z > z1 + margin) {
             outside.push(`${child.name}[${i}] at ${p.x.toFixed(2)}, ${p.y.toFixed(2)}, ${p.z.toFixed(2)}`);
           }
@@ -228,8 +233,13 @@ describe("the terrace's two arms and the court between them", () => {
       // flight with its cheeks takes 6, so what is left is two short runs
       // flanking the steps, the longer one on the palace side.
       expect(stones.length, `${id} parapet`).toBeGreaterThan(4);
-      const palaceSide = stones.filter(p => p.x > door.center);
-      expect(palaceSide.length, `${id} parapet east of the steps`).toBeGreaterThan(2);
+      // On BOTH sides of the steps. The garden side is a notch barely a metre
+      // wide, and stone that stops short of it leaves a visitor following the
+      // garden balustrade north at the drop with nothing in front of them.
+      for (const [side, least] of [[-1, 1], [1, 2]] as const) {
+        const run = stones.filter(p => Math.sign(p.x - door.center) === side);
+        expect(run.length, `${id} parapet ${side < 0 ? "garden" : "palace"} side`).toBeGreaterThan(least);
+      }
       // ...and nothing standing in the opening the steps come up through.
       expect(stones.filter(p => Math.abs(p.x - door.center) < door.width / 2), `${id} gap`).toHaveLength(0);
     }
@@ -276,9 +286,11 @@ describe("the terrace's two arms and the court between them", () => {
         }
       });
       expect(lamps.length, `${id} lanterns`).toBeGreaterThan(1);
-      // Spread down the vault, not huddled at one end.
-      const span = Math.max(...lamps) - Math.min(...lamps);
-      expect(span, `${id} lantern span`).toBeGreaterThan((room.bounds.max[2] - room.bounds.min[2]) * 0.4);
+      // No long dark stretch: the gap between one lantern and the next, and
+      // from either end wall, stays within a few strides of the interval.
+      const stops = [room.bounds.min[2], ...lamps.sort((a, b) => a - b), room.bounds.max[2]];
+      const longest = Math.max(...stops.slice(1).map((z, i) => z - stops[i]!));
+      expect(longest, `${id} dark stretch`).toBeLessThan(20);
     }
   });
 });

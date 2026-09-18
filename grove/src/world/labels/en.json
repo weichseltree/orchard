@@ -32,7 +32,7 @@
       "title": "orangery",
       "kicker": "Let your eyes travel.",
       "intro": "The orangery joins the world-engine chamber to the terrace. It is a place between exhibits: follow the open doors, look back towards the chambers, or step out under the sky. At the far end stands a chess table: walk up to play, or open it from the Guide. Six orbitals stand along the room, each on a plinth whose height is its own energy, at a fifth of a metre to the Hartree. The second and third share a height because they share an energy.",
-      "lookFor": "The three doors on the garden side all open onto the terrace.",
+      "lookFor": "The three doors on the garden side all open onto the north terrace.",
       "limit": "These are non-interacting electrons in a well we chose, not a measured molecule, and the colours are kinetic energy density rather than anything a camera could record."
     },
     "court-north": {

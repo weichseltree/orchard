@@ -32,7 +32,7 @@
       "title": "orangerie",
       "kicker": "Lasci viaggiare lo sguardo.",
       "intro": "L'orangerie collega la sala di world-engine alla terrazza. È un luogo tra le opere: segua le porte aperte, guardi verso le sale, o esca sotto il cielo. In fondo c'è un tavolo da scacchi: si avvicini per giocare, o apra la partita dalla Guida. Sei orbitali stanno lungo la sala, ciascuno su un plinto la cui altezza è la sua stessa energia, a un quinto di metro per Hartree. Il secondo e il terzo stanno alla stessa altezza perché hanno la stessa energia, e la densità che tutti insieme compongono sta poco più in là.",
-      "lookFor": "Le tre porte sul lato del giardino danno tutte sulla terrazza.",
+      "lookFor": "Le tre porte sul lato del giardino danno tutte sulla terrazza nord.",
       "limit": "Sono elettroni non interagenti in una buca scelta da noi, non una molecola misurata; i colori sono densità di energia cinetica e non qualcosa che una macchina fotografica potrebbe riprendere."
     },
     "court-north": {

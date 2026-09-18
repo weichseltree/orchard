@@ -946,9 +946,11 @@ function grounds(b: Builder): void {
       const down = room.doorways.filter(d => d.axis === "z" && Math.abs(d.at - wall.at) < 0.001
         && (b.mansion?.rooms.find(r => r.id === d.to)?.openToSky ?? false));
       if (!down.length) continue;
-      // Held off the corners, where the garden edge's own run already stands.
+      // Held half a metre off the garden end, where that edge's own run turns
+      // the corner, and opened by the steps' own width — not by the margin a
+      // body keeps off them, which left the garden side of the rim bare.
       const rim = { ...wall, min: wall.min + 0.5 };
-      balustrade(b, rim, down.map(d => ({ center: d.center, width: d.width + 2 * STAIR_MARGIN })));
+      balustrade(b, rim, down.map(d => ({ center: d.center, width: d.width })));
     }
   } else if (room.id.startsWith("court-")) {
     // A club's forecourt: a walled garden room on the grove's edge, paved

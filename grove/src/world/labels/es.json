@@ -32,7 +32,7 @@
       "title": "orangerie",
       "kicker": "Deje que sus ojos viajen.",
       "intro": "La orangerie une la sala de world-engine con la terraza. Es un lugar entre piezas: siga las puertas abiertas, mire hacia las salas, o salga bajo el cielo. Al fondo hay una mesa de ajedrez: acérquese para jugar, o abra la partida desde la Guía. Seis orbitales se alzan a lo largo de la sala, cada uno sobre un plinto cuya altura es su propia energía, a un quinto de metro por Hartree. El segundo y el tercero están a la misma altura porque tienen la misma energía, y la densidad que entre todos componen se alza un poco más allá.",
-      "lookFor": "Las tres puertas del lado del jardín dan todas a la terraza.",
+      "lookFor": "Las tres puertas del lado del jardín dan todas a la terraza norte.",
       "limit": "Son electrones sin interacción en un pozo que elegimos nosotros, no una molécula medida; los colores son densidad de energía cinética y no algo que una cámara pudiera registrar."
     },
     "court-north": {
