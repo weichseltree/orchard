@@ -19,6 +19,7 @@ import type { PlanetExhibit } from "./planet-exhibit";
 import type { ModelExhibit } from "./model-exhibit";
 import type { AudioExhibit } from "./audio-exhibit";
 import type { CatWorld } from "../vendor/cat-proxy/src/world";
+import { CAT_ROOM } from "./cat-room";
 import { StillBundleSchema, VideoBundleSchema } from "../tape/bundle";
 import type { Provenance } from "../ui/provenance";
 import { bundleBaseOf, pickExhibit, type ExhibitRow } from "./exhibits";
@@ -287,11 +288,14 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
     // The hall's cats. Generated in code -- no glb, no texture, nothing to download --
     // but the module still has to arrive, and awaiting it here would hold up this room's
     // tapes behind two cats. Tracked, not awaited, exactly as a reading stand is.
-    if (!world.cats) {
-      void track(import("./cats").then(({ buildCats, attachCats }) => {
+    if (!world.cats && room.id === CAT_ROOM) {
+      void track(import("./cats").then(({ buildCats, attachCats, disposeCats }) => {
         const cats = buildCats(room, onNotice);
         // The world went while the module was loading, or another room got there first.
-        if (!cats || disposed || world.cats) return cats?.dispose();
+        if (!cats || disposed || world.cats) {
+          if (cats) disposeCats(cats);
+          return;
+        }
         world.cats = cats;
         world.catsRoom = room.id;
         attachCats(cats, groupFor(room));
@@ -592,9 +596,14 @@ export function buildWorld(options: BuildWorldOptions): BuiltWorld {
       for (const planet of world.planets) planet.dispose();
       for (const model of world.models) model.dispose();
       for (const audio of world.audios) audio.dispose();
-      world.cats?.dispose();
-      world.cats = null;
-      world.catsRoom = null;
+      if (world.cats) {
+        const cats = world.cats;
+        world.cats = null;
+        world.catsRoom = null;
+        void import("./cats").then(({ disposeCats }) => {
+          disposeCats(cats);
+        });
+      }
       for (const stand of stands.values()) void stand.then((s) => s.dispose());
       stands.clear();
       if (labelGroups.size) {

@@ -16,8 +16,8 @@ import { CATS, CatWorld } from "../vendor/cat-proxy/src/index";
 // The .glb beside the package is its exported form for other consumers, and the grove never
 // fetches it.
 
-/** The room the cats live in. */
-export const CAT_ROOM = "hall";
+export { CAT_ROOM } from "./cat-room";
+import { CAT_ROOM } from "./cat-room";
 
 /**
  * Seeds are fixed so a given visitor's hall is the same hall twice running, and so a
@@ -88,4 +88,23 @@ export function buildCats(room: Room, onNotice?: (message: string) => void): Cat
 /** Add the cats' scene content to the room's group. */
 export function attachCats(cats: CatWorld, roomGroup: Group): void {
   roomGroup.add(cats.group);
+}
+
+/**
+ * Free all geometries and materials built by the cats, and remove their scene content.
+ * Walking the scene graph explicitly before calling cats.dispose() ensures WebGL resources
+ * are actually released and prevents orphaned parent groups in the room.
+ */
+export function disposeCats(cats: CatWorld): void {
+  cats.group.traverse((child: Object3D) => {
+    const mesh = child as { geometry?: { dispose(): void }; material?: { dispose(): void } | Array<{ dispose(): void }> };
+    mesh.geometry?.dispose();
+    if (Array.isArray(mesh.material)) {
+      for (const m of mesh.material) m.dispose();
+    } else {
+      mesh.material?.dispose();
+    }
+  });
+  cats.group.removeFromParent();
+  cats.dispose();
 }

@@ -1,11 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import mansionDoc from "./mansion.json";
 import { MansionSchema } from "./schema";
-import { CAT_ROOM, softenWhiskers } from "./cats";
+import { CAT_ROOM, attachCats, buildCats, disposeCats, softenWhiskers } from "./cats";
 import { roomArena } from "./room-arena";
 import { COLUMN_FOOT_M, columnFootprints } from "./observatory";
 import { CATS, buildCat, runHeadless } from "../vendor/cat-proxy/src/index";
-import { Group, LineBasicMaterial } from "three";
+import { BufferGeometry, Group, LineBasicMaterial, Material } from "three";
 
 // The package has its own tests for the brain and the body; these are about the seam.
 // What the grove owes is the room: that the arena it hands over really is the hall, and
@@ -88,4 +88,53 @@ describe("the hall's cats", () => {
     expect(report.minCatDistanceM, "the cats walked through each other").toBeGreaterThan(0);
   });
 
+  it("builds only for the designated cat room", () => {
+    const otherRoom = mansion.rooms.find((r) => r.id !== CAT_ROOM)!;
+    expect(buildCats(otherRoom)).toBeNull();
+    const cats = buildCats(hall);
+    expect(cats).not.toBeNull();
+    if (cats) disposeCats(cats);
+  });
+
+  it("disposes all geometries, materials and scene parenting on disposeCats", () => {
+    const cats = buildCats(hall)!;
+    const roomGroup = new Group();
+    attachCats(cats, roomGroup);
+    expect(roomGroup.children).toContain(cats.group);
+
+    const geometries: BufferGeometry[] = [];
+    const materials: Material[] = [];
+    cats.group.traverse((child) => {
+      const mesh = child as { geometry?: BufferGeometry; material?: Material | Material[] };
+      if (mesh.geometry instanceof BufferGeometry) {
+        geometries.push(mesh.geometry);
+        vi.spyOn(mesh.geometry, "dispose");
+      }
+      if (mesh.material instanceof Material) {
+        materials.push(mesh.material);
+        vi.spyOn(mesh.material, "dispose");
+      } else if (Array.isArray(mesh.material)) {
+        for (const m of mesh.material) {
+          if (m instanceof Material) {
+            materials.push(m);
+            vi.spyOn(m, "dispose");
+          }
+        }
+      }
+    });
+
+    expect(geometries.length).toBeGreaterThan(0);
+    expect(materials.length).toBeGreaterThan(0);
+
+    disposeCats(cats);
+
+    for (const g of geometries) {
+      expect(g.dispose).toHaveBeenCalled();
+    }
+    for (const m of materials) {
+      expect(m.dispose).toHaveBeenCalled();
+    }
+    expect(roomGroup.children).not.toContain(cats.group);
+  });
 });
+
