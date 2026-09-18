@@ -1214,7 +1214,7 @@ function foyerFittings(b: Builder): void {
       if (z > z0 + 0.6 && z < z1 - 0.6) lantern(b, x1 - 0.6, z);
     }
   }
-  for (let z = z0 + 8; z < z1 - 6; z += 14) {
+  for (let z = z0 + 8; z < z1 - 2; z += 14) {
     if (doors.some(d => Math.abs(z - d.center) < 4)) continue;
     lantern(b, x1 - 0.6, z);
   }

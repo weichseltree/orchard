@@ -148,11 +148,18 @@ describe("the designed observatory", () => {
           p.setFromMatrixPosition(m);
           s.setFromMatrixScale(m);
           // An upright box's top; a bar is a column turned on its side, whose scale says nothing about height.
+          // A room with no lid has no ceiling of its own: what stands above its
+          // rim are the surrounds of the doors that open there and the cheeks
+          // of the flights coming up through it, both by design. Everything
+          // else, in every room, stays under the lid.
+          const overhead = room.openToSky
+            ? Math.max(y1, ...room.doorways.map(d => {
+              const next = mansion.rooms.find(r => r.id === d.to);
+              return Math.max(y0, next ? next.bounds.min[1] : y0) + d.height + 0.7;
+            })) + margin
+            : y1 + margin;
           const e = m.elements, upright = Math.abs(e[1]!) < 1e-6 && Math.abs(e[4]!) < 1e-6 && Math.abs(e[6]!) < 1e-6 && Math.abs(e[9]!) < 1e-6;
-          // A room with no lid has no ceiling to stay under: the cheek walls of
-          // the court's three flights stand above its rim on purpose, as the
-          // rail beside steps coming up out of the ground.
-          if (!room.openToSky && child.name.startsWith("observatory-box") && upright && p.y + s.y / 2 > y1 + 0.01) outside.push(`${child.name}[${i}] tops at ${(p.y + s.y / 2).toFixed(2)} over ${y1.toFixed(2)}`);
+          if (child.name.startsWith("observatory-box") && upright && p.y + s.y / 2 > overhead) outside.push(`${child.name}[${i}] tops at ${(p.y + s.y / 2).toFixed(2)} over ${y1.toFixed(2)}`);
           if (child.name.includes("@")) {
             // Cladding and its string course: on a wall's outside, within a hand of it, never in the room.
             const onX = Math.abs(p.x - x0) < 0.16 || Math.abs(p.x - x1) < 0.16, onZ = Math.abs(p.z - z0) < 0.16 || Math.abs(p.z - z1) < 0.16;
@@ -162,12 +169,6 @@ describe("the designed observatory", () => {
           // A court with no lid has nothing overhead to stay under: its doors
           // open at the rim, so their surrounds — and the cheeks of the
           // flights coming up through it — stand in the room above by design.
-          const overhead = room.openToSky
-            ? Math.max(y1, ...room.doorways.map(d => {
-              const next = mansion.rooms.find(r => r.id === d.to);
-              return Math.max(y0, next ? next.bounds.min[1] : y0) + d.height + 0.7;
-            })) + margin
-            : y1 + margin;
           if (p.x < x0 - margin || p.x > x1 + margin || p.y < y0 - margin || p.y > overhead || p.z < z0 - margin || p.z > z1 + margin) {
             outside.push(`${child.name}[${i}] at ${p.x.toFixed(2)}, ${p.y.toFixed(2)}, ${p.z.toFixed(2)}`);
           }
@@ -290,7 +291,7 @@ describe("the terrace's two arms and the court between them", () => {
       // from either end wall, stays within a few strides of the interval.
       const stops = [room.bounds.min[2], ...lamps.sort((a, b) => a - b), room.bounds.max[2]];
       const longest = Math.max(...stops.slice(1).map((z, i) => z - stops[i]!));
-      expect(longest, `${id} dark stretch`).toBeLessThan(20);
+      expect(longest, `${id} dark stretch`).toBeLessThan(16);
     }
   });
 });
