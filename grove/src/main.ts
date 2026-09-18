@@ -1059,9 +1059,6 @@ async function toggleAudio(): Promise<void> {
 let lastLabelFrame = -1;
 let lastLabelWaiting = false;
 let lastHudTape: TapeExhibit | null = null;
-/** The visitor, as the cats' brains take them. Reused: the frame loop allocates nothing here. */
-const catVisitor = { id: "you", at: { x: 0, z: 0 } };
-const catVisitors = [catVisitor];
 
 /** The eye adapts toward the room's exposure, most of the way in a second. */
 function adaptExposure(dt: number): void {
@@ -1132,10 +1129,14 @@ view.start((dt, time, rawDt) => {
     // `time` is the frame timestamp in milliseconds; the brain counts in seconds
     // (a greeting's cooldown is 120 s), and takes its clock injected rather than read.
     // The visitor is only a visitor in the cats' own room: a cat should not cross the
-    // hall to greet somebody standing in the phototroph.
-    catVisitor.at.x = body.x;
-    catVisitor.at.z = body.z;
-    world.cats.tick(dt, time / 1000, catVisitors);
+    // hall to greet somebody standing in the phototroph. A fresh visitor object is passed
+    // each tick so the brain does not capture a mutated reference.
+    try {
+      world.cats.tick(dt, time / 1000, [{ id: "you", at: { x: body.x, z: body.z } }]);
+    } catch (error) {
+      world.cats = null;
+      notice(`cats: ${message(error)}`);
+    }
   }
 
   const tape = nearestTape();
