@@ -172,27 +172,31 @@ function stoneSurface(material: MeshBasicMaterial, finish: Finish, quiet: boolea
     shader.fragmentShader = shader.fragmentShader.replace("#include <color_fragment>", `
       #include <color_fragment>
       float grain = stoneHash(floor(observatoryWorld.xz * 31.0 + observatoryWorld.y * 13.0));
-      diffuseColor.rgb *= .95 + .1 * grain;
+      diffuseColor.rgb *= .92 + .16 * grain;
       ${floor ? `
         vec2 tile = floor(observatoryWorld.xz / 2.0);
-        diffuseColor.rgb *= .78 + .36 * stoneHash(tile);
+        diffuseColor.rgb *= .72 + .42 * stoneHash(tile);
       ` : outdoors ? "" : `
-        float wash = .72 + .28 * smoothstep(.1, 5.5, observatoryWorld.y - observatoryCenter.y + 2.5);
+        float wash = .65 + .35 * smoothstep(.1, 5.5, observatoryWorld.y - observatoryCenter.y + 2.5);
         diffuseColor.rgb *= wash;
       `}
       ${LIGHT_FIELD_GLSL}
-      diffuseColor.rgb *= ${(outdoors ? AMBIENT_OUTDOORS : AMBIENT).toFixed(2)} + fieldLight * ${quiet ? "0.55" : "1.0"};
+      float floorDist = max(0.0, observatoryWorld.y - observatoryCenter.y);
+      float contactAO = outdoors ? 1.0 : (floor ? 1.0 : smoothstep(0.0, 0.45, floorDist) * 0.35 + 0.65);
+      float undersideAO = max(0.25, observatoryNormal.y * 0.35 + 0.65);
+      vec3 lightColor = fieldLight * ${quiet ? "0.65" : "1.25"};
+      diffuseColor.rgb *= (${(outdoors ? AMBIENT_OUTDOORS : AMBIENT).toFixed(2)} + lightColor) * contactAO * undersideAO;
       float architectureHaze = 1.0 - exp(-max(0.0, length(cameraPosition - observatoryWorld) - 18.0) * .006);
       diffuseColor.rgb = mix(diffuseColor.rgb, vec3(.012, .026, .046), architectureHaze);
     `);
   };
 }
 /** The light where no lamp reaches, as a factor on the surface colour. */
-const AMBIENT = 0.7;
+const AMBIENT = 0.32;
 /** The grounds under the night sky: moonlight, a little more than a chamber's dark corner. */
-const AMBIENT_OUTDOORS = 0.86;
+const AMBIENT_OUTDOORS = 0.48;
 /** Every lamp at once; the bake's own powers are per element. */
-const FIELD_GAIN = 1.6;
+const FIELD_GAIN = 1.8;
 
 let lightField: { mansion: Mansion; field: LightField } | null = null;
 /** Bakes the field for this mansion once, from every room's emitters and the portals, and points the materials at it. */
@@ -223,13 +227,15 @@ export function emittersOf(mansion: Mansion): Emitter[] {
   return out;
 }
 
-/** Fixed face shading makes the design legible without lights, textures or shadows. */
+/** Fixed face shading makes the design legible with strong form depth, lighting contrast and soft shadows. */
 function shaded(geometry: BufferGeometry): BufferGeometry {
   const normals = geometry.getAttribute("normal");
   const colors = [];
   for (let i = 0; i < normals.count; i++) {
-    const shade = 0.55 + Math.max(0, normals.getY(i)) * 0.3 + Math.max(0, normals.getX(i)) * 0.09 + Math.max(0, normals.getZ(i)) * 0.06;
-    colors.push(shade, shade, shade);
+    const ny = normals.getY(i), nx = normals.getX(i), nz = normals.getZ(i);
+    const shade = 0.40 + Math.max(0, ny) * 0.45 - Math.max(0, -ny) * 0.20 + (nx * 0.12 + nz * 0.08);
+    const clamped = Math.max(0.18, Math.min(1.0, shade));
+    colors.push(clamped, clamped, clamped);
   }
   geometry.setAttribute("color", new Float32BufferAttribute(colors, 3));
   // One material per batch: BoxGeometry's six face groups must not add draws.
