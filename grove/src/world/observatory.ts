@@ -181,8 +181,12 @@ function stoneSurface(material: MeshBasicMaterial, finish: Finish, quiet: boolea
         diffuseColor.rgb *= wash;
       `}
       ${LIGHT_FIELD_GLSL}
-      float floorDist = max(0.0, observatoryWorld.y - observatoryCenter.y);
-      float contactAO = outdoors ? 1.0 : (floor ? 1.0 : smoothstep(0.0, 0.45, floorDist) * 0.35 + 0.65);
+      ${outdoors || floor ? `
+        float contactAO = 1.0;
+      ` : `
+        float floorDist = max(0.0, observatoryWorld.y - observatoryCenter.y);
+        float contactAO = smoothstep(0.0, 0.45, floorDist) * 0.35 + 0.65;
+      `}
       float undersideAO = max(0.25, observatoryNormal.y * 0.35 + 0.65);
       vec3 lightColor = fieldLight * ${quiet ? "0.65" : "1.25"};
       diffuseColor.rgb *= (${(outdoors ? AMBIENT_OUTDOORS : AMBIENT).toFixed(2)} + lightColor) * contactAO * undersideAO;

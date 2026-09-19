@@ -294,4 +294,32 @@ describe("the terrace's two arms and the court between them", () => {
       expect(longest, `${id} dark stretch`).toBeLessThan(16);
     }
   });
+
+  it("compiles onBeforeCompile shaders on all materials without syntax errors or un-interpolated identifiers", () => {
+    const materials = new Set<MeshBasicMaterial>();
+    for (const { shell } of shells) {
+      shell.group.traverse(node => {
+        if (node instanceof Mesh && node.material instanceof MeshBasicMaterial) {
+          materials.add(node.material);
+        }
+      });
+    }
+    expect(materials.size).toBeGreaterThan(0);
+    for (const mat of materials) {
+      if (typeof mat.onBeforeCompile === "function") {
+        const shader = {
+          uniforms: {},
+          vertexShader: "void main() {\n#include <begin_vertex>\n}",
+          fragmentShader: "void main() {\n#include <color_fragment>\n}",
+        };
+        mat.onBeforeCompile(shader as any, {} as any);
+        expect(shader.fragmentShader).not.toContain("outdoors ?");
+        expect(shader.fragmentShader).not.toContain("floor ?");
+        expect(shader.fragmentShader).not.toContain("undefined");
+        expect(shader.fragmentShader).not.toContain("NaN");
+        expect(shader.vertexShader).not.toContain("undefined");
+        expect(shader.vertexShader).not.toContain("NaN");
+      }
+    }
+  });
 });
