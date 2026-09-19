@@ -29,7 +29,7 @@ export const BAKED_LIGHT_FIELD_META: BakedLightFieldMetadata = {
   ],
   "emitters": 4704,
   "byteLength": 1199016,
-  "compressedLength": 356262,
+  "compressedLength": 369060,
   "binFile": "assets/lightfield.bin"
 };
 
