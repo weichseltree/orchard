@@ -284,14 +284,14 @@ function createFallbackWorlds(hanging: PlanetHanging): { worlds: World[]; materi
     node.add(coreMesh);
 
     // Cut face 1 (along YZ plane, normal +X)
-    const face1Geo = new CircleGeometry(1, 32, 0, Math.PI);
+    const face1Geo = new CircleGeometry(1, 32, -Math.PI / 2, Math.PI);
     const faceMat = new MeshBasicMaterial({ color: style.face, side: DoubleSide, toneMapped: false });
     const face1Mesh = new Mesh(face1Geo, faceMat);
     face1Mesh.rotation.y = Math.PI / 2;
     node.add(face1Mesh);
 
     // Cut face 2 (along XY plane, normal +Z)
-    const face2Geo = new CircleGeometry(1, 32, 0, Math.PI);
+    const face2Geo = new CircleGeometry(1, 32, -Math.PI / 2, Math.PI);
     const face2Mesh = new Mesh(face2Geo, faceMat);
     node.add(face2Mesh);
 
