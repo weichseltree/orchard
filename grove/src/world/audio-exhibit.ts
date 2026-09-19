@@ -231,6 +231,9 @@ async function loadNodes(
   fetchImpl: typeof globalThis.fetch,
   onNotice: ((message: string) => void) | undefined,
 ): Promise<PlacedNode[]> {
+  if (hanging.topology === "none" || hanging.topology === "bed" || hanging.topology === "false") {
+    return [];
+  }
   const url = hanging.topology || `${base}${TOPOLOGY_FILE}`;
   try {
     // `no-store` says what the exhibit rule already says: this document

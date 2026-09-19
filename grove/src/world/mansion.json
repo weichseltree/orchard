@@ -1237,7 +1237,8 @@
             -2.5,
             -52
           ],
-          "sizeMeters": 14
+          "sizeMeters": 14,
+          "topology": "none"
         }
       ],
       "architecture": "observatory",

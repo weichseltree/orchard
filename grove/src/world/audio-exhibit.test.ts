@@ -247,6 +247,19 @@ describe("AudioExhibit.load", () => {
     expect(exhibit.bounds.max.toArray()).toEqual([9, 6.6, 2]);
     exhibit.dispose();
   });
+
+  it("skips network fetch when topology is none", async () => {
+    stubBrowser();
+    const fetchSpy = vi.fn(async () => new Response("", { status: 404 }));
+    const exhibit = await AudioExhibit.load({
+      hanging: hanging({ topology: "none" }),
+      tier: "desktop",
+      fetch: fetchSpy as unknown as typeof fetch,
+    });
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(exhibit.nodes).toHaveLength(0);
+    exhibit.dispose();
+  });
 });
 
 describe("per-node voices from the live score (#14)", () => {
