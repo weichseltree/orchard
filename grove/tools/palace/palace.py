@@ -1802,6 +1802,7 @@ def parse_args(argv):
     p.add_argument("--no-bake", action="store_true")
     p.add_argument("--fill", type=float, default=FILL_W, help="interior fill light power per lamp, W; 0 for none")
     p.add_argument("--no-preview", dest="preview", action="store_false")
+    p.add_argument("--device", default="CPU", choices=["CPU", "GPU"], help="Compute device for Cycles baking: CPU or GPU (CUDA/OptiX)")
     p.add_argument("--adaptive-threshold", type=float, default=0.01)
     p.add_argument("--save-blend", default="")
     p.set_defaults(preview=True)
@@ -1836,7 +1837,7 @@ def main():
     textures = make_textures(os.path.join(out_root, "textures"))
     hb.make_lighting(scene)
     bake_args = Args()
-    bake_args.device = "CPU"
+    bake_args.device = args.device
     bake_args.samples = args.samples
     bake_args.adaptive_threshold = args.adaptive_threshold
     bake_args.bake_type = "DIFFUSE"
@@ -1946,7 +1947,7 @@ def main():
         "bake": {
             "engine": "cycles", "type": "DIFFUSE", "passes": ["direct", "indirect"], "colour_pass": False,
             "samples": args.samples, "resolution": args.res, "margin_px": args.margin, "uv_layer": uv2,
-            "device": "CPU", "threads": os.cpu_count(), "denoise": denoise_how,
+            "device": args.device, "threads": os.cpu_count(), "denoise": denoise_how,
             "seconds_bake": round(t_bake, 2), "seconds_denoise": round(t_denoise, 2),
             "noise_metric": None if math.isnan(noise_raw) else round(noise_raw, 6),
             "skipped": bool(args.no_bake),

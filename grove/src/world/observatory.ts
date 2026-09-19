@@ -7,7 +7,7 @@ import {
 import type { Room, Doorway, Mansion } from "./schema";
 import type { RoomShell } from "./rooms";
 import { STAIR_MARGIN, flightsOf, moundHeight, stairSteps, type Flight } from "./terrain";
-import { LIGHT_FIELD_GLSL, LIGHT_FIELD_UNIFORMS_GLSL, applyLightField, bakeLightField, lightFieldUniforms, litRooms, type Emitter, type LightField } from "./lightfield";
+import { LIGHT_FIELD_GLSL, LIGHT_FIELD_UNIFORMS_GLSL, applyLightField, bakeLightField, getPrebakedLightField, lightFieldUniforms, litRooms, type Emitter, type LightField } from "./lightfield";
 import { onPulse } from "./pulse";
 import { VENUE_TINT } from "./venue";
 import { PORTAL_TINT } from "./portal-shader";
@@ -199,7 +199,8 @@ let lightField: { mansion: Mansion; field: LightField } | null = null;
 export function ensureLightField(mansion: Mansion): LightField {
   if (lightField?.mansion === mansion) return lightField.field;
   lightField?.field.dispose();
-  const field = bakeLightField(mansion, emittersOf(mansion));
+  const prebaked = getPrebakedLightField();
+  const field = prebaked ?? bakeLightField(mansion, emittersOf(mansion));
   applyLightField(field, FIELD_GAIN);
   lightField = { mansion, field };
   return field;

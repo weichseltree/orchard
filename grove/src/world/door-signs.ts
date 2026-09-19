@@ -237,6 +237,40 @@ function capTriangles(contours: Contour[]): { vertices: number[]; indices: numbe
   });
 }
 
+interface CachedGlyph {
+  ha: number;
+  cap: number[];
+  sides: number[];
+}
+
+const glyphCache = new Map<string, CachedGlyph>();
+
+function getOrCacheGlyph(glyph: Glyph, char: string): CachedGlyph {
+  let cached = glyphCache.get(char);
+  if (!cached) {
+    const contours = glyphContours(glyph, 1);
+    const cap: number[] = [];
+    for (const { vertices, indices } of capTriangles(contours)) {
+      for (const i of indices) {
+        cap.push(vertices[i * 2]!, vertices[i * 2 + 1]!);
+      }
+    }
+    const sides: number[] = [];
+    for (const k of contours) {
+      for (let i = 0, n = k.length; i < n; i += 2) {
+        const j = (i + 2) % n;
+        const ax = k[i]!, ay = k[i + 1]!, bx = k[j]!, by = k[j + 1]!;
+        const dx = bx - ax, dy = by - ay, len = Math.hypot(dx, dy) || 1;
+        const nx = -dy / len, ny = dx / len;
+        sides.push(ax, ay, bx, by, nx, ny);
+      }
+    }
+    cached = { ha: glyph.ha, cap, sides };
+    glyphCache.set(char, cached);
+  }
+  return cached;
+}
+
 /**
  * The letters of a text extruded: front caps toward +z at `depth`, sides
  * round every contour, no back cap (it lies against the lintel). Positions
@@ -247,30 +281,25 @@ export function extrudeText(text: string, font: Typeface, size: number, depth: n
   const position: number[] = [], normal: number[] = [];
   let pen = 0;
   for (const c of text) {
-    const glyph = font.glyphs[c] ?? (c === " " ? { ha: font.resolution * 0.3 } : undefined);
+    if (c === " ") {
+      pen += font.resolution * 0.3 * scale;
+      continue;
+    }
+    const glyph = font.glyphs[c];
     if (!glyph) continue;
-    const contours = glyphContours(glyph, scale).map((k) => k.map((v, i) => (i % 2 === 0 ? v + pen : v)));
-    for (const { vertices, indices } of capTriangles(contours)) {
-      for (const i of indices) {
-        position.push(vertices[i * 2]!, vertices[i * 2 + 1]!, depth);
-        normal.push(0, 0, 1);
-      }
+    const { ha, cap, sides } = getOrCacheGlyph(glyph, c);
+    for (let i = 0; i < cap.length; i += 2) {
+      position.push(pen + cap[i]! * scale, cap[i + 1]! * scale, depth);
+      normal.push(0, 0, 1);
     }
-    for (const k of contours) {
-      for (let i = 0, n = k.length; i < n; i += 2) {
-        const j = (i + 2) % n;
-        const ax = k[i]!, ay = k[i + 1]!, bx = k[j]!, by = k[j + 1]!;
-        const dx = bx - ax, dy = by - ay, len = Math.hypot(dx, dy) || 1;
-        // The unfilled side is to the left of travel for both senses: a
-        // clockwise outer has the letter on its right, a counter-clockwise
-        // hole has the letter on its right too. The quads are wound so their
-        // geometric normal is that same left, since the material culls backs.
-        const nx = -dy / len, ny = dx / len;
-        position.push(ax, ay, 0, bx, by, depth, bx, by, 0, ax, ay, 0, ax, ay, depth, bx, by, depth);
-        for (let v = 0; v < 6; v++) normal.push(nx, ny, 0);
-      }
+    for (let i = 0; i < sides.length; i += 6) {
+      const ax = pen + sides[i]! * scale, ay = sides[i + 1]! * scale;
+      const bx = pen + sides[i + 2]! * scale, by = sides[i + 3]! * scale;
+      const nx = sides[i + 4]!, ny = sides[i + 5]!;
+      position.push(ax, ay, 0, bx, by, depth, bx, by, 0, ax, ay, 0, ax, ay, depth, bx, by, depth);
+      for (let v = 0; v < 6; v++) normal.push(nx, ny, 0);
     }
-    pen += glyph.ha * scale;
+    pen += ha * scale;
   }
   return { position, normal };
 }

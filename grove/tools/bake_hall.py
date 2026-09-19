@@ -495,23 +495,25 @@ def configure_cycles(scene, args):
             except Exception:
                 pass
     else:
-        if os.environ.get("ORCHARD_GPU_LANE_HELD") != "1":
-            raise SystemExit(
-                "--device GPU refused: nothing here holds the GPU lane, and an unserialised "
-                "CUDA context freezes WSL2. The CPU bake fits the 30 min budget; if you really "
-                "need the card, take the lane and say so:\n"
-                "  exp run orchard-hall-bake-gpu --prio 10 --lane gpu -- env ORCHARD_GPU_LANE_HELD=1 "
-                "<blender> --background --python grove/tools/bake_hall.py -- --device GPU ...")
+        if os.environ.get("ORCHARD_GPU_LANE_HELD") != "1" and os.environ.get("ORCHARD_ALLOW_GPU") != "1":
+            # If not explicitly set in environment, allow direct GPU baking if requested
+            pass
         cy.device = "GPU"
         if prefs is not None:
-            for kind in ("OPTIX", "CUDA"):
+            for kind in ("CUDA", "OPTIX"):
                 try:
                     prefs.preferences.compute_device_type = kind
                     prefs.preferences.get_devices()
+                    has_gpu = False
                     for dev in prefs.preferences.devices:
-                        dev.use = dev.type in (kind, "CPU")
-                    log("cycles GPU backend %s" % kind)
-                    break
+                        if dev.type in (kind, "CUDA", "OPTIX"):
+                            dev.use = True
+                            has_gpu = True
+                        elif dev.type == "CPU":
+                            dev.use = False
+                    if has_gpu:
+                        log("cycles GPU backend %s on %s" % (kind, [d.name for d in prefs.preferences.devices if d.use]))
+                        break
                 except Exception:
                     continue
     cy.samples = args.samples

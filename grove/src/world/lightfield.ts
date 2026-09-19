@@ -1,6 +1,7 @@
 import { ClampToEdgeWrapping, Data3DTexture, LinearFilter, RGBAFormat, UnsignedByteType, Vector3 } from "three";
 import type { Mansion, Room } from "./schema";
 import { pulseUniforms } from "./pulse";
+import { BAKED_LIGHT_FIELD_META, getBakedLightFieldData } from "./baked-lightfield";
 
 // The palace's light, baked at build time into a small 3D texture the stone
 // shader samples once per fragment. Every luminous element of the
@@ -198,6 +199,50 @@ export function bakeLightField(mansion: Mansion, emitters: readonly Emitter[]): 
     emitters: all.length,
     dispose: () => texture.dispose(),
   };
+}
+
+/** Creates a LightField 3D texture directly from raw byte array and metadata without CPU voxel bake. */
+export function createLightFieldFromBytes(
+  data: Uint8Array,
+  cells: [number, number, number],
+  min: Vector3,
+  size: Vector3,
+  emitters: number,
+): LightField {
+  const [nx, ny, nz] = cells;
+  const texture = new Data3DTexture(data, nx, ny, nz);
+  texture.format = RGBAFormat;
+  texture.type = UnsignedByteType;
+  texture.minFilter = LinearFilter;
+  texture.magFilter = LinearFilter;
+  texture.wrapS = texture.wrapT = texture.wrapR = ClampToEdgeWrapping;
+  texture.unpackAlignment = 1;
+  texture.name = "observatory-light-field";
+  texture.needsUpdate = true;
+  return {
+    texture,
+    min,
+    size,
+    cells: [nx, ny, nz],
+    emitters,
+    dispose: () => texture.dispose(),
+  };
+}
+
+/**
+ * Returns the pre-baked LightField instantly with 0 ms CPU computation.
+ * Returns null if the pre-baked data is unavailable.
+ */
+export function getPrebakedLightField(): LightField | null {
+  try {
+    const data = getBakedLightFieldData();
+    if (!data || data.length !== BAKED_LIGHT_FIELD_META.byteLength) return null;
+    const min = new Vector3(...BAKED_LIGHT_FIELD_META.min);
+    const size = new Vector3(...BAKED_LIGHT_FIELD_META.size);
+    return createLightFieldFromBytes(data, BAKED_LIGHT_FIELD_META.cells, min, size, BAKED_LIGHT_FIELD_META.emitters);
+  } catch {
+    return null;
+  }
 }
 
 /** Points the shared uniforms at a bake; `gain` scales every lamp at once. */

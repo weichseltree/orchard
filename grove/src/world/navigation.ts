@@ -1,5 +1,6 @@
 import type { Doorway, Mansion, Room } from "./schema";
 import { keepOnFlight } from "./terrain";
+import { getBakedReachableRooms } from "./baked-navigation";
 
 // Where a step is allowed to land. M0 keeps its promise the cheap way: a per
 // room axis-aligned clamp, opened along the one axis a doorway pierces, and
@@ -190,6 +191,10 @@ export function reachableRooms(
   from: string,
   locked?: (roomId: string) => boolean,
 ): Set<string> {
+  if (!locked) {
+    const prebaked = getBakedReachableRooms(from);
+    if (prebaked) return prebaked;
+  }
   const seen = new Set([from]);
   const queue = [from];
   while (queue.length) {
