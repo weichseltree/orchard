@@ -1,7 +1,7 @@
 import {
   BoxGeometry, BufferGeometry, Color, CylinderGeometry, DoubleSide,
   Float32BufferAttribute, Group, IcosahedronGeometry, InstancedMesh,
-  Matrix4, Mesh, MeshBasicMaterial, PlaneGeometry, Quaternion, TorusGeometry, Vector3,
+  Matrix4, Mesh, MeshBasicMaterial, Quaternion, TorusGeometry, Vector3,
   type Material,
 } from "three";
 import type { Room, Doorway, Mansion } from "./schema";
@@ -878,39 +878,68 @@ function balustrade(b: Builder, wall: Wall, gaps: readonly { center: number; wid
  */
 function terrainMesh(b: Builder): void {
   const room = b.room, [x0, y0, z0] = room.bounds.min, [x1, , z1] = room.bounds.max;
-  const width = x1 - x0, depth = z1 - z0;
   const mounds = b.mansion?.terrain.mounds ?? [];
   const rolling = mounds.length > 0 && b.mansion !== null;
   const cell = rolling ? 2 : 8;
-  const sx = Math.max(1, Math.ceil(width / cell)), sz = Math.max(1, Math.ceil(depth / cell));
-  const geometry = new PlaneGeometry(width, depth, sx, sz);
-  geometry.rotateX(-Math.PI / 2);
-  geometry.translate((x0 + x1) / 2, 0, (z0 + z1) / 2);
-  const positions = geometry.getAttribute("position");
-  const colors: number[] = [];
   const earth = new Color(OBSERVATORY_PALETTE.earth), grass = new Color(OBSERVATORY_PALETTE.grove);
+  const baseCol = material("earth", room.id).color;
+
+  const regions: { minX: number; maxX: number; minZ: number; maxZ: number }[] =
+    room.id === "parterre"
+      ? [
+          { minX: x0, maxX: -26, minZ: z0, maxZ: z1 },
+          { minX: -26, maxX: x1, minZ: z0, maxZ: -35.5 },
+          { minX: -26, maxX: x1, minZ: -13.5, maxZ: z1 },
+        ]
+      : [{ minX: x0, maxX: x1, minZ: z0, maxZ: z1 }];
+
+  const allPositions: number[] = [];
+  const allColors: number[] = [];
+  const allIndices: number[] = [];
+  let vertexOffset = 0;
   const tint = new Color();
-  for (let i = 0; i < positions.count; i++) {
-    const x = positions.getX(i), z = positions.getZ(i);
-    const h = rolling ? moundHeight(mounds, x, z) : 0;
-    positions.setY(i, y0 + h - 0.02);
-    const slope = rolling ? Math.hypot(moundHeight(mounds, x + 0.5, z) - h, moundHeight(mounds, x, z + 0.5) - h) : 0;
-    const grain = 0.9 + 0.2 * hash2(Math.floor(x / 3), Math.floor(z / 3));
-    // Lawn over earth: a third of the way to the grove green on the flat, greener up a slope and on a crown.
-    tint.copy(earth).lerp(grass, Math.min(1, 0.38 + h * 0.14 + slope * 0.6)).multiplyScalar(grain);
-    // The material multiplies its own earth colour in as well, which made the
-    // lawn nearly black (the tint darkened twice); divide it out so what is
-    // drawn is the tint that was designed.
-    const base = material("earth", room.id).color;
-    colors.push(tint.r / base.r, tint.g / base.g, tint.b / base.b);
+
+  for (const reg of regions) {
+    const width = reg.maxX - reg.minX, depth = reg.maxZ - reg.minZ;
+    const sx = Math.max(1, Math.ceil(width / cell)), sz = Math.max(1, Math.ceil(depth / cell));
+
+    for (let iz = 0; iz <= sz; iz++) {
+      const z = reg.minZ + (iz / sz) * depth;
+      for (let ix = 0; ix <= sx; ix++) {
+        const x = reg.minX + (ix / sx) * width;
+        const h = rolling ? moundHeight(mounds, x, z) : 0;
+        allPositions.push(x, y0 + h - 0.02, z);
+        const slope = rolling ? Math.hypot(moundHeight(mounds, x + 0.5, z) - h, moundHeight(mounds, x, z + 0.5) - h) : 0;
+        const grain = 0.9 + 0.2 * hash2(Math.floor(x / 3), Math.floor(z / 3));
+        tint.copy(earth).lerp(grass, Math.min(1, 0.38 + h * 0.14 + slope * 0.6)).multiplyScalar(grain);
+        allColors.push(tint.r / baseCol.r, tint.g / baseCol.g, tint.b / baseCol.b);
+      }
+    }
+
+    for (let iz = 0; iz < sz; iz++) {
+      for (let ix = 0; ix < sx; ix++) {
+        const a = vertexOffset + iz * (sx + 1) + ix;
+        const bIdx = vertexOffset + iz * (sx + 1) + (ix + 1);
+        const c = vertexOffset + (iz + 1) * (sx + 1) + ix;
+        const d = vertexOffset + (iz + 1) * (sx + 1) + (ix + 1);
+        allIndices.push(a, c, bIdx);
+        allIndices.push(bIdx, c, d);
+      }
+    }
+    vertexOffset += (sx + 1) * (sz + 1);
+
+    // The skirt: a slab below the field, so the cell has an edge from outside.
+    b.box("earth", (reg.minX + reg.maxX) / 2, y0 - 0.6, (reg.minZ + reg.maxZ) / 2, width, 1.0, depth);
   }
-  geometry.setAttribute("color", new Float32BufferAttribute(colors, 3));
+
+  const geometry = new BufferGeometry();
+  geometry.setAttribute("position", new Float32BufferAttribute(allPositions, 3));
+  geometry.setAttribute("color", new Float32BufferAttribute(allColors, 3));
+  geometry.setIndex(allIndices);
   geometry.computeVertexNormals();
   const mesh = new Mesh(geometry, material("earth", room.id));
   mesh.name = "observatory-ground";
   b.group.add(mesh);
-  // The skirt: a slab below the field, so the cell has an edge from outside.
-  b.box("earth", (x0 + x1) / 2, y0 - 0.6, (z0 + z1) / 2, width, 1.0, depth);
 }
 function hash2(x: number, z: number): number {
   const s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453;
@@ -986,9 +1015,16 @@ function grounds(b: Builder): void {
     path(b, cx, cz, 6, depth);
     // Walks from the terrace's two side stairs in to the cross walk.
     const sideWalks = room.doorways.filter(d => d.axis === "x" && Math.abs(d.at - x1) < 0.001 && Math.abs(d.center) > 8).map(d => d.center);
-    for (const z of sideWalks) path(b, (cx + x1) / 2, z, x1 - cx, 4);
+    for (const z of sideWalks) {
+      if (Math.abs(z - (-24.5)) < 0.1) {
+        path(b, (cx + -26) / 2, z, -26 - cx, 4);
+      } else {
+        path(b, (cx + x1) / 2, z, x1 - cx, 4);
+      }
+    }
     // Four quarters edged in box hedge, each holding its grove of sculptures, ending short of the side walks.
     const quarterEnd = (qz: number): number => {
+      if (qz < 0) return 12.0; // Clear of the sunken court amphitheatre cutout
       const thisSide = sideWalks.filter(s => Math.sign(s) === qz);
       return thisSide.length ? Math.min(...thisSide.map(Math.abs)) - 4.5 : Math.min(z1, -z0) - 3.5;
     };
@@ -1193,7 +1229,7 @@ function stageFittings(b: Builder): void {
 function courtShell(b: Builder): void {
   const room = b.room, [x0, y0, z0] = room.bounds.min, [x1, , z1] = room.bounds.max;
   const cz = (z0 + z1) / 2;
-  const cx = -11.5;
+  const cx = -15.5;
 
   // 1. Paved floor across the court base:
   b.box("floor", (x0 + x1) / 2, y0 - 0.1, (z0 + z1) / 2, x1 - x0, 0.2, z1 - z0);
@@ -1223,22 +1259,22 @@ function courtShell(b: Builder): void {
     lantern(b, x1 - 0.6, lz);
   }
 
-  // 3. Flat paved landing in front of club entrance:
-  b.box("path", -11.75, y0 + 0.006, cz, 3.5, 0.012, 10.0);
+  // 3. Flat paved foyer promenade along x in [-15.5, -10.0] spanning the full court length:
+  b.box("path", -12.75, y0 + 0.006, cz, 5.5, 0.012, z1 - z0);
 
-  // Terrace landing stone connections at North and South doorways:
-  b.box("stone", -16.0, -0.4, -36.5, 5.0, 0.8, 3.0);
-  b.box("stone", -16.0, -0.4, -12.5, 5.0, 0.8, 3.0);
+  // Terrace landing stone connections at North and South upper doorways:
+  b.box("stone", -17.75, -0.4, -36.5, 4.5, 0.8, 3.0);
+  b.box("stone", -17.75, -0.4, -12.5, 4.5, 0.8, 3.0);
 
   // 4. Semi-octagonal (Halb-Achteck) staircase:
-  const N_STEPS = 20;
-  const rxInner = 1.7, rxMax = 8.5;
-  const rzInner = 2.7, rzMax = 13.5;
+  const N_STEPS = 24;
+  const spanX = 10.5;
+  const rzInner = 7.5, spanZ = 6.0;
 
   for (let i = 0; i < N_STEPS; i++) {
     const f = (i + 1) / N_STEPS;
-    const rx = rxInner + f * (rxMax - rxInner);
-    const rz = rzInner + f * (rzMax - rzInner);
+    const rx = f * spanX;
+    const rz = rzInner + f * spanZ;
 
     // 5 vertices of the semi-octagon tier:
     const v0 = { x: cx, z: cz - rz };
@@ -1250,23 +1286,27 @@ function courtShell(b: Builder): void {
     const verts = [v0, v1, v2, v3, v4];
     for (let k = 0; k < 4; k++) {
       const pA = verts[k]!, pB = verts[k + 1]!;
-      const mx = (pA.x + pB.x) / 2, mz = (pA.z + pB.z) / 2;
-
-      // Keep undercroft entrance areas at the north and south ends clear on the lower floor:
-      if (mx > -13.5 && (mz <= -35 || mz >= -14)) continue;
-
       const dx = pB.x - pA.x, dz = pB.z - pA.z;
       const segLen = Math.hypot(dx, dz);
       const y_top = k === 1 || k === 2 ? -1.6 : -0.8;
       const py = y0 + f * (y_top - y0);
       const riserH = Math.max(0.08, (y_top - y0) / N_STEPS);
-      const treadDepth = ((rxMax - rxInner) / N_STEPS) * 1.35;
+      const treadDepth = (spanX / N_STEPS) * 1.35;
       const rot = new Quaternion().setFromAxisAngle(UNIT, Math.atan2(dx, dz));
+
+      // Normal pointing uphill away from center (cx, cz):
+      const nx = -dz / segLen, nz = dx / segLen;
+      const sign = (nx * (pA.x - cx) + nz * (pA.z - cz)) >= 0 ? 1 : -1;
+      const shift = treadDepth * 0.35;
+      const mx = (pA.x + pB.x) / 2 + sign * nx * shift;
+      const mz = (pA.z + pB.z) / 2 + sign * nz * shift;
 
       // Stone step tread along the semi-octagon facet:
       b.add("box", "stone", mx, py - riserH / 2, mz, treadDepth, riserH, segLen * 1.02, rot);
-      // Brass nosing along top facet edge:
-      b.add("box", "brass", mx, py + 0.005, mz, 0.06, 0.012, segLen * 1.02, rot);
+      // Brass nosing along top front facet edge:
+      const nosingX = (pA.x + pB.x) / 2;
+      const nosingZ = (pA.z + pB.z) / 2;
+      b.add("box", "brass", nosingX, py + 0.005, nosingZ, 0.06, 0.012, segLen * 1.02, rot);
     }
   }
 }

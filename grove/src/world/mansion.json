@@ -1037,8 +1037,8 @@
           "to": "stair-court",
           "axis": "z",
           "at": -38,
-          "center": -11.8,
-          "width": 3.2,
+          "center": -13,
+          "width": 5.2,
           "height": 3.2
         }
       ],
@@ -1086,8 +1086,8 @@
           "to": "foyer",
           "axis": "z",
           "at": -38,
-          "center": -11.8,
-          "width": 3.2,
+          "center": -13,
+          "width": 5.2,
           "height": 3.2
         },
         {
@@ -1102,8 +1102,8 @@
           "to": "foyer-south",
           "axis": "z",
           "at": -11,
-          "center": -11.8,
-          "width": 3.2,
+          "center": -13,
+          "width": 5.2,
           "height": 3.2
         },
         {
@@ -1111,7 +1111,7 @@
           "axis": "x",
           "at": -20,
           "center": -24.5,
-          "width": 8,
+          "width": 22,
           "height": 8
         },
         {
@@ -1165,8 +1165,8 @@
           "to": "stair-court",
           "axis": "z",
           "at": -11,
-          "center": -11.8,
-          "width": 3.2,
+          "center": -13,
+          "width": 5.2,
           "height": 3.2
         }
       ],
@@ -1968,7 +1968,7 @@
           "axis": "x",
           "at": -20,
           "center": -24.5,
-          "width": 8,
+          "width": 22,
           "height": 8
         }
       ],

@@ -170,10 +170,20 @@ describe("the sunken court", () => {
     }
   }, 15000);
 
+  it("provides a wide, completely flat foyer promenade connecting north foyer, club, and south undercroft", () => {
+    // Check points across the promenade x in [-15.5, -10.0] and z in [-38, -11]
+    for (let x = -10.5; x >= -15.5; x -= 1.0) {
+      for (let z = -37.0; z <= -12.0; z += 2.5) {
+        expect(floorAt(mansion, court, x, z)).toBeCloseTo(FLOOR, 2);
+      }
+    }
+  });
+
   it("smoothly and monotonically climbs from court floor to garden parterre", () => {
     let lastHeight = -5.1;
-    for (let x = -11.5; x >= -20.0; x -= 0.25) {
-      const h = floorAt(mansion, court, x, -24.5);
+    for (let x = -11.5; x >= -26.0; x -= 0.25) {
+      const r = x >= -20.0 ? court : room("parterre");
+      const h = floorAt(mansion, r, x, -24.5);
       expect(h).toBeGreaterThanOrEqual(lastHeight - 0.001);
       lastHeight = h;
     }
@@ -182,11 +192,17 @@ describe("the sunken court", () => {
 
   it("seamlessly matches terrace and parterre floor elevations at doorways", () => {
     // Parterre doorway boundary at x = -20, z = -24.5
-    expect(floorAt(mansion, court, -20.0, -24.5)).toBeCloseTo(-1.6, 2);
-    expect(floorAt(mansion, room("parterre"), -20.0, -24.5)).toBeCloseTo(-1.6, 2);
+    expect(floorAt(mansion, court, -20.0, -24.5)).toBeCloseTo(floorAt(mansion, room("parterre"), -20.0, -24.5), 2);
 
-    // Court paving in front of club at x = -11.5, z = -24.5
+    // Parterre top of stairs at x = -26.0, z = -24.5 reaches garden lawn level
+    expect(floorAt(mansion, room("parterre"), -26.0, -24.5)).toBeCloseTo(-1.6, 2);
+
+    // Court promenade in front of club at x = -11.5, z = -24.5
     expect(floorAt(mansion, court, -11.5, -24.5)).toBeCloseTo(-5.0, 2);
     expect(floorAt(mansion, room("club"), -10.0, -24.5)).toBeCloseTo(-5.0, 2);
+
+    // Undercroft connections at North (z = -38) and South (z = -11)
+    expect(floorAt(mansion, room("foyer"), -12.75, -38.0)).toBeCloseTo(-5.0, 2);
+    expect(floorAt(mansion, room("foyer-south"), -12.75, -11.0)).toBeCloseTo(-5.0, 2);
   });
 });

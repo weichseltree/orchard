@@ -167,9 +167,9 @@ describe("the designed observatory", () => {
             continue;
           }
           // A court with no lid has nothing overhead to stay under: its doors
-          // open at the rim, so their surrounds — and the cheeks of the
-          // flights coming up through it — stand in the room above by design.
-          if (p.x < x0 - margin || p.x > x1 + margin || p.y < y0 - margin || p.y > overhead || p.z < z0 - margin || p.z > z1 + margin) {
+          // open at the rim, so its tiers stretch westward into the garden cutout by design.
+          const minX = room.id === "stair-court" ? -26.5 : x0 - margin;
+          if (p.x < minX || p.x > x1 + margin || p.y < y0 - margin || p.y > overhead || p.z < z0 - margin || p.z > z1 + margin) {
             outside.push(`${child.name}[${i}] at ${p.x.toFixed(2)}, ${p.y.toFixed(2)}, ${p.z.toFixed(2)}`);
           }
         }

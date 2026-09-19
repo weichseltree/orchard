@@ -94,29 +94,45 @@ export function floorAt(mansion: Mansion, room: Room, x: number, z: number): num
   const base = room.bounds.min[1];
   let h = base;
   if (room.fallback.kind === "ground") h += moundHeight(mansion.terrain.mounds, x, z);
-  if (room.id === "stair-court") {
-    const y0 = base;
-    const cx = -11.5, cz = -24.5;
-    const rxInner = 1.7, rxMax = 8.5;
-    const rzInner = 2.7, rzMax = 13.5;
-    const dx = cx - x, dz = Math.abs(z - cz);
-    if (dx <= 0) return y0;
-
-    const spanX = rxMax - rxInner;
-    const spanZ = rzMax - rzInner;
+  if (room.id === "stair-court" || room.id === "parterre") {
+    const y0 = -5.0;
+    const cx = -15.5, cz = -24.5;
+    const spanX = 10.5, spanZ = 6.0, rzInner = 7.5;
     const TAN_PI_8 = Math.SQRT2 - 1; // ~0.41421356
 
-    const fFacet1 = (dx - rxInner) / spanX + (TAN_PI_8 * dz) / spanZ;
-    const fFacet0 = (TAN_PI_8 * dx) / spanX + (dz - rzInner) / spanZ;
-    const f = Math.min(1, Math.max(0, fFacet1, fFacet0));
-    if (f <= 0) return y0;
+    const dx = cx - x, dz = Math.abs(z - cz);
+    if (dx <= 0) {
+      if (room.id === "stair-court") return y0;
+    } else {
+      let f1 = 0;
+      if (dx > 0) {
+        const A1 = spanX * spanZ;
+        const B1 = spanX * rzInner - dx * spanZ - TAN_PI_8 * dz * spanX;
+        const C1 = -dx * rzInner;
+        const disc1 = B1 * B1 - 4 * A1 * C1;
+        if (disc1 >= 0) f1 = (-B1 + Math.sqrt(disc1)) / (2 * A1);
+      }
+      let f0 = 0;
+      if (dz > rzInner || dx > 0) {
+        const A0 = spanX * spanZ;
+        const B0 = spanX * rzInner - TAN_PI_8 * dx * spanZ - dz * spanX;
+        const C0 = -TAN_PI_8 * dx * rzInner;
+        const disc0 = B0 * B0 - 4 * A0 * C0;
+        if (disc0 >= 0) f0 = (-B0 + Math.sqrt(disc0)) / (2 * A0);
+      }
+      const f = Math.min(1, Math.max(0, f1, f0));
+      if (f > 0) {
+        if (room.id === "stair-court" || (room.id === "parterre" && x >= -26.0 && dz <= 14.5)) {
+          // Terrace landing connections at North (z <= -35) and South (z >= -14) doorways:
+          if (dz >= 10.5 && dx >= 0.5 && dx <= 5.0) return 0;
 
-    // Terrace landing connections at North (z <= -35) and South (z >= -14) doorways:
-    if ((dz >= 10.5) && dx >= 2.0 && dx <= 7.0) return 0;
-
-    // West facets 1 & 2 target parterre (-1.6m); North/South facets 0 & 3 target terrace arms (-0.8m):
-    const y_top = fFacet1 >= fFacet0 ? -1.6 : -0.8;
-    return y0 + f * (y_top - y0);
+          // West facets 1 & 2 target parterre (-1.6m); North/South facets 0 & 3 target terrace arms (-0.8m):
+          const y_top = f1 >= f0 ? -1.6 : -0.8;
+          return y0 + f * (y_top - y0);
+        }
+      }
+    }
+    if (room.id === "stair-court") return y0;
   }
   for (const flight of flightsOf(mansion, room)) {
     const t = flightFraction(flight, x, z);
