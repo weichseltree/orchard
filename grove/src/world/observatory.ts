@@ -1068,10 +1068,10 @@ function grounds(b: Builder): void {
     }
     // The armillary that holds the portal: three brass rings and a luminous one.
     for (const angle of [0, Math.PI / 3, -Math.PI / 3]) {
-      b.add("ring", "brass", px, y0 + 5.2, pz, 2.3, 2.3, 1.6,
+      b.add("ring", "brass", px, y0 + 2.2, pz, 4.85, 4.85, 1.2,
         new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), angle));
     }
-    b.add("ring", "blue", px, y0 + 5.2, pz, 2.16, 2.16, 0.45, FLAT);
+    b.add("ring", "blue", px, y0 + 2.2, pz, 4.75, 4.75, 0.45, FLAT);
     // Lanterns round the court, and along the cross walk clear of the crossing.
     for (const ax of [-1, 1]) for (const az of [-1, 1]) lantern(b, px + ax * (court + 0.9) * 0.71, pz + az * (court + 0.9) * 0.71);
     for (let z = z0 + 6; z < z1 - 5; z += 12) for (const x of [cx - 3.6, cx + 3.6]) if (Math.abs(z) > 8 && !sideWalks.some(s => Math.abs(z - s) < 3)) lantern(b, x, z);

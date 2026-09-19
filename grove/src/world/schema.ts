@@ -308,9 +308,13 @@ export const PortalSchema = z.looseObject({
   /** The centre of the blend, metres; put it at eye height so the eye passes its middle. */
   position: Vec3,
   radius: z.number().positive().default(3),
+  /** Optional arrival landing position when stepping through this portal end. */
+  landing: Vec3.optional(),
   exit: z.looseObject({
     position: Vec3,
     radius: z.number().positive().default(3),
+    /** Optional arrival landing position when arriving in the destination room. */
+    landing: Vec3.optional(),
   }),
 });
 

@@ -86,10 +86,12 @@ export interface PortalEnd {
   readonly scale: number;
   readonly center: Vector3;
   readonly radius: number;
-  /** Where this end leads, its scale, and where the visitor lands. */
+  /** Where this end leads, its scale, and where the portal twin sits. */
   readonly to: string;
   readonly toScale: number;
   readonly exit: Vector3;
+  /** Optional arrival landing position when stepping through this end. */
+  readonly landing?: Vector3 | null;
   /** Destination metres per metre here: what the far camera's offset is multiplied by. */
   readonly ratio: number;
   /** The other end of the same portal. */
@@ -114,12 +116,14 @@ export function portalEnds(mansion: Mansion): PortalEnd[] {
         portal, room: room.id, scale: room.scale,
         center: new Vector3(...portal.position), radius: portal.radius,
         to: target.id, toScale: target.scale, exit: new Vector3(...portal.exit.position),
+        landing: portal.exit.landing ? new Vector3(...portal.exit.landing) : null,
         ratio: room.scale / target.scale,
       } as PortalEnd;
       const there = {
         portal, room: target.id, scale: target.scale,
         center: new Vector3(...portal.exit.position), radius: portal.exit.radius,
         to: room.id, toScale: room.scale, exit: new Vector3(...portal.position),
+        landing: portal.landing ? new Vector3(...portal.landing) : null,
         ratio: target.scale / room.scale,
       } as PortalEnd;
       here.twin = there;
@@ -152,11 +156,13 @@ export function crossPortal(
 ): Crossing | null {
   if (body.room !== end.room || body.scale !== end.scale) return null;
   if (eye.distanceTo(end.center) > end.radius * core + 1e-9) return null;
+  const targetX = end.landing ? end.landing.x : end.exit.x;
+  const targetZ = end.landing ? end.landing.z : end.exit.z;
   return {
     room: end.to,
     scale: end.toScale,
-    x: end.exit.x + (body.x - end.center.x),
-    z: end.exit.z + (body.z - end.center.z),
+    x: targetX + (body.x - end.center.x),
+    z: targetZ + (body.z - end.center.z),
   };
 }
 
@@ -550,7 +556,8 @@ export class PortalSystem {
       const fromMaterial = this.#meshes.get(through)!.material as ShaderMaterial;
       (twinMaterial.uniforms.uTravel!.value as Vector2).copy(fromMaterial.uniforms.uTravel!.value as Vector2);
       if (frame.live) {
-        _landing.copy(_eye).sub(through.center).add(twin.center);
+        const origin = through.landing ?? twin.center;
+        _landing.copy(_eye).sub(through.center).add(origin);
         this.#renderFar(twin, frame, _landing, 1, 1);
       }
       this.#liveEnd = null;

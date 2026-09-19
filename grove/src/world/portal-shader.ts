@@ -104,8 +104,8 @@ void main() {
   // Inside: the same window ahead, and a dissolve growing from the direction
   // of travel; near the core the near room ghosts back a little, so the
   // crossing can dissolve it away instead of cutting.
-  float window = smoothstep(0.05, 0.62, facing);
-  float outside = mix(window * 0.97, 0.97, uBlend * 0.7);
+  float window = smoothstep(0.01, 0.38, facing);
+  float outside = mix(window * 0.98, 0.98, uBlend * 0.7);
   vec2 sc = (uv - 0.5 - uTravel) * vec2(uResolution.x / uResolution.y, 1.0);
   // Nothing of it at blend 0 (the noise is scaled by the blend), all of it at 1.
   float grow = uBlend * 2.1;
@@ -116,7 +116,7 @@ void main() {
 
   // The veil: glass where the far room does not show, deepening with the
   // blend when there is no far view to show (a headset), so the fade still happens.
-  float veilA = (0.1 + 0.35 * limb * sqrt(limb) + 0.55 * uBlend * (1.0 - uLive)) * (1.0 - a);
+  float veilA = (0.04 + 0.28 * limb * sqrt(limb) + 0.55 * uBlend * (1.0 - uLive)) * (1.0 - a);
   vec3 veil = uTint * (0.25 + 0.5 * sh + 0.4 * uIntent * limb);
 
   // Layered, premultiplied: veil, then the far room over it, then the glow added.

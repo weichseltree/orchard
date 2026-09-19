@@ -100,8 +100,9 @@ describe("crossPortal", () => {
     const crossing = crossPortal(garden, body(garden, 0.4, 0.2), at(garden, 0))!;
     expect(crossing.room).toBe("orrery");
     expect(crossing.scale).toBe(orreryRoom.scale);
-    expect(crossing.x).toBeCloseTo(orrery.center.x + 0.4);
-    expect(crossing.z).toBeCloseTo(orrery.center.z + 0.2);
+    const target = garden.landing ?? orrery.center;
+    expect(crossing.x).toBeCloseTo(target.x + 0.4);
+    expect(crossing.z).toBeCloseTo(target.z + 0.2);
   });
 
   it("refuses a body in another room, or at the wrong scale, even at the centre", () => {
@@ -566,7 +567,8 @@ describe("PortalSystem", () => {
     expect(rig.uniform(orrery, "uFade")).toBe(1);
     expect(rig.uniform(orrery, "uBlend")).toBe(0);
     expect(rig.portals.afterglow).toBeNull();
-    expect(rig.portals.meshOf(orrery).visible).toBe(false);
+    const standingInside = eye.distanceTo(orrery.center) <= orrery.radius * 1.1;
+    expect(rig.portals.meshOf(orrery).visible).toBe(!standingInside);
     // One far view per afterglow frame (the garden, from where they stood), none after.
     expect(rig.renderer.renders - renders).toBe(fades.length);
     const afterFade = rig.renderer.renders;
@@ -836,7 +838,7 @@ describe("the Orrery in the document", () => {
     expect(planet.radiusMeters).toBe(40);
     expect(planet.worlds.map((w) => w.world)).toEqual(["adiabat-chi0", "adiabat-chi6", "adiabat-chi12"]);
     for (const world of planet.worlds) {
-      expect(world.cutToward).toEqual(armillary.exit.position);
+      expect(world.cutToward).toEqual(armillary.exit.landing ?? armillary.exit.position);
       // Each world clears the walking plane; the star dome that holds them
       // is the next test's, which measures it against the dome itself.
       expect(world.position[1] - planet.radiusMeters).toBeGreaterThan(5);
