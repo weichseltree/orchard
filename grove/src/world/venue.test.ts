@@ -1,6 +1,19 @@
 import { describe, expect, it } from "vitest";
 import { parseMansion } from "./schema";
-import { NOTHING_ON, anyRoomAsks, barredRooms, nearbyNeeds, retreat, unmetNeeds, venueBarred, venueBox, venueEntrance, venueReason } from "./venue";
+import {
+  NOTHING_ON,
+  anyRoomAsks,
+  barredRooms,
+  doorFacingOpacity,
+  nearbyGatedDoor,
+  nearbyNeeds,
+  retreat,
+  unmetNeeds,
+  venueBarred,
+  venueBox,
+  venueEntrance,
+  venueReason,
+} from "./venue";
 
 const room = (id: string, z0: number, requires: string[] = [], doors: Array<[string, number]> = []) => ({
   id, presence: "club", bounds: { min: [-5, -5, z0], max: [5, 1, z0 + 10] }, spawn: { position: [0, -5, z0 + 5] },
@@ -74,6 +87,53 @@ describe("the venue's doors", () => {
   it("boxes the gated rooms together for the pulse", () => {
     expect(venueBox(mansion)).toEqual({ min: [-5, -5, 20], max: [5, 1, 40] });
     expect(venueBox(parseMansion({ schema: "orchard/mansion/1", start: "hall", rooms: [room("hall", 0)] }))).toBeNull();
+  });
+
+  it("modulates door facing opacity by angle and distance", () => {
+    // Directly facing at 2m (within 3m) -> full opacity
+    expect(doorFacingOpacity(2, 0, 2, 0, 1)).toBe(1);
+
+    // Facing away -> 0 opacity
+    expect(doorFacingOpacity(2, 0, 2, 0, -1)).toBe(0);
+
+    // Looking perpendicular (90 degrees, dot = 0 <= 0.20) -> 0 opacity
+    expect(doorFacingOpacity(2, 0, 2, 1, 0)).toBe(0);
+
+    // Facing at 5.75m (halfway between 3m and 8.5m) -> 0.5 opacity
+    expect(doorFacingOpacity(5.75, 0, 5.75, 0, 1)).toBeCloseTo(0.5, 3);
+
+    // Beyond max distance (e.g. 9m > 8.5m) -> 0 opacity
+    expect(doorFacingOpacity(9, 0, 9, 0, 1)).toBe(0);
+
+    // Looking straight at door from right at doorway (dist = 0) -> 1
+    expect(doorFacingOpacity(0, 0, 0, 0, 1)).toBe(1);
+  });
+
+  it("finds nearby gated door when facing it with unmet needs", () => {
+    // In foyer (z=10..20), door to club is at z=20. Visitor is at (0, 18), looking +z (towards door).
+    const offer = nearbyGatedDoor(mansion, "foyer", 0, 18, 0, 1, NOTHING_ON);
+    expect(offer).not.toBeNull();
+    expect(offer?.targetRoomId).toBe("club");
+    expect(offer?.targetTitle).toBe("club");
+    expect(offer?.unmet).toEqual(["microphone", "sound"]);
+    expect(offer?.opacity).toBe(1);
+    expect(offer?.distance).toBe(2);
+
+    // Looking away (-z) -> null
+    expect(nearbyGatedDoor(mansion, "foyer", 0, 18, 0, -1, NOTHING_ON)).toBeNull();
+
+    // When all needs are met -> null
+    expect(nearbyGatedDoor(mansion, "foyer", 0, 18, 0, 1, on)).toBeNull();
+
+    // From hall (no direct gated doors) -> null
+    expect(nearbyGatedDoor(mansion, "hall", 0, 5, 0, 1, NOTHING_ON)).toBeNull();
+
+    // From club looking at stage with microphone/sound on (lacking immersive) -> stage offer
+    const stageOffer = nearbyGatedDoor(mansion, "club", 0, 28, 0, 1, on);
+    expect(stageOffer).not.toBeNull();
+    expect(stageOffer?.targetRoomId).toBe("stage");
+    expect(stageOffer?.unmet).toEqual(["immersive"]);
+    expect(stageOffer?.opacity).toBe(1);
   });
 });
 

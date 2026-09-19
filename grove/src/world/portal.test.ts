@@ -76,9 +76,8 @@ describe("portalEnds", () => {
   it("sits under the garden's armillary as the document places it and lands on the Orrery's ring", () => {
     expect(garden.center.toArray()).toEqual(armillary.position);
     expect(garden.radius).toBe(armillary.radius);
-    const landing = orreryRoom.spawn.position;
-    expect(orrery.center.x).toBe(landing[0]);
-    expect(orrery.center.z).toBe(landing[2]);
+    expect(orrery.center.toArray()).toEqual(armillary.exit.position);
+    expect(orrery.radius).toBe(armillary.exit.radius);
   });
 });
 

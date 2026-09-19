@@ -183,4 +183,21 @@ describe("the viewport", () => {
     // Guessing one would make the first move of a drag jump a whole window.
     expect(planPointOf({ width: 0, height: 0 }, full, 10, 10)).toBeNull();
   });
+
+  it("calculates a reasonable initial centered zoom framing for player position", () => {
+    const all = floorsOf(mansion, planRooms(mansion, mansion.start)).flatMap((f) => f.rooms);
+    const project = planProjection(all, 320, 320);
+    const hall = mansion.rooms.find((r) => r.id === "hall")!;
+    const px = project.x(hall.spawn.position[0]);
+    const py = project.y(hall.spawn.position[2]);
+
+    const initialView = zoomView(full, 1 / 2.2, px, py);
+    expect(initialView.w).toBeCloseTo(320 / 2.2);
+    expect(initialView.h).toBeCloseTo(320 / 2.2);
+    // Point px, py is comfortably centered within the viewport:
+    expect(px).toBeGreaterThanOrEqual(initialView.x);
+    expect(px).toBeLessThanOrEqual(initialView.x + initialView.w);
+    expect(py).toBeGreaterThanOrEqual(initialView.y);
+    expect(py).toBeLessThanOrEqual(initialView.y + initialView.h);
+  });
 });

@@ -63,6 +63,101 @@ export function nearbyNeeds(mansion: Mansion, roomId: string, state: VenueState)
   return [...out];
 }
 
+/**
+ * Calculates the visibility / opacity of a gated door offer (0 to 1) based on
+ * how directly the visitor is facing the doorway and how close they are.
+ */
+export function doorFacingOpacity(
+  dist: number,
+  vx: number,
+  vz: number,
+  fx: number,
+  fz: number,
+  maxDistance = 8.5,
+  minDistance = 3.0,
+): number {
+  if (dist > maxDistance) return 0;
+
+  let dot = 1;
+  if (dist > 0.001) {
+    const fLen = Math.hypot(fx, fz);
+    if (fLen > 0.001) {
+      const ufx = fx / fLen;
+      const ufz = fz / fLen;
+      const udx = vx / dist;
+      const udz = vz / dist;
+      dot = ufx * udx + ufz * udz;
+    }
+  }
+
+  // Facing factor: 1.0 when looking straight at the door, dropping to 0 at ~78 deg (dot <= 0.20).
+  const facingFactor = Math.max(0, Math.min(1, (dot - 0.20) / 0.80));
+
+  // Distance factor: 1.0 within minDistance, fading out linearly to maxDistance.
+  const distanceFactor =
+    dist <= minDistance
+      ? 1
+      : Math.max(0, 1 - (dist - minDistance) / (maxDistance - minDistance));
+
+  return facingFactor * distanceFactor;
+}
+
+export interface GatedDoorOffer {
+  targetRoomId: string;
+  targetTitle: string;
+  unmet: VenueNeed[];
+  opacity: number;
+  distance: number;
+}
+
+/**
+ * Finds the best gated door offer in the current room based on proximity and facing direction.
+ * Returns null if no gated door is nearby or if the visitor is looking away / out of range.
+ */
+export function nearbyGatedDoor(
+  mansion: Mansion,
+  roomId: string,
+  px: number,
+  pz: number,
+  fx: number,
+  fz: number,
+  state: VenueState,
+): GatedDoorOffer | null {
+  const here = mansion.rooms.find((r) => r.id === roomId);
+  if (!here) return null;
+
+  let bestOffer: GatedDoorOffer | null = null;
+
+  for (const door of here.doorways) {
+    if (door.closed) continue;
+    const targetRoom = mansion.rooms.find((r) => r.id === door.to);
+    if (!targetRoom) continue;
+    const unmet = unmetNeeds(targetRoom, state);
+    if (unmet.length === 0) continue;
+
+    const dx = door.axis === "x" ? door.at : door.center;
+    const dz = door.axis === "z" ? door.at : door.center;
+    const vx = dx - px;
+    const vz = dz - pz;
+    const dist = Math.hypot(vx, vz);
+
+    const opacity = doorFacingOpacity(dist, vx, vz, fx, fz);
+    if (opacity > 0) {
+      if (!bestOffer || opacity > bestOffer.opacity) {
+        bestOffer = {
+          targetRoomId: targetRoom.id,
+          targetTitle: targetRoom.title || targetRoom.id,
+          unmet,
+          opacity,
+          distance: dist,
+        };
+      }
+    }
+  }
+
+  return bestOffer;
+}
+
 const NEED_TEXT: Record<VenueNeed, string> = {
   microphone: "your microphone on",
   sound: "your sound on",

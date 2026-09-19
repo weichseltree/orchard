@@ -134,6 +134,15 @@ export function floorAt(mansion: Mansion, room: Room, x: number, z: number): num
     }
     if (room.id === "stair-court") return y0;
   }
+  if (room.id === "orrery") {
+    const distToCenter = Math.hypot(x, z - (-400));
+    if (distToCenter <= 14.2) return base + 1.6;
+    if (Math.abs(x) <= 4.2 && z >= -388 && z <= -378) {
+      const t = (-378 - z) / 10;
+      return base + 1.6 * Math.max(0, Math.min(1, t));
+    }
+    return base;
+  }
   for (const flight of flightsOf(mansion, room)) {
     const t = flightFraction(flight, x, z);
     if (t === null) continue;

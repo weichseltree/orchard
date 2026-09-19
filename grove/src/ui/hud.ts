@@ -85,6 +85,8 @@ export interface HudCallbacks {
   onRename(name: string): Promise<void>;
   /** A host's mute, kick or ban; the server refuses it from anyone else. */
   onModerate(identity: string, action: HudModeration): Promise<void>;
+  onAllowMicrophone?(): void;
+  onSwitchSoundOn?(): void;
 }
 
 export class Hud {
@@ -108,6 +110,11 @@ export class Hud {
   #link: HTMLElement;
   #notices: HTMLElement;
   #hint: HTMLElement;
+  #clubOffer: HTMLElement;
+  #clubOfferTitle: HTMLElement;
+  #clubOfferText: HTMLElement;
+  #clubOfferActions: HTMLElement;
+  #clubOfferKey = "";
   #gameOffer: HTMLElement;
   #gameButton: HTMLButtonElement;
   #gameKey: HTMLElement;
@@ -222,6 +229,15 @@ export class Hud {
     this.#hint = div("hint panel");
     this.#hint.hidden = true;
     root.append(this.#hint);
+
+    // The gated door permission prompt in the center of the screen.
+    this.#clubOffer = div("club-door-offer panel");
+    this.#clubOffer.hidden = true;
+    this.#clubOfferTitle = div("club-door-title");
+    this.#clubOfferText = div("club-door-text");
+    this.#clubOfferActions = div("club-door-actions");
+    this.#clubOffer.append(this.#clubOfferTitle, this.#clubOfferText, this.#clubOfferActions);
+    root.append(this.#clubOffer);
 
     // The game at the table the visitor stands at (main.ts offers it).
     this.#gameOffer = div("game-offer panel");
@@ -715,6 +731,50 @@ export class Hud {
     this.#hint.hidden = text === null;
   }
 
+  /**
+   * Updates the center-screen permission prompt for gated entrance doors.
+   * Dynamically modulates opacity according to how directly the visitor faces the door.
+   */
+  setClubDoorOffer(offer: { targetTitle: string; unmet: readonly ("microphone" | "sound" | "immersive")[]; opacity: number } | null): void {
+    if (!offer || offer.opacity <= 0.02 || offer.unmet.length === 0) {
+      if (!this.#clubOffer.hidden) {
+        this.#clubOffer.hidden = true;
+        this.#clubOffer.style.opacity = "0";
+        this.#clubOffer.style.pointerEvents = "none";
+      }
+      return;
+    }
+
+    const key = `${offer.targetTitle}:${offer.unmet.join(",")}`;
+    if (key !== this.#clubOfferKey) {
+      this.#clubOfferKey = key;
+      const titleCap = offer.targetTitle.charAt(0).toUpperCase() + offer.targetTitle.slice(1);
+      this.#clubOfferTitle.textContent = `Enter the ${titleCap}`;
+
+      const needs = offer.unmet.map((n) => (n === "immersive" ? "a VR headset" : n === "microphone" ? "your microphone" : "your sound"));
+      const list = needs.length === 1 ? needs[0]! : `${needs.slice(0, -1).join(", ")} and ${needs[needs.length - 1]}`;
+      this.#clubOfferText.textContent = `${titleCap} asks for ${list} to enter.`;
+
+      const buttons: HTMLElement[] = [];
+      if (offer.unmet.includes("microphone")) {
+        buttons.push(button("Allow microphone", "btn accent", () => this.#callbacks.onAllowMicrophone?.()));
+      }
+      if (offer.unmet.includes("sound")) {
+        buttons.push(button("Sound on", "btn accent", () => this.#callbacks.onSwitchSoundOn?.()));
+      }
+      if (offer.unmet.includes("immersive")) {
+        buttons.push(button("Enter VR", "btn accent", () => this.#callbacks.onEnterVr()));
+      }
+      this.#clubOfferActions.replaceChildren(...buttons);
+    }
+
+    if (this.#clubOffer.hidden) {
+      this.#clubOffer.hidden = false;
+    }
+    this.#clubOffer.style.opacity = offer.opacity.toFixed(3);
+    this.#clubOffer.style.pointerEvents = offer.opacity > 0.25 ? "auto" : "none";
+  }
+
   /** Offer the game whose table the visitor stands at, or hide the offer with null. `key` names the key that also opens it. */
   setGameOffer(state: { title: string; key: string | null } | null): void {
     this.#gameOffer.hidden = state === null;
@@ -778,13 +838,16 @@ export class Hud {
 
   /** A short-lived line. Failures stay until something replaces them. */
   notice(text: string, sticky = false): void {
+    const plainBefore = this.#notices.querySelectorAll(".notice:not(.offer)");
+    const last = plainBefore[plainBefore.length - 1];
+    if (last && last.textContent === text) return;
     const element = div("notice panel");
     element.textContent = text;
     this.#notices.append(element);
-    if (!sticky) window.setTimeout(() => element.remove(), 9000);
-    // Offers stay put; only plain notices make room for newer ones.
+    if (!sticky) window.setTimeout(() => element.remove(), 4000);
+    // Offers stay put; only plain notices make room for newer ones (keep max 2).
     const plain = this.#notices.querySelectorAll(".notice:not(.offer)");
-    for (let i = 0; i < plain.length - 4; i++) plain[i]?.remove();
+    for (let i = 0; i < plain.length - 2; i++) plain[i]?.remove();
   }
 
   /** A notice with one action, up until the action is taken. The element tells whether it still is. */

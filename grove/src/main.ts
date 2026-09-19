@@ -38,7 +38,7 @@ import { VisitorGuide } from "./ui/guide";
 import { GameSurface } from "./ui/game-surface";
 import { startupFailed, startupReady } from "./ui/startup";
 import { finiteParameter, visitRoom } from "./world/visit";
-import { NOTHING_ON, barredRooms, nearbyNeeds, pulseGain, retreat, unmetNeeds, venueBarred, venueBox, venueReason, type VenueState } from "./world/venue";
+import { NOTHING_ON, barredRooms, nearbyGatedDoor, nearbyNeeds, pulseGain, retreat, unmetNeeds, venueBarred, venueBox, venueReason, type VenueState } from "./world/venue";
 import type { VenueCurtains } from "./world/venue-curtain";
 import { setPulse, setPulseBox } from "./world/pulse";
 import type { VenueGear } from "./audio/venue-gear";
@@ -154,6 +154,8 @@ const hud = new Hud(hudRoot, {
     hud.setChatShown(!chat.folded);
   },
   onOpenGame: () => commands.openGame(),
+  onAllowMicrophone: () => void allowMicrophone(),
+  onSwitchSoundOn: () => void switchSoundOn(),
   onReport: (identity, reason) =>
     presence.report(identity, reason).then(
       () => notice("Report sent to the host. Thank you."),
@@ -690,8 +692,6 @@ function boot(): void {
   else {
     presence.connect(presenceRoomFor(body.room));
     chat.noteJoined();
-    // A visitor who arrives at the venue's door by link meets its offers at once.
-    offerVenue();
   }
 
   const built = buildWorld({
@@ -790,24 +790,6 @@ if (venueBox(mansion) && !demo) {
   });
 }
 setPulseBox(venueBox(mansion));
-/** The offers standing in the HUD, one per need, until the need is met. */
-const venueOffers = new Map<"microphone" | "sound", HTMLElement>();
-function offerVenue(): void {
-  const state = venueState();
-  const needs = nearbyNeeds(mansion, body.room, state);
-  for (const [need, element] of venueOffers) {
-    if (!needs.includes(need)) {
-      element.remove();
-      venueOffers.delete(need);
-    }
-  }
-  if (needs.includes("microphone") && !venueOffers.has("microphone")) {
-    venueOffers.set("microphone", hud.offer("The club asks for your microphone.", "Allow the microphone", () => void allowMicrophone()));
-  }
-  if (needs.includes("sound") && !venueOffers.has("sound")) {
-    venueOffers.set("sound", hud.offer("The club asks for your sound.", "Sound on", () => void switchSoundOn()));
-  }
-}
 async function allowMicrophone(): Promise<void> {
   const ok = await (await loadGear()).microphone.open();
   notice(ok ? "Microphone on." : "The microphone was not allowed; the club's door stays shut.");
@@ -832,7 +814,6 @@ function syncVenueSound(): void {
   }
 }
 function venueChanged(): void {
-  offerVenue();
   syncVenueSound();
   // A door that has just opened has nothing more to say; the next refusal is a new one.
   toldAboutLock = null;
@@ -876,7 +857,6 @@ function tellAboutLock(roomId: string | null): void {
   const unmet = unmetNeeds(roomById(mansion, roomId), venueState());
   if (unmet.length > 0) {
     notice(venueReason(title, unmet, view.renderer.xr.isPresenting));
-    offerVenue();
     return;
   }
   const why = presence.whyLocked(presenceRoomFor(roomId));
@@ -1194,8 +1174,6 @@ view.start((dt, time, rawDt) => {
     guide.setRoom(body.crossedInto);
     hud.refreshPanelHeading();
     notice(roomTitle(labelsLoaded(locale), body.crossedInto) ?? roomById(mansion, body.crossedInto)?.title ?? body.crossedInto);
-    // Arriving in the foyer is when the club's door is worth explaining.
-    offerVenue();
     // A live stream is awake in its own room only: the club's floor is fetched by its visitors, not the palace's.
     for (const audio of world?.audios ?? []) audio.setActive(exhibitRoom(audio) === body.crossedInto);
     syncVenueSound();
@@ -1257,6 +1235,23 @@ view.start((dt, time, rawDt) => {
       barred = barredRooms(mansion, venueState());
     }
     curtains?.update(time / 1000, barred);
+  }
+
+  // The center-screen offer for gated entrance doors: appears more visibly the more the visitor faces the door.
+  if (!demo && venueBox(mansion)) {
+    view.camera.getWorldDirection(_forward);
+    const offer = nearbyGatedDoor(
+      mansion,
+      body.room,
+      body.x,
+      body.z,
+      _forward.x,
+      _forward.z,
+      venueState(),
+    );
+    hud.setClubDoorOffer(offer);
+  } else {
+    hud.setClubDoorOffer(null);
   }
 
   if (hud.panel === "timing" && time >= nextPerfReport) {

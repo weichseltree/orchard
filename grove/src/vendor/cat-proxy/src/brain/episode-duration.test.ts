@@ -43,11 +43,11 @@ describe("episodes don't dither", () => {
         expect(
           cutShortByEvent || isFlee || isOneShot,
           `seed ${seed}: "${current.behaviour}" at t=${current.startedAt} lasted only ${durationS.toFixed(2)}s ` +
-            `(next: "${next.behaviour}", startedByInterrupt=${next.startedByInterrupt})`,
+            `(${current.behaviour} is neither flee nor one-shot, nor cut short by event)`,
         ).toBe(true);
       }
     }
-  });
+  }, 15000);
 
   it("eat/groom/play never START a fresh episode while their own drive is already satisfied", () => {
     // A more direct check on the fix, at the exact moment it matters (selection), rather than

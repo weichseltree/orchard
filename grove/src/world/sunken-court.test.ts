@@ -205,4 +205,77 @@ describe("the sunken court", () => {
     expect(floorAt(mansion, room("foyer"), -12.75, -38.0)).toBeCloseTo(-5.0, 2);
     expect(floorAt(mansion, room("foyer-south"), -12.75, -11.0)).toBeCloseTo(-5.0, 2);
   });
+
+  it("audits the semi-octagonal staircase for zero under-step holes and continuous vertical solidity", () => {
+    const shell = buildObservatory(court, mansion);
+    interface OrientedBox {
+      pos: Vector3;
+      quat: Quaternion;
+      invQuat: Quaternion;
+      scale: Vector3;
+      minY: number;
+      maxY: number;
+    }
+    const oBoxes: OrientedBox[] = [];
+    const mat = new Matrix4();
+
+    shell.group.traverse((node) => {
+      if (node instanceof InstancedMesh && node.name.includes("stone")) {
+        for (let i = 0; i < node.count; i++) {
+          node.getMatrixAt(i, mat);
+          const p = new Vector3(), q = new Quaternion(), s = new Vector3();
+          mat.decompose(p, q, s);
+          oBoxes.push({
+            pos: p,
+            quat: q,
+            invQuat: q.clone().invert(),
+            scale: s,
+            minY: p.y - s.y / 2,
+            maxY: p.y + s.y / 2,
+          });
+        }
+      }
+    });
+
+    // 1. Check that all step tiers are solid masonry extending down to foundation FLOOR (-5.0):
+    const stepBoxes = oBoxes.filter((b) => b.maxY > FLOOR + 0.05 && b.pos.x <= -15.5 + 0.5);
+    expect(stepBoxes.length).toBeGreaterThan(0);
+    for (const b of stepBoxes) {
+      expect(b.minY).toBeLessThanOrEqual(FLOOR + 0.02);
+    }
+
+    // 2. Sample 2D rays across the entire staircase and confirm unbroken solid vertical volume:
+    const pt = new Vector3();
+    const testPoints = [
+      { x: -16.0, z: -24.5 },
+      { x: -18.0, z: -24.5 },
+      { x: -19.5, z: -24.5 },
+      { x: -16.0, z: -30.0 },
+      { x: -16.0, z: -35.0 },
+      { x: -16.0, z: -19.0 },
+      { x: -16.0, z: -14.0 },
+      { x: -18.5, z: -29.0 },
+      { x: -18.5, z: -20.0 },
+    ];
+
+    for (const tp of testPoints) {
+      const h_expected = floorAt(mansion, court, tp.x, tp.z);
+      if (h_expected <= FLOOR + 0.05) continue;
+
+      // Find all overlapping boxes at this column:
+      const covering = oBoxes.filter((b) => {
+        pt.set(tp.x - b.pos.x, 0, tp.z - b.pos.z).applyQuaternion(b.invQuat);
+        return Math.abs(pt.x) <= b.scale.x / 2 + 0.02 && Math.abs(pt.z) <= b.scale.z / 2 + 0.02;
+      });
+
+      expect(covering.length).toBeGreaterThan(0);
+      const maxTop = Math.max(...covering.map((b) => b.maxY));
+      const minBottom = Math.min(...covering.map((b) => b.minY));
+
+      // Surface height must match within riser:
+      expect(maxTop).toBeGreaterThanOrEqual(h_expected - 0.20);
+      // Bottom must reach all the way to floor base with zero vertical void:
+      expect(minBottom).toBeLessThanOrEqual(FLOOR + 0.02);
+    }
+  });
 });

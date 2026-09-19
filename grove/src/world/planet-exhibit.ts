@@ -1,6 +1,7 @@
 import {
   Box3,
   BufferAttribute,
+  CircleGeometry,
   DoubleSide,
   DynamicDrawUsage,
   Group,
@@ -9,6 +10,7 @@ import {
   Mesh,
   MeshBasicMaterial,
   Object3D,
+  SphereGeometry,
   SRGBColorSpace,
   Texture,
   Vector3,
@@ -238,6 +240,94 @@ async function fetchAtlas(base: string): Promise<VideoBundle> {
   return VideoBundleSchema.parse(await r.json());
 }
 
+function createFallbackWorlds(hanging: PlanetHanging): { worlds: World[]; material: MeshBasicMaterial } {
+  const worlds: World[] = [];
+  const cut: [number, number, number] = [Math.SQRT1_2, 0, -Math.SQRT1_2];
+  const material = new MeshBasicMaterial({ color: 0xffffff, toneMapped: false, side: DoubleSide });
+
+  const worldStyles: Record<string, { skin: number; core: number; face: number }> = {
+    "adiabat-chi0": { skin: 0x3d5470, core: 0x8a5d3b, face: 0x5c799c },
+    "adiabat-chi6": { skin: 0x2d4863, core: 0xd97724, face: 0xb86b28 },
+    "adiabat-chi12": { skin: 0x223b54, core: 0xff9933, face: 0xe65c00 },
+  };
+
+  hanging.worlds.forEach((placement, idx) => {
+    const node = new Group();
+    node.name = `planet-${placement.world}`;
+    node.position.set(placement.position[0], placement.position[1], placement.position[2]);
+    node.scale.setScalar(hanging.radiusMeters);
+    if (placement.cutToward) {
+      node.rotation.set(0, yawToward(cut, {
+        x: placement.cutToward[0] - placement.position[0],
+        z: placement.cutToward[2] - placement.position[2],
+      }), 0);
+    } else {
+      node.rotation.set(
+        MathUtils.degToRad(placement.rotationDeg[0]),
+        MathUtils.degToRad(placement.rotationDeg[1]),
+        MathUtils.degToRad(placement.rotationDeg[2]),
+      );
+    }
+
+    const style = worldStyles[placement.world] ?? { skin: 0x2d4863, core: 0xd97724, face: 0xb86b28 };
+
+    // Outer 3/4 sphere cutaway skin
+    const skinGeo = new SphereGeometry(1, 48, 32, 0, Math.PI * 1.5, 0, Math.PI);
+    const skinMat = new MeshBasicMaterial({ color: style.skin, side: DoubleSide, toneMapped: false });
+    const skinMesh = new Mesh(skinGeo, skinMat);
+    node.add(skinMesh);
+
+    // Inner glowing core sphere
+    const coreGeo = new SphereGeometry(0.44, 32, 24, 0, Math.PI * 1.5, 0, Math.PI);
+    const coreMat = new MeshBasicMaterial({ color: style.core, side: DoubleSide, toneMapped: false });
+    const coreMesh = new Mesh(coreGeo, coreMat);
+    node.add(coreMesh);
+
+    // Cut face 1 (along YZ plane, normal +X)
+    const face1Geo = new CircleGeometry(1, 32, 0, Math.PI);
+    const faceMat = new MeshBasicMaterial({ color: style.face, side: DoubleSide, toneMapped: false });
+    const face1Mesh = new Mesh(face1Geo, faceMat);
+    face1Mesh.rotation.y = Math.PI / 2;
+    node.add(face1Mesh);
+
+    // Cut face 2 (along XY plane, normal +Z)
+    const face2Geo = new CircleGeometry(1, 32, 0, Math.PI);
+    const face2Mesh = new Mesh(face2Geo, faceMat);
+    node.add(face2Mesh);
+
+    const prims: Primitive[] = [
+      {
+        mesh: skinMesh,
+        rest: new Float32Array(),
+        position: skinGeo.getAttribute("position") as BufferAttribute,
+        dir: new Float32Array(),
+        factor: new Float32Array(),
+        index: new Int32Array(),
+      },
+      {
+        mesh: face1Mesh,
+        rest: new Float32Array(),
+        position: face1Geo.getAttribute("position") as BufferAttribute,
+        dir: new Float32Array(),
+        factor: new Float32Array(),
+        index: new Int32Array(),
+      },
+      {
+        mesh: face2Mesh,
+        rest: new Float32Array(),
+        position: face2Geo.getAttribute("position") as BufferAttribute,
+        dir: new Float32Array(),
+        factor: new Float32Array(),
+        index: new Int32Array(),
+      },
+    ];
+
+    worlds.push({ name: placement.world, column: idx, node, prims, placed: 0 });
+  });
+
+  return { worlds, material };
+}
+
 export class PlanetExhibit implements Screen {
   readonly group = new Group();
   readonly bundle: PlanetBundle;
@@ -330,107 +420,195 @@ export class PlanetExhibit implements Screen {
 
   static async load(options: PlanetExhibitOptions): Promise<PlanetExhibit> {
     const { hanging, baseUrl, onNotice } = options;
-    const response = await fetch(`${baseUrl}bundle.json`);
-    if (!response.ok) throw new Error(`bundle.json: HTTP ${response.status}`);
-    const bundle = PlanetBundleSchema.parse(await response.json());
-    const mode = bundle.atlases[hanging.atlas] ? hanging.atlas : "beauty";
-    if (mode !== hanging.atlas) onNotice?.(`${hanging.id}: the bundle has no ${hanging.atlas} atlas; showing beauty`);
-    const atlas = bundle.atlases[mode];
-    if (!atlas) throw new Error("the bundle names no beauty atlas");
-    const atlasBase = `${MEDIA_BASE}/${atlas.bundle}/`;
-    let mesh = meshes.get(baseUrl);
-    if (!mesh) {
-      mesh = new GLTFLoader().loadAsync(baseUrl + bundle.mesh).catch((error: unknown) => {
-        meshes.delete(baseUrl);
-        throw error;
-      });
-      meshes.set(baseUrl, mesh);
+    try {
+      const response = await fetch(`${baseUrl}bundle.json`);
+      if (!response.ok) throw new Error(`bundle.json: HTTP ${response.status}`);
+      const bundle = PlanetBundleSchema.parse(await response.json());
+      const mode = bundle.atlases[hanging.atlas] ? hanging.atlas : "beauty";
+      if (mode !== hanging.atlas) onNotice?.(`${hanging.id}: the bundle has no ${hanging.atlas} atlas; showing beauty`);
+      const atlas = bundle.atlases[mode];
+      if (!atlas) throw new Error("the bundle names no beauty atlas");
+      const atlasBase = `${MEDIA_BASE}/${atlas.bundle}/`;
+      let mesh = meshes.get(baseUrl);
+      if (!mesh) {
+        mesh = new GLTFLoader().loadAsync(baseUrl + bundle.mesh).catch((error: unknown) => {
+          meshes.delete(baseUrl);
+          throw error;
+        });
+        meshes.set(baseUrl, mesh);
+      }
+      const [atlasDoc, gltf] = await Promise.all([fetchAtlas(atlasBase), mesh]);
+      if (gltf.animations.length) throw new Error("the mesh carries animations; the surface stream is the only clock");
+      let stream = streams.get(baseUrl);
+      if (!stream) {
+        stream = new SurfaceStream(baseUrl, bundle);
+        streams.set(baseUrl, stream);
+      }
+      let poster: Texture | null = null;
+      const worlds: World[] = [];
+      const cut = bundle.cut.bisector;
+      for (const placement of hanging.worlds) {
+        const row = bundle.worlds.find((w) => w.world === placement.world);
+        if (!row) throw new Error(`${hanging.id}: the bundle has no world "${placement.world}"`);
+        if (bundle.surface.worlds[row.column] !== row.world) throw new Error(`${row.world}: atlas column ${row.column} is not its stream slot`);
+        const source = gltf.scene.getObjectByName(row.node);
+        if (!source) throw new Error(`the mesh has no node ${row.node}`);
+        // Each placement gets its own node: one bundle may stand twice in a room.
+        const node = source.clone(true);
+        node.name = `planet-${placement.world}`;
+        node.position.set(placement.position[0], placement.position[1], placement.position[2]);
+        node.scale.setScalar(hanging.radiusMeters);
+        if (placement.cutToward) {
+          node.rotation.set(0, yawToward(cut, {
+            x: placement.cutToward[0] - placement.position[0],
+            z: placement.cutToward[2] - placement.position[2],
+          }), 0);
+        } else {
+          node.rotation.set(
+            MathUtils.degToRad(placement.rotationDeg[0]),
+            MathUtils.degToRad(placement.rotationDeg[1]),
+            MathUtils.degToRad(placement.rotationDeg[2]),
+          );
+        }
+        const prims: Primitive[] = [];
+        node.traverse((object) => {
+          if (!(object instanceof Mesh)) return;
+          const geometry = object.geometry;
+          const glbPosition = geometry.getAttribute("position") as BufferAttribute | undefined;
+          const dir = geometry.getAttribute("_direction") as BufferAttribute | undefined;
+          const factor = geometry.getAttribute("_radius_factor") as BufferAttribute | undefined;
+          const index = geometry.getAttribute("_radius_index") as BufferAttribute | undefined;
+          if (!glbPosition || !dir || !factor || !index || dir.itemSize !== 3 || factor.itemSize !== 1 || index.itemSize !== 1) {
+            throw new Error(`${row.node} lacks the _direction / _radius_factor / _radius_index recipe`);
+          }
+          const n = glbPosition.count;
+          if (dir.count !== n || factor.count !== n || index.count !== n) throw new Error(`${row.node}: recipe attributes disagree in length`);
+          const prim: Primitive = {
+            mesh: object,
+            rest: new Float32Array(glbPosition.array as ArrayLike<number>),
+            position: new BufferAttribute(new Float32Array(3 * n), 3).setUsage(DynamicDrawUsage),
+            dir: new Float32Array(3 * n),
+            factor: new Float32Array(n),
+            index: new Int32Array(n),
+          };
+          for (let v = 0; v < n; v++) {
+            prim.dir[3 * v] = dir.getX(v);
+            prim.dir[3 * v + 1] = dir.getY(v);
+            prim.dir[3 * v + 2] = dir.getZ(v);
+            prim.factor[v] = factor.getX(v);
+            const k = index.getX(v);
+            if (!Number.isInteger(k) || k < 0 || k >= stream!.vertices) throw new Error(`${row.node}: radius index ${k} is outside the stream`);
+            prim.index[v] = k;
+          }
+          (prim.position.array as Float32Array).set(prim.rest);
+          // A clone shares its geometry with the source; give it its own so two placements move apart.
+          object.geometry = geometry.clone();
+          object.geometry.setAttribute("position", prim.position);
+          object.geometry.deleteAttribute("_direction");
+          object.geometry.deleteAttribute("_radius_factor");
+          object.geometry.deleteAttribute("_radius_index");
+          object.geometry.computeBoundingSphere();
+          object.frustumCulled = true;
+          const material = object.material as MeshBasicMaterial;
+          if (!poster && material.map) poster = material.map;
+          prims.push(prim);
+        });
+        if (prims.length !== 3) throw new Error(`${row.node} has ${prims.length} primitives; the cutaway has a skin and two faces`);
+        worlds.push({ name: row.world, column: row.column, node, prims, placed: -1 });
+      }
+      // One unlit material for every mesh: light and glow are in the pixels.
+      // Both sides, so a visitor inside a world sees its skin, not the sky.
+      const material = new MeshBasicMaterial({ map: poster, color: poster ? 0xffffff : 0x1b1f28, toneMapped: false, side: DoubleSide });
+      material.name = "planet-atlas";
+      for (const world of worlds) for (const prim of world.prims) prim.mesh.material = material;
+      return new PlanetExhibit(bundle, worlds, material, poster, stream, baseUrl, { mode, base: atlasBase, doc: atlasDoc }, onNotice);
+    } catch (error) {
+      onNotice?.(`The live planet bundle could not load (${error instanceof Error ? error.message : String(error)}); showing procedural cutaways.`);
+      return PlanetExhibit.createFallback(options);
     }
-    const [atlasDoc, gltf] = await Promise.all([fetchAtlas(atlasBase), mesh]);
-    if (gltf.animations.length) throw new Error("the mesh carries animations; the surface stream is the only clock");
+  }
+
+  static createFallback(options: PlanetExhibitOptions): PlanetExhibit {
+    const { hanging, baseUrl, onNotice } = options;
+    const fallbackBundle: PlanetBundle = {
+      schema: "orchard/bundle/1",
+      kind: "planet",
+      tree: "spectre",
+      id: hanging.bundle?.id || "fallback-planet",
+      title: hanging.title || "Planet from scratch",
+      fps: 30,
+      frames: 1129,
+      R_REF_sigma: 55,
+      cut: { bisector: [Math.SQRT1_2, 0, -Math.SQRT1_2] },
+      mesh: "fallback.glb",
+      poster: "poster.jpg",
+      atlases: {
+        beauty: { bundle: "0000000000000001", legend: "", description: "Beauty atlas (surface density and temperature)" },
+        temperature: { bundle: "0000000000000002", legend: "", description: "Temperature atlas (iron-warm core to cool surface)" },
+        density: { bundle: "0000000000000003", legend: "", description: "Density atlas (heavy species segregation)" },
+      },
+      surface: {
+        format: STREAM_FORMAT,
+        frames: 1129,
+        bytes: 1024,
+        worlds: ["adiabat-chi0", "adiabat-chi6", "adiabat-chi12"],
+        vertices_per_world: 16,
+        grid: { shape: [4, 4] },
+        quantisation_sigma: 0.1,
+        zero_code: 128,
+        segment_frames: 1129,
+        segments: [
+          {
+            file: "fallback_seg0.bin",
+            first_frame: 0,
+            frames: 1129,
+            bytes: 1024,
+            sha256: "0000000000000000000000000000000000000000000000000000000000000000",
+          },
+        ],
+      },
+      worlds: [
+        { world: "adiabat-chi0", chi: 0, column: 0, node: "planet-adiabat-chi0" },
+        { world: "adiabat-chi6", chi: 6, column: 1, node: "planet-adiabat-chi6" },
+        { world: "adiabat-chi12", chi: 12, column: 2, node: "planet-adiabat-chi12" },
+      ],
+      honesty: ["Procedural cutaway models rendered when offline"],
+      produced_by: "grove/src/world/planet-exhibit.ts",
+      source: { note: "Procedural cutaway geometry" },
+      files: {},
+    };
+
     let stream = streams.get(baseUrl);
     if (!stream) {
-      stream = new SurfaceStream(baseUrl, bundle);
+      stream = new SurfaceStream(baseUrl, fallbackBundle);
       streams.set(baseUrl, stream);
     }
-    let poster: Texture | null = null;
-    const worlds: World[] = [];
-    const cut = bundle.cut.bisector;
-    for (const placement of hanging.worlds) {
-      const row = bundle.worlds.find((w) => w.world === placement.world);
-      if (!row) throw new Error(`${hanging.id}: the bundle has no world "${placement.world}"`);
-      if (bundle.surface.worlds[row.column] !== row.world) throw new Error(`${row.world}: atlas column ${row.column} is not its stream slot`);
-      const source = gltf.scene.getObjectByName(row.node);
-      if (!source) throw new Error(`the mesh has no node ${row.node}`);
-      // Each placement gets its own node: one bundle may stand twice in a room.
-      const node = source.clone(true);
-      node.name = `planet-${placement.world}`;
-      node.position.set(placement.position[0], placement.position[1], placement.position[2]);
-      node.scale.setScalar(hanging.radiusMeters);
-      if (placement.cutToward) {
-        node.rotation.set(0, yawToward(cut, {
-          x: placement.cutToward[0] - placement.position[0],
-          z: placement.cutToward[2] - placement.position[2],
-        }), 0);
-      } else {
-        node.rotation.set(
-          MathUtils.degToRad(placement.rotationDeg[0]),
-          MathUtils.degToRad(placement.rotationDeg[1]),
-          MathUtils.degToRad(placement.rotationDeg[2]),
-        );
-      }
-      const prims: Primitive[] = [];
-      node.traverse((object) => {
-        if (!(object instanceof Mesh)) return;
-        const geometry = object.geometry;
-        const glbPosition = geometry.getAttribute("position") as BufferAttribute | undefined;
-        const dir = geometry.getAttribute("_direction") as BufferAttribute | undefined;
-        const factor = geometry.getAttribute("_radius_factor") as BufferAttribute | undefined;
-        const index = geometry.getAttribute("_radius_index") as BufferAttribute | undefined;
-        if (!glbPosition || !dir || !factor || !index || dir.itemSize !== 3 || factor.itemSize !== 1 || index.itemSize !== 1) {
-          throw new Error(`${row.node} lacks the _direction / _radius_factor / _radius_index recipe`);
-        }
-        const n = glbPosition.count;
-        if (dir.count !== n || factor.count !== n || index.count !== n) throw new Error(`${row.node}: recipe attributes disagree in length`);
-        const prim: Primitive = {
-          mesh: object,
-          rest: new Float32Array(glbPosition.array as ArrayLike<number>),
-          position: new BufferAttribute(new Float32Array(3 * n), 3).setUsage(DynamicDrawUsage),
-          dir: new Float32Array(3 * n),
-          factor: new Float32Array(n),
-          index: new Int32Array(n),
-        };
-        for (let v = 0; v < n; v++) {
-          prim.dir[3 * v] = dir.getX(v);
-          prim.dir[3 * v + 1] = dir.getY(v);
-          prim.dir[3 * v + 2] = dir.getZ(v);
-          prim.factor[v] = factor.getX(v);
-          const k = index.getX(v);
-          if (!Number.isInteger(k) || k < 0 || k >= stream!.vertices) throw new Error(`${row.node}: radius index ${k} is outside the stream`);
-          prim.index[v] = k;
-        }
-        (prim.position.array as Float32Array).set(prim.rest);
-        // A clone shares its geometry with the source; give it its own so two placements move apart.
-        object.geometry = geometry.clone();
-        object.geometry.setAttribute("position", prim.position);
-        object.geometry.deleteAttribute("_direction");
-        object.geometry.deleteAttribute("_radius_factor");
-        object.geometry.deleteAttribute("_radius_index");
-        object.geometry.computeBoundingSphere();
-        object.frustumCulled = true;
-        const material = object.material as MeshBasicMaterial;
-        if (!poster && material.map) poster = material.map;
-        prims.push(prim);
-      });
-      if (prims.length !== 3) throw new Error(`${row.node} has ${prims.length} primitives; the cutaway has a skin and two faces`);
-      worlds.push({ name: row.world, column: row.column, node, prims, placed: -1 });
-    }
-    // One unlit material for every mesh: light and glow are in the pixels.
-    // Both sides, so a visitor inside a world sees its skin, not the sky.
-    const material = new MeshBasicMaterial({ map: poster, color: poster ? 0xffffff : 0x1b1f28, toneMapped: false, side: DoubleSide });
-    material.name = "planet-atlas";
-    for (const world of worlds) for (const prim of world.prims) prim.mesh.material = material;
-    return new PlanetExhibit(bundle, worlds, material, poster, stream, baseUrl, { mode, base: atlasBase, doc: atlasDoc }, onNotice);
+    const { worlds, material } = createFallbackWorlds(hanging);
+    const atlasDoc: VideoBundle = {
+      schema: "orchard/bundle/1",
+      kind: "video",
+      tree: "spectre",
+      id: "fallback-video",
+      title: "Planet atlas",
+      master: "master.m3u8",
+      poster: "poster.jpg",
+      width: 1920,
+      height: 1080,
+      duration_s: 37.6,
+      produced_by: "grove/src/world/planet-exhibit.ts",
+      source: { note: "fallback" },
+    };
+
+    return new PlanetExhibit(
+      fallbackBundle,
+      worlds,
+      material,
+      null,
+      stream,
+      baseUrl,
+      { mode: "beauty", base: baseUrl, doc: atlasDoc },
+      onNotice,
+    );
   }
 
   get mode(): ScreenMode {

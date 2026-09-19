@@ -335,7 +335,12 @@ export class RoomMap {
     this.#floors = floorsOf(state.mansion, rooms);
     this.#connectors = floorConnectors(state.mansion, this.#floors);
     this.#shown = this.#standingOn(state);
-    this.#view = { x: 0, y: 0, w: SIZE, h: SIZE };
+    const all = this.#floors.flatMap((floor) => floor.rooms);
+    const project = planProjection(all, SIZE, SIZE);
+    const px = project.x(state.x);
+    const py = project.y(state.z);
+    // Start with a reasonable zoom (~2.2x) centered on visitor's position so neighboring rooms are clear and prominent.
+    this.#view = zoomView({ x: 0, y: 0, w: SIZE, h: SIZE }, 1 / 2.2, px, py);
     this.#drag = null;
     this.#panned = false;
     const here = rooms.find((room) => room.id === state.room);
@@ -651,9 +656,8 @@ export class RoomMap {
   }
 
   /**
-   * The rooms as a menu, grouped by area with the palace first. Grouping is
-   * what the flat list lacked: in a world of twenty-odd rooms it read as one
-   * heap, and the way home was somewhere in the middle of it.
+   * The rooms as a menu: top quick teleport destinations first, with areas
+   * organized in collapsible sections so non-immediate areas don't clutter the dialog.
    */
   #buildAreas(state: MapState): void {
     const groups = new Map<string, Room[]>();
@@ -676,31 +680,73 @@ export class RoomMap {
       if (b === here) return 1;
       return a.localeCompare(b);
     });
+
     const sections: HTMLElement[] = [];
+
+    // 1. Top Quick Teleport destinations:
+    const quickIds = ["hall", "foyer", "club", "orangery", "belvedere", "terrace", "parterre"];
+    const quickRooms: Room[] = [];
+    for (const qid of quickIds) {
+      if (qid === state.room) continue;
+      const r = state.mansion.rooms.find((rm) => rm.id === qid && rm.scale === standing?.scale);
+      if (r && (state.reachable.has(r.id) || r.id === state.room)) {
+        quickRooms.push(r);
+      }
+    }
+    if (quickRooms.length > 0) {
+      const quickSection = document.createElement("section");
+      quickSection.className = "room-map-quick";
+      const quickHeading = document.createElement("h3");
+      quickHeading.textContent = "Quick Travel";
+      const quickList = document.createElement("ul");
+      for (const room of quickRooms.slice(0, 5)) {
+        const title = state.title(room.id);
+        const item = document.createElement("li");
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "btn small accent";
+        btn.textContent = title;
+        btn.addEventListener("click", () => this.#go(room.id));
+        item.append(btn);
+        quickList.append(item);
+      }
+      quickSection.append(quickHeading, quickList);
+      sections.push(quickSection);
+    }
+
+    // 2. Area sections with collapsible details:
     for (const area of order) {
-      const section = document.createElement("section");
-      const heading = document.createElement("h3");
-      heading.textContent = area === "" ? "The palace" : state.title(area);
+      const isCurrentArea = area === here || (here === "" && area === "");
+      const details = document.createElement("details");
+      details.className = "room-map-area";
+      if (isCurrentArea || order.length === 1) details.open = true;
+
+      const summary = document.createElement("summary");
+      summary.className = "room-map-summary";
+      const areaTitle = area === "" ? "The palace" : state.title(area);
+      const roomCount = groups.get(area)!.length;
+      summary.textContent = `${areaTitle} (${roomCount})`;
+
       const list = document.createElement("ul");
+      list.className = "room-map-rooms";
       for (const room of groups.get(area)!) {
         const current = room.id === state.room;
         const open = current || state.reachable.has(room.id);
         const title = state.title(room.id);
         const item = document.createElement("li");
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "btn small";
-        button.textContent = current ? `${title} (you are here)` : title;
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = current ? "btn small here" : "btn small";
+        btn.textContent = current ? `${title} (here)` : title;
         const level = floorOfRoom(this.#floors, room.id);
-        // Which storey a room is on, when there is more than one to be on.
-        if (this.#floors.length > 1 && level !== undefined) button.title = `${title} · ${floorLabel(level)}`;
-        button.disabled = !open;
-        button.addEventListener("click", () => this.#go(room.id));
-        item.append(button);
+        if (this.#floors.length > 1 && level !== undefined) btn.title = `${title} · ${floorLabel(level)}`;
+        btn.disabled = !open;
+        btn.addEventListener("click", () => this.#go(room.id));
+        item.append(btn);
         list.append(item);
       }
-      section.append(heading, list);
-      sections.push(section);
+      details.append(summary, list);
+      sections.push(details);
     }
     this.#list.replaceChildren(...sections);
   }

@@ -69,16 +69,54 @@
 
 .room-map-note { margin: 10px 0; color: var(--dim); font-size: 12px; }
 
-/* The menu, grouped: the palace first, then the area the visitor is in. */
-.room-map-areas { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
-.room-map-areas section { display: flex; flex-direction: column; gap: 6px; }
-.room-map-areas h3 {
+/* The menu, grouped: top quick teleports first, then collapsible areas. */
+.room-map-areas { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.room-map-quick { display: flex; flex-direction: column; gap: 6px; padding-bottom: 6px; border-bottom: 1px solid rgba(225, 189, 130, 0.12); }
+.room-map-quick h3 {
   margin: 0;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: .06em;
   text-transform: uppercase;
-  color: var(--dim);
+  color: var(--accent);
 }
-.room-map-areas ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.room-map-quick ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+
+.room-map-area { display: flex; flex-direction: column; gap: 6px; }
+.room-map-summary {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--dim);
+  cursor: pointer;
+  user-select: none;
+  padding: 4px 0;
+}
+.room-map-summary:hover { color: var(--text); }
+.room-map-area[open] .room-map-summary { color: var(--accent); }
+
+.room-map-rooms { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
 .room-map .btn:disabled { opacity: .45; cursor: default; }
+.room-map .btn.here { background: #3a3225; border-color: var(--accent); color: var(--text); }
+
+/* Responsive overlay for smartphones and small displays */
+@media (max-width: 640px), (max-height: 600px) {
+  .room-map {
+    width: 100vw;
+    height: 100dvh;
+    max-width: 100vw;
+    max-height: 100dvh;
+    margin: 0;
+    padding: 14px;
+    border: none;
+    border-radius: 0;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .room-map-frame { flex: 0 0 auto; }
+  .room-map svg { max-height: 44dvh; }
+}

@@ -1262,9 +1262,10 @@ function courtShell(b: Builder): void {
   // 3. Flat paved foyer promenade along x in [-15.5, -10.0] spanning the full court length:
   b.box("path", -12.75, y0 + 0.006, cz, 5.5, 0.012, z1 - z0);
 
-  // Terrace landing stone connections at North and South upper doorways:
-  b.box("stone", -17.75, -0.4, -36.5, 4.5, 0.8, 3.0);
-  b.box("stone", -17.75, -0.4, -12.5, 4.5, 0.8, 3.0);
+  // Terrace landing solid stone foundations at North and South upper doorways:
+  const landingH = 0 - y0; // from y0 (-5.0) up to terrace level (0.0)
+  b.box("stone", -17.75, y0 + landingH / 2, -36.5, 4.5, landingH, 3.0);
+  b.box("stone", -17.75, y0 + landingH / 2, -12.5, 4.5, landingH, 3.0);
 
   // 4. Semi-octagonal (Halb-Achteck) staircase:
   const N_STEPS = 24;
@@ -1290,7 +1291,7 @@ function courtShell(b: Builder): void {
       const segLen = Math.hypot(dx, dz);
       const y_top = k === 1 || k === 2 ? -1.6 : -0.8;
       const py = y0 + f * (y_top - y0);
-      const riserH = Math.max(0.08, (y_top - y0) / N_STEPS);
+      const tierH = py - y0; // Solid stone down to court foundation floor
       const treadDepth = (spanX / N_STEPS) * 1.35;
       const rot = new Quaternion().setFromAxisAngle(UNIT, Math.atan2(dx, dz));
 
@@ -1301,12 +1302,12 @@ function courtShell(b: Builder): void {
       const mx = (pA.x + pB.x) / 2 + sign * nx * shift;
       const mz = (pA.z + pB.z) / 2 + sign * nz * shift;
 
-      // Stone step tread along the semi-octagon facet:
-      b.add("box", "stone", mx, py - riserH / 2, mz, treadDepth, riserH, segLen * 1.02, rot);
+      // Solid stone step tier down to foundation floor (zero under-step holes):
+      b.add("box", "stone", mx, y0 + tierH / 2, mz, treadDepth, tierH, segLen * 1.06, rot);
       // Brass nosing along top front facet edge:
       const nosingX = (pA.x + pB.x) / 2;
       const nosingZ = (pA.z + pB.z) / 2;
-      b.add("box", "brass", nosingX, py + 0.005, nosingZ, 0.06, 0.012, segLen * 1.02, rot);
+      b.add("box", "brass", nosingX, py + 0.005, nosingZ, 0.06, 0.012, segLen * 1.06, rot);
     }
   }
 }
