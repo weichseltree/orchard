@@ -1193,7 +1193,7 @@ function stageFittings(b: Builder): void {
 function courtShell(b: Builder): void {
   const room = b.room, [x0, y0, z0] = room.bounds.min, [x1, , z1] = room.bounds.max;
   const cz = (z0 + z1) / 2;
-  const cx = -11.0;
+  const cx = -11.5;
 
   // 1. Paved floor across the court base:
   b.box("floor", (x0 + x1) / 2, y0 - 0.1, (z0 + z1) / 2, x1 - x0, 0.2, z1 - z0);
@@ -1226,10 +1226,14 @@ function courtShell(b: Builder): void {
   // 3. Flat paved landing in front of club entrance:
   b.box("path", -11.75, y0 + 0.006, cz, 3.5, 0.012, 10.0);
 
+  // Terrace landing stone connections at North and South doorways:
+  b.box("stone", -16.0, -0.4, -36.5, 5.0, 0.8, 3.0);
+  b.box("stone", -16.0, -0.4, -12.5, 5.0, 0.8, 3.0);
+
   // 4. Semi-octagonal (Halb-Achteck) staircase:
   const N_STEPS = 20;
-  const rxInner = 1.8, rxMax = 7.5;
-  const rzInner = 3.0, rzMax = 13.5;
+  const rxInner = 1.7, rxMax = 8.5;
+  const rzInner = 2.7, rzMax = 13.5;
 
   for (let i = 0; i < N_STEPS; i++) {
     const f = (i + 1) / N_STEPS;
@@ -1237,11 +1241,11 @@ function courtShell(b: Builder): void {
     const rz = rzInner + f * (rzMax - rzInner);
 
     // 5 vertices of the semi-octagon tier:
-    const v0 = { x: -13.5, z: cz - rz };
+    const v0 = { x: cx, z: cz - rz };
     const v1 = { x: cx - rx * Math.cos(Math.PI / 4), z: cz - rz * Math.sin(Math.PI / 4) };
     const v2 = { x: cx - rx, z: cz };
     const v3 = { x: cx - rx * Math.cos(Math.PI / 4), z: cz + rz * Math.sin(Math.PI / 4) };
-    const v4 = { x: -13.5, z: cz + rz };
+    const v4 = { x: cx, z: cz + rz };
 
     const verts = [v0, v1, v2, v3, v4];
     for (let k = 0; k < 4; k++) {

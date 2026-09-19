@@ -1,8 +1,10 @@
+import { InstancedMesh, Matrix4, Quaternion, Vector3 } from "three";
 import { describe, expect, it } from "vitest";
 import mansionDocument from "./mansion.json";
 import { resolveMove } from "./navigation";
 import { STAIR_MARGIN, floorAt } from "./terrain";
 import { parseMansion } from "./schema";
+import { buildObservatory } from "./observatory";
 
 // The sunken court is the grand semi-octagonal (Halb-Achteck) staircase where
 // the terrace's two arms, the garden, and the club meet. It replaces straight
@@ -103,5 +105,88 @@ describe("the sunken court", () => {
     expect(close.x).toBeCloseTo(-12.5, 1);
     expect(close.z).toBeGreaterThan(cheek);
     expect(close.z).toBeLessThan(cheek + 0.6);
+  });
+
+  it("matches movement floor height with rendered staircase geometry within one riser across the court", () => {
+    const shell = buildObservatory(court, mansion);
+    interface OrientedBox {
+      pos: Vector3;
+      quat: Quaternion;
+      invQuat: Quaternion;
+      scale: Vector3;
+      topY: number;
+    }
+    const oBoxes: OrientedBox[] = [];
+    const mat = new Matrix4();
+
+    shell.group.traverse((node) => {
+      if (node instanceof InstancedMesh) {
+        for (let i = 0; i < node.count; i++) {
+          node.getMatrixAt(i, mat);
+          const p = new Vector3(), q = new Quaternion(), s = new Vector3();
+          mat.decompose(p, q, s);
+          oBoxes.push({
+            pos: p,
+            quat: q,
+            invQuat: q.clone().invert(),
+            scale: s,
+            topY: p.y + s.y / 2,
+          });
+        }
+      }
+    });
+
+    const highestRenderedY = (x: number, z: number): number => {
+      let maxTop = FLOOR;
+      const pt = new Vector3();
+      for (const b of oBoxes) {
+        pt.set(x - b.pos.x, 0, z - b.pos.z).applyQuaternion(b.invQuat);
+        if (Math.abs(pt.x) <= b.scale.x / 2 + 0.02 && Math.abs(pt.z) <= b.scale.z / 2 + 0.02) {
+          if (b.topY > maxTop) maxTop = b.topY;
+        }
+      }
+      return maxTop;
+    };
+
+    // Sample along axis walk (x: -12 -> -19.5, z = -24.5):
+    for (let x = -12; x >= -19.5; x -= 0.5) {
+      const h_move = floorAt(mansion, court, x, -24.5);
+      const h_rend = highestRenderedY(x, -24.5);
+      expect(Math.abs(h_move - h_rend)).toBeLessThanOrEqual(0.18);
+    }
+
+    // Sample along North terrace arm (z: -25 -> -37, x = -16):
+    for (let z = -25; z >= -37; z -= 1.0) {
+      const h_move = floorAt(mansion, court, -16, z);
+      const h_rend = highestRenderedY(-16, z);
+      expect(Math.abs(h_move - h_rend)).toBeLessThanOrEqual(0.18);
+    }
+
+    // Sample along South terrace arm (z: -25 -> -12, x = -16):
+    for (let z = -25; z <= -12; z += 1.0) {
+      const h_move = floorAt(mansion, court, -16, z);
+      const h_rend = highestRenderedY(-16, z);
+      expect(Math.abs(h_move - h_rend)).toBeLessThanOrEqual(0.18);
+    }
+  }, 15000);
+
+  it("smoothly and monotonically climbs from court floor to garden parterre", () => {
+    let lastHeight = -5.1;
+    for (let x = -11.5; x >= -20.0; x -= 0.25) {
+      const h = floorAt(mansion, court, x, -24.5);
+      expect(h).toBeGreaterThanOrEqual(lastHeight - 0.001);
+      lastHeight = h;
+    }
+    expect(lastHeight).toBeCloseTo(-1.6, 2);
+  });
+
+  it("seamlessly matches terrace and parterre floor elevations at doorways", () => {
+    // Parterre doorway boundary at x = -20, z = -24.5
+    expect(floorAt(mansion, court, -20.0, -24.5)).toBeCloseTo(-1.6, 2);
+    expect(floorAt(mansion, room("parterre"), -20.0, -24.5)).toBeCloseTo(-1.6, 2);
+
+    // Court paving in front of club at x = -11.5, z = -24.5
+    expect(floorAt(mansion, court, -11.5, -24.5)).toBeCloseTo(-5.0, 2);
+    expect(floorAt(mansion, room("club"), -10.0, -24.5)).toBeCloseTo(-5.0, 2);
   });
 });
