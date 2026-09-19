@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
 import mansionDocument from "./mansion.json";
-import { BODY_RADIUS, resolveMove } from "./navigation";
+import { resolveMove } from "./navigation";
 import { STAIR_MARGIN, floorAt } from "./terrain";
 import { parseMansion } from "./schema";
 
-// The sunken court is the grand half-octagram staircase where the terrace's
-// two arms, the garden, and the club meet. It replaces straight flights with
-// concentric faceted stone tiers forming half of an 8-pointed star, descending
+// The sunken court is the grand semi-octagonal (Halb-Achteck) staircase where
+// the terrace's two arms, the garden, and the club meet. It replaces straight
+// flights with concentric faceted stone tiers forming a half-octagon, descending
 // from the terrace (y=0) and garden (y=-1.6) to the paved court floor (y=-5.0)
-// in front of the club's door, free of chamber walls and obstructive cheeks.
-// This suite walks all routes.
+// in front of the club's entrance, stretching into the garden and free of
+// chamber walls and obstructive doors. This suite walks all routes.
 
 const mansion = parseMansion(mansionDocument);
 const room = (id: string) => mansion.rooms.find((r) => r.id === id)!;
@@ -44,21 +44,21 @@ describe("the sunken court", () => {
   const court = room("stair-court");
   const FLOOR = court.bounds.min[1];
 
-  it("lets a visitor walk down the octagram staircase from the south terrace to the court paving", () => {
+  it("lets a visitor walk down the semi-octagonal staircase from the south terrace to the court paving", () => {
     const arrived = walk("terrace", { x: -16, z: -5 }, [{ x: -16, z: -6 }, { x: -16, z: -21 }, { x: -12, z: -24.5 }]);
     expect(arrived.room).toBe("stair-court");
-    // On the paving at the bottom of the half-octagram steps
+    // On the paving at the bottom of the semi-octagonal steps
     expect(arrived.floor).toBeCloseTo(FLOOR, 2);
   });
 
-  it("lets a visitor walk down the octagram staircase from the orangery's north terrace", () => {
+  it("lets a visitor walk down the semi-octagonal staircase from the orangery's north terrace", () => {
     const arrived = walk("terrace-north", { x: -16, z: -42 }, [{ x: -16, z: -40 }, { x: -16, z: -28 }, { x: -12, z: -24.5 }]);
     expect(arrived.room).toBe("stair-court");
     expect(arrived.floor).toBeCloseTo(FLOOR, 2);
   });
 
-  it("lets a visitor walk down the amphitheatre tiers from the garden parterre", () => {
-    const arrived = walk("parterre", { x: -24, z: -24.5 }, [{ x: -21, z: -24.5 }, { x: -12, z: -24.5 }]);
+  it("lets a visitor walk down the semi-octagonal tiers from the garden parterre", () => {
+    const arrived = walk("parterre", { x: -28, z: -24.5 }, [{ x: -25, z: -24.5 }, { x: -12, z: -24.5 }]);
     expect(arrived.room).toBe("stair-court");
     expect(arrived.floor).toBeCloseTo(FLOOR, 2);
   });

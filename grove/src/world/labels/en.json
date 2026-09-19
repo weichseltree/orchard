@@ -68,8 +68,8 @@
     "stair-court": {
       "title": "sunken court",
       "kicker": "Where the terrace dips underground.",
-      "intro": "A sunken court cut into the terrace between the hall and the orangery, five metres down. A grand half-octagram flight of faceted stone steps sweeps down from the terrace and garden to the paving in front of the club's door.",
-      "lookFor": "From the paving, look up at the star-faceted tiers of steps rising toward the garden and the twilight sky; the undercroft opens either side."
+      "intro": "A sunken court cut into the terrace between the hall and the orangery, five metres down. A grand semi-octagonal flight of faceted stone steps sweeps down from the terrace and garden to the paving in front of the club's entrance.",
+      "lookFor": "From the paving, look up at the faceted tiers of steps rising toward the garden and the twilight sky; the undercroft opens either side."
     },
     "foyer-south": {
       "title": "south undercroft",

@@ -68,8 +68,8 @@
     "stair-court": {
       "title": "cour en contrebas",
       "kicker": "Là où la terrasse descend sous terre.",
-      "intro": "Une cour anglaise taillée dans la terrasse entre la grande salle et l'orangerie, cinq mètres plus bas. Un escalier magistral en demi-octogramme aux gradins de pierre biseautée descend de la terrasse et du parterre vers le pavage devant le club.",
-      "lookFor": "Depuis le pavage, admirez les gradins étoilés qui montent vers le jardin et le crépuscule ; la crypte s'ouvre de part et d'autre."
+      "intro": "Une cour anglaise taillée dans la terrasse entre la grande salle et l'orangerie, cinq mètres plus bas. Un escalier magistral semi-octogonal aux gradins de pierre biseautée descend de la terrasse et du parterre vers le pavage devant le club.",
+      "lookFor": "Depuis le pavage, admirez les gradins biseautés qui montent vers le jardin et le crépuscule ; la crypte s'ouvre de part et d'autre."
     },
     "foyer-south": {
       "title": "souterrain sud",

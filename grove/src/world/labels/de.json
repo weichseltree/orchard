@@ -68,8 +68,8 @@
     "stair-court": {
       "title": "Versunkener Hof",
       "kicker": "Wo die Terrasse unter die Erde taucht.",
-      "intro": "Ein abgesenkter Hof, fünf Meter tief in die Terrasse zwischen Saal und Orangerie geschnitten. Eine halboktagrammförmige Freitreppe aus facettiertem Stein führt von Terrasse und Garten zum Pflaster vor der Clubtür hinab.",
-      "lookFor": "Blicken Sie vom Pflaster auf die sternförmig facettierten Steinstufen hinauf, die zum Garten und Abendhimmel emporsteigen; zu beiden Seiten öffnet sich die Krypta."
+      "intro": "Ein abgesenkter Hof, fünf Meter tief in die Terrasse zwischen Saal und Orangerie geschnitten. Eine halboktagonale Freitreppe aus facettiertem Stein führt von Terrasse und Garten zum Pflaster vor dem Club hinab.",
+      "lookFor": "Blicken Sie vom Pflaster auf die facettierten Steinstufen hinauf, die zum Garten und Abendhimmel emporsteigen; zu beiden Seiten öffnet sich die Krypta."
     },
     "foyer-south": {
       "title": "südliches Untergeschoss",

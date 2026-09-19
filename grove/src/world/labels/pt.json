@@ -68,8 +68,8 @@
     "stair-court": {
       "title": "pátio encaixado",
       "kicker": "Onde o terraço desce sob a terra.",
-      "intro": "Um pátio rebaixado escavado no terraço entre o salão e a estufa de laranjeiras, cinco metros abaixo. Uma majestosa escadaria em meio octagrama com degraus de pedra facetada desce do terraço e do jardim até o pavimento em frente ao clube.",
-      "lookFor": "Do pavimento, contemple os degraus estrelados que sobem em direção ao jardim e ao crepúsculo; a cripta se abre de cada lado."
+      "intro": "Um pátio rebaixado escavado no terraço entre o salão e a estufa de laranjeiras, cinco metros abaixo. Uma majestosa escadaria semioctogonal com degraus de pedra facetada desce do terraço e do jardim até o pavimento em frente ao clube.",
+      "lookFor": "Do pavimento, contemple os degraus facetados que sobem em direção ao jardim e ao crepúsculo; a cripta se abre de cada lado."
     },
     "foyer-south": {
       "title": "cave sul",

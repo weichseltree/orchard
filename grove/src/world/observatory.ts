@@ -840,13 +840,14 @@ function lantern(b: Builder, x: number, z: number): void {
 function balustrade(b: Builder, wall: Wall, gaps: readonly { center: number; width: number }[]): void {
   const y = b.room.bounds.min[1];
   const at = wall.at + wall.inward * 0.28;
+  const cornerMargin = wall.axis === "z" ? 0.65 : 0.4;
   const put = (finish: Finish, along: number, cy: number, length: number, height: number, thickness: number): void => {
     if (wall.axis === "x") b.box(finish, at, cy, along, thickness, height, length);
     else b.box(finish, along, cy, at, length, height, thickness);
   };
   const open = (along: number): boolean => gaps.some(g => Math.abs(along - g.center) < g.width / 2 + 0.2);
   let pier = 0;
-  for (let along = wall.min + 0.4; along <= wall.max - 0.4; along += 2.5) {
+  for (let along = wall.min + cornerMargin; along <= wall.max - cornerMargin; along += 2.5) {
     if (open(along)) continue;
     put("stone", along, y + 0.62, 0.34, 1.24, 0.34);
     if (pier++ % 4 === 0) {
@@ -854,19 +855,20 @@ function balustrade(b: Builder, wall: Wall, gaps: readonly { center: number; wid
       b.add("crown", "stone", wall.axis === "x" ? at : along, y + 1.72, wall.axis === "x" ? along : at, 0.3, 0.42, 0.3);
     }
   }
-  for (let along = wall.min + 0.4; along < wall.max - 0.4; along += 0.5) {
+  for (let along = wall.min + cornerMargin; along < wall.max - cornerMargin; along += 0.5) {
     if (open(along) || open(along + 0.5)) continue;
     put("stone", along + 0.25, y + 0.5, 0.09, 0.85, 0.09);
   }
   // The rail runs between the openings.
-  let cursor = wall.min + 0.3;
+  let cursor = wall.min + (wall.axis === "z" ? 0.55 : 0.3);
+  const maxRail = wall.max - (wall.axis === "z" ? 0.55 : 0.3);
   const stops = [...gaps].sort((a, c) => a.center - c.center);
   for (const gap of stops) {
     const left = gap.center - gap.width / 2 - 0.2;
     if (left > cursor) put("stone", (cursor + left) / 2, y + 1.06, left - cursor, 0.1, 0.22);
     cursor = Math.max(cursor, gap.center + gap.width / 2 + 0.2);
   }
-  if (wall.max - 0.3 > cursor) put("stone", (cursor + wall.max - 0.3) / 2, y + 1.06, wall.max - 0.3 - cursor, 0.1, 0.22);
+  if (maxRail > cursor) put("stone", (cursor + maxRail) / 2, y + 1.06, maxRail - cursor, 0.1, 0.22);
 }
 
 /**
@@ -960,10 +962,10 @@ function grounds(b: Builder): void {
     path(b, cx, cz, 5.2, depth);
     // ...and a cross walk out to the gate in the side wall, so the paving
     // starts at the grove's edge rather than 2.4 m inside the lawn.
-    // Narrower than it is long, or path() would read it as the walk it
-    // crosses and lay its brass kerbs across the axis instead of along it.
+    // Abut against the central walk edge to avoid coplanar overlap.
     for (const gate of room.doorways.filter(d => d.axis === "x")) {
-      path(b, (gate.at + cx) / 2, gate.center, Math.abs(cx - gate.at), 4.8);
+      const walkEdge = cx + (gate.at < cx ? -2.6 : 2.6);
+      path(b, (gate.at + walkEdge) / 2, gate.center, Math.abs(walkEdge - gate.at), 4.8);
     }
     for (const wall of walls(room)) {
       const gaps = room.doorways
@@ -1183,20 +1185,20 @@ function stageFittings(b: Builder): void {
 }
 
 /**
- * The sunken amphitheatre court down to the club: a sweeping semi-circular
- * flight of concentric stone steps with brass nosings descending from the
- * terrace and garden down to the paved court in front of the club's door.
- * No interior chamber walls or useless doors: open to the garden and sky.
+ * The sunken court staircase down to the club: a majestic semi-octagonal
+ * (Halb-Achteck) flight of faceted stone steps with brass nosings descending
+ * from the terrace and garden down to the paved court in front of the club's door.
+ * Open to the garden and sky, free of obstructive doors and chamber walls.
  */
 function courtShell(b: Builder): void {
   const room = b.room, [x0, y0, z0] = room.bounds.min, [x1, , z1] = room.bounds.max;
   const cz = (z0 + z1) / 2;
-  const cx = -12.5;
+  const cx = -11.0;
 
   // 1. Paved floor across the court base:
   b.box("floor", (x0 + x1) / 2, y0 - 0.1, (z0 + z1) / 2, x1 - x0, 0.2, z1 - z0);
 
-  // 2. East palace wall along x1 = -10 with club door surround:
+  // 2. East palace wall along x1 = -10 with club entrance opening:
   const door = room.doorways.find(d => d.to === "club");
   const doorCenter = door ? door.center : cz;
   const doorWidth = door ? door.width : 4.0;
@@ -1212,103 +1214,55 @@ function courtShell(b: Builder): void {
   if (rightZ1 > rightZ0) {
     b.box("wall", x1 - 0.08, y0 + wallH / 2, (rightZ0 + rightZ1) / 2, 0.16, wallH, rightZ1 - rightZ0);
   }
-  // Lintel above club door:
+  // Lintel above club opening:
   b.box("wall", x1 - 0.08, y0 + doorHeight + (wallH - doorHeight) / 2, doorCenter, 0.16, wallH - doorHeight, doorWidth);
 
-  // Door surrounds for the club entrance:
-  for (const side of [-1, 1]) {
-    const jz = doorCenter + side * (doorWidth / 2 + 0.28);
-    b.box("stone", x1 - 0.2, y0 + doorHeight / 2, jz, 0.4, doorHeight, 0.44);
-    b.box("brass", x1 - 0.2, y0 + doorHeight / 2, doorCenter + side * (doorWidth / 2 + 0.09), 0.14, doorHeight, 0.12);
-    b.box("light", x1 - 0.2, y0 + doorHeight / 2, doorCenter + side * (doorWidth / 2 + 0.019), 0.02, doorHeight, 0.025);
-  }
-  b.box("stone", x1 - 0.2, y0 + doorHeight + 0.28, doorCenter, 0.4, 0.44, doorWidth + 1.0);
-  b.box("brass", x1 - 0.2, y0 + doorHeight + 0.09, doorCenter, 0.14, 0.14, doorWidth + 0.3);
-  b.box("light", x1 - 0.2, y0 + doorHeight + 0.022, doorCenter, 0.02, 0.025, doorWidth + 0.05);
-
-  // Lanterns flanking the club door:
+  // Lanterns flanking the club entrance:
   for (const side of [-1, 1]) {
     const lz = doorCenter + side * (doorWidth / 2 + 0.6);
     lantern(b, x1 - 0.6, lz);
   }
 
-  // 3. North & South undercroft archways at z0 (-38) and z1 (-11) near the east wall:
-  for (const [wallZ, wallInward, foyerDoorTo] of [[z0, 1, "foyer"], [z1, -1, "foyer-south"]] as const) {
-    const fDoor = room.doorways.find(d => d.to === foyerDoorTo);
-    if (!fDoor) continue;
-    const fCenter = fDoor.center, fWidth = fDoor.width, fHeight = fDoor.height;
-    // Lintel above undercroft opening:
-    b.box("wall", fCenter, y0 + fHeight + (wallH - fHeight) / 2, wallZ + wallInward * 0.08, fWidth, wallH - fHeight, 0.16);
-    // Jambs on sides:
-    for (const side of [-1, 1]) {
-      const jx = fCenter + side * (fWidth / 2 + 0.25);
-      if (jx >= -13.5 && jx <= x1) {
-        b.box("stone", jx, y0 + fHeight / 2, wallZ + wallInward * 0.15, 0.38, fHeight, 0.3);
-        b.box("brass", fCenter + side * (fWidth / 2 + 0.08), y0 + fHeight / 2, wallZ + wallInward * 0.15, 0.12, fHeight, 0.14);
-      }
-    }
-    b.box("stone", fCenter, y0 + fHeight + 0.25, wallZ + wallInward * 0.15, fWidth + 0.8, 0.38, 0.3);
-    b.box("brass", fCenter, y0 + fHeight + 0.08, wallZ + wallInward * 0.15, fWidth + 0.2, 0.12, 0.14);
-  }
+  // 3. Flat paved landing in front of club entrance:
+  b.box("path", -11.75, y0 + 0.006, cz, 3.5, 0.012, 10.0);
 
-  // 4. Flat paved landing in front of club door:
-  b.box("path", cx + 1.25, y0 + 0.006, cz, 2.5, 0.012, 10.0);
+  // 4. Semi-octagonal (Halb-Achteck) staircase:
+  const N_STEPS = 20;
+  const rxInner = 1.8, rxMax = 7.5;
+  const rzInner = 3.0, rzMax = 13.5;
 
-  // 5. Half-octagram (8-pointed star) staircase:
-  const STAR_ANGLES = [
-    -Math.PI / 2,     // 0: North terrace boundary
-    -3 * Math.PI / 8, // 1: NNW notch
-    -Math.PI / 4,     // 2: NW star point
-    -Math.PI / 8,     // 3: WNW notch
-    0,                // 4: West central star point
-    Math.PI / 8,      // 5: WSW notch
-    Math.PI / 4,      // 6: SW star point
-    3 * Math.PI / 8,  // 7: SSW notch
-    Math.PI / 2,      // 8: South terrace boundary
-  ];
-
-  const starVertexRadius = (k: number): number => {
-    const ang = STAR_ANGLES[k]!;
-    const r_w = 7.5 / Math.max(0.01, Math.cos(ang));
-    const r_ns = 13.5 / Math.max(0.01, Math.abs(Math.sin(ang)));
-    const r_max = Math.min(r_w, r_ns);
-    const notchScale = k % 2 === 1 ? 0.765367 : 1.0;
-    return r_max * notchScale;
-  };
-
-  const N_STEPS = 24;
-  const S_SUB = 4;
   for (let i = 0; i < N_STEPS; i++) {
     const f = (i + 1) / N_STEPS;
-    for (let k = 0; k < 8; k++) {
-      const a0 = STAR_ANGLES[k]!, a1 = STAR_ANGLES[k + 1]!;
-      const r0 = f * starVertexRadius(k), r1 = f * starVertexRadius(k + 1);
-      const pax = cx - r0 * Math.cos(a0), paz = cz + r0 * Math.sin(a0);
-      const pbx = cx - r1 * Math.cos(a1), pbz = cz + r1 * Math.sin(a1);
-      for (let s = 0; s < S_SUB; s++) {
-        const t0 = s / S_SUB, t1 = (s + 1) / S_SUB;
-        const qax = pax + t0 * (pbx - pax), qaz = paz + t0 * (pbz - paz);
-        const qbx = pax + t1 * (pbx - pax), qbz = paz + t1 * (pbz - paz);
-        const mx = (qax + qbx) / 2, mz = (qaz + qbz) / 2;
-        // Keep undercroft door apertures at the north and south ends clear:
-        if (mx > -13.6 && (mz <= -35 || mz >= -14)) continue;
+    const rx = rxInner + f * (rxMax - rxInner);
+    const rz = rzInner + f * (rzMax - rzInner);
 
-        const dx = qbx - qax, dz = qbz - qaz;
-        const segLen = Math.hypot(dx, dz);
-        const ang = Math.atan2(mz - cz, cx - mx);
-        const sinA = Math.abs(Math.sin(ang));
-        const t_terrace = Math.min(1, Math.max(0, (sinA - 0.5) / 0.366));
-        const y_top = -1.6 + t_terrace * 1.6;
-        const py = y0 + f * (y_top - y0);
-        const stepH = Math.max(0.02, py - y0);
-        const treadDepth = (7.5 / N_STEPS) * 1.15;
-        const rot = new Quaternion().setFromAxisAngle(UNIT, Math.atan2(dx, dz));
+    // 5 vertices of the semi-octagon tier:
+    const v0 = { x: -13.5, z: cz - rz };
+    const v1 = { x: cx - rx * Math.cos(Math.PI / 4), z: cz - rz * Math.sin(Math.PI / 4) };
+    const v2 = { x: cx - rx, z: cz };
+    const v3 = { x: cx - rx * Math.cos(Math.PI / 4), z: cz + rz * Math.sin(Math.PI / 4) };
+    const v4 = { x: -13.5, z: cz + rz };
 
-        // Stone step tread along the star facet:
-        b.add("box", "stone", mx, y0 + stepH / 2, mz, treadDepth, stepH, segLen * 1.05, rot);
-        // Brass nosing along top facet edge:
-        b.add("box", "brass", mx, py + 0.005, mz, 0.06, 0.012, segLen * 1.05, rot);
-      }
+    const verts = [v0, v1, v2, v3, v4];
+    for (let k = 0; k < 4; k++) {
+      const pA = verts[k]!, pB = verts[k + 1]!;
+      const mx = (pA.x + pB.x) / 2, mz = (pA.z + pB.z) / 2;
+
+      // Keep undercroft entrance areas at the north and south ends clear on the lower floor:
+      if (mx > -13.5 && (mz <= -35 || mz >= -14)) continue;
+
+      const dx = pB.x - pA.x, dz = pB.z - pA.z;
+      const segLen = Math.hypot(dx, dz);
+      const y_top = k === 1 || k === 2 ? -1.6 : -0.8;
+      const py = y0 + f * (y_top - y0);
+      const riserH = Math.max(0.08, (y_top - y0) / N_STEPS);
+      const treadDepth = ((rxMax - rxInner) / N_STEPS) * 1.35;
+      const rot = new Quaternion().setFromAxisAngle(UNIT, Math.atan2(dx, dz));
+
+      // Stone step tread along the semi-octagon facet:
+      b.add("box", "stone", mx, py - riserH / 2, mz, treadDepth, riserH, segLen * 1.02, rot);
+      // Brass nosing along top facet edge:
+      b.add("box", "brass", mx, py + 0.005, mz, 0.06, 0.012, segLen * 1.02, rot);
     }
   }
 }

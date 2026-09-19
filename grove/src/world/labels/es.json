@@ -68,8 +68,8 @@
     "stair-court": {
       "title": "patio hundido",
       "kicker": "Donde la terraza baja bajo tierra.",
-      "intro": "Un patio inglés excavado en la terraza entre el gran salón y la orangerie, cinco metros abajo. Una majestuosa escalinata en medio octagrama con gradas de piedra facetada desciende desde la terraza y el jardín hasta el pavimento frente al club.",
-      "lookFor": "Desde el pavimento, contemple las gradas estrelladas que ascienden hacia el jardín y el cielo crepuscular; la cripta se abre a ambos lados."
+      "intro": "Un patio inglés excavado en la terraza entre el gran salón y la orangerie, cinco metros abajo. Una majestuosa escalinata semioctogonal con gradas de piedra facetada desciende desde la terraza y el jardín hasta el pavimento frente al club.",
+      "lookFor": "Desde el pavimento, contemple las gradas facetadas que ascienden hacia el jardín y el cielo crepuscular; la cripta se abre a ambos lados."
     },
     "foyer-south": {
       "title": "subterráneo sur",

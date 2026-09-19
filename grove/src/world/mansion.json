@@ -1088,8 +1088,7 @@
           "at": -38,
           "center": -11.8,
           "width": 3.2,
-          "height": 3.2,
-          "signRoom": "foyer"
+          "height": 3.2
         },
         {
           "to": "terrace",
@@ -1168,8 +1167,7 @@
           "at": -11,
           "center": -11.8,
           "width": 3.2,
-          "height": 3.2,
-          "signRoom": "club"
+          "height": 3.2
         }
       ],
       "hangings": [],
@@ -1791,8 +1789,7 @@
           "at": -38,
           "center": -16,
           "width": 5,
-          "height": 3.2,
-          "signRoom": "club"
+          "height": 3.2
         }
       ],
       "hangings": [],
@@ -1882,8 +1879,7 @@
           "at": -11,
           "center": -16,
           "width": 5,
-          "height": 3.2,
-          "signRoom": "club"
+          "height": 3.2
         }
       ],
       "hangings": [],
@@ -1973,8 +1969,7 @@
           "at": -20,
           "center": -24.5,
           "width": 8,
-          "height": 8,
-          "signRoom": "club"
+          "height": 8
         }
       ],
       "hangings": [],
